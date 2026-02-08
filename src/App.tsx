@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './layout/Layout';
+import CommandPalette from './components/CommandPalette';
 import SignIn from './pages/SignIn';
-import Dashboard from './pages/Dashboard';
+import Home from './pages/Home';
 import CreateMeeting from './pages/CreateMeeting';
 import Meetings from './pages/Meetings';
 import Availability from './pages/Availability';
@@ -10,16 +11,18 @@ import PublicBooking from './pages/PublicBooking';
 function App() {
   return (
     <BrowserRouter>
+      {/* Global Command Palette */}
+      <CommandPalette />
+
       <Routes>
-        <Route path="/" element={<Navigate to="/signin" replace />} />
         <Route path="/signin" element={<SignIn />} />
-        
-        {/* Authenticated Routes with Layout */}
+
+        {/* Main Routes with Layout */}
         <Route
-          path="/dashboard"
+          path="/"
           element={
             <Layout>
-              <Dashboard />
+              <Home />
             </Layout>
           }
         />
@@ -47,7 +50,7 @@ function App() {
             </Layout>
           }
         />
-        
+
         {/* Public Routes (No Layout) */}
         <Route path="/book/:shareToken" element={<PublicBooking />} />
       </Routes>

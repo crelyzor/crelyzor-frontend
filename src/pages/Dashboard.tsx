@@ -1,9 +1,7 @@
-import {
-  CalendarDays,
-  Clock,
-  Calendar,
-  MoreVertical,
-} from 'lucide-react';
+import { CalendarDays, Clock, Calendar, MoreVertical } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
   const stats = [
@@ -44,63 +42,78 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="bg-[#FAFAF9] p-8 min-h-full">
+    <div className="bg-white p-8 min-h-full">
       {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-6 mb-8">
-        {stats.map((stat, index) => (
-          <div
-            key={index}
-            className="bg-white rounded-lg border border-[#E8E8E8] p-6"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <stat.icon className="w-6 h-6 text-[#0F766E]" />
-            </div>
-            <div className="text-3xl font-bold text-[#1A1A1A] mb-1">
-              {stat.value}
-            </div>
-            <div className="text-sm text-[#4A4A4A]">{stat.label}</div>
-          </div>
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {stats.map((stat, index) => {
+          const Icon = stat.icon;
+          return (
+            <Card
+              key={index}
+              className="shadow-sm border-neutral-200 hover:shadow-md transition-shadow"
+            >
+              <CardHeader className="pb-3">
+                <Icon className="w-5 h-5 text-neutral-500" strokeWidth={1.5} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-semibold text-neutral-950 mb-1 tracking-tight">
+                  {stat.value}
+                </div>
+                <p className="text-sm text-neutral-500">{stat.label}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Recent Meetings */}
-      <div className="bg-white rounded-lg border border-[#E8E8E8] p-6">
-        <h2 className="text-lg font-semibold text-[#1A1A1A] mb-4">
-          Recent Meetings
-        </h2>
-
-        <div className="space-y-0 divide-y divide-[#E8E8E8]">
-          {recentMeetings.map((meeting) => (
-            <div
-              key={meeting.id}
-              className="py-4 flex items-center justify-between group hover:bg-[#FAFAF9] px-4 -mx-4 rounded transition-colors"
-            >
-              <div className="flex items-center gap-4 flex-1">
-                <div className="px-3 py-1 bg-[#E8E8E8] rounded text-sm text-[#4A4A4A] font-medium">
-                  {meeting.time}
+      <Card className="shadow-sm border-neutral-200">
+        <CardHeader>
+          <CardTitle className="font-semibold text-neutral-950 text-lg">
+            Recent Meetings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="divide-y divide-neutral-200">
+            {recentMeetings.map((meeting) => (
+              <div
+                key={meeting.id}
+                className="px-6 py-4 flex items-center justify-between group hover:bg-neutral-50/50 transition-colors"
+              >
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="px-3 py-1.5 bg-neutral-100 rounded text-xs text-neutral-700 font-medium">
+                    {meeting.time}
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-neutral-950 font-medium text-sm">
+                      {meeting.title}
+                    </div>
+                    <div className="text-xs text-neutral-500">
+                      {meeting.participant}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <div className="text-[#1A1A1A] font-medium">
-                    {meeting.title}
-                  </div>
-                  <div className="text-sm text-[#4A4A4A]">
-                    {meeting.participant}
-                  </div>
+
+                <div className="flex items-center gap-3">
+                  <Badge
+                    variant="secondary"
+                    className="bg-neutral-900 text-white hover:bg-neutral-800 font-normal"
+                  >
+                    {meeting.status}
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="opacity-0 group-hover:opacity-100 h-8 w-8"
+                  >
+                    <MoreVertical className="w-4 h-4 text-neutral-500" />
+                  </Button>
                 </div>
               </div>
-
-              <div className="flex items-center gap-3">
-                <span className="px-3 py-1 bg-[#15803D] text-white text-sm rounded-full font-medium">
-                  {meeting.status}
-                </span>
-                <button className="w-8 h-8 rounded hover:bg-[#E8E8E8] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <MoreVertical className="w-4 h-4 text-[#4A4A4A]" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
