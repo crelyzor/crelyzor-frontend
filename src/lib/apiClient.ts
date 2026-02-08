@@ -36,7 +36,10 @@ function buildUrl(
   return url.toString();
 }
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+async function request<T>(
+  path: string,
+  options: RequestOptions = {}
+): Promise<T> {
   const { method = 'GET', body, headers = {}, params, signal } = options;
 
   const token = useAuthStore.getState().accessToken;
@@ -72,17 +75,28 @@ export const apiClient = {
   get: <T>(path: string, options?: Omit<RequestOptions, 'method' | 'body'>) =>
     request<T>(path, { ...options, method: 'GET' }),
 
-  post: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'method' | 'body'>) =>
-    request<T>(path, { ...options, method: 'POST', body }),
+  post: <T>(
+    path: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, 'method' | 'body'>
+  ) => request<T>(path, { ...options, method: 'POST', body }),
 
-  put: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'method' | 'body'>) =>
-    request<T>(path, { ...options, method: 'PUT', body }),
+  put: <T>(
+    path: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, 'method' | 'body'>
+  ) => request<T>(path, { ...options, method: 'PUT', body }),
 
-  patch: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'method' | 'body'>) =>
-    request<T>(path, { ...options, method: 'PATCH', body }),
+  patch: <T>(
+    path: string,
+    body?: unknown,
+    options?: Omit<RequestOptions, 'method' | 'body'>
+  ) => request<T>(path, { ...options, method: 'PATCH', body }),
 
-  delete: <T>(path: string, options?: Omit<RequestOptions, 'method' | 'body'>) =>
-    request<T>(path, { ...options, method: 'DELETE' }),
+  delete: <T>(
+    path: string,
+    options?: Omit<RequestOptions, 'method' | 'body'>
+  ) => request<T>(path, { ...options, method: 'DELETE' }),
 };
 
 export { ApiError };
