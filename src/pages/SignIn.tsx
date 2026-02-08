@@ -49,24 +49,24 @@ export default function SignIn() {
       </div>
 
       {/* Right Side - Sign In */}
-      <div className="flex flex-col justify-center items-center p-8 bg-white">
+      <div className="flex flex-col justify-center items-center p-8 bg-white dark:bg-neutral-950">
         <div className="w-full max-w-sm">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center gap-3 mb-12">
             <div className="w-10 h-10 bg-neutral-950 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-lg">C</span>
             </div>
-            <span className="font-medium text-lg text-neutral-950">
+            <span className="font-medium text-lg text-neutral-950 dark:text-white">
               Calendar
             </span>
           </div>
 
           {/* Greeting */}
           <div className="mb-10">
-            <h2 className="text-3xl font-semibold text-neutral-950 tracking-tight mb-2">
+            <h2 className="text-3xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight mb-2">
               Welcome back
             </h2>
-            <p className="text-neutral-500">
+            <p className="text-neutral-500 dark:text-neutral-400">
               Sign in to continue to your calendar
             </p>
           </div>
@@ -76,7 +76,7 @@ export default function SignIn() {
             onClick={handleGoogleSignIn}
             variant="outline"
             size="lg"
-            className="w-full h-14 bg-white hover:bg-neutral-50 text-neutral-950 border-neutral-200 font-normal text-base"
+            className="w-full h-14 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-950 dark:text-neutral-100 border-neutral-200 dark:border-neutral-700 font-normal text-base"
           >
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
               <path
@@ -101,17 +101,17 @@ export default function SignIn() {
 
           {/* Divider */}
           <div className="my-8 flex items-center gap-4">
-            <div className="flex-1 h-px bg-neutral-200" />
+            <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800" />
             <span className="text-xs text-neutral-400 uppercase tracking-wider">
               or
             </span>
-            <div className="flex-1 h-px bg-neutral-200" />
+            <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800" />
           </div>
 
           {/* SSO Option */}
           <Button
             variant="ghost"
-            className="w-full h-12 text-neutral-600 hover:text-neutral-950 hover:bg-neutral-100"
+            className="w-full h-12 text-neutral-600 dark:text-neutral-400 hover:text-neutral-950 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
             Sign in with SSO
           </Button>
@@ -119,11 +119,11 @@ export default function SignIn() {
           {/* Terms */}
           <p className="text-xs text-neutral-400 text-center mt-8 leading-relaxed">
             By continuing, you agree to our{' '}
-            <a href="#" className="underline hover:text-neutral-600">
+            <a href="#" className="underline hover:text-neutral-600 dark:hover:text-neutral-300">
               Terms of Service
             </a>{' '}
             and{' '}
-            <a href="#" className="underline hover:text-neutral-600">
+            <a href="#" className="underline hover:text-neutral-600 dark:hover:text-neutral-300">
               Privacy Policy
             </a>
           </p>

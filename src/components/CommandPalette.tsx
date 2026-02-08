@@ -103,12 +103,12 @@ export default function CommandPalette() {
 
         <CommandGroup heading="Recent Searches">
           <CommandItem>
-            <Search className="mr-3 h-4 w-4 text-neutral-400" />
-            <span className="text-neutral-500">Product Review Meeting</span>
+            <Search className="mr-3 h-4 w-4 text-neutral-400 dark:text-neutral-500" />
+            <span className="text-neutral-500 dark:text-neutral-400">Product Review Meeting</span>
           </CommandItem>
           <CommandItem>
-            <Search className="mr-3 h-4 w-4 text-neutral-400" />
-            <span className="text-neutral-500">Team Sync</span>
+            <Search className="mr-3 h-4 w-4 text-neutral-400 dark:text-neutral-500" />
+            <span className="text-neutral-500 dark:text-neutral-400">Team Sync</span>
           </CommandItem>
         </CommandGroup>
       </CommandList>

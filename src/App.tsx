@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './components/ThemeProvider';
 import Layout from './layout/Layout';
 import CommandPalette from './components/CommandPalette';
 import SignIn from './pages/SignIn';
@@ -10,7 +11,8 @@ import PublicBooking from './pages/PublicBooking';
 
 function App() {
   return (
-    <BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
       {/* Global Command Palette */}
       <CommandPalette />
 
@@ -54,7 +56,8 @@ function App() {
         {/* Public Routes (No Layout) */}
         <Route path="/book/:shareToken" element={<PublicBooking />} />
       </Routes>
-    </BrowserRouter>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

@@ -33,32 +33,32 @@ export default function Availability() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold text-neutral-950 mb-1 tracking-tight">
+        <h1 className="text-3xl font-semibold text-neutral-950 dark:text-neutral-50 mb-1 tracking-tight">
           Availability
         </h1>
-        <p className="text-neutral-500 text-sm">
+        <p className="text-neutral-500 dark:text-neutral-400 text-sm">
           Set your weekly schedule and manage your available time slots
         </p>
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="recurring" className="w-full">
-        <TabsList className="mb-6 bg-white border border-neutral-200 p-1">
+        <TabsList className="mb-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-1">
           <TabsTrigger
             value="recurring"
-            className="data-[state=active]:bg-neutral-900 data-[state=active]:text-white"
+            className="data-[state=active]:bg-neutral-900 data-[state=active]:text-white dark:data-[state=active]:bg-neutral-100 dark:data-[state=active]:text-neutral-900"
           >
             Recurring Weekly
           </TabsTrigger>
           <TabsTrigger
             value="custom"
-            className="data-[state=active]:bg-neutral-900 data-[state=active]:text-white"
+            className="data-[state=active]:bg-neutral-900 data-[state=active]:text-white dark:data-[state=active]:bg-neutral-100 dark:data-[state=active]:text-neutral-900"
           >
             Custom Dates
           </TabsTrigger>
           <TabsTrigger
             value="blocked"
-            className="data-[state=active]:bg-neutral-900 data-[state=active]:text-white"
+            className="data-[state=active]:bg-neutral-900 data-[state=active]:text-white dark:data-[state=active]:bg-neutral-100 dark:data-[state=active]:text-neutral-900"
           >
             Blocked Times
           </TabsTrigger>
@@ -68,9 +68,9 @@ export default function Availability() {
           {/* Main Content */}
           <div className="lg:col-span-2">
             <TabsContent value="recurring" className="m-0">
-              <Card className="shadow-sm border-neutral-200">
+              <Card className="shadow-sm border-neutral-200 dark:border-neutral-800">
                 <CardContent className="p-6">
-                  <h2 className="text-base font-semibold text-neutral-950 mb-6">
+                  <h2 className="text-base font-semibold text-neutral-950 dark:text-neutral-50 mb-6">
                     Weekly Schedule
                   </h2>
 
@@ -78,7 +78,7 @@ export default function Availability() {
                     {Object.entries(schedule).map(([day, config]) => (
                       <div
                         key={day}
-                        className="flex items-center gap-4 pb-4 border-b border-neutral-200 last:border-0"
+                        className="flex items-center gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800 last:border-0"
                       >
                         {/* Day Toggle */}
                         <div className="w-32">
@@ -93,8 +93,8 @@ export default function Availability() {
                             <span
                               className={`text-sm font-medium capitalize ${
                                 config.enabled
-                                  ? 'text-neutral-950'
-                                  : 'text-neutral-400'
+                                  ? 'text-neutral-950 dark:text-neutral-50'
+                                  : 'text-neutral-400 dark:text-neutral-500'
                               }`}
                             >
                               {day}
@@ -119,9 +119,9 @@ export default function Availability() {
                                   },
                                 })
                               }
-                              className="border-neutral-200 focus-visible:ring-neutral-900"
+                              className="border-neutral-200 dark:border-neutral-700 focus-visible:ring-neutral-900 dark:focus-visible:ring-neutral-400"
                             />
-                            <span className="text-neutral-500 text-sm">to</span>
+                            <span className="text-neutral-500 dark:text-neutral-400 text-sm">to</span>
                             <Input
                               type="time"
                               value={config.endTime}
@@ -136,11 +136,11 @@ export default function Availability() {
                                   },
                                 })
                               }
-                              className="border-neutral-200 focus-visible:ring-neutral-900"
+                              className="border-neutral-200 dark:border-neutral-700 focus-visible:ring-neutral-900 dark:focus-visible:ring-neutral-400"
                             />
                           </div>
                         ) : (
-                          <div className="flex-1 text-neutral-400 text-sm">
+                          <div className="flex-1 text-neutral-400 dark:text-neutral-500 text-sm">
                             Unavailable
                           </div>
                         )}
@@ -148,8 +148,8 @@ export default function Availability() {
                     ))}
                   </div>
 
-                  <div className="mt-6 pt-6 border-t border-neutral-200">
-                    <Button className="bg-neutral-900 hover:bg-neutral-800 text-white">
+                  <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
+                    <Button className="bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900">
                       Save Schedule
                     </Button>
                   </div>
@@ -158,13 +158,13 @@ export default function Availability() {
             </TabsContent>
 
             <TabsContent value="custom" className="m-0">
-              <Card className="shadow-sm border-neutral-200">
+              <Card className="shadow-sm border-neutral-200 dark:border-neutral-800">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-base font-semibold text-neutral-950">
+                    <h2 className="text-base font-semibold text-neutral-950 dark:text-neutral-50">
                       Custom Date Availability
                     </h2>
-                    <Button className="bg-neutral-900 hover:bg-neutral-800 text-white">
+                    <Button className="bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900">
                       <Plus className="w-4 h-4 mr-2" strokeWidth={1.5} />
                       Add Custom Date
                     </Button>
@@ -172,10 +172,10 @@ export default function Availability() {
 
                   <div className="text-center py-12">
                     <Clock
-                      className="w-12 h-12 text-neutral-300 mx-auto mb-3"
+                      className="w-12 h-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-3"
                       strokeWidth={1.5}
                     />
-                    <p className="text-neutral-400 text-sm">
+                    <p className="text-neutral-400 dark:text-neutral-500 text-sm">
                       No custom dates set. Add specific dates to override your
                       weekly schedule.
                     </p>
@@ -185,13 +185,13 @@ export default function Availability() {
             </TabsContent>
 
             <TabsContent value="blocked" className="m-0">
-              <Card className="shadow-sm border-neutral-200">
+              <Card className="shadow-sm border-neutral-200 dark:border-neutral-800">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-base font-semibold text-neutral-950">
+                    <h2 className="text-base font-semibold text-neutral-950 dark:text-neutral-50">
                       Blocked Time Slots
                     </h2>
-                    <Button className="bg-neutral-900 hover:bg-neutral-800 text-white">
+                    <Button className="bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900">
                       <Plus className="w-4 h-4 mr-2" strokeWidth={1.5} />
                       Block Time
                     </Button>
@@ -199,19 +199,19 @@ export default function Availability() {
 
                   <div className="space-y-3">
                     {/* Example blocked time */}
-                    <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-md border border-neutral-200">
+                    <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-md border border-neutral-200 dark:border-neutral-700">
                       <div>
-                        <div className="font-medium text-neutral-950 text-sm">
+                        <div className="font-medium text-neutral-950 dark:text-neutral-50 text-sm">
                           Lunch Break
                         </div>
-                        <div className="text-xs text-neutral-500">
+                        <div className="text-xs text-neutral-500 dark:text-neutral-400">
                           Every day, 12:00 PM - 1:00 PM
                         </div>
                       </div>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 hover:bg-neutral-100"
+                        className="h-8 w-8 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                       >
                         <X className="w-4 h-4 text-red-600" />
                       </Button>
@@ -224,9 +224,9 @@ export default function Availability() {
 
           {/* Preview Sidebar */}
           <div className="lg:col-span-1">
-            <Card className="shadow-sm border-neutral-200 sticky top-8">
+            <Card className="shadow-sm border-neutral-200 dark:border-neutral-800 sticky top-8">
               <CardContent className="p-6">
-                <h3 className="font-semibold text-neutral-950 mb-4 text-sm">
+                <h3 className="font-semibold text-neutral-950 dark:text-neutral-50 mb-4 text-sm">
                   This Week's Availability
                 </h3>
 
@@ -238,10 +238,10 @@ export default function Availability() {
                         key={day}
                         className="flex items-center justify-between py-2"
                       >
-                        <span className="text-xs capitalize text-neutral-500">
+                        <span className="text-xs capitalize text-neutral-500 dark:text-neutral-400">
                           {day}
                         </span>
-                        <span className="text-xs font-medium text-neutral-900">
+                        <span className="text-xs font-medium text-neutral-900 dark:text-neutral-100">
                           {config.startTime} - {config.endTime}
                         </span>
                       </div>
@@ -250,7 +250,7 @@ export default function Availability() {
 
                 {Object.values(schedule).filter((c) => c.enabled).length ===
                   0 && (
-                  <p className="text-sm text-neutral-400 text-center py-4">
+                  <p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-4">
                     No availability set
                   </p>
                 )}

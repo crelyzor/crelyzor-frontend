@@ -15,8 +15,12 @@ import {
   Grip,
   Pin,
   PinOff,
+  Sun,
+  Moon,
+  Monitor,
   type LucideIcon,
 } from 'lucide-react';
+import { useTheme } from '@/components/ThemeProvider';
 import {
   Popover,
   PopoverContent,
@@ -181,6 +185,7 @@ export function Toolbar() {
   const [controlCenterOpen, setControlCenterOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
   const pinnedItems = pinnedIds
     .map((id) => allItems.find((item) => item.id === id))
@@ -229,13 +234,13 @@ export function Toolbar() {
                   onClick={() => handleItemClick(item)}
                   className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all cursor-pointer ${
                     isActive
-                      ? 'text-neutral-900 bg-neutral-100'
-                      : 'text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50'
+                      ? 'text-neutral-900 bg-neutral-100 dark:text-neutral-100 dark:bg-neutral-800'
+                      : 'text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50 dark:hover:text-neutral-300 dark:hover:bg-neutral-800'
                   }`}
                 >
                   <item.icon className="w-[18px] h-[18px]" />
                   {isActive && (
-                    <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-neutral-900 rounded-full" />
+                    <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-neutral-900 dark:bg-neutral-100 rounded-full" />
                   )}
                 </button>
               </TooltipTrigger>
@@ -246,8 +251,27 @@ export function Toolbar() {
           );
         })}
 
+        {/* Theme Toggle */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              className="w-9 h-9 flex items-center justify-center rounded-lg transition-all cursor-pointer text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50 dark:hover:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              {resolvedTheme === 'dark' ? (
+                <Sun className="w-[18px] h-[18px]" />
+              ) : (
+                <Moon className="w-[18px] h-[18px]" />
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="text-xs">
+            {resolvedTheme === 'dark' ? 'Light mode' : 'Dark mode'}
+          </TooltipContent>
+        </Tooltip>
+
         {/* Separator + Control Center trigger */}
-        <div className="w-px h-5 bg-neutral-200 mx-1" />
+        <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />
 
         <Popover open={controlCenterOpen} onOpenChange={setControlCenterOpen}>
           <Tooltip>
@@ -256,8 +280,8 @@ export function Toolbar() {
                 <button
                   className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all cursor-pointer ${
                     controlCenterOpen
-                      ? 'text-neutral-900 bg-neutral-100'
-                      : 'text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50'
+                      ? 'text-neutral-900 bg-neutral-100 dark:text-neutral-100 dark:bg-neutral-800'
+                      : 'text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50 dark:hover:text-neutral-300 dark:hover:bg-neutral-800'
                   }`}
                 >
                   <Grip className="w-[18px] h-[18px]" />
@@ -270,27 +294,27 @@ export function Toolbar() {
           </Tooltip>
 
           <PopoverContent
-            className="w-72 p-0 bg-white border-neutral-200 shadow-xl rounded-xl"
+            className="w-72 p-0 bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 shadow-xl rounded-xl"
             align="start"
             sideOffset={8}
           >
             <div className="p-3 pb-2">
-              <h3 className="text-xs tracking-widest text-neutral-400 font-medium">
+              <h3 className="text-xs tracking-widest text-neutral-400 dark:text-neutral-500 font-medium">
                 CONTROL CENTER
               </h3>
-              <p className="text-[11px] text-neutral-400 mt-0.5">
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
                 Pin items to your toolbar
               </p>
             </div>
 
-            <Separator className="bg-neutral-100" />
+            <Separator className="bg-neutral-100 dark:bg-neutral-800" />
 
             <div className="max-h-80 overflow-y-auto py-1">
               {(['navigation', 'actions', 'tools', 'settings'] as const).map(
                 (group) => (
                   <div key={group}>
                     <div className="px-3 pt-3 pb-1">
-                      <span className="text-[10px] tracking-widest text-neutral-400 font-medium">
+                      <span className="text-[10px] tracking-widest text-neutral-400 dark:text-neutral-500 font-medium">
                         {groupLabels[group]}
                       </span>
                     </div>
@@ -299,20 +323,20 @@ export function Toolbar() {
                       return (
                         <div
                           key={item.id}
-                          className="flex items-center gap-3 px-3 py-2 hover:bg-neutral-50 transition-colors cursor-pointer"
+                          className="flex items-center gap-3 px-3 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                         >
                           <button
                             onClick={() => handleItemClick(item)}
                             className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer"
                           >
-                            <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center shrink-0">
-                              <item.icon className="w-4 h-4 text-neutral-600" />
+                            <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+                              <item.icon className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="text-sm font-medium text-neutral-800">
+                              <div className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
                                 {item.label}
                               </div>
-                              <div className="text-[11px] text-neutral-400 truncate">
+                              <div className="text-[11px] text-neutral-400 dark:text-neutral-500 truncate">
                                 {item.description}
                               </div>
                             </div>
@@ -326,8 +350,8 @@ export function Toolbar() {
                                 }}
                                 className={`w-7 h-7 flex items-center justify-center rounded-md shrink-0 transition-all cursor-pointer ${
                                   isPinned
-                                    ? 'text-neutral-900 bg-neutral-100 hover:bg-neutral-200'
-                                    : 'text-neutral-300 hover:text-neutral-500 hover:bg-neutral-100'
+                                    ? 'text-neutral-900 bg-neutral-100 hover:bg-neutral-200 dark:text-neutral-100 dark:bg-neutral-700 dark:hover:bg-neutral-600'
+                                    : 'text-neutral-300 hover:text-neutral-500 hover:bg-neutral-100 dark:text-neutral-600 dark:hover:text-neutral-400 dark:hover:bg-neutral-800'
                                 }`}
                               >
                                 {isPinned ? (
@@ -351,7 +375,7 @@ export function Toolbar() {
               )}
             </div>
 
-            <Separator className="bg-neutral-100" />
+            <Separator className="bg-neutral-100 dark:bg-neutral-800" />
 
             <div className="p-2">
               <button
@@ -359,7 +383,7 @@ export function Toolbar() {
                   setPinnedIds(defaultPinned);
                   savePinnedToStorage(defaultPinned);
                 }}
-                className="w-full text-xs text-neutral-400 hover:text-neutral-600 py-1.5 transition-colors cursor-pointer"
+                className="w-full text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 py-1.5 transition-colors cursor-pointer"
               >
                 Reset to defaults
               </button>

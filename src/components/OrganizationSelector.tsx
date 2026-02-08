@@ -115,56 +115,55 @@ export function OrganizationSelector() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button className="flex items-center gap-2 hover:bg-neutral-100 rounded-lg px-2 py-1.5 transition-colors cursor-pointer">
-          <div className="w-7 h-7 bg-neutral-800 rounded-md flex items-center justify-center">
+        <button className="flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg px-2 py-1.5 transition-colors cursor-pointer">
+          <div className="w-7 h-7 bg-neutral-800 dark:bg-neutral-700 rounded-md flex items-center justify-center">
             <span className="text-white text-xs font-medium">
               {getInitials(selectedOrg.name)}
             </span>
           </div>
-          <span className="text-sm font-medium text-neutral-900 hidden sm:block max-w-[120px] truncate">
+          <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 hidden sm:block max-w-[120px] truncate">
             {selectedOrg.name}
           </span>
-          <ChevronDown className="w-4 h-4 text-neutral-500" />
+          <ChevronDown className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-80 p-0 bg-white border-neutral-200 shadow-xl"
+        className="w-80 p-0 bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 shadow-xl"
         align="start"
         sideOffset={8}
       >
         {/* Current Organization Header */}
         <div className="p-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-neutral-800 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-neutral-800 dark:bg-neutral-700 rounded-lg flex items-center justify-center">
               <span className="text-white font-semibold">
                 {getInitials(selectedOrg.name)}
               </span>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-neutral-900 truncate">
+                <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 truncate">
                   {selectedOrg.name}
                 </h3>
                 {getRoleBadge(selectedOrg.role, 'md')}
               </div>
-              <p className="text-xs text-neutral-500">
-                {selectedOrg.plan || 'Free Plan'} ·{' '}
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 {selectedOrg.memberCount || 1} member
                 {(selectedOrg.memberCount || 1) > 1 ? 's' : ''}
               </p>
             </div>
-            <button className="p-2 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer">
-              <Settings className="w-4 h-4 text-neutral-500" />
+            <button className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors cursor-pointer">
+              <Settings className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
             </button>
           </div>
         </div>
 
-        <Separator className="bg-neutral-200" />
+        <Separator className="bg-neutral-200 dark:bg-neutral-800" />
 
         {/* User Email */}
         <div className="px-3 py-2 flex items-center justify-between">
-          <span className="text-sm text-neutral-600">{currentUser.email}</span>
-          <button className="p-1 hover:bg-neutral-100 rounded transition-colors cursor-pointer">
+          <span className="text-sm text-neutral-600 dark:text-neutral-400">{currentUser.email}</span>
+          <button className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors cursor-pointer">
             <MoreHorizontal className="w-4 h-4 text-neutral-400" />
           </button>
         </div>
@@ -175,31 +174,31 @@ export function OrganizationSelector() {
             <button
               key={org.id}
               onClick={() => handleOrgSelect(org)}
-              className="w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-100 transition-colors"
+              className="w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
-              <div className="w-7 h-7 bg-neutral-800 rounded flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 bg-neutral-800 dark:bg-neutral-700 rounded flex items-center justify-center shrink-0">
                 <span className="text-white text-xs font-medium">
                   {getInitials(org.name)}
                 </span>
               </div>
-              <span className="text-sm text-neutral-900 flex-1 text-left truncate">
+              <span className="text-sm text-neutral-900 dark:text-neutral-100 flex-1 text-left truncate">
                 {org.name}
               </span>
               {getRoleBadge(org.role)}
               {selectedOrg.id === org.id && (
-                <Check className="w-4 h-4 text-neutral-900 shrink-0" />
+                <Check className="w-4 h-4 text-neutral-900 dark:text-neutral-100 shrink-0" />
               )}
             </button>
           ))}
         </div>
 
-        <Separator className="bg-neutral-200" />
+        <Separator className="bg-neutral-200 dark:bg-neutral-800" />
 
         {/* Actions */}
         <div className="py-1">
-          <button className="w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-100 transition-colors text-left cursor-pointer">
-            <LogOut className="w-4 h-4 text-neutral-500" />
-            <span className="text-sm text-neutral-700">Log out</span>
+          <button className="w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-left cursor-pointer">
+            <LogOut className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+            <span className="text-sm text-neutral-700 dark:text-neutral-300">Log out</span>
           </button>
         </div>
       </PopoverContent>
