@@ -1,8 +1,8 @@
 import { Search, Command } from 'lucide-react';
 import { ReactNode } from 'react';
-import { useCommandPalette } from '@/components/CommandPalette';
-import { OrganizationSelector } from '@/components/OrganizationSelector';
-import { Toolbar } from '@/components/Toolbar';
+import { useCommandPalette } from '@/hooks';
+import { OrganizationSelector } from '@/components/organization-selector';
+import { Toolbar } from '@/components/toolbar';
 
 type LayoutProps = {
   children: ReactNode;

@@ -1,63 +1,74 @@
+import { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from './components/ThemeProvider';
-import Layout from './layout/Layout';
-import CommandPalette from './components/CommandPalette';
-import SignIn from './pages/SignIn';
-import Home from './pages/Home';
-import CreateMeeting from './pages/CreateMeeting';
-import Meetings from './pages/Meetings';
-import Availability from './pages/Availability';
-import PublicBooking from './pages/PublicBooking';
+import { ThemeProvider } from '@/components/theme';
+import { CommandPalette } from '@/components/command-palette';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { PageLoader } from '@/components/PageLoader';
+import Layout from '@/layout/Layout';
+import { routes } from '@/routes/routes';
+
+const {
+  Home,
+  Meetings,
+  CreateMeeting,
+  Availability,
+  SignIn,
+  PublicBooking,
+} = routes;
 
 function App() {
   return (
-    <ThemeProvider>
-      <BrowserRouter>
-        {/* Global Command Palette */}
-        <CommandPalette />
+    <ErrorBoundary>
+      <ThemeProvider>
+        <BrowserRouter>
+          {/* Global Command Palette */}
+          <CommandPalette />
 
-        <Routes>
-          <Route path="/signin" element={<SignIn />} />
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/signin" element={<SignIn />} />
 
-          {/* Main Routes with Layout */}
-          <Route
-            path="/"
-            element={
-              <Layout>
-                <Home />
-              </Layout>
-            }
-          />
-          <Route
-            path="/meetings"
-            element={
-              <Layout>
-                <Meetings />
-              </Layout>
-            }
-          />
-          <Route
-            path="/meetings/create"
-            element={
-              <Layout>
-                <CreateMeeting />
-              </Layout>
-            }
-          />
-          <Route
-            path="/availability"
-            element={
-              <Layout>
-                <Availability />
-              </Layout>
-            }
-          />
+              {/* Main Routes with Layout */}
+              <Route
+                path="/"
+                element={
+                  <Layout>
+                    <Home />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/meetings"
+                element={
+                  <Layout>
+                    <Meetings />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/meetings/create"
+                element={
+                  <Layout>
+                    <CreateMeeting />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/availability"
+                element={
+                  <Layout>
+                    <Availability />
+                  </Layout>
+                }
+              />
 
-          {/* Public Routes (No Layout) */}
-          <Route path="/book/:shareToken" element={<PublicBooking />} />
-        </Routes>
-      </BrowserRouter>
-    </ThemeProvider>
+              {/* Public Routes (No Layout) */}
+              <Route path="/book/:shareToken" element={<PublicBooking />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 
