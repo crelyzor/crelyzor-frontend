@@ -32,10 +32,7 @@ export function CompactStickyBar({
     >
       <div className="max-w-7xl mx-auto px-8 h-12 flex items-center justify-between">
         {/* Left — Date */}
-        <motion.div
-          style={{ x: barDateX }}
-          className="flex items-center gap-2"
-        >
+        <motion.div style={{ x: barDateX }} className="flex items-center gap-2">
           <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
             {dayName}
           </span>

@@ -1,5 +1,9 @@
 import { Pin, PinOff } from 'lucide-react';
-import { TOOLBAR_ITEMS, TOOLBAR_GROUP_LABELS, TOOLBAR_GROUP_ORDER } from '@/constants';
+import {
+  TOOLBAR_ITEMS,
+  TOOLBAR_GROUP_LABELS,
+  TOOLBAR_GROUP_ORDER,
+} from '@/constants';
 import type { ToolbarItem } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import {

@@ -38,11 +38,7 @@ export function Toolbar() {
       <div className="flex items-center gap-0.5">
         {/* Pinned toolbar items */}
         {pinnedItems.map((item) => (
-          <ToolbarButton
-            key={item.id}
-            item={item}
-            onClick={handleItemClick}
-          />
+          <ToolbarButton key={item.id} item={item} onClick={handleItemClick} />
         ))}
 
         {/* Theme Toggle */}

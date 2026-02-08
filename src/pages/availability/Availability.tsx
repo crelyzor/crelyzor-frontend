@@ -9,8 +9,9 @@ import { WeeklyScheduleForm } from './WeeklyScheduleForm';
 import { AvailabilityPreview } from './AvailabilityPreview';
 
 export default function Availability() {
-  const [schedule, setSchedule] =
-    useState<WeeklySchedule>(defaultWeeklySchedule);
+  const [schedule, setSchedule] = useState<WeeklySchedule>(
+    defaultWeeklySchedule
+  );
 
   const toggleDay = (day: string) => {
     setSchedule((prev) => ({

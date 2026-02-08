@@ -39,8 +39,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  const resolvedTheme: ResolvedTheme =
-    theme === 'system' ? systemTheme : theme;
+  const resolvedTheme: ResolvedTheme = theme === 'system' ? systemTheme : theme;
 
   // Apply .dark class on <html>
   useEffect(() => {
