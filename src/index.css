@@ -1,0 +1,56 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Color Palette - Calendar App */
+  --color-ink-black: #1a1a1a;
+  --color-slate: #4a4a4a;
+  --color-stone: #b8b8b8;
+  --color-ash: #e8e8e8;
+  --color-cream: #fafaf9;
+  --color-deep-teal: #0f766e;
+  --color-dark-teal: #134e4a;
+  --color-success: #15803d;
+  --color-error: #b91c1c;
+
+  /* shadcn/ui CSS Variables */
+  --radius: 0.5rem;
+  
+  /* Light Mode */
+  --background: var(--color-cream);
+  --foreground: var(--color-ink-black);
+  
+  --card: #ffffff;
+  --card-foreground: var(--color-ink-black);
+  
+  --popover: #ffffff;
+  --popover-foreground: var(--color-ink-black);
+  
+  --primary: var(--color-deep-teal);
+  --primary-foreground: #ffffff;
+  
+  --secondary: var(--color-ash);
+  --secondary-foreground: var(--color-slate);
+  
+  --muted: var(--color-ash);
+  --muted-foreground: var(--color-stone);
+  
+  --accent: var(--color-deep-teal);
+  --accent-foreground: #ffffff;
+  
+  --destructive: var(--color-error);
+  --destructive-foreground: #ffffff;
+  
+  --border: var(--color-ash);
+  --input: var(--color-ash);
+  --ring: var(--color-deep-teal);
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
