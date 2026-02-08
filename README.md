@@ -5,26 +5,31 @@ React + TypeScript + Vite + TailwindCSS + shadcn/ui
 ## Getting Started
 
 ### Install dependencies
+
 ```bash
 pnpm install
 ```
 
 ### Run development server
+
 ```bash
 pnpm dev
 ```
 
 ### Build for production
+
 ```bash
 pnpm build
 ```
 
 ### Lint code
+
 ```bash
 pnpm lint
 ```
 
 ### Format code
+
 ```bash
 pnpm format
 ```
