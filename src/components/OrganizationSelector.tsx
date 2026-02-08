@@ -57,7 +57,9 @@ const currentUser = {
 
 export function OrganizationSelector() {
   const [open, setOpen] = useState(false);
-  const [selectedOrg, setSelectedOrg] = useState<Organization>(mockOrganizations[0]);
+  const [selectedOrg, setSelectedOrg] = useState<Organization>(
+    mockOrganizations[0]
+  );
 
   const handleOrgSelect = (org: Organization) => {
     setSelectedOrg(org);
@@ -73,11 +75,15 @@ export function OrganizationSelector() {
       .slice(0, 2);
   };
 
-  const getRoleBadge = (role: Organization['role'], size: 'sm' | 'md' = 'sm') => {
-    const baseClass = size === 'md' 
-      ? 'px-2 py-0.5 text-[11px] font-medium rounded' 
-      : 'px-2 py-0.5 text-[10px] font-medium rounded';
-    
+  const getRoleBadge = (
+    role: Organization['role'],
+    size: 'sm' | 'md' = 'sm'
+  ) => {
+    const baseClass =
+      size === 'md'
+        ? 'px-2 py-0.5 text-[11px] font-medium rounded'
+        : 'px-2 py-0.5 text-[10px] font-medium rounded';
+
     switch (role) {
       case 'owner':
         return (
@@ -87,9 +93,7 @@ export function OrganizationSelector() {
         );
       case 'admin':
         return (
-          <span className={`${baseClass} bg-blue-500 text-white`}>
-            Admin
-          </span>
+          <span className={`${baseClass} bg-blue-500 text-white`}>Admin</span>
         );
       case 'member':
         return (
@@ -138,11 +142,14 @@ export function OrganizationSelector() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-neutral-900 truncate">{selectedOrg.name}</h3>
+                <h3 className="font-semibold text-neutral-900 truncate">
+                  {selectedOrg.name}
+                </h3>
                 {getRoleBadge(selectedOrg.role, 'md')}
               </div>
               <p className="text-xs text-neutral-500">
-                {selectedOrg.plan || 'Free Plan'} · {selectedOrg.memberCount || 1} member
+                {selectedOrg.plan || 'Free Plan'} ·{' '}
+                {selectedOrg.memberCount || 1} member
                 {(selectedOrg.memberCount || 1) > 1 ? 's' : ''}
               </p>
             </div>

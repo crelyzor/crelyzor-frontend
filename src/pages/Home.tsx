@@ -11,11 +11,7 @@ import {
   ArrowRight,
   Sparkles,
 } from 'lucide-react';
-import {
-  motion,
-  useScroll,
-  useTransform,
-} from 'motion/react';
+import { motion, useScroll, useTransform } from 'motion/react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -85,14 +81,21 @@ export default function Home() {
   const barBorder = useTransform(scrollY, [140, 200], [0, 1]);
   // Disable pointer events on the bar while it's invisible
   const barPointerEvents = useTransform(barOpacity, (v) =>
-    v > 0.3 ? 'auto' : 'none',
+    v > 0.3 ? 'auto' : 'none'
   );
 
   const now = new Date();
   const greeting =
-    now.getHours() < 12 ? 'Good morning' : now.getHours() < 17 ? 'Good afternoon' : 'Good evening';
+    now.getHours() < 12
+      ? 'Good morning'
+      : now.getHours() < 17
+        ? 'Good afternoon'
+        : 'Good evening';
   const dayName = now.toLocaleDateString('en-US', { weekday: 'long' });
-  const monthDay = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  const monthDay = now.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+  });
 
   const tips = [
     'You have 3 meetings today — your first is at 2:00 PM',
@@ -223,8 +226,13 @@ export default function Home() {
       >
         <div className="max-w-7xl mx-auto px-8 h-12 flex items-center justify-between">
           {/* Left — Date */}
-          <motion.div style={{ x: barDateX }} className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-neutral-900">{dayName}</span>
+          <motion.div
+            style={{ x: barDateX }}
+            className="flex items-center gap-2"
+          >
+            <span className="text-sm font-semibold text-neutral-900">
+              {dayName}
+            </span>
             <span className="text-sm text-neutral-400">{monthDay}</span>
           </motion.div>
 
@@ -325,7 +333,9 @@ export default function Home() {
               <div className="px-5 pb-2">
                 <div className="text-4xl font-semibold text-neutral-950 tracking-tight">
                   {upcomingMeetings.length}
-                  <span className="text-lg font-normal text-neutral-400 ml-2">meetings left</span>
+                  <span className="text-lg font-normal text-neutral-400 ml-2">
+                    meetings left
+                  </span>
                 </div>
               </div>
 
@@ -347,9 +357,13 @@ export default function Home() {
                           <span className="text-sm font-medium text-neutral-900 group-hover:text-neutral-600 transition-colors">
                             {meeting.title}
                           </span>
-                          <span className="text-xs text-neutral-400">{meeting.duration}</span>
+                          <span className="text-xs text-neutral-400">
+                            {meeting.duration}
+                          </span>
                         </div>
-                        <span className="text-xs text-neutral-400">{meeting.time}</span>
+                        <span className="text-xs text-neutral-400">
+                          {meeting.time}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -365,18 +379,31 @@ export default function Home() {
               </div>
               <div className="px-5 space-y-5">
                 <div>
-                  <div className="text-3xl font-semibold text-neutral-950">12</div>
-                  <p className="text-xs text-neutral-400 uppercase tracking-wide">Total Meetings</p>
+                  <div className="text-3xl font-semibold text-neutral-950">
+                    12
+                  </div>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wide">
+                    Total Meetings
+                  </p>
                 </div>
                 <div>
                   <div className="text-3xl font-semibold text-neutral-950">
-                    8.5<span className="text-lg font-normal text-neutral-400">hrs</span>
+                    8.5
+                    <span className="text-lg font-normal text-neutral-400">
+                      hrs
+                    </span>
                   </div>
-                  <p className="text-xs text-neutral-400 uppercase tracking-wide">Time in Meetings</p>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wide">
+                    Time in Meetings
+                  </p>
                 </div>
                 <div>
-                  <div className="text-3xl font-semibold text-neutral-950">7</div>
-                  <p className="text-xs text-neutral-400 uppercase tracking-wide">Recordings</p>
+                  <div className="text-3xl font-semibold text-neutral-950">
+                    7
+                  </div>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wide">
+                    Recordings
+                  </p>
                 </div>
               </div>
               <div className="p-5 pt-4">
@@ -397,7 +424,10 @@ export default function Home() {
                   <Users className="w-4 h-4" />
                   MEETING SUMMARY
                 </span>
-                <Badge variant="outline" className="text-[10px] rounded-full border-neutral-200 text-neutral-500">
+                <Badge
+                  variant="outline"
+                  className="text-[10px] rounded-full border-neutral-200 text-neutral-500"
+                >
                   Feb 2026
                 </Badge>
               </div>
@@ -417,8 +447,12 @@ export default function Home() {
                   key={cat.label}
                   className={`p-5 ${i < 4 ? 'border-r border-neutral-100' : ''}`}
                 >
-                  <div className="text-2xl font-semibold text-neutral-950">{cat.count}</div>
-                  <p className="text-[11px] text-neutral-400 tracking-wide">{cat.label}</p>
+                  <div className="text-2xl font-semibold text-neutral-950">
+                    {cat.count}
+                  </div>
+                  <p className="text-[11px] text-neutral-400 tracking-wide">
+                    {cat.label}
+                  </p>
                 </div>
               ))}
             </div>
@@ -428,7 +462,9 @@ export default function Home() {
         {/* Right Column - Recent Meetings */}
         <div className="lg:col-span-1">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs tracking-widest text-neutral-500 font-medium">RECENT MEETINGS</h2>
+            <h2 className="text-xs tracking-widest text-neutral-500 font-medium">
+              RECENT MEETINGS
+            </h2>
             <button className="text-xs text-neutral-400 hover:text-neutral-700 transition-colors font-medium cursor-pointer">
               SEE ALL
             </button>
@@ -481,7 +517,9 @@ export default function Home() {
               <ArrowRight className="w-4 h-4 text-neutral-500" />
             </div>
             <h3 className="text-sm font-medium mb-1">Your Booking Page</h3>
-            <p className="text-xs text-neutral-400 mb-3">Share your availability link with others</p>
+            <p className="text-xs text-neutral-400 mb-3">
+              Share your availability link with others
+            </p>
             <div className="text-xs text-neutral-500 bg-neutral-800 px-3 py-2 rounded-lg truncate">
               cal.harsh.dev/book/harsh
             </div>

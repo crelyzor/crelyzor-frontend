@@ -42,27 +42,117 @@ export type ToolbarItem = {
 
 const allItems: ToolbarItem[] = [
   // Navigation
-  { id: 'home', label: 'Home', icon: Home, action: 'navigate', path: '/', group: 'navigation', description: 'Dashboard overview' },
-  { id: 'meetings', label: 'Meetings', icon: CalendarDays, action: 'navigate', path: '/meetings', group: 'navigation', description: 'All your meetings' },
-  { id: 'availability', label: 'Availability', icon: Clock, action: 'navigate', path: '/availability', group: 'navigation', description: 'Set your schedule' },
-  { id: 'recordings', label: 'Recordings', icon: Mic, action: 'navigate', path: '/recordings', group: 'navigation', description: 'Meeting recordings' },
+  {
+    id: 'home',
+    label: 'Home',
+    icon: Home,
+    action: 'navigate',
+    path: '/',
+    group: 'navigation',
+    description: 'Dashboard overview',
+  },
+  {
+    id: 'meetings',
+    label: 'Meetings',
+    icon: CalendarDays,
+    action: 'navigate',
+    path: '/meetings',
+    group: 'navigation',
+    description: 'All your meetings',
+  },
+  {
+    id: 'availability',
+    label: 'Availability',
+    icon: Clock,
+    action: 'navigate',
+    path: '/availability',
+    group: 'navigation',
+    description: 'Set your schedule',
+  },
+  {
+    id: 'recordings',
+    label: 'Recordings',
+    icon: Mic,
+    action: 'navigate',
+    path: '/recordings',
+    group: 'navigation',
+    description: 'Meeting recordings',
+  },
 
   // Quick Actions
-  { id: 'instant-meeting', label: 'Instant Meeting', icon: Video, action: 'action', group: 'actions', description: 'Start a meeting now' },
-  { id: 'share-link', label: 'Booking Link', icon: Link2, action: 'action', group: 'actions', description: 'Share your booking page' },
-  { id: 'invite-people', label: 'Invite People', icon: Users, action: 'action', group: 'actions', description: 'Invite team members' },
+  {
+    id: 'instant-meeting',
+    label: 'Instant Meeting',
+    icon: Video,
+    action: 'action',
+    group: 'actions',
+    description: 'Start a meeting now',
+  },
+  {
+    id: 'share-link',
+    label: 'Booking Link',
+    icon: Link2,
+    action: 'action',
+    group: 'actions',
+    description: 'Share your booking page',
+  },
+  {
+    id: 'invite-people',
+    label: 'Invite People',
+    icon: Users,
+    action: 'action',
+    group: 'actions',
+    description: 'Invite team members',
+  },
 
   // Tools
-  { id: 'analytics', label: 'Analytics', icon: BarChart3, action: 'navigate', path: '/analytics', group: 'tools', description: 'Meeting insights' },
-  { id: 'notifications', label: 'Notifications', icon: Bell, action: 'action', group: 'tools', description: 'Notification center' },
-  { id: 'integrations', label: 'Integrations', icon: Globe, action: 'navigate', path: '/integrations', group: 'tools', description: 'Connected apps' },
+  {
+    id: 'analytics',
+    label: 'Analytics',
+    icon: BarChart3,
+    action: 'navigate',
+    path: '/analytics',
+    group: 'tools',
+    description: 'Meeting insights',
+  },
+  {
+    id: 'notifications',
+    label: 'Notifications',
+    icon: Bell,
+    action: 'action',
+    group: 'tools',
+    description: 'Notification center',
+  },
+  {
+    id: 'integrations',
+    label: 'Integrations',
+    icon: Globe,
+    action: 'navigate',
+    path: '/integrations',
+    group: 'tools',
+    description: 'Connected apps',
+  },
 
   // Settings
-  { id: 'settings', label: 'Settings', icon: Settings, action: 'navigate', path: '/settings', group: 'settings', description: 'App settings' },
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: Settings,
+    action: 'navigate',
+    path: '/settings',
+    group: 'settings',
+    description: 'App settings',
+  },
 ];
 
 // Default pinned items
-const defaultPinned = ['home', 'meetings', 'availability', 'recordings', 'instant-meeting'];
+const defaultPinned = [
+  'home',
+  'meetings',
+  'availability',
+  'recordings',
+  'instant-meeting',
+];
 
 const STORAGE_KEY = 'toolbar-pinned-items';
 
@@ -113,7 +203,7 @@ export function Toolbar() {
       }
       // For 'action' type items, you'd trigger modals, etc.
     },
-    [navigate],
+    [navigate]
   );
 
   const groupedItems = allItems.reduce(
@@ -122,7 +212,7 @@ export function Toolbar() {
       acc[item.group].push(item);
       return acc;
     },
-    {} as Record<string, ToolbarItem[]>,
+    {} as Record<string, ToolbarItem[]>
   );
 
   return (
@@ -130,7 +220,8 @@ export function Toolbar() {
       <div className="flex items-center gap-0.5">
         {/* Pinned toolbar items */}
         {pinnedItems.map((item) => {
-          const isActive = item.action === 'navigate' && location.pathname === item.path;
+          const isActive =
+            item.action === 'navigate' && location.pathname === item.path;
           return (
             <Tooltip key={item.id}>
               <TooltipTrigger asChild>
@@ -184,70 +275,80 @@ export function Toolbar() {
             sideOffset={8}
           >
             <div className="p-3 pb-2">
-              <h3 className="text-xs tracking-widest text-neutral-400 font-medium">CONTROL CENTER</h3>
-              <p className="text-[11px] text-neutral-400 mt-0.5">Pin items to your toolbar</p>
+              <h3 className="text-xs tracking-widest text-neutral-400 font-medium">
+                CONTROL CENTER
+              </h3>
+              <p className="text-[11px] text-neutral-400 mt-0.5">
+                Pin items to your toolbar
+              </p>
             </div>
 
             <Separator className="bg-neutral-100" />
 
             <div className="max-h-80 overflow-y-auto py-1">
-              {(['navigation', 'actions', 'tools', 'settings'] as const).map((group) => (
-                <div key={group}>
-                  <div className="px-3 pt-3 pb-1">
-                    <span className="text-[10px] tracking-widest text-neutral-400 font-medium">
-                      {groupLabels[group]}
-                    </span>
-                  </div>
-                  {groupedItems[group]?.map((item) => {
-                    const isPinned = pinnedIds.includes(item.id);
-                    return (
-                      <div
-                        key={item.id}
-                        className="flex items-center gap-3 px-3 py-2 hover:bg-neutral-50 transition-colors cursor-pointer"
-                      >
-                        <button
-                          onClick={() => handleItemClick(item)}
-                          className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer"
+              {(['navigation', 'actions', 'tools', 'settings'] as const).map(
+                (group) => (
+                  <div key={group}>
+                    <div className="px-3 pt-3 pb-1">
+                      <span className="text-[10px] tracking-widest text-neutral-400 font-medium">
+                        {groupLabels[group]}
+                      </span>
+                    </div>
+                    {groupedItems[group]?.map((item) => {
+                      const isPinned = pinnedIds.includes(item.id);
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-center gap-3 px-3 py-2 hover:bg-neutral-50 transition-colors cursor-pointer"
                         >
-                          <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center shrink-0">
-                            <item.icon className="w-4 h-4 text-neutral-600" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-neutral-800">{item.label}</div>
-                            <div className="text-[11px] text-neutral-400 truncate">
-                              {item.description}
+                          <button
+                            onClick={() => handleItemClick(item)}
+                            className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer"
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center shrink-0">
+                              <item.icon className="w-4 h-4 text-neutral-600" />
                             </div>
-                          </div>
-                        </button>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                togglePin(item.id);
-                              }}
-                              className={`w-7 h-7 flex items-center justify-center rounded-md shrink-0 transition-all cursor-pointer ${
-                                isPinned
-                                  ? 'text-neutral-900 bg-neutral-100 hover:bg-neutral-200'
-                                  : 'text-neutral-300 hover:text-neutral-500 hover:bg-neutral-100'
-                              }`}
-                            >
-                              {isPinned ? (
-                                <PinOff className="w-3.5 h-3.5" />
-                              ) : (
-                                <Pin className="w-3.5 h-3.5" />
-                              )}
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="left" className="text-xs">
-                            {isPinned ? 'Unpin from toolbar' : 'Pin to toolbar'}
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium text-neutral-800">
+                                {item.label}
+                              </div>
+                              <div className="text-[11px] text-neutral-400 truncate">
+                                {item.description}
+                              </div>
+                            </div>
+                          </button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  togglePin(item.id);
+                                }}
+                                className={`w-7 h-7 flex items-center justify-center rounded-md shrink-0 transition-all cursor-pointer ${
+                                  isPinned
+                                    ? 'text-neutral-900 bg-neutral-100 hover:bg-neutral-200'
+                                    : 'text-neutral-300 hover:text-neutral-500 hover:bg-neutral-100'
+                                }`}
+                              >
+                                {isPinned ? (
+                                  <PinOff className="w-3.5 h-3.5" />
+                                ) : (
+                                  <Pin className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="text-xs">
+                              {isPinned
+                                ? 'Unpin from toolbar'
+                                : 'Pin to toolbar'}
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )
+              )}
             </div>
 
             <Separator className="bg-neutral-100" />

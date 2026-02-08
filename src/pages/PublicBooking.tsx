@@ -87,7 +87,9 @@ export default function PublicBooking() {
                       return (
                         <button
                           key={i}
-                          onClick={() => isAvailable && setSelectedDate(dateStr)}
+                          onClick={() =>
+                            isAvailable && setSelectedDate(dateStr)
+                          }
                           disabled={!isAvailable}
                           className={`
                             aspect-square rounded-md text-xs font-medium transition-colors
@@ -118,7 +120,10 @@ export default function PublicBooking() {
               {!selectedDate ? (
                 <Card className="shadow-sm border-neutral-200">
                   <CardContent className="p-8 text-center">
-                    <Calendar className="w-12 h-12 text-neutral-300 mx-auto mb-3" strokeWidth={1.5} />
+                    <Calendar
+                      className="w-12 h-12 text-neutral-300 mx-auto mb-3"
+                      strokeWidth={1.5}
+                    />
                     <p className="text-neutral-400 text-sm">
                       Please select a date to see available times
                     </p>
@@ -173,7 +178,10 @@ export default function PublicBooking() {
                 <form className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-neutral-950">
-                      <User className="w-3.5 h-3.5 inline mr-1" strokeWidth={1.5} />
+                      <User
+                        className="w-3.5 h-3.5 inline mr-1"
+                        strokeWidth={1.5}
+                      />
                       Name *
                     </Label>
                     <Input
@@ -187,7 +195,10 @@ export default function PublicBooking() {
 
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-neutral-950">
-                      <Mail className="w-3.5 h-3.5 inline mr-1" strokeWidth={1.5} />
+                      <Mail
+                        className="w-3.5 h-3.5 inline mr-1"
+                        strokeWidth={1.5}
+                      />
                       Email *
                     </Label>
                     <Input
@@ -201,7 +212,10 @@ export default function PublicBooking() {
 
                   <div className="space-y-2">
                     <Label htmlFor="message" className="text-neutral-950">
-                      <MessageSquare className="w-3.5 h-3.5 inline mr-1" strokeWidth={1.5} />
+                      <MessageSquare
+                        className="w-3.5 h-3.5 inline mr-1"
+                        strokeWidth={1.5}
+                      />
                       Message (optional)
                     </Label>
                     <Textarea

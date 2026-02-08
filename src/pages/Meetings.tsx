@@ -131,184 +131,186 @@ export default function Meetings() {
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-semibold text-neutral-950 mb-1 tracking-tight">
-              Meetings
-            </h1>
-            <p className="text-neutral-500 text-sm">
-              Manage your scheduled and past meetings
-            </p>
-          </div>
-          <Button className="bg-neutral-900 hover:bg-neutral-800 text-white">
-            <Calendar className="w-4 h-4 mr-2" strokeWidth={1.5} />
-            Create Meeting
-          </Button>
+        <div>
+          <h1 className="text-3xl font-semibold text-neutral-950 mb-1 tracking-tight">
+            Meetings
+          </h1>
+          <p className="text-neutral-500 text-sm">
+            Manage your scheduled and past meetings
+          </p>
         </div>
+        <Button className="bg-neutral-900 hover:bg-neutral-800 text-white">
+          <Calendar className="w-4 h-4 mr-2" strokeWidth={1.5} />
+          Create Meeting
+        </Button>
+      </div>
 
-        {/* Filters Bar */}
-        <div className="bg-neutral-50 rounded-lg border border-neutral-200 p-4 mb-6 shadow-sm">
-          <div className="flex flex-wrap items-center gap-4">
-            {/* Search */}
-            <div className="flex-1 min-w-64">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-                <Input
-                  type="text"
-                  placeholder="Search meetings..."
-                  value={searchQuery}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-                  className="pl-10 border-neutral-200 focus-visible:ring-neutral-900"
-                />
-              </div>
-            </div>
-
-            {/* Date Range */}
-            <div className="flex items-center gap-2">
+      {/* Filters Bar */}
+      <div className="bg-neutral-50 rounded-lg border border-neutral-200 p-4 mb-6 shadow-sm">
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Search */}
+          <div className="flex-1 min-w-64">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
               <Input
-                type="date"
-                className="w-auto border-neutral-200 focus-visible:ring-neutral-900"
-              />
-              <span className="text-neutral-500 text-sm">to</span>
-              <Input
-                type="date"
-                className="w-auto border-neutral-200 focus-visible:ring-neutral-900"
+                type="text"
+                placeholder="Search meetings..."
+                value={searchQuery}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSearchQuery(e.target.value)
+                }
+                className="pl-10 border-neutral-200 focus-visible:ring-neutral-900"
               />
             </div>
+          </div>
 
-            {/* Status Filter */}
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-neutral-500" strokeWidth={1.5} />
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-9 px-3 border border-neutral-200 rounded-md text-sm 
+          {/* Date Range */}
+          <div className="flex items-center gap-2">
+            <Input
+              type="date"
+              className="w-auto border-neutral-200 focus-visible:ring-neutral-900"
+            />
+            <span className="text-neutral-500 text-sm">to</span>
+            <Input
+              type="date"
+              className="w-auto border-neutral-200 focus-visible:ring-neutral-900"
+            />
+          </div>
+
+          {/* Status Filter */}
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-neutral-500" strokeWidth={1.5} />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="h-9 px-3 border border-neutral-200 rounded-md text-sm 
                          focus:outline-none focus:ring-2 focus:ring-neutral-900 
                          focus:border-transparent text-neutral-950 cursor-pointer bg-white"
-              >
-                <option value="all">All Status</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
+            >
+              <option value="all">All Status</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
           </div>
         </div>
+      </div>
 
-        {/* Meetings Table */}
-        <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent border-neutral-200">
-                <TableHead className="text-neutral-950 font-medium">
-                  Date & Time
-                </TableHead>
-                <TableHead className="text-neutral-950 font-medium">
-                  Meeting
-                </TableHead>
-                <TableHead className="text-neutral-950 font-medium">
-                  Participants
-                </TableHead>
-                <TableHead className="text-neutral-950 font-medium">
-                  Duration
-                </TableHead>
-                <TableHead className="text-neutral-950 font-medium">
-                  Status
-                </TableHead>
-                <TableHead className="text-neutral-950 font-medium">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {meetings.map((meeting) => (
-                <TableRow
-                  key={meeting.id}
-                  className="hover:bg-neutral-50 border-neutral-200"
-                >
-                  <TableCell>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-neutral-950 font-medium text-sm">
-                        {new Date(meeting.date).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </span>
-                      <span className="text-xs text-neutral-500 flex items-center gap-1">
-                        <Clock className="w-3 h-3" strokeWidth={1.5} />
-                        {meeting.time}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-neutral-950 font-medium text-sm">
-                        {meeting.title}
-                      </span>
-                      <span className="text-xs text-neutral-500 flex items-center gap-1">
-                        {getMeetingIcon(meeting.type)}
-                        {meeting.type === 'in-person'
-                          ? meeting.location
-                          : meeting.type
-                              .split('-')
-                              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                              .join(' ')}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-xs text-neutral-600">
-                      {meeting.participants.join(', ')}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-xs text-neutral-600">
-                      {meeting.duration}
+      {/* Meetings Table */}
+      <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden shadow-sm">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent border-neutral-200">
+              <TableHead className="text-neutral-950 font-medium">
+                Date & Time
+              </TableHead>
+              <TableHead className="text-neutral-950 font-medium">
+                Meeting
+              </TableHead>
+              <TableHead className="text-neutral-950 font-medium">
+                Participants
+              </TableHead>
+              <TableHead className="text-neutral-950 font-medium">
+                Duration
+              </TableHead>
+              <TableHead className="text-neutral-950 font-medium">
+                Status
+              </TableHead>
+              <TableHead className="text-neutral-950 font-medium">
+                Actions
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {meetings.map((meeting) => (
+              <TableRow
+                key={meeting.id}
+                className="hover:bg-neutral-50 border-neutral-200"
+              >
+                <TableCell>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-neutral-950 font-medium text-sm">
+                      {new Date(meeting.date).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                      })}
                     </span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={getStatusVariant(meeting.status)}
-                      className="capitalize text-[11px] font-medium"
-                    >
-                      {meeting.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="w-4 h-4 text-neutral-600" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                    <span className="text-xs text-neutral-500 flex items-center gap-1">
+                      <Clock className="w-3 h-3" strokeWidth={1.5} />
+                      {meeting.time}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-neutral-950 font-medium text-sm">
+                      {meeting.title}
+                    </span>
+                    <span className="text-xs text-neutral-500 flex items-center gap-1">
+                      {getMeetingIcon(meeting.type)}
+                      {meeting.type === 'in-person'
+                        ? meeting.location
+                        : meeting.type
+                            .split('-')
+                            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                            .join(' ')}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="text-xs text-neutral-600">
+                    {meeting.participants.join(', ')}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <span className="text-xs text-neutral-600">
+                    {meeting.duration}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant={getStatusVariant(meeting.status)}
+                    className="capitalize text-[11px] font-medium"
+                  >
+                    {meeting.status}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="w-4 h-4 text-neutral-600" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
 
-          {/* Pagination */}
-          <div className="border-t border-neutral-200 px-6 py-4 flex items-center justify-between">
-            <div className="text-sm text-neutral-500">
-              Showing 1-6 of 6 meetings
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled
-                className="border-neutral-200 text-neutral-600"
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled
-                className="border-neutral-200 text-neutral-600"
-              >
-                Next
-              </Button>
-            </div>
+        {/* Pagination */}
+        <div className="border-t border-neutral-200 px-6 py-4 flex items-center justify-between">
+          <div className="text-sm text-neutral-500">
+            Showing 1-6 of 6 meetings
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled
+              className="border-neutral-200 text-neutral-600"
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled
+              className="border-neutral-200 text-neutral-600"
+            >
+              Next
+            </Button>
           </div>
         </div>
+      </div>
     </div>
   );
 }

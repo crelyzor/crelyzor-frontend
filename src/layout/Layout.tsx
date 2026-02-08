@@ -27,7 +27,9 @@ export default function Layout({ children }: LayoutProps) {
             className="flex items-center gap-3 px-4 py-2 text-sm text-neutral-400 bg-neutral-100/80 hover:bg-neutral-100 border border-transparent hover:border-neutral-200 rounded-xl transition-all w-96 cursor-pointer"
           >
             <Search className="w-4 h-4" />
-            <span className="flex-1 text-left">Search meetings, people, actions...</span>
+            <span className="flex-1 text-left">
+              Search meetings, people, actions...
+            </span>
             <div className="flex items-center gap-1 text-[11px] text-neutral-400 bg-white/80 px-1.5 py-0.5 rounded border border-neutral-200">
               <Command className="w-3 h-3" />
               <span>K</span>

@@ -31,8 +31,8 @@ export default function SignIn() {
             organized.
           </h1>
           <p className="text-neutral-400 text-lg leading-relaxed">
-            Schedule meetings, sync calendars, and never miss a moment. 
-            The simplest way to own your schedule.
+            Schedule meetings, sync calendars, and never miss a moment. The
+            simplest way to own your schedule.
           </p>
         </div>
 
@@ -56,7 +56,9 @@ export default function SignIn() {
             <div className="w-10 h-10 bg-neutral-950 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-lg">C</span>
             </div>
-            <span className="font-medium text-lg text-neutral-950">Calendar</span>
+            <span className="font-medium text-lg text-neutral-950">
+              Calendar
+            </span>
           </div>
 
           {/* Greeting */}
