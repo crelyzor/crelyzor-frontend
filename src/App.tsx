@@ -7,14 +7,8 @@ import { PageLoader } from '@/components/PageLoader';
 import Layout from '@/layout/Layout';
 import { routes } from '@/routes/routes';
 
-const {
-  Home,
-  Meetings,
-  CreateMeeting,
-  Availability,
-  SignIn,
-  PublicBooking,
-} = routes;
+const { Home, Meetings, CreateMeeting, Availability, SignIn, PublicBooking } =
+  routes;
 
 function App() {
   return (
