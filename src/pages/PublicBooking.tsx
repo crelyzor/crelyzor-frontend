@@ -44,7 +44,9 @@ export default function PublicBooking() {
               <h1 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
                 John Doe
               </h1>
-              <p className="text-neutral-500 dark:text-neutral-400 text-sm">Product Manager</p>
+              <p className="text-neutral-500 dark:text-neutral-400 text-sm">
+                Product Manager
+              </p>
             </div>
           </div>
           <p className="mt-4 text-neutral-600 dark:text-neutral-400 text-base">
@@ -178,7 +180,10 @@ export default function PublicBooking() {
               <CardContent>
                 <form className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-neutral-950 dark:text-neutral-50">
+                    <Label
+                      htmlFor="name"
+                      className="text-neutral-950 dark:text-neutral-50"
+                    >
                       <User
                         className="w-3.5 h-3.5 inline mr-1"
                         strokeWidth={1.5}
@@ -195,7 +200,10 @@ export default function PublicBooking() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-neutral-950 dark:text-neutral-50">
+                    <Label
+                      htmlFor="email"
+                      className="text-neutral-950 dark:text-neutral-50"
+                    >
                       <Mail
                         className="w-3.5 h-3.5 inline mr-1"
                         strokeWidth={1.5}
@@ -212,7 +220,10 @@ export default function PublicBooking() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="message" className="text-neutral-950 dark:text-neutral-50">
+                    <Label
+                      htmlFor="message"
+                      className="text-neutral-950 dark:text-neutral-50"
+                    >
                       <MessageSquare
                         className="w-3.5 h-3.5 inline mr-1"
                         strokeWidth={1.5}

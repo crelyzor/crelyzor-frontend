@@ -170,7 +170,9 @@ export default function Meetings() {
               type="date"
               className="w-auto border-neutral-200 dark:border-neutral-700 focus-visible:ring-neutral-900 dark:focus-visible:ring-neutral-400"
             />
-            <span className="text-neutral-500 dark:text-neutral-400 text-sm">to</span>
+            <span className="text-neutral-500 dark:text-neutral-400 text-sm">
+              to
+            </span>
             <Input
               type="date"
               className="w-auto border-neutral-200 dark:border-neutral-700 focus-visible:ring-neutral-900 dark:focus-visible:ring-neutral-400"

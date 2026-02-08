@@ -13,49 +13,49 @@ function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
-      {/* Global Command Palette */}
-      <CommandPalette />
+        {/* Global Command Palette */}
+        <CommandPalette />
 
-      <Routes>
-        <Route path="/signin" element={<SignIn />} />
+        <Routes>
+          <Route path="/signin" element={<SignIn />} />
 
-        {/* Main Routes with Layout */}
-        <Route
-          path="/"
-          element={
-            <Layout>
-              <Home />
-            </Layout>
-          }
-        />
-        <Route
-          path="/meetings"
-          element={
-            <Layout>
-              <Meetings />
-            </Layout>
-          }
-        />
-        <Route
-          path="/meetings/create"
-          element={
-            <Layout>
-              <CreateMeeting />
-            </Layout>
-          }
-        />
-        <Route
-          path="/availability"
-          element={
-            <Layout>
-              <Availability />
-            </Layout>
-          }
-        />
+          {/* Main Routes with Layout */}
+          <Route
+            path="/"
+            element={
+              <Layout>
+                <Home />
+              </Layout>
+            }
+          />
+          <Route
+            path="/meetings"
+            element={
+              <Layout>
+                <Meetings />
+              </Layout>
+            }
+          />
+          <Route
+            path="/meetings/create"
+            element={
+              <Layout>
+                <CreateMeeting />
+              </Layout>
+            }
+          />
+          <Route
+            path="/availability"
+            element={
+              <Layout>
+                <Availability />
+              </Layout>
+            }
+          />
 
-        {/* Public Routes (No Layout) */}
-        <Route path="/book/:shareToken" element={<PublicBooking />} />
-      </Routes>
+          {/* Public Routes (No Layout) */}
+          <Route path="/book/:shareToken" element={<PublicBooking />} />
+        </Routes>
       </BrowserRouter>
     </ThemeProvider>
   );

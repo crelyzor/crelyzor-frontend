@@ -119,11 +119,17 @@ export default function SignIn() {
           {/* Terms */}
           <p className="text-xs text-neutral-400 text-center mt-8 leading-relaxed">
             By continuing, you agree to our{' '}
-            <a href="#" className="underline hover:text-neutral-600 dark:hover:text-neutral-300">
+            <a
+              href="#"
+              className="underline hover:text-neutral-600 dark:hover:text-neutral-300"
+            >
               Terms of Service
             </a>{' '}
             and{' '}
-            <a href="#" className="underline hover:text-neutral-600 dark:hover:text-neutral-300">
+            <a
+              href="#"
+              className="underline hover:text-neutral-600 dark:hover:text-neutral-300"
+            >
               Privacy Policy
             </a>
           </p>

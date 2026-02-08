@@ -29,7 +29,10 @@ export default function CreateMeeting() {
           <form className="space-y-6">
             {/* Meeting Title */}
             <div className="space-y-2">
-              <Label htmlFor="title" className="text-neutral-950 dark:text-neutral-50">
+              <Label
+                htmlFor="title"
+                className="text-neutral-950 dark:text-neutral-50"
+              >
                 Meeting Title
               </Label>
               <Input
@@ -43,7 +46,10 @@ export default function CreateMeeting() {
             {/* Date & Time */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="date" className="text-neutral-950 dark:text-neutral-50">
+                <Label
+                  htmlFor="date"
+                  className="text-neutral-950 dark:text-neutral-50"
+                >
                   <Calendar
                     className="w-3.5 h-3.5 inline mr-1"
                     strokeWidth={1.5}
@@ -57,7 +63,10 @@ export default function CreateMeeting() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="time" className="text-neutral-950 dark:text-neutral-50">
+                <Label
+                  htmlFor="time"
+                  className="text-neutral-950 dark:text-neutral-50"
+                >
                   <Clock
                     className="w-3.5 h-3.5 inline mr-1"
                     strokeWidth={1.5}
@@ -74,7 +83,9 @@ export default function CreateMeeting() {
 
             {/* Duration */}
             <div className="space-y-2">
-              <Label className="text-neutral-950 dark:text-neutral-50">Duration</Label>
+              <Label className="text-neutral-950 dark:text-neutral-50">
+                Duration
+              </Label>
               <div className="grid grid-cols-4 gap-3">
                 {['15 min', '30 min', '1 hour', 'Custom'].map((duration) => (
                   <Button
@@ -91,7 +102,10 @@ export default function CreateMeeting() {
 
             {/* Participants */}
             <div className="space-y-2">
-              <Label htmlFor="participants" className="text-neutral-950 dark:text-neutral-50">
+              <Label
+                htmlFor="participants"
+                className="text-neutral-950 dark:text-neutral-50"
+              >
                 <Users className="w-3.5 h-3.5 inline mr-1" strokeWidth={1.5} />
                 Participants
               </Label>
@@ -170,7 +184,10 @@ export default function CreateMeeting() {
             {/* Location (conditional) */}
             {meetingType === 'in-person' && (
               <div className="space-y-2">
-                <Label htmlFor="location" className="text-neutral-950 dark:text-neutral-50">
+                <Label
+                  htmlFor="location"
+                  className="text-neutral-950 dark:text-neutral-50"
+                >
                   <MapPin
                     className="w-3.5 h-3.5 inline mr-1"
                     strokeWidth={1.5}
@@ -188,7 +205,10 @@ export default function CreateMeeting() {
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-neutral-950 dark:text-neutral-50">
+              <Label
+                htmlFor="description"
+                className="text-neutral-950 dark:text-neutral-50"
+              >
                 Description
               </Label>
               <textarea

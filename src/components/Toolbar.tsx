@@ -17,7 +17,6 @@ import {
   PinOff,
   Sun,
   Moon,
-  Monitor,
   type LucideIcon,
 } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
@@ -185,7 +184,7 @@ export function Toolbar() {
   const [controlCenterOpen, setControlCenterOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
 
   const pinnedItems = pinnedIds
     .map((id) => allItems.find((item) => item.id === id))
@@ -255,7 +254,9 @@ export function Toolbar() {
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              onClick={() =>
+                setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+              }
               className="w-9 h-9 flex items-center justify-center rounded-lg transition-all cursor-pointer text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50 dark:hover:text-neutral-300 dark:hover:bg-neutral-800"
             >
               {resolvedTheme === 'dark' ? (

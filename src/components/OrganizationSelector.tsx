@@ -162,7 +162,9 @@ export function OrganizationSelector() {
 
         {/* User Email */}
         <div className="px-3 py-2 flex items-center justify-between">
-          <span className="text-sm text-neutral-600 dark:text-neutral-400">{currentUser.email}</span>
+          <span className="text-sm text-neutral-600 dark:text-neutral-400">
+            {currentUser.email}
+          </span>
           <button className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded transition-colors cursor-pointer">
             <MoreHorizontal className="w-4 h-4 text-neutral-400" />
           </button>
@@ -198,7 +200,9 @@ export function OrganizationSelector() {
         <div className="py-1">
           <button className="w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-left cursor-pointer">
             <LogOut className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">Log out</span>
+            <span className="text-sm text-neutral-700 dark:text-neutral-300">
+              Log out
+            </span>
           </button>
         </div>
       </PopoverContent>
