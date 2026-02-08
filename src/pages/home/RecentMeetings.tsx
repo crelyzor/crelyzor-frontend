@@ -1,0 +1,63 @@
+import { Clock, Video } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { getCategoryStyle } from '@/constants';
+import type { Meeting } from '@/types';
+
+type RecentMeetingsProps = {
+  meetings: Meeting[];
+};
+
+export function RecentMeetings({ meetings }: RecentMeetingsProps) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xs tracking-widest text-neutral-500 dark:text-neutral-400 font-medium">
+          RECENT MEETINGS
+        </h2>
+        <button className="text-xs text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors font-medium cursor-pointer">
+          SEE ALL
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        {meetings.map((meeting) => (
+          <Card
+            key={meeting.id}
+            className="p-4 border-neutral-200 dark:border-neutral-800 hover:shadow-md transition-all cursor-pointer group"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate flex-1">
+                {meeting.title}
+              </span>
+              <span className="text-[11px] text-neutral-400 dark:text-neutral-500 ml-2 whitespace-nowrap">
+                {meeting.date}, {meeting.time}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {meeting.hasRecording ? (
+                  <div className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
+                    <Video className="w-3 h-3" />
+                    <span>{meeting.duration}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 text-xs text-neutral-400 dark:text-neutral-500">
+                    <Clock className="w-3 h-3" />
+                    <span>{meeting.duration}</span>
+                  </div>
+                )}
+              </div>
+              <Badge
+                variant="outline"
+                className={`text-[10px] font-medium border ${getCategoryStyle(meeting.category)}`}
+              >
+                {meeting.category}
+              </Badge>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
