@@ -8,7 +8,6 @@ import {
   ArrowUpRight,
   Link2,
   ExternalLink,
-  ArrowRight,
   Sparkles,
 } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'motion/react';
@@ -28,34 +27,10 @@ type Meeting = {
 };
 
 const quickActions = [
-  {
-    icon: Video,
-    label: 'Instant Meeting',
-    desc: 'Start a call right now',
-    accent: 'bg-blue-500',
-    accentLight: 'bg-blue-50 text-blue-600 border-blue-100',
-  },
-  {
-    icon: Calendar,
-    label: 'Schedule',
-    desc: 'Plan a meeting ahead',
-    accent: 'bg-violet-500',
-    accentLight: 'bg-violet-50 text-violet-600 border-violet-100',
-  },
-  {
-    icon: Mic,
-    label: 'Record Note',
-    desc: 'Capture a voice memo',
-    accent: 'bg-emerald-500',
-    accentLight: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-  },
-  {
-    icon: Link2,
-    label: 'Share Link',
-    desc: 'Send your booking page',
-    accent: 'bg-amber-500',
-    accentLight: 'bg-amber-50 text-amber-600 border-amber-100',
-  },
+  { icon: Video, label: 'Instant Meeting', desc: 'Start a call right now' },
+  { icon: Calendar, label: 'Schedule', desc: 'Plan a meeting ahead' },
+  { icon: Mic, label: 'Record Note', desc: 'Capture a voice memo' },
+  { icon: Link2, label: 'Share Link', desc: 'Send your booking page' },
 ];
 
 export default function Home() {
@@ -64,21 +39,33 @@ export default function Home() {
   // ── Scroll-linked transforms (all continuous, no state) ──
 
   // Greeting dissolves
-  const greetingOpacity = useTransform(scrollY, [0, 100], [1, 0]);
-  const greetingY = useTransform(scrollY, [0, 100], [0, -10]);
-  const tipOpacity = useTransform(scrollY, [0, 60], [1, 0]);
+  const greetingOpacity = useTransform(scrollY, [0, 80], [1, 0]);
+  const greetingY = useTransform(scrollY, [0, 80], [0, -12]);
+  const greetingScale = useTransform(scrollY, [0, 80], [1, 0.97]);
+  const tipOpacity = useTransform(scrollY, [0, 50], [1, 0]);
 
-  // Full cards dissolve + shrink
-  const cardsOpacity = useTransform(scrollY, [40, 180], [1, 0]);
-  const cardsScale = useTransform(scrollY, [40, 180], [1, 0.96]);
-  const descOpacity = useTransform(scrollY, [20, 80], [1, 0]);
-  const accentBarOpacity = useTransform(scrollY, [20, 100], [0.8, 0]);
+  // Bubbles dissolve + individual stagger
+  const bubblesOpacity = useTransform(scrollY, [40, 160], [1, 0]);
+  const bubble0Y = useTransform(scrollY, [30, 140], [0, -18]);
+  const bubble1Y = useTransform(scrollY, [40, 150], [0, -18]);
+  const bubble2Y = useTransform(scrollY, [50, 160], [0, -18]);
+  const bubble3Y = useTransform(scrollY, [60, 170], [0, -18]);
+  const bubble0Scale = useTransform(scrollY, [30, 140], [1, 0.85]);
+  const bubble1Scale = useTransform(scrollY, [40, 150], [1, 0.85]);
+  const bubble2Scale = useTransform(scrollY, [50, 160], [1, 0.85]);
+  const bubble3Scale = useTransform(scrollY, [60, 170], [1, 0.85]);
+  const bubbleTransforms = [
+    { y: bubble0Y, scale: bubble0Scale },
+    { y: bubble1Y, scale: bubble1Scale },
+    { y: bubble2Y, scale: bubble2Scale },
+    { y: bubble3Y, scale: bubble3Scale },
+  ];
 
   // Compact sticky bar fades IN (always mounted, just invisible initially)
-  const barOpacity = useTransform(scrollY, [140, 200], [0, 1]);
-  const barY = useTransform(scrollY, [140, 200], [-8, 0]);
-  const barDateX = useTransform(scrollY, [160, 220], [-6, 0]);
-  const barBorder = useTransform(scrollY, [140, 200], [0, 1]);
+  const barOpacity = useTransform(scrollY, [120, 170], [0, 1]);
+  const barY = useTransform(scrollY, [120, 170], [-6, 0]);
+  const barDateX = useTransform(scrollY, [130, 180], [-8, 0]);
+  const barBorder = useTransform(scrollY, [120, 170], [0, 1]);
   // Disable pointer events on the bar while it's invisible
   const barPointerEvents = useTransform(barOpacity, (v) =>
     v > 0.3 ? 'auto' : 'none'
@@ -237,11 +224,11 @@ export default function Home() {
           </motion.div>
 
           {/* Right — Compact Quick Actions */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             {quickActions.map((action) => (
               <button
                 key={action.label}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border cursor-pointer hover:shadow-sm transition-shadow ${action.accentLight}`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 cursor-pointer transition-colors"
               >
                 <action.icon className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">{action.label}</span>
@@ -252,13 +239,13 @@ export default function Home() {
       </motion.div>
 
       {/* ===== Hero Section ===== */}
-      <div>
+      <div className="text-center">
         {/* Greeting — dissolves with scroll */}
         <motion.div
-          style={{ opacity: greetingOpacity, y: greetingY }}
-          className="mb-8"
+          style={{ opacity: greetingOpacity, y: greetingY, scale: greetingScale }}
+          className="mb-10 origin-top"
         >
-          <p className="text-xs tracking-widest text-neutral-400 mb-1">
+          <p className="text-xs tracking-widest text-neutral-400 mb-2">
             {greeting.toUpperCase()}, HARSH
           </p>
           <h1 className="text-3xl font-semibold text-neutral-950 tracking-tight mb-3">
@@ -266,47 +253,31 @@ export default function Home() {
           </h1>
           <motion.div
             style={{ opacity: tipOpacity }}
-            className="flex items-center gap-2 text-sm text-neutral-500"
+            className="flex items-center justify-center gap-2 text-sm text-neutral-500"
           >
             <Sparkles className="w-4 h-4 text-violet-400" />
             <span>{tip}</span>
           </motion.div>
         </motion.div>
 
-        {/* Full Quick Action Cards — dissolve + shrink with scroll */}
+        {/* Full Quick Actions — Floating Bubbles with staggered scroll */}
         <motion.div
-          style={{ opacity: cardsOpacity, scale: cardsScale }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10 origin-top"
+          style={{ opacity: bubblesOpacity }}
+          className="flex items-start gap-12 justify-center mb-14"
         >
-          {quickActions.map((action) => (
-            <button
+          {quickActions.map((action, i) => (
+            <motion.button
               key={action.label}
-              className="group relative p-5 rounded-2xl border border-neutral-200 bg-white hover:shadow-lg transition-shadow cursor-pointer text-left overflow-hidden"
+              style={{ y: bubbleTransforms[i].y, scale: bubbleTransforms[i].scale }}
+              className="group flex flex-col items-center gap-3 cursor-pointer origin-bottom"
             >
-              {/* Accent bar */}
-              <motion.div
-                style={{ opacity: accentBarOpacity }}
-                className={`absolute top-0 left-0 right-0 h-1 ${action.accent} rounded-t-2xl`}
-              />
-
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${action.accentLight} border`}
-              >
-                <action.icon className="w-5 h-5" />
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-neutral-100/80 text-neutral-500 group-hover:bg-neutral-900 group-hover:text-white group-hover:-translate-y-1 group-hover:shadow-lg transition-all duration-200">
+                <action.icon className="w-6 h-6" />
               </div>
-              <div className="text-sm font-semibold text-neutral-900 mb-0.5">
+              <span className="text-xs font-medium text-neutral-500 group-hover:text-neutral-900 transition-colors">
                 {action.label}
-              </div>
-              <motion.div
-                style={{ opacity: descOpacity }}
-                className="text-xs text-neutral-400"
-              >
-                {action.desc}
-              </motion.div>
-
-              {/* Hover arrow */}
-              <ArrowRight className="absolute bottom-5 right-5 w-4 h-4 text-neutral-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
-            </button>
+              </span>
+            </motion.button>
           ))}
         </motion.div>
       </div>
@@ -514,7 +485,7 @@ export default function Home() {
           <Card className="mt-6 p-4 border-neutral-200 bg-neutral-900 text-white">
             <div className="flex items-start justify-between mb-3">
               <ExternalLink className="w-5 h-5 text-neutral-400" />
-              <ArrowRight className="w-4 h-4 text-neutral-500" />
+              <ArrowUpRight className="w-4 h-4 text-neutral-500" />
             </div>
             <h3 className="text-sm font-medium mb-1">Your Booking Page</h3>
             <p className="text-xs text-neutral-400 mb-3">
