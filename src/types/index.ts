@@ -13,6 +13,6 @@ export type { ToolbarItem, ToolbarItemGroup } from './toolbar';
 
 export type { DaySchedule, WeeklySchedule } from './availability';
 
-export type { Theme, ResolvedTheme, ThemeProviderState } from './theme';
+export type { Theme, ResolvedTheme } from './theme';
 
 export type { QuickAction } from './quickAction';
