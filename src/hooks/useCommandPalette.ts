@@ -1,12 +1,15 @@
-export function useCommandPalette() {
-  const openCommandPalette = () => {
-    const event = new KeyboardEvent('keydown', {
-      key: 'k',
-      metaKey: true,
-      bubbles: true,
-    });
-    document.dispatchEvent(event);
-  };
+import { useUIStore } from '@/stores';
 
-  return { openCommandPalette };
+export function useCommandPalette() {
+  const open = useUIStore((s) => s.commandPaletteOpen);
+  const openCommandPalette = useUIStore((s) => s.openCommandPalette);
+  const closeCommandPalette = useUIStore((s) => s.closeCommandPalette);
+  const toggleCommandPalette = useUIStore((s) => s.toggleCommandPalette);
+
+  return {
+    open,
+    openCommandPalette,
+    closeCommandPalette,
+    toggleCommandPalette,
+  };
 }

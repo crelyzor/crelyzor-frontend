@@ -1,16 +1,23 @@
-import { createContext, useContext } from 'react';
-import type { ThemeProviderState } from '@/types';
+import { useThemeStore } from '@/stores';
+import type { Theme, ResolvedTheme } from '@/types';
 
-export const ThemeProviderContext = createContext<ThemeProviderState>({
-  theme: 'system',
-  resolvedTheme: 'light',
-  setTheme: () => {},
-});
+type UseThemeReturn = {
+  theme: Theme;
+  resolvedTheme: ResolvedTheme;
+  setTheme: (theme: Theme) => void;
+};
 
-export function useTheme(): ThemeProviderState {
-  const context = useContext(ThemeProviderContext);
-  if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
+/**
+ * Convenience hook wrapping the Zustand theme store.
+ * Computes resolvedTheme from theme + systemTheme.
+ */
+export function useTheme(): UseThemeReturn {
+  const theme = useThemeStore((s) => s.theme);
+  const systemTheme = useThemeStore((s) => s.systemTheme);
+  const setTheme = useThemeStore((s) => s.setTheme);
+
+  const resolvedTheme: ResolvedTheme =
+    theme === 'system' ? systemTheme : theme;
+
+  return { theme, resolvedTheme, setTheme };
 }

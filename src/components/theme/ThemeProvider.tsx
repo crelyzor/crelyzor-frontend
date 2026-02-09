@@ -1,33 +1,16 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { ThemeProviderContext } from '@/hooks/useTheme';
-import { THEME_STORAGE_KEY } from '@/constants';
-import type { Theme, ResolvedTheme } from '@/types';
-
-function getSystemTheme(): ResolvedTheme {
-  if (typeof window === 'undefined') return 'light';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light';
-}
-
-function getStoredTheme(): Theme {
-  try {
-    const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    if (stored === 'light' || stored === 'dark' || stored === 'system')
-      return stored;
-  } catch {
-    // ignore
-  }
-  return 'system';
-}
+import { useEffect, type ReactNode } from 'react';
+import { useThemeStore } from '@/stores';
 
 type ThemeProviderProps = {
   children: ReactNode;
 };
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(getStoredTheme);
-  const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(getSystemTheme);
+  const theme = useThemeStore((s) => s.theme);
+  const systemTheme = useThemeStore((s) => s.systemTheme);
+  const setSystemTheme = useThemeStore((s) => s.setSystemTheme);
+
+  const resolvedTheme = theme === 'system' ? systemTheme : theme;
 
   // Listen for system theme changes
   useEffect(() => {
@@ -37,9 +20,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     };
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  const resolvedTheme: ResolvedTheme = theme === 'system' ? systemTheme : theme;
+  }, [setSystemTheme]);
 
   // Apply .dark class on <html>
   useEffect(() => {
@@ -48,18 +29,5 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     root.classList.add(resolvedTheme);
   }, [resolvedTheme]);
 
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, newTheme);
-    } catch {
-      // ignore
-    }
-  };
-
-  return (
-    <ThemeProviderContext.Provider value={{ theme, resolvedTheme, setTheme }}>
-      {children}
-    </ThemeProviderContext.Provider>
-  );
+  return <>{children}</>;
 }
