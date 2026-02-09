@@ -25,6 +25,22 @@ export const mockOrganizations: Organization[] = [
     plan: 'Business',
     memberCount: 6,
   },
+  {
+    id: '4',
+    name: 'StartupHQ',
+    role: 'admin',
+    isPersonal: false,
+    plan: 'Business',
+    memberCount: 15,
+  },
+  {
+    id: '5',
+    name: 'Freelance Collective',
+    role: 'member',
+    isPersonal: false,
+    plan: 'Free',
+    memberCount: 8,
+  },
 ];
 
 export const currentUser: CurrentUser = {

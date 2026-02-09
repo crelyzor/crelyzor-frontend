@@ -1,7 +1,7 @@
 import type { OrgRole } from '@/types';
 
 type RoleBadgeProps = {
-  role: OrgRole;
+  role: OrgRole | 'home';
   size?: 'sm' | 'md';
 };
 
@@ -12,24 +12,22 @@ export function RoleBadge({ role, size = 'sm' }: RoleBadgeProps) {
       : 'px-2 py-0.5 text-[10px] font-medium rounded';
 
   switch (role) {
+    case 'home':
+      return (
+        <span className={`${baseClass} bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400`}>Home</span>
+      );
     case 'owner':
       return (
-        <span className={`${baseClass} bg-neutral-900 text-white`}>Owner</span>
+        <span className={`${baseClass} bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900`}>Owner</span>
       );
     case 'admin':
       return (
-        <span className={`${baseClass} bg-blue-500 text-white`}>Admin</span>
+        <span className={`${baseClass} bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400`}>Admin</span>
       );
     case 'member':
       return (
-        <span className={`${baseClass} bg-neutral-200 text-neutral-700`}>
+        <span className={`${baseClass} bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300`}>
           Member
-        </span>
-      );
-    case 'guest':
-      return (
-        <span className={`${baseClass} bg-amber-400/90 text-amber-950`}>
-          Guest
         </span>
       );
     default:
