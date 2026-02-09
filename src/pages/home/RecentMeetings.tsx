@@ -14,17 +14,24 @@ import type { Meeting } from '@/types';
 type RecentMeetingsProps = {
   meetings: Meeting[];
   isPersonalView?: boolean;
+  isTeamView?: boolean;
 };
 
 export function RecentMeetings({
   meetings,
   isPersonalView,
+  isTeamView,
 }: RecentMeetingsProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xs tracking-widest text-neutral-500 dark:text-neutral-400 font-medium">
           RECENT MEETINGS
+          {isTeamView && (
+            <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded ml-1">
+              Team
+            </span>
+          )}
         </h2>
         <button className="text-xs text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors font-medium cursor-pointer">
           SEE ALL

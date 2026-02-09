@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useScroll, useTransform } from 'motion/react';
 import { motion } from 'motion/react';
 import { useGreeting } from '@/hooks';
@@ -23,6 +24,7 @@ export default function Home() {
   const isOwnerOrAdmin =
     currentOrg?.role === 'owner' || currentOrg?.role === 'admin';
   const showTeamToggle = !isPersonalView && isOwnerOrAdmin;
+  const [isTeamView, setIsTeamView] = useState(false);
 
   // ── Scroll-linked transforms (all continuous, no state) ──
 
@@ -80,6 +82,9 @@ export default function Home() {
         userName={currentUser?.name ?? 'there'}
         orgName={currentOrg?.name}
         isPersonalView={isPersonalView}
+        showTeamToggle={showTeamToggle}
+        isTeamView={isTeamView}
+        onToggleTeamView={setIsTeamView}
         greetingOpacity={greetingOpacity}
         greetingY={greetingY}
         greetingScale={greetingScale}
@@ -102,7 +107,7 @@ export default function Home() {
             <div className="md:col-span-3">
               <NextMeetingCard meeting={upcomingMeetings[0]} />
             </div>
-            <StatsCard showTeamToggle={showTeamToggle} />
+            <StatsCard isTeamView={showTeamToggle && isTeamView} />
           </div>
 
           {/* Today's Schedule */}
@@ -112,7 +117,7 @@ export default function Home() {
           />
 
           {/* Meeting Summary */}
-          <MeetingSummaryCard isPersonalView={isPersonalView} />
+          <MeetingSummaryCard isPersonalView={isPersonalView} isTeamView={showTeamToggle && isTeamView} />
         </div>
 
         {/* ── Right Column (1/3 width) ── */}
@@ -121,12 +126,14 @@ export default function Home() {
           <ActionItemsCard
             items={actionItems}
             isPersonalView={isPersonalView}
+            isTeamView={showTeamToggle && isTeamView}
           />
 
           {/* Recent Meetings */}
           <RecentMeetings
             meetings={recentMeetings}
             isPersonalView={isPersonalView}
+            isTeamView={showTeamToggle && isTeamView}
           />
 
           {/* Booking Link */}

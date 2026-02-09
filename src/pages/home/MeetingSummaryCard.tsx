@@ -12,10 +12,12 @@ const meetingCategories = [
 
 type MeetingSummaryCardProps = {
   isPersonalView?: boolean;
+  isTeamView?: boolean;
 };
 
 export function MeetingSummaryCard({
   isPersonalView,
+  isTeamView,
 }: MeetingSummaryCardProps) {
   const now = new Date();
   const monthLabel = now.toLocaleDateString('en-US', {
@@ -43,6 +45,14 @@ export function MeetingSummaryCard({
               className="text-[10px] rounded-full border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500"
             >
               All orgs
+            </Badge>
+          )}
+          {isTeamView && (
+            <Badge
+              variant="outline"
+              className="text-[10px] rounded-full border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400"
+            >
+              Team
             </Badge>
           )}
         </div>

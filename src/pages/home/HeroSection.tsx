@@ -1,4 +1,4 @@
-import { Sparkles } from 'lucide-react';
+import { Sparkles, User, Users } from 'lucide-react';
 import { motion, type MotionValue } from 'motion/react';
 import { quickActions } from '@/data';
 
@@ -15,6 +15,9 @@ type HeroSectionProps = {
   userName: string;
   orgName?: string;
   isPersonalView: boolean;
+  showTeamToggle: boolean;
+  isTeamView: boolean;
+  onToggleTeamView: (isTeam: boolean) => void;
   greetingOpacity: MotionValue<number>;
   greetingY: MotionValue<number>;
   greetingScale: MotionValue<number>;
@@ -31,6 +34,9 @@ export function HeroSection({
   userName,
   orgName,
   isPersonalView,
+  showTeamToggle,
+  isTeamView,
+  onToggleTeamView,
   greetingOpacity,
   greetingY,
   greetingScale,
@@ -57,11 +63,41 @@ export function HeroSection({
         <h1 className="text-3xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight mb-1">
           It&apos;s {dayName}, {monthDay}
         </h1>
-        {/* Org context indicator */}
-        {!isPersonalView && orgName && (
-          <p className="text-xs text-neutral-400 dark:text-neutral-500 mb-2">
-            Viewing {orgName}
-          </p>
+        {/* Org context + team toggle */}
+        {!isPersonalView && (
+          <div className="flex items-center justify-center gap-3 mt-1 mb-1">
+            {orgName && (
+              <span className="text-xs text-neutral-400 dark:text-neutral-500">
+                Viewing {orgName}
+              </span>
+            )}
+            {showTeamToggle && (
+              <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
+                <button
+                  onClick={() => onToggleTeamView(false)}
+                  className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer ${
+                    !isTeamView
+                      ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                      : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
+                  }`}
+                >
+                  <User className="w-3 h-3" />
+                  My
+                </button>
+                <button
+                  onClick={() => onToggleTeamView(true)}
+                  className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer ${
+                    isTeamView
+                      ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                      : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
+                  }`}
+                >
+                  <Users className="w-3 h-3" />
+                  Team
+                </button>
+              </div>
+            )}
+          </div>
         )}
         <motion.div
           style={{ opacity: tipOpacity }}

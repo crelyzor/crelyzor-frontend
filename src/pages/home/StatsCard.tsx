@@ -1,9 +1,8 @@
-import { useState } from 'react';
 import { TrendingUp, Mic } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 type StatsCardProps = {
-  showTeamToggle?: boolean;
+  isTeamView?: boolean;
 };
 
 const myStats = {
@@ -22,9 +21,8 @@ const teamStats = {
   avgHours: 19,
 };
 
-export function StatsCard({ showTeamToggle }: StatsCardProps) {
-  const [view, setView] = useState<'my' | 'team'>('my');
-  const stats = view === 'my' ? myStats : teamStats;
+export function StatsCard({ isTeamView }: StatsCardProps) {
+  const stats = isTeamView ? teamStats : myStats;
 
   return (
     <Card className="md:col-span-2 p-0 border-neutral-200 dark:border-neutral-800 overflow-hidden">
@@ -33,30 +31,6 @@ export function StatsCard({ showTeamToggle }: StatsCardProps) {
           <TrendingUp className="w-4 h-4" />
           THIS WEEK
         </div>
-        {showTeamToggle && (
-          <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
-            <button
-              onClick={() => setView('my')}
-              className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer ${
-                view === 'my'
-                  ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
-              }`}
-            >
-              My
-            </button>
-            <button
-              onClick={() => setView('team')}
-              className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer ${
-                view === 'team'
-                  ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
-              }`}
-            >
-              Team
-            </button>
-          </div>
-        )}
       </div>
       <div className="px-5 space-y-5">
         <div>

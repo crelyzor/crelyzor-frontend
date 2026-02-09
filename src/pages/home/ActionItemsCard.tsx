@@ -5,11 +5,13 @@ import type { ActionItem } from '@/types';
 type ActionItemsCardProps = {
   items: ActionItem[];
   isPersonalView?: boolean;
+  isTeamView?: boolean;
 };
 
 export function ActionItemsCard({
   items,
   isPersonalView,
+  isTeamView,
 }: ActionItemsCardProps) {
   const openItems = items.filter((item) => !item.isCompleted);
   const completedCount = items.filter((item) => item.isCompleted).length;
@@ -20,6 +22,11 @@ export function ActionItemsCard({
         <div className="flex items-center gap-2 text-xs tracking-widest text-neutral-500 dark:text-neutral-400 font-medium">
           <ClipboardList className="w-4 h-4" />
           ACTION ITEMS
+          {isTeamView && (
+            <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded ml-1">
+              Team
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {completedCount > 0 && (
