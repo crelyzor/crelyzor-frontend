@@ -1,4 +1,4 @@
-import { Clock, Video } from 'lucide-react';
+import { Clock, Mic, Sparkles, ClipboardList, FileText, MapPin } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getCategoryStyle } from '@/constants';
@@ -6,9 +6,10 @@ import type { Meeting } from '@/types';
 
 type RecentMeetingsProps = {
   meetings: Meeting[];
+  isPersonalView?: boolean;
 };
 
-export function RecentMeetings({ meetings }: RecentMeetingsProps) {
+export function RecentMeetings({ meetings, isPersonalView }: RecentMeetingsProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -34,26 +35,54 @@ export function RecentMeetings({ meetings }: RecentMeetingsProps) {
                 {meeting.date}, {meeting.time}
               </span>
             </div>
+
+            {/* Location */}
+            {meeting.location && (
+              <div className="flex items-center gap-1 mb-2 text-xs text-neutral-400 dark:text-neutral-500">
+                <MapPin className="w-3 h-3" />
+                <span>{meeting.location}</span>
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {meeting.hasRecording ? (
-                  <div className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
-                    <Video className="w-3 h-3" />
-                    <span>{meeting.duration}</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1 text-xs text-neutral-400 dark:text-neutral-500">
-                    <Clock className="w-3 h-3" />
-                    <span>{meeting.duration}</span>
-                  </div>
-                )}
+                {/* Duration */}
+                <div className="flex items-center gap-1 text-xs text-neutral-400 dark:text-neutral-500">
+                  <Clock className="w-3 h-3" />
+                  <span>{meeting.duration}</span>
+                </div>
+
+                {/* SMA indicators — subtle icons showing what's inside */}
+                <div className="flex items-center gap-1.5 ml-1">
+                  {meeting.hasRecording && (
+                    <Mic className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
+                  )}
+                  {meeting.hasTranscript && (
+                    <FileText className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
+                  )}
+                  {meeting.hasSummary && (
+                    <Sparkles className="w-3 h-3 text-violet-400 dark:text-violet-400" />
+                  )}
+                  {meeting.hasActionItems && (
+                    <ClipboardList className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
+                  )}
+                </div>
               </div>
-              <Badge
-                variant="outline"
-                className={`text-[10px] font-medium border ${getCategoryStyle(meeting.category)}`}
-              >
-                {meeting.category}
-              </Badge>
+
+              <div className="flex items-center gap-2">
+                {/* Org badge in personal view */}
+                {isPersonalView && meeting.orgSource && !meeting.orgSource.isPersonal && (
+                  <span className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
+                    {meeting.orgSource.orgName}
+                  </span>
+                )}
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] font-medium border ${getCategoryStyle(meeting.category)}`}
+                >
+                  {meeting.category}
+                </Badge>
+              </div>
             </div>
           </Card>
         ))}

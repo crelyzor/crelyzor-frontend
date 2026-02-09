@@ -1,18 +1,28 @@
 import { useScroll, useTransform } from 'motion/react';
 import { motion } from 'motion/react';
 import { useGreeting } from '@/hooks';
-import { upcomingMeetings, recentMeetings } from '@/data';
+import { upcomingMeetings, recentMeetings, actionItems } from '@/data';
+import { useOrganizationStore } from '@/stores/organizationStore';
 import { CompactStickyBar } from './CompactStickyBar';
 import { HeroSection } from './HeroSection';
+import { NextMeetingCard } from './NextMeetingCard';
 import { ScheduleCard } from './ScheduleCard';
 import { StatsCard } from './StatsCard';
 import { MeetingSummaryCard } from './MeetingSummaryCard';
+import { ActionItemsCard } from './ActionItemsCard';
 import { RecentMeetings } from './RecentMeetings';
 import { BookingLinkCard } from './BookingLinkCard';
 
 export default function Home() {
   const { scrollY } = useScroll();
   const { greeting, dayName, monthDay, tip } = useGreeting();
+  const { currentOrg, currentUser } = useOrganizationStore();
+
+  // Derive org context
+  const isPersonalView = currentOrg?.isPersonal ?? true;
+  const isOwnerOrAdmin =
+    currentOrg?.role === 'owner' || currentOrg?.role === 'admin';
+  const showTeamToggle = !isPersonalView && isOwnerOrAdmin;
 
   // ── Scroll-linked transforms (all continuous, no state) ──
 
@@ -67,6 +77,9 @@ export default function Home() {
         dayName={dayName}
         monthDay={monthDay}
         tip={tip}
+        userName={currentUser?.name ?? 'there'}
+        orgName={currentOrg?.name}
+        isPersonalView={isPersonalView}
         greetingOpacity={greetingOpacity}
         greetingY={greetingY}
         greetingScale={greetingScale}
@@ -82,21 +95,41 @@ export default function Home() {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="grid grid-cols-1 lg:grid-cols-3 gap-8"
       >
-        {/* Left Column */}
+        {/* ── Left Column (2/3 width) ── */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Schedule + Stats Row */}
+          {/* Next Meeting + Stats Row */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-            <ScheduleCard meetings={upcomingMeetings} />
-            <StatsCard />
+            <div className="md:col-span-3">
+              <NextMeetingCard meeting={upcomingMeetings[0]} />
+            </div>
+            <StatsCard showTeamToggle={showTeamToggle} />
           </div>
 
+          {/* Today's Schedule */}
+          <ScheduleCard
+            meetings={upcomingMeetings}
+            isPersonalView={isPersonalView}
+          />
+
           {/* Meeting Summary */}
-          <MeetingSummaryCard />
+          <MeetingSummaryCard isPersonalView={isPersonalView} />
         </div>
 
-        {/* Right Column - Recent Meetings */}
-        <div className="lg:col-span-1">
-          <RecentMeetings meetings={recentMeetings} />
+        {/* ── Right Column (1/3 width) ── */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Action Items */}
+          <ActionItemsCard
+            items={actionItems}
+            isPersonalView={isPersonalView}
+          />
+
+          {/* Recent Meetings */}
+          <RecentMeetings
+            meetings={recentMeetings}
+            isPersonalView={isPersonalView}
+          />
+
+          {/* Booking Link */}
           <BookingLinkCard />
         </div>
       </motion.div>

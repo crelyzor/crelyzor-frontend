@@ -12,6 +12,9 @@ type HeroSectionProps = {
   dayName: string;
   monthDay: string;
   tip: string;
+  userName: string;
+  orgName?: string;
+  isPersonalView: boolean;
   greetingOpacity: MotionValue<number>;
   greetingY: MotionValue<number>;
   greetingScale: MotionValue<number>;
@@ -25,6 +28,9 @@ export function HeroSection({
   dayName,
   monthDay,
   tip,
+  userName,
+  orgName,
+  isPersonalView,
   greetingOpacity,
   greetingY,
   greetingScale,
@@ -32,6 +38,8 @@ export function HeroSection({
   bubblesOpacity,
   bubbleTransforms,
 }: HeroSectionProps) {
+  const firstName = userName.split(' ')[0];
+
   return (
     <div className="text-center">
       {/* Greeting — dissolves with scroll */}
@@ -44,14 +52,20 @@ export function HeroSection({
         className="mb-10 origin-top"
       >
         <p className="text-xs tracking-widest text-neutral-400 dark:text-neutral-500 mb-2">
-          {greeting.toUpperCase()}, HARSH
+          {greeting.toUpperCase()}, {firstName.toUpperCase()}
         </p>
-        <h1 className="text-3xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight mb-3">
+        <h1 className="text-3xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight mb-1">
           It&apos;s {dayName}, {monthDay}
         </h1>
+        {/* Org context indicator */}
+        {!isPersonalView && orgName && (
+          <p className="text-xs text-neutral-400 dark:text-neutral-500 mb-2">
+            Viewing {orgName}
+          </p>
+        )}
         <motion.div
           style={{ opacity: tipOpacity }}
-          className="flex items-center justify-center gap-2 text-sm text-neutral-500 dark:text-neutral-400"
+          className="flex items-center justify-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mt-2"
         >
           <Sparkles className="w-4 h-4 text-violet-400" />
           <span>{tip}</span>

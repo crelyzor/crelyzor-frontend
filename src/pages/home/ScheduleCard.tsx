@@ -1,12 +1,13 @@
-import { Calendar } from 'lucide-react';
+import { Calendar, MapPin } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import type { Meeting } from '@/types';
 
 type ScheduleCardProps = {
   meetings: Meeting[];
+  isPersonalView?: boolean;
 };
 
-export function ScheduleCard({ meetings }: ScheduleCardProps) {
+export function ScheduleCard({ meetings, isPersonalView }: ScheduleCardProps) {
   return (
     <Card className="md:col-span-3 p-0 border-neutral-200 dark:border-neutral-800 overflow-hidden">
       <div className="p-5 pb-3 flex items-center justify-between">
@@ -34,7 +35,7 @@ export function ScheduleCard({ meetings }: ScheduleCardProps) {
               <div className="flex flex-col items-center pt-1.5">
                 <div className="w-2 h-2 rounded-full bg-neutral-900 dark:bg-neutral-100" />
                 {i < meetings.length - 1 && (
-                  <div className="w-px h-10 bg-neutral-200 dark:bg-neutral-700" />
+                  <div className="w-px h-12 bg-neutral-200 dark:bg-neutral-700" />
                 )}
               </div>
               <div className="flex-1 pb-4">
@@ -46,9 +47,25 @@ export function ScheduleCard({ meetings }: ScheduleCardProps) {
                     {meeting.duration}
                   </span>
                 </div>
-                <span className="text-xs text-neutral-400 dark:text-neutral-500">
-                  {meeting.time}
-                </span>
+                <div className="flex items-center gap-3 mt-0.5">
+                  <span className="text-xs text-neutral-400 dark:text-neutral-500">
+                    {meeting.time}
+                  </span>
+                  {meeting.location && (
+                    <span className="flex items-center gap-1 text-xs text-neutral-400 dark:text-neutral-500">
+                      <MapPin className="w-3 h-3" />
+                      {meeting.location}
+                    </span>
+                  )}
+                </div>
+                {/* Show org badge when in personal/aggregated view */}
+                {isPersonalView &&
+                  meeting.orgSource &&
+                  !meeting.orgSource.isPersonal && (
+                    <span className="inline-block mt-1 text-[10px] font-medium text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
+                      {meeting.orgSource.orgName}
+                    </span>
+                  )}
               </div>
             </div>
           ))}

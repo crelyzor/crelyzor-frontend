@@ -1,4 +1,8 @@
-import type { Meeting, ScheduledMeeting } from '@/types';
+import type { Meeting, ScheduledMeeting, ActionItem } from '@/types';
+
+const personalOrg = { orgId: '1', orgName: 'Harsh Keshari', isPersonal: true };
+const acmeOrg = { orgId: '2', orgName: 'Acme Inc', isPersonal: false };
+const designOrg = { orgId: '3', orgName: 'Design Studio', isPersonal: false };
 
 export const upcomingMeetings: Meeting[] = [
   {
@@ -8,6 +12,8 @@ export const upcomingMeetings: Meeting[] = [
     duration: '45 min',
     participants: ['Sarah Chen', 'Mike Ross', 'Alex Kim'],
     type: 'upcoming',
+    location: 'Conference Room A',
+    orgSource: acmeOrg,
   },
   {
     id: 2,
@@ -16,6 +22,8 @@ export const upcomingMeetings: Meeting[] = [
     duration: '30 min',
     participants: ['Emma Wilson'],
     type: 'upcoming',
+    location: 'Meeting Room 2B',
+    orgSource: designOrg,
   },
   {
     id: 3,
@@ -24,6 +32,8 @@ export const upcomingMeetings: Meeting[] = [
     duration: '1 hr',
     participants: ['Engineering Team'],
     type: 'upcoming',
+    location: 'Main Hall',
+    orgSource: acmeOrg,
   },
 ];
 
@@ -37,7 +47,12 @@ export const recentMeetings: Meeting[] = [
     participants: ['Team'],
     type: 'past',
     hasRecording: true,
+    hasTranscript: true,
+    hasSummary: true,
+    hasActionItems: true,
     category: 'STANDUP',
+    location: 'Room 3A',
+    orgSource: acmeOrg,
   },
   {
     id: 5,
@@ -48,7 +63,12 @@ export const recentMeetings: Meeting[] = [
     participants: ['Acme Corp'],
     type: 'past',
     hasRecording: true,
+    hasTranscript: true,
+    hasSummary: true,
+    hasActionItems: false,
     category: 'CLIENT',
+    location: 'Board Room',
+    orgSource: personalOrg,
   },
   {
     id: 6,
@@ -59,7 +79,12 @@ export const recentMeetings: Meeting[] = [
     participants: ['Board'],
     type: 'past',
     hasRecording: false,
+    hasTranscript: false,
+    hasSummary: false,
+    hasActionItems: false,
     category: 'INTERNAL',
+    location: 'Executive Suite',
+    orgSource: acmeOrg,
   },
   {
     id: 7,
@@ -70,7 +95,12 @@ export const recentMeetings: Meeting[] = [
     participants: ['Sarah Chen'],
     type: 'past',
     hasRecording: true,
+    hasTranscript: true,
+    hasSummary: false,
+    hasActionItems: true,
     category: '1:1',
+    location: 'Cafe Nook',
+    orgSource: acmeOrg,
   },
   {
     id: 8,
@@ -81,18 +111,60 @@ export const recentMeetings: Meeting[] = [
     participants: ['Design Team'],
     type: 'past',
     hasRecording: true,
+    hasTranscript: true,
+    hasSummary: true,
+    hasActionItems: true,
     category: 'REVIEW',
+    location: 'Studio',
+    orgSource: designOrg,
+  },
+];
+
+export const actionItems: ActionItem[] = [
+  {
+    id: 'ai-1',
+    title: 'Send updated proposal to client',
+    meetingTitle: 'Client Onboarding Call',
+    meetingId: 5,
+    dueDate: 'Today',
+    isCompleted: false,
+    orgSource: personalOrg,
   },
   {
-    id: 9,
-    title: 'Sales Pipeline Review',
-    time: '4:00 PM',
-    date: 'Feb 6',
-    duration: '1 hr',
-    participants: ['Sales Team'],
-    type: 'past',
-    hasRecording: false,
-    category: 'SALES',
+    id: 'ai-2',
+    title: 'Review Q1 design mockups',
+    meetingTitle: 'Design Review',
+    meetingId: 8,
+    dueDate: 'Tomorrow',
+    isCompleted: false,
+    orgSource: designOrg,
+  },
+  {
+    id: 'ai-3',
+    title: 'Update sprint board with new tasks',
+    meetingTitle: 'Weekly Standup',
+    meetingId: 4,
+    dueDate: 'Wed',
+    isCompleted: false,
+    orgSource: acmeOrg,
+  },
+  {
+    id: 'ai-4',
+    title: 'Share meeting notes with stakeholders',
+    meetingTitle: 'Product Strategy Review',
+    meetingId: 1,
+    dueDate: 'Thu',
+    isCompleted: true,
+    orgSource: acmeOrg,
+  },
+  {
+    id: 'ai-5',
+    title: 'Book conference room for next sprint',
+    meetingTitle: 'Sprint Retrospective',
+    meetingId: 3,
+    dueDate: 'Fri',
+    isCompleted: false,
+    orgSource: acmeOrg,
   },
 ];
 
@@ -105,7 +177,8 @@ export const scheduledMeetings: ScheduledMeeting[] = [
     duration: '30 min',
     participants: ['John Doe', 'Jane Smith'],
     status: 'confirmed',
-    type: 'google-meet',
+    type: 'in-person',
+    location: 'Conference Room A',
   },
   {
     id: 2,
@@ -115,7 +188,8 @@ export const scheduledMeetings: ScheduledMeeting[] = [
     duration: '1 hour',
     participants: ['Team Alpha'],
     status: 'confirmed',
-    type: 'zoom',
+    type: 'in-person',
+    location: 'Meeting Room 2B',
   },
   {
     id: 3,
@@ -125,7 +199,8 @@ export const scheduledMeetings: ScheduledMeeting[] = [
     duration: '45 min',
     participants: ['Acme Corp', 'Sarah Lee'],
     status: 'pending',
-    type: 'google-meet',
+    type: 'in-person',
+    location: 'Board Room',
   },
   {
     id: 4,
@@ -136,7 +211,7 @@ export const scheduledMeetings: ScheduledMeeting[] = [
     participants: ['Sarah Lee'],
     status: 'confirmed',
     type: 'in-person',
-    location: 'Conference Room A',
+    location: 'Studio',
   },
   {
     id: 5,
@@ -146,16 +221,7 @@ export const scheduledMeetings: ScheduledMeeting[] = [
     duration: '15 min',
     participants: ['Dev Team'],
     status: 'completed',
-    type: 'google-meet',
-  },
-  {
-    id: 6,
-    title: 'Cancelled Meeting',
-    date: '2026-02-09',
-    time: '4:00 PM',
-    duration: '30 min',
-    participants: ['Bob Wilson'],
-    status: 'cancelled',
-    type: 'zoom',
+    type: 'in-person',
+    location: 'Room 3A',
   },
 ];

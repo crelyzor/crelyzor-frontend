@@ -1,6 +1,12 @@
 export type MeetingType = 'upcoming' | 'past' | 'live';
 
-export type MeetingStatus = 'confirmed' | 'pending' | 'cancelled' | 'completed';
+export type MeetingStatus =
+  | 'confirmed'
+  | 'pending'
+  | 'cancelled'
+  | 'completed'
+  | 'declined'
+  | 'rescheduling';
 
 export type MeetingPlatform = 'google-meet' | 'zoom' | 'in-person';
 
@@ -13,6 +19,13 @@ export type MeetingCategory =
   | 'SALES'
   | 'OTHER';
 
+// Which org context this meeting belongs to
+export type MeetingOrgSource = {
+  orgId: string;
+  orgName: string;
+  isPersonal: boolean;
+};
+
 export type Meeting = {
   id: number;
   title: string;
@@ -22,7 +35,12 @@ export type Meeting = {
   participants: string[];
   type: MeetingType;
   hasRecording?: boolean;
+  hasTranscript?: boolean;
+  hasSummary?: boolean;
+  hasActionItems?: boolean;
   category?: MeetingCategory;
+  location?: string;
+  orgSource?: MeetingOrgSource;
 };
 
 export type ScheduledMeeting = {
@@ -35,4 +53,16 @@ export type ScheduledMeeting = {
   status: MeetingStatus;
   type: MeetingPlatform;
   location?: string;
+  orgSource?: MeetingOrgSource;
+};
+
+export type ActionItem = {
+  id: string;
+  title: string;
+  meetingTitle: string;
+  meetingId: number;
+  dueDate?: string;
+  isCompleted: boolean;
+  assignedTo?: string;
+  orgSource?: MeetingOrgSource;
 };

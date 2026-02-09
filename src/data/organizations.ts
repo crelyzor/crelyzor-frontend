@@ -3,31 +3,33 @@ import type { Organization, CurrentUser } from '@/types';
 export const mockOrganizations: Organization[] = [
   {
     id: '1',
-    name: "Harsh's Workspace",
+    name: 'Harsh Keshari',
     role: 'owner',
-    plan: 'Pro Plan',
+    isPersonal: true,
+    plan: 'Pro',
     memberCount: 1,
   },
   {
     id: '2',
     name: 'Acme Inc',
-    role: 'member',
+    role: 'owner',
+    isPersonal: false,
     plan: 'Business',
-    memberCount: 24,
+    memberCount: 12,
   },
   {
     id: '3',
-    name: 'Design Team',
-    role: 'guest',
-  },
-  {
-    id: '4',
-    name: 'Freelance Projects',
-    role: 'guest',
+    name: 'Design Studio',
+    role: 'member',
+    isPersonal: false,
+    plan: 'Business',
+    memberCount: 6,
   },
 ];
 
 export const currentUser: CurrentUser = {
+  id: 'u1',
   email: 'harshkeshari100@gmail.com',
   name: 'Harsh Keshari',
+  avatarUrl: undefined,
 };

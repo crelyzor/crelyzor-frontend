@@ -4,7 +4,9 @@ export type {
   MeetingStatus,
   MeetingPlatform,
   MeetingCategory,
+  MeetingOrgSource,
   ScheduledMeeting,
+  ActionItem,
 } from './meeting';
 
 export type { Organization, OrgRole, CurrentUser } from './organization';

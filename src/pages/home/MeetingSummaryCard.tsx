@@ -10,7 +10,17 @@ const meetingCategories = [
   { label: 'OTHER', count: 3 },
 ];
 
-export function MeetingSummaryCard() {
+type MeetingSummaryCardProps = {
+  isPersonalView?: boolean;
+};
+
+export function MeetingSummaryCard({ isPersonalView }: MeetingSummaryCardProps) {
+  const now = new Date();
+  const monthLabel = now.toLocaleDateString('en-US', {
+    month: 'short',
+    year: 'numeric',
+  });
+
   return (
     <Card className="p-0 border-neutral-200 dark:border-neutral-800 overflow-hidden">
       <div className="p-5 flex items-center justify-between">
@@ -23,8 +33,16 @@ export function MeetingSummaryCard() {
             variant="outline"
             className="text-[10px] rounded-full border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400"
           >
-            Feb 2026
+            {monthLabel}
           </Badge>
+          {isPersonalView && (
+            <Badge
+              variant="outline"
+              className="text-[10px] rounded-full border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500"
+            >
+              All orgs
+            </Badge>
+          )}
         </div>
         <button className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors flex items-center gap-1 cursor-pointer">
           Details <ArrowUpRight className="w-3 h-3" />
