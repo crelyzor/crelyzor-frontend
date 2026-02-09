@@ -1,4 +1,11 @@
-import { Clock, Mic, Sparkles, ClipboardList, FileText, MapPin } from 'lucide-react';
+import {
+  Clock,
+  Mic,
+  Sparkles,
+  ClipboardList,
+  FileText,
+  MapPin,
+} from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getCategoryStyle } from '@/constants';
@@ -9,7 +16,10 @@ type RecentMeetingsProps = {
   isPersonalView?: boolean;
 };
 
-export function RecentMeetings({ meetings, isPersonalView }: RecentMeetingsProps) {
+export function RecentMeetings({
+  meetings,
+  isPersonalView,
+}: RecentMeetingsProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -71,11 +81,13 @@ export function RecentMeetings({ meetings, isPersonalView }: RecentMeetingsProps
 
               <div className="flex items-center gap-2">
                 {/* Org badge in personal view */}
-                {isPersonalView && meeting.orgSource && !meeting.orgSource.isPersonal && (
-                  <span className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
-                    {meeting.orgSource.orgName}
-                  </span>
-                )}
+                {isPersonalView &&
+                  meeting.orgSource &&
+                  !meeting.orgSource.isPersonal && (
+                    <span className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
+                      {meeting.orgSource.orgName}
+                    </span>
+                  )}
                 <Badge
                   variant="outline"
                   className={`text-[10px] font-medium border ${getCategoryStyle(meeting.category)}`}

@@ -14,7 +14,9 @@ type MeetingSummaryCardProps = {
   isPersonalView?: boolean;
 };
 
-export function MeetingSummaryCard({ isPersonalView }: MeetingSummaryCardProps) {
+export function MeetingSummaryCard({
+  isPersonalView,
+}: MeetingSummaryCardProps) {
   const now = new Date();
   const monthLabel = now.toLocaleDateString('en-US', {
     month: 'short',
