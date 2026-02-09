@@ -16,8 +16,7 @@ export function useTheme(): UseThemeReturn {
   const systemTheme = useThemeStore((s) => s.systemTheme);
   const setTheme = useThemeStore((s) => s.setTheme);
 
-  const resolvedTheme: ResolvedTheme =
-    theme === 'system' ? systemTheme : theme;
+  const resolvedTheme: ResolvedTheme = theme === 'system' ? systemTheme : theme;
 
   return { theme, resolvedTheme, setTheme };
 }

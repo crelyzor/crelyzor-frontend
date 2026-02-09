@@ -1,7 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { meetingsApi } from '@/services/meetingsService';
-import type { MeetingsListParams, CreateMeetingPayload } from '@/services/meetingsService';
+import type {
+  MeetingsListParams,
+  CreateMeetingPayload,
+} from '@/services/meetingsService';
 
 export function useMeetings(params?: MeetingsListParams) {
   return useQuery({
@@ -31,8 +34,13 @@ export function useCreateMeeting() {
 export function useUpdateMeeting() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string | number; data: Partial<CreateMeetingPayload> }) =>
-      meetingsApi.update(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string | number;
+      data: Partial<CreateMeetingPayload>;
+    }) => meetingsApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
     },

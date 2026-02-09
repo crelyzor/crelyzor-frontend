@@ -55,8 +55,13 @@ export function useUpdateOrg() {
 export function useUpdateOrgSettings() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ orgId, data }: { orgId: string; data: Record<string, unknown> }) =>
-      organizationsApi.updateSettings(orgId, data),
+    mutationFn: ({
+      orgId,
+      data,
+    }: {
+      orgId: string;
+      data: Record<string, unknown>;
+    }) => organizationsApi.updateSettings(orgId, data),
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({
         queryKey: queryKeys.organizations.settings(vars.orgId),
