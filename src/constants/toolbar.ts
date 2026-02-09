@@ -18,9 +18,9 @@ export const TOOLBAR_STORAGE_KEY = 'toolbar-pinned-items';
 export const DEFAULT_PINNED_IDS = [
   'home',
   'meetings',
-  'availability',
-  'recordings',
-  'instant-meeting',
+  'share-link',
+  'notifications',
+  'settings',
 ] as const;
 
 export const TOOLBAR_ITEMS: ToolbarItem[] = [
