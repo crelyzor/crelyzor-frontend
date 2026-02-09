@@ -117,7 +117,10 @@ export default function Home() {
           />
 
           {/* Meeting Summary */}
-          <MeetingSummaryCard isPersonalView={isPersonalView} isTeamView={showTeamToggle && isTeamView} />
+          <MeetingSummaryCard
+            isPersonalView={isPersonalView}
+            isTeamView={showTeamToggle && isTeamView}
+          />
         </div>
 
         {/* ── Right Column (1/3 width) ── */}
