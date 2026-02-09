@@ -52,6 +52,7 @@ export const recentMeetings: Meeting[] = [
     hasActionItems: true,
     category: 'STANDUP',
     location: 'Room 3A',
+    organizer: 'You',
     orgSource: acmeOrg,
   },
   {
@@ -68,6 +69,7 @@ export const recentMeetings: Meeting[] = [
     hasActionItems: false,
     category: 'CLIENT',
     location: 'Board Room',
+    organizer: 'You',
     orgSource: personalOrg,
   },
   {
@@ -84,6 +86,7 @@ export const recentMeetings: Meeting[] = [
     hasActionItems: false,
     category: 'INTERNAL',
     location: 'Executive Suite',
+    organizer: 'Mike Ross',
     orgSource: acmeOrg,
   },
   {
@@ -100,6 +103,7 @@ export const recentMeetings: Meeting[] = [
     hasActionItems: true,
     category: '1:1',
     location: 'Cafe Nook',
+    organizer: 'Sarah Chen',
     orgSource: acmeOrg,
   },
   {
@@ -116,6 +120,7 @@ export const recentMeetings: Meeting[] = [
     hasActionItems: true,
     category: 'REVIEW',
     location: 'Studio',
+    organizer: 'Emma Wilson',
     orgSource: designOrg,
   },
 ];
@@ -128,6 +133,7 @@ export const actionItems: ActionItem[] = [
     meetingId: 5,
     dueDate: 'Today',
     isCompleted: false,
+    assignedTo: 'You',
     orgSource: personalOrg,
   },
   {
@@ -137,6 +143,7 @@ export const actionItems: ActionItem[] = [
     meetingId: 8,
     dueDate: 'Tomorrow',
     isCompleted: false,
+    assignedTo: 'Emma Wilson',
     orgSource: designOrg,
   },
   {
@@ -146,6 +153,7 @@ export const actionItems: ActionItem[] = [
     meetingId: 4,
     dueDate: 'Wed',
     isCompleted: false,
+    assignedTo: 'You',
     orgSource: acmeOrg,
   },
   {
@@ -155,6 +163,7 @@ export const actionItems: ActionItem[] = [
     meetingId: 1,
     dueDate: 'Thu',
     isCompleted: true,
+    assignedTo: 'Mike Ross',
     orgSource: acmeOrg,
   },
   {
@@ -164,6 +173,7 @@ export const actionItems: ActionItem[] = [
     meetingId: 3,
     dueDate: 'Fri',
     isCompleted: false,
+    assignedTo: 'Sarah Chen',
     orgSource: acmeOrg,
   },
 ];

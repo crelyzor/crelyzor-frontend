@@ -73,6 +73,12 @@ export function ActionItemsCard({
                   <span className="text-[11px] text-neutral-400 dark:text-neutral-500">
                     from {item.meetingTitle}
                   </span>
+                  {/* Show assignee in team view */}
+                  {isTeamView && item.assignedTo && (
+                    <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
+                      → {item.assignedTo}
+                    </span>
+                  )}
                   {/* Show org source in personal view */}
                   {isPersonalView &&
                     item.orgSource &&

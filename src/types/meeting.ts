@@ -40,6 +40,7 @@ export type Meeting = {
   hasActionItems?: boolean;
   category?: MeetingCategory;
   location?: string;
+  organizer?: string;
   orgSource?: MeetingOrgSource;
 };
 

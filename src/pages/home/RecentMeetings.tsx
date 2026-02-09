@@ -5,6 +5,7 @@ import {
   ClipboardList,
   FileText,
   MapPin,
+  User,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -58,6 +59,21 @@ export function RecentMeetings({
               <div className="flex items-center gap-1 mb-2 text-xs text-neutral-400 dark:text-neutral-500">
                 <MapPin className="w-3 h-3" />
                 <span>{meeting.location}</span>
+                {/* Organizer in team view */}
+                {isTeamView && meeting.organizer && (
+                  <>
+                    <span className="mx-1">&middot;</span>
+                    <User className="w-3 h-3" />
+                    <span>{meeting.organizer}</span>
+                  </>
+                )}
+              </div>
+            )}
+            {/* Organizer fallback when no location */}
+            {!meeting.location && isTeamView && meeting.organizer && (
+              <div className="flex items-center gap-1 mb-2 text-xs text-neutral-400 dark:text-neutral-500">
+                <User className="w-3 h-3" />
+                <span>{meeting.organizer}</span>
               </div>
             )}
 
