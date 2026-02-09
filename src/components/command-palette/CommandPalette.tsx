@@ -14,11 +14,11 @@ import {
   Clock,
   Plus,
   Settings,
-  Video,
   LogOut,
   User,
   Search,
   Link2,
+  Mic,
 } from 'lucide-react';
 import { useUIStore } from '@/stores';
 
@@ -80,10 +80,10 @@ export function CommandPalette() {
             <span>Availability</span>
           </CommandItem>
           <CommandItem
-            onSelect={() => runCommand(() => navigate('/recordings'))}
+            onSelect={() => runCommand(() => navigate('/voice-notes'))}
           >
-            <Video className="mr-3 h-4 w-4" />
-            <span>Recordings</span>
+            <Mic className="mr-2 h-4 w-4" />
+            <span>Voice Notes</span>
           </CommandItem>
         </CommandGroup>
 

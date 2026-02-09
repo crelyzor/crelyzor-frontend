@@ -8,7 +8,7 @@ type StatsCardProps = {
 const myStats = {
   totalMeetings: 12,
   hours: 8.5,
-  recordings: 7,
+  voiceNotes: 7,
   avgMeetings: 10,
   avgHours: 7.2,
 };
@@ -16,7 +16,7 @@ const myStats = {
 const teamStats = {
   totalMeetings: 34,
   hours: 22,
-  recordings: 18,
+  voiceNotes: 18,
   avgMeetings: 28,
   avgHours: 19,
 };
@@ -54,11 +54,11 @@ export function StatsCard({ isTeamView }: StatsCardProps) {
         </div>
         <div>
           <div className="text-3xl font-semibold text-neutral-950 dark:text-neutral-50 flex items-baseline gap-1.5">
-            {stats.recordings}
+            {stats.voiceNotes}
             <Mic className="w-4 h-4 text-neutral-400 dark:text-neutral-500" />
           </div>
           <p className="text-xs text-neutral-400 dark:text-neutral-500 uppercase tracking-wide">
-            Recordings
+            Voice Notes
           </p>
         </div>
       </div>

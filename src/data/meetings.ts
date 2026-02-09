@@ -1,8 +1,232 @@
 import type { Meeting, ScheduledMeeting, ActionItem } from '@/types';
+import type { MeetingStatus, MeetingCategory, MeetingOrgSource } from '@/types';
 
 const personalOrg = { orgId: '1', orgName: 'Harsh Keshari', isPersonal: true };
 const acmeOrg = { orgId: '2', orgName: 'Acme Inc', isPersonal: false };
 const designOrg = { orgId: '3', orgName: 'Design Studio', isPersonal: false };
+
+// ── Unified meeting type for the Meetings page ──
+export type FullMeeting = {
+  id: number;
+  title: string;
+  description?: string;
+  date: string; // ISO date: YYYY-MM-DD
+  time: string;
+  duration: string;
+  participants: string[];
+  status: MeetingStatus;
+  location?: string;
+  category?: MeetingCategory;
+  organizer?: string;
+  hasRecording?: boolean;
+  hasTranscript?: boolean;
+  hasSummary?: boolean;
+  hasActionItems?: boolean;
+  orgSource?: MeetingOrgSource;
+};
+
+export const allMeetings: FullMeeting[] = [
+  // ── Today ──
+  {
+    id: 101,
+    title: 'Product Strategy Review',
+    description: 'Q1 roadmap discussion and priority alignment',
+    date: '2026-02-10',
+    time: '2:00 PM',
+    duration: '45 min',
+    participants: ['Sarah Chen', 'Mike Ross', 'Alex Kim'],
+    status: 'confirmed',
+    location: 'Conference Room A',
+    category: 'INTERNAL',
+    organizer: 'You',
+    orgSource: acmeOrg,
+  },
+  {
+    id: 102,
+    title: 'Design Sync',
+    description: 'Review new component library updates',
+    date: '2026-02-10',
+    time: '4:30 PM',
+    duration: '30 min',
+    participants: ['Emma Wilson'],
+    status: 'confirmed',
+    location: 'Meeting Room 2B',
+    category: 'REVIEW',
+    organizer: 'You',
+    orgSource: designOrg,
+  },
+  {
+    id: 103,
+    title: 'Sprint Retrospective',
+    date: '2026-02-10',
+    time: '5:30 PM',
+    duration: '1 hr',
+    participants: ['Engineering Team'],
+    status: 'pending',
+    location: 'Main Hall',
+    category: 'INTERNAL',
+    organizer: 'Mike Ross',
+    orgSource: acmeOrg,
+  },
+
+  // ── Tomorrow ──
+  {
+    id: 104,
+    title: 'Client Presentation',
+    description: 'Annual contract renewal discussion',
+    date: '2026-02-11',
+    time: '10:00 AM',
+    duration: '45 min',
+    participants: ['Acme Corp', 'Sarah Lee'],
+    status: 'pending',
+    location: 'Board Room',
+    category: 'CLIENT',
+    organizer: 'You',
+    orgSource: personalOrg,
+  },
+  {
+    id: 105,
+    title: 'Team Standup',
+    date: '2026-02-11',
+    time: '9:00 AM',
+    duration: '15 min',
+    participants: ['Dev Team'],
+    status: 'confirmed',
+    location: 'Room 3A',
+    category: 'STANDUP',
+    organizer: 'You',
+    orgSource: acmeOrg,
+  },
+
+  // ── Past — Feb 9 ──
+  {
+    id: 106,
+    title: 'Weekly Standup',
+    description: 'Sprint progress check-in',
+    date: '2026-02-09',
+    time: '10:00 AM',
+    duration: '15 min',
+    participants: ['Team'],
+    status: 'completed',
+    location: 'Room 3A',
+    category: 'STANDUP',
+    organizer: 'You',
+    hasRecording: true,
+    hasTranscript: true,
+    hasSummary: true,
+    hasActionItems: true,
+    orgSource: acmeOrg,
+  },
+  {
+    id: 107,
+    title: '1:1 with Sarah',
+    description: 'Career growth and project feedback',
+    date: '2026-02-09',
+    time: '3:00 PM',
+    duration: '30 min',
+    participants: ['Sarah Chen'],
+    status: 'completed',
+    location: 'Cafe Nook',
+    category: '1:1',
+    organizer: 'Sarah Chen',
+    hasRecording: true,
+    hasTranscript: true,
+    hasSummary: false,
+    hasActionItems: true,
+    orgSource: acmeOrg,
+  },
+
+  // ── Past — Feb 8 ──
+  {
+    id: 108,
+    title: 'Client Onboarding Call',
+    description: 'Walkthrough of onboarding process for new client',
+    date: '2026-02-08',
+    time: '3:00 PM',
+    duration: '1 hr',
+    participants: ['Acme Corp'],
+    status: 'completed',
+    location: 'Board Room',
+    category: 'CLIENT',
+    organizer: 'You',
+    hasRecording: true,
+    hasTranscript: true,
+    hasSummary: true,
+    hasActionItems: false,
+    orgSource: personalOrg,
+  },
+  {
+    id: 109,
+    title: 'Investor Update',
+    date: '2026-02-08',
+    time: '11:00 AM',
+    duration: '30 min',
+    participants: ['Board'],
+    status: 'completed',
+    location: 'Executive Suite',
+    category: 'INTERNAL',
+    organizer: 'Mike Ross',
+    hasRecording: false,
+    hasTranscript: false,
+    hasSummary: false,
+    hasActionItems: false,
+    orgSource: acmeOrg,
+  },
+
+  // ── Past — Feb 7 ──
+  {
+    id: 110,
+    title: 'Design Review',
+    description: 'Review final mockups for v2 dashboard',
+    date: '2026-02-07',
+    time: '2:00 PM',
+    duration: '45 min',
+    participants: ['Design Team'],
+    status: 'completed',
+    location: 'Studio',
+    category: 'REVIEW',
+    organizer: 'Emma Wilson',
+    hasRecording: true,
+    hasTranscript: true,
+    hasSummary: true,
+    hasActionItems: true,
+    orgSource: designOrg,
+  },
+  {
+    id: 111,
+    title: 'Sales Pipeline Review',
+    description: 'Monthly pipeline and forecast',
+    date: '2026-02-07',
+    time: '10:00 AM',
+    duration: '1 hr',
+    participants: ['Sales Team', 'Marketing'],
+    status: 'cancelled',
+    location: 'Conference Room B',
+    category: 'SALES',
+    organizer: 'You',
+    orgSource: acmeOrg,
+  },
+
+  // ── Past — Feb 6 ──
+  {
+    id: 112,
+    title: 'Architecture Discussion',
+    description: 'Database schema review for new features',
+    date: '2026-02-06',
+    time: '11:00 AM',
+    duration: '1 hr',
+    participants: ['Alex Kim', 'Dev Team'],
+    status: 'completed',
+    location: 'Conference Room A',
+    category: 'INTERNAL',
+    organizer: 'Alex Kim',
+    hasRecording: true,
+    hasTranscript: true,
+    hasSummary: true,
+    hasActionItems: true,
+    orgSource: acmeOrg,
+  },
+];
 
 export const upcomingMeetings: Meeting[] = [
   {
