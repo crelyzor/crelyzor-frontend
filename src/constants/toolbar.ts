@@ -2,7 +2,6 @@ import {
   Home,
   CalendarDays,
   Clock,
-  Mic,
   Video,
   Link2,
   Settings,
@@ -51,15 +50,6 @@ export const TOOLBAR_ITEMS: ToolbarItem[] = [
     path: '/availability',
     group: 'navigation',
     description: 'Set your schedule',
-  },
-  {
-    id: 'recordings',
-    label: 'Recordings',
-    icon: Mic,
-    action: 'navigate',
-    path: '/recordings',
-    group: 'navigation',
-    description: 'Meeting recordings',
   },
 
   // Quick Actions

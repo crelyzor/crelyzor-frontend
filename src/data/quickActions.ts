@@ -8,6 +8,6 @@ export const quickActions: QuickAction[] = [
     desc: 'Schedule an in-person meeting',
   },
   { icon: Clock, label: 'Availability', desc: 'Manage your schedule' },
-  { icon: Mic, label: 'Recordings', desc: 'Upload & view recordings' },
+  { icon: Mic, label: 'Voice Note', desc: 'Upload & view recordings' },
   { icon: Link2, label: 'Share Link', desc: 'Send your booking page' },
 ];
