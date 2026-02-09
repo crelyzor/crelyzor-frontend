@@ -1,11 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import {
-  ChevronDown,
-  Settings,
-  Check,
-  LogOut,
-  Home,
-} from 'lucide-react';
+import { ChevronDown, Settings, Check, LogOut, Home } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
@@ -88,7 +82,10 @@ export function OrganizationSelector() {
                 <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 truncate">
                   {selectedOrg.name}
                 </h3>
-                <RoleBadge role={selectedOrg.isPersonal ? 'home' : selectedOrg.role} size="md" />
+                <RoleBadge
+                  role={selectedOrg.isPersonal ? 'home' : selectedOrg.role}
+                  size="md"
+                />
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 {selectedOrg.isPersonal
@@ -157,7 +154,8 @@ export function OrganizationSelector() {
                     {org.isPersonal ? (
                       <RoleBadge role="home" />
                     ) : (
-                      !org.isPersonal && org.memberCount && (
+                      !org.isPersonal &&
+                      org.memberCount && (
                         <span className="text-[10px] text-neutral-400 dark:text-neutral-500 shrink-0">
                           {org.memberCount}
                         </span>
