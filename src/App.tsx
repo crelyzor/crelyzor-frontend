@@ -10,7 +10,7 @@ import { PageLoader } from '@/components/PageLoader';
 import Layout from '@/layout/Layout';
 import { routes } from '@/routes/routes';
 
-const { Home, Meetings, CreateMeeting, Availability, SignIn, PublicBooking } =
+const { Home, Meetings, CreateMeeting, MeetingDetail, Availability, VoiceNotes, Settings, Notifications, SignIn, PublicBooking } =
   routes;
 
 function App() {
@@ -52,10 +52,42 @@ function App() {
                   }
                 />
                 <Route
+                  path="/meetings/:id"
+                  element={
+                    <Layout>
+                      <MeetingDetail />
+                    </Layout>
+                  }
+                />
+                <Route
                   path="/availability"
                   element={
                     <Layout>
                       <Availability />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/voice-notes"
+                  element={
+                    <Layout>
+                      <VoiceNotes />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <Layout>
+                      <Settings />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/notifications"
+                  element={
+                    <Layout>
+                      <Notifications />
                     </Layout>
                   }
                 />

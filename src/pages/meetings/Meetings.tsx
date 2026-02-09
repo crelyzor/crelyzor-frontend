@@ -135,9 +135,7 @@ export default function Meetings() {
   // Org-scoped meetings
   const orgMeetings = useMemo(() => {
     if (isPersonalView) return allMeetings; // personal = aggregate all
-    return allMeetings.filter(
-      (m) => m.orgSource?.orgId === currentOrg?.id
-    );
+    return allMeetings.filter((m) => m.orgSource?.orgId === currentOrg?.id);
   }, [isPersonalView, currentOrg?.id]);
 
   // Team view: show all org meetings. My view: only "You" as organizer
@@ -193,9 +191,10 @@ export default function Meetings() {
             <button
               onClick={() => setIsTeamView(false)}
               className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors
-                ${!isTeamView
-                  ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
+                ${
+                  !isTeamView
+                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
             >
               <User className="w-3 h-3" />
@@ -204,9 +203,10 @@ export default function Meetings() {
             <button
               onClick={() => setIsTeamView(true)}
               className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors
-                ${isTeamView
-                  ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
+                ${
+                  isTeamView
+                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
             >
               <Users className="w-3 h-3" />
@@ -343,12 +343,15 @@ export default function Meetings() {
                         </div>
 
                         {/* Organizer — shown in team view */}
-                        {showTeamToggle && isTeamView && meeting.organizer && meeting.organizer !== 'You' && (
-                          <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
-                            <User className="w-3 h-3" />
-                            <span>{meeting.organizer}</span>
-                          </div>
-                        )}
+                        {showTeamToggle &&
+                          isTeamView &&
+                          meeting.organizer &&
+                          meeting.organizer !== 'You' && (
+                            <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+                              <User className="w-3 h-3" />
+                              <span>{meeting.organizer}</span>
+                            </div>
+                          )}
 
                         {/* Spacer */}
                         <div className="flex-1" />
@@ -406,11 +409,13 @@ export default function Meetings() {
                                 by {meeting.organizer}
                               </span>
                             )}
-                            {isPersonalView && meeting.orgSource && !meeting.orgSource.isPersonal && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400">
-                                {meeting.orgSource.orgName}
-                              </span>
-                            )}
+                            {isPersonalView &&
+                              meeting.orgSource &&
+                              !meeting.orgSource.isPersonal && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400">
+                                  {meeting.orgSource.orgName}
+                                </span>
+                              )}
                             <div className="flex-1" />
                             <Button
                               variant="ghost"

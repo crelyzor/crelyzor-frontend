@@ -18,7 +18,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { useOrganizationStore } from '@/stores/organizationStore';
 
-const DURATION_OPTIONS = ['15 min', '30 min', '45 min', '1 hour', '1.5 hours', '2 hours'];
+const DURATION_OPTIONS = [
+  '15 min',
+  '30 min',
+  '45 min',
+  '1 hour',
+  '1.5 hours',
+  '2 hours',
+];
 
 const MEETING_MODES = [
   { id: 'in-person', label: 'In-person', icon: MapPin },
@@ -45,7 +52,10 @@ export default function CreateMeeting() {
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setModeDropdownOpen(false);
       }
     };
@@ -202,7 +212,9 @@ export default function CreateMeeting() {
                 >
                   <span className="flex items-center gap-2">
                     {(() => {
-                      const active = MEETING_MODES.find((m) => m.id === meetingMode)!;
+                      const active = MEETING_MODES.find(
+                        (m) => m.id === meetingMode
+                      )!;
                       const Icon = active.icon;
                       return (
                         <>
@@ -212,12 +224,16 @@ export default function CreateMeeting() {
                       );
                     })()}
                   </span>
-                  <ChevronDown className={`w-4 h-4 text-neutral-400 transition-transform ${modeDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    className={`w-4 h-4 text-neutral-400 transition-transform ${modeDropdownOpen ? 'rotate-180' : ''}`}
+                  />
                 </button>
 
                 {modeDropdownOpen && (
-                  <div className="absolute z-10 mt-1 w-full rounded-md border border-neutral-200 dark:border-neutral-700
-                                  bg-white dark:bg-neutral-900 shadow-lg overflow-hidden">
+                  <div
+                    className="absolute z-10 mt-1 w-full rounded-md border border-neutral-200 dark:border-neutral-700
+                                  bg-white dark:bg-neutral-900 shadow-lg overflow-hidden"
+                  >
                     {MEETING_MODES.map((mode) => {
                       const Icon = mode.icon;
                       const isSelected = meetingMode === mode.id;
@@ -230,15 +246,20 @@ export default function CreateMeeting() {
                             setModeDropdownOpen(false);
                           }}
                           className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors
-                            ${isSelected
-                              ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-950 dark:text-neutral-50 font-medium'
-                              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/60'
+                            ${
+                              isSelected
+                                ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-950 dark:text-neutral-50 font-medium'
+                                : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/60'
                             }`}
                         >
-                          <Icon className={`w-4 h-4 ${isSelected ? 'text-neutral-900 dark:text-neutral-100' : 'text-neutral-400'}`} />
+                          <Icon
+                            className={`w-4 h-4 ${isSelected ? 'text-neutral-900 dark:text-neutral-100' : 'text-neutral-400'}`}
+                          />
                           <span>{mode.label}</span>
                           {isSelected && (
-                            <span className="ml-auto text-[10px] font-medium text-neutral-400 dark:text-neutral-500">Selected</span>
+                            <span className="ml-auto text-[10px] font-medium text-neutral-400 dark:text-neutral-500">
+                              Selected
+                            </span>
                           )}
                         </button>
                       );
@@ -271,7 +292,9 @@ export default function CreateMeeting() {
               <div className="rounded-lg border border-dashed border-neutral-200 dark:border-neutral-700 px-4 py-3 flex items-center gap-2">
                 <Video className="w-4 h-4 text-neutral-400" />
                 <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                  A {meetingMode === 'google-meet' ? 'Google Meet' : 'Zoom'} link will be generated automatically when the meeting is scheduled.
+                  A {meetingMode === 'google-meet' ? 'Google Meet' : 'Zoom'}{' '}
+                  link will be generated automatically when the meeting is
+                  scheduled.
                 </p>
               </div>
             )}
