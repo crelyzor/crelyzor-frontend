@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ChevronDown,
   Settings,
@@ -14,17 +14,32 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { mockOrganizations, currentUser } from '@/data';
 import type { Organization } from '@/types';
+import { useOrganizationStore } from '@/stores';
 import { OrgAvatar } from './OrgAvatar';
 import { RoleBadge } from './RoleBadge';
 
 export function OrganizationSelector() {
   const [open, setOpen] = useState(false);
-  const [selectedOrg, setSelectedOrg] = useState<Organization>(
-    mockOrganizations[0]
-  );
+
+  const currentOrg = useOrganizationStore((s) => s.currentOrg);
+  const organizations = useOrganizationStore((s) => s.organizations);
+  const setOrganizations = useOrganizationStore((s) => s.setOrganizations);
+  const setCurrentOrg = useOrganizationStore((s) => s.setCurrentOrg);
+  const setCurrentUser = useOrganizationStore((s) => s.setCurrentUser);
+
+  // Seed mock data until API is integrated
+  useEffect(() => {
+    if (organizations.length === 0) {
+      setOrganizations(mockOrganizations);
+      setCurrentUser(currentUser);
+    }
+  }, [organizations.length, setOrganizations, setCurrentUser]);
+
+  const selectedOrg = currentOrg ?? mockOrganizations[0];
+  const orgList = organizations.length > 0 ? organizations : mockOrganizations;
 
   const handleOrgSelect = (org: Organization) => {
-    setSelectedOrg(org);
+    setCurrentOrg(org);
     setOpen(false);
   };
 
@@ -80,7 +95,7 @@ export function OrganizationSelector() {
 
         {/* Organization List */}
         <div className="max-h-64 overflow-y-auto">
-          {mockOrganizations.map((org) => (
+          {orgList.map((org) => (
             <button
               key={org.id}
               onClick={() => handleOrgSelect(org)}

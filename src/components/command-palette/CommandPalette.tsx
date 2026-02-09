@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   CommandDialog,
@@ -20,16 +20,21 @@ import {
   Search,
   Link2,
 } from 'lucide-react';
+import { useUIStore } from '@/stores';
 
 export function CommandPalette() {
-  const [open, setOpen] = useState(false);
+  const open = useUIStore((s) => s.commandPaletteOpen);
+  const setOpen = (v: boolean) => {
+    if (v) useUIStore.getState().openCommandPalette();
+    else useUIStore.getState().closeCommandPalette();
+  };
   const navigate = useNavigate();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((prev) => !prev);
+        useUIStore.getState().toggleCommandPalette();
       }
     };
 
@@ -38,7 +43,7 @@ export function CommandPalette() {
   }, []);
 
   const runCommand = (command: () => void) => {
-    setOpen(false);
+    useUIStore.getState().closeCommandPalette();
     command();
   };
 
