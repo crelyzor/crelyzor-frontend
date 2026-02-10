@@ -4,7 +4,7 @@ import {
   Calendar,
   Users,
   Mic,
-  Sparkles,
+  ClipboardList,
   CheckCheck,
   ArrowUpRight,
   Building2,
@@ -77,9 +77,9 @@ const NOTIFICATION_META: Record<
     filterGroup: 'sma',
   },
   action_items_generated: {
-    icon: Sparkles,
-    color: 'text-violet-500',
-    bg: 'bg-violet-50 dark:bg-violet-950/30',
+    icon: ClipboardList,
+    color: 'text-neutral-500',
+    bg: 'bg-neutral-100 dark:bg-neutral-800',
     filterGroup: 'sma',
   },
   new_team_member: {

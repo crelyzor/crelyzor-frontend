@@ -6,7 +6,7 @@ import {
   Pause,
   Search,
   FileText,
-  Sparkles,
+
   Clock,
   Calendar,
   MoreHorizontal,
@@ -291,7 +291,7 @@ export default function VoiceNotes() {
                                     className="w-5 h-5 rounded-full bg-violet-50 dark:bg-violet-950/40 flex items-center justify-center"
                                     title="AI Summary"
                                   >
-                                    <Sparkles className="w-3 h-3 text-violet-500 dark:text-violet-400" />
+
                                   </div>
                                 )}
                               </div>

@@ -7,7 +7,7 @@ import {
   Users,
   CalendarDays,
   Mic,
-  Sparkles,
+  FileText,
   Building2,
   User,
 } from 'lucide-react';
@@ -345,7 +345,6 @@ export default function Analytics() {
         <Card className="border-neutral-200 dark:border-neutral-800">
           <CardContent className="p-5">
             <h3 className="text-xs tracking-widest text-neutral-500 dark:text-neutral-400 font-medium mb-4 flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-violet-400" />
               SMART MEETING ASSISTANT
             </h3>
             <div className="space-y-4">
@@ -362,8 +361,7 @@ export default function Analytics() {
               <SMAMetric
                 label="AI Summaries"
                 value={data.sma.summarized}
-                icon={Sparkles}
-                highlight
+                icon={FileText}
               />
               <SMAMetric
                 label="Action Items"

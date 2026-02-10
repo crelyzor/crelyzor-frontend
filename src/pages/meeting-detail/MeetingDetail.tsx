@@ -8,7 +8,6 @@ import {
   Users,
   Mic,
   FileText,
-  Sparkles,
   ClipboardList,
   Upload,
   Play,
@@ -28,7 +27,7 @@ const SMA_TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'recording', label: 'Voice Note', icon: Mic },
   { id: 'transcript', label: 'Transcript', icon: FileText },
-  { id: 'summary', label: 'AI Summary', icon: Sparkles },
+  { id: 'summary', label: 'AI Summary', icon: FileText },
   { id: 'actions', label: 'Action Items', icon: ClipboardList },
 ] as const;
 
@@ -419,9 +418,9 @@ function OverviewTab({
             },
             {
               label: 'AI Summary',
-              icon: Sparkles,
+              icon: FileText,
               ready: meeting.hasSummary,
-              color: 'text-violet-500',
+              color: 'text-neutral-500',
             },
             {
               label: 'Action Items',
@@ -583,8 +582,8 @@ function SummaryTab({ hasSummary }: { hasSummary?: boolean }) {
   if (!hasSummary) {
     return (
       <div className="flex flex-col items-center py-10 text-center">
-        <div className="w-12 h-12 rounded-full bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center mb-3">
-          <Sparkles className="w-6 h-6 text-violet-400" />
+        <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
+          <FileText className="w-6 h-6 text-neutral-400" />
         </div>
         <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
           No AI summary yet
@@ -600,7 +599,7 @@ function SummaryTab({ hasSummary }: { hasSummary?: boolean }) {
     <div className="space-y-5">
       <div>
         <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-2 flex items-center gap-1.5">
-          <Sparkles className="w-4 h-4 text-violet-500" />
+          <FileText className="w-4 h-4 text-neutral-500" />
           AI Summary
         </h3>
         <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">

@@ -1,4 +1,4 @@
-import { Sparkles, User, Users } from 'lucide-react';
+import { User, Users } from 'lucide-react';
 import { motion, type MotionValue } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { quickActions } from '@/data';
@@ -115,7 +115,6 @@ export function HeroSection({
           style={{ opacity: tipOpacity }}
           className="flex items-center justify-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mt-2"
         >
-          <Sparkles className="w-4 h-4 text-violet-400" />
           <span>{tip}</span>
         </motion.div>
       </motion.div>

@@ -1,7 +1,7 @@
 import {
   Clock,
   Mic,
-  Sparkles,
+
   ClipboardList,
   FileText,
   MapPin,
@@ -99,9 +99,6 @@ export function RecentMeetings({
                   )}
                   {meeting.hasTranscript && (
                     <FileText className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
-                  )}
-                  {meeting.hasSummary && (
-                    <Sparkles className="w-3 h-3 text-violet-400 dark:text-violet-400" />
                   )}
                   {meeting.hasActionItems && (
                     <ClipboardList className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
