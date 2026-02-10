@@ -7,7 +7,6 @@ import {
   Clock,
   Mic,
   FileText,
-
   ClipboardList,
   Users,
   User,
@@ -379,9 +378,7 @@ export default function Meetings() {
                               <div
                                 className="w-5 h-5 rounded-full bg-violet-50 dark:bg-violet-950/40 flex items-center justify-center"
                                 title="AI Summary"
-                              >
-
-                              </div>
+                              ></div>
                             )}
                             {meeting.hasActionItems && (
                               <div
