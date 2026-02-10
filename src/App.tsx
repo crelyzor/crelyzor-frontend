@@ -18,6 +18,7 @@ const {
   MeetingDetail,
   Availability,
   VoiceNotes,
+  Analytics,
   Settings,
   Notifications,
   SignIn,
@@ -87,6 +88,14 @@ function App() {
                   }
                 />
                 <Route
+                  path="/analytics"
+                  element={
+                    <Layout>
+                      <Analytics />
+                    </Layout>
+                  }
+                />
+                <Route
                   path="/settings"
                   element={
                     <Layout>
@@ -111,8 +120,7 @@ function App() {
           <Toaster
             position="bottom-right"
             toastOptions={{
-              className:
-                'text-sm font-medium',
+              className: 'text-sm font-medium',
             }}
           />
         </ThemeProvider>

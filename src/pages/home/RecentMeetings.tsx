@@ -39,7 +39,8 @@ export function RecentMeetings({
         </h2>
         <button
           onClick={() => navigate('/meetings')}
-          className="text-xs text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors font-medium cursor-pointer">
+          className="text-xs text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors font-medium cursor-pointer"
+        >
           SEE ALL
         </button>
       </div>

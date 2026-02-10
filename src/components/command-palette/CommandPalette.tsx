@@ -16,7 +16,6 @@ import {
   Settings,
   LogOut,
   Bell,
-  Search,
   Link2,
   Mic,
   Home,
@@ -84,9 +83,7 @@ export function CommandPalette() {
             <Home className="mr-3 h-4 w-4" />
             <span>Home</span>
           </CommandItem>
-          <CommandItem
-            onSelect={() => runCommand(() => navigate('/meetings'))}
-          >
+          <CommandItem onSelect={() => runCommand(() => navigate('/meetings'))}>
             <CalendarDays className="mr-3 h-4 w-4" />
             <span>Meetings</span>
           </CommandItem>

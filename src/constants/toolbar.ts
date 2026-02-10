@@ -104,7 +104,7 @@ export const TOOLBAR_ITEMS: ToolbarItem[] = [
     label: 'Integrations',
     icon: Globe,
     action: 'navigate',
-    path: '/integrations',
+    path: '/settings',
     group: 'tools',
     description: 'Connected apps',
   },

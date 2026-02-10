@@ -60,7 +60,8 @@ export function MeetingSummaryCard({
         </div>
         <button
           onClick={() => navigate('/meetings')}
-          className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors flex items-center gap-1 cursor-pointer">
+          className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors flex items-center gap-1 cursor-pointer"
+        >
           Details <ArrowUpRight className="w-3 h-3" />
         </button>
       </div>

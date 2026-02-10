@@ -7,6 +7,7 @@ const CreateMeeting = lazy(() => import('@/pages/create-meeting'));
 const MeetingDetail = lazy(() => import('@/pages/meeting-detail'));
 const Availability = lazy(() => import('@/pages/availability'));
 const VoiceNotes = lazy(() => import('@/pages/voice-notes'));
+const Analytics = lazy(() => import('@/pages/analytics'));
 const Settings = lazy(() => import('@/pages/settings'));
 const Notifications = lazy(() => import('@/pages/notifications'));
 const SignIn = lazy(() => import('@/pages/sign-in'));
@@ -25,6 +26,7 @@ export const routes = {
   MeetingDetail,
   Availability,
   VoiceNotes,
+  Analytics,
   Settings,
   Notifications,
   SignIn,

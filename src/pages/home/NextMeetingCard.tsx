@@ -27,7 +27,8 @@ export function NextMeetingCard({ meeting }: NextMeetingCardProps) {
   return (
     <Card
       onClick={() => navigate(`/meetings/${meeting.id}`)}
-      className="p-0 border-neutral-200 dark:border-neutral-800 overflow-hidden cursor-pointer hover:shadow-md transition-all">
+      className="p-0 border-neutral-200 dark:border-neutral-800 overflow-hidden cursor-pointer hover:shadow-md transition-all"
+    >
       {/* Top accent bar */}
       <div className="h-1 bg-neutral-900 dark:bg-neutral-100" />
 
