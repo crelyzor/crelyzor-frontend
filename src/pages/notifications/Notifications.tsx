@@ -43,13 +43,51 @@ type Notification = {
   orgSource?: { orgId: string; orgName: string; isPersonal: boolean };
 };
 
-const NOTIFICATION_META: Record<NotificationType, { icon: typeof Bell; color: string; bg: string; filterGroup: 'meetings' | 'sma' | 'other' }> = {
-  meeting_scheduled: { icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/30', filterGroup: 'meetings' },
-  meeting_cancelled: { icon: Calendar, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-950/30', filterGroup: 'meetings' },
-  meeting_reminder: { icon: Bell, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-950/30', filterGroup: 'meetings' },
-  transcription_complete: { icon: Mic, color: 'text-neutral-500', bg: 'bg-neutral-100 dark:bg-neutral-800', filterGroup: 'sma' },
-  action_items_generated: { icon: Sparkles, color: 'text-violet-500', bg: 'bg-violet-50 dark:bg-violet-950/30', filterGroup: 'sma' },
-  new_team_member: { icon: Users, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-950/30', filterGroup: 'other' },
+const NOTIFICATION_META: Record<
+  NotificationType,
+  {
+    icon: typeof Bell;
+    color: string;
+    bg: string;
+    filterGroup: 'meetings' | 'sma' | 'other';
+  }
+> = {
+  meeting_scheduled: {
+    icon: Calendar,
+    color: 'text-blue-500',
+    bg: 'bg-blue-50 dark:bg-blue-950/30',
+    filterGroup: 'meetings',
+  },
+  meeting_cancelled: {
+    icon: Calendar,
+    color: 'text-red-500',
+    bg: 'bg-red-50 dark:bg-red-950/30',
+    filterGroup: 'meetings',
+  },
+  meeting_reminder: {
+    icon: Bell,
+    color: 'text-amber-500',
+    bg: 'bg-amber-50 dark:bg-amber-950/30',
+    filterGroup: 'meetings',
+  },
+  transcription_complete: {
+    icon: Mic,
+    color: 'text-neutral-500',
+    bg: 'bg-neutral-100 dark:bg-neutral-800',
+    filterGroup: 'sma',
+  },
+  action_items_generated: {
+    icon: Sparkles,
+    color: 'text-violet-500',
+    bg: 'bg-violet-50 dark:bg-violet-950/30',
+    filterGroup: 'sma',
+  },
+  new_team_member: {
+    icon: Users,
+    color: 'text-emerald-500',
+    bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+    filterGroup: 'other',
+  },
 };
 
 // ── Mock notifications ──
@@ -150,17 +188,29 @@ export default function Notifications() {
 
   // Filter by tab
   if (activeFilter === 'unread') filtered = filtered.filter((n) => !n.isRead);
-  if (activeFilter === 'meetings') filtered = filtered.filter((n) => NOTIFICATION_META[n.type].filterGroup === 'meetings');
-  if (activeFilter === 'sma') filtered = filtered.filter((n) => NOTIFICATION_META[n.type].filterGroup === 'sma');
+  if (activeFilter === 'meetings')
+    filtered = filtered.filter(
+      (n) => NOTIFICATION_META[n.type].filterGroup === 'meetings'
+    );
+  if (activeFilter === 'sma')
+    filtered = filtered.filter(
+      (n) => NOTIFICATION_META[n.type].filterGroup === 'sma'
+    );
 
-  const unreadCount = (isPersonalView ? notifications : notifications.filter((n) => n.orgSource?.orgId === currentOrg?.id)).filter((n) => !n.isRead).length;
+  const unreadCount = (
+    isPersonalView
+      ? notifications
+      : notifications.filter((n) => n.orgSource?.orgId === currentOrg?.id)
+  ).filter((n) => !n.isRead).length;
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
   };
 
   const markRead = (id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    );
   };
 
   // Group by date
@@ -171,11 +221,19 @@ export default function Notifications() {
     const dateOnly = new Date(d.toISOString().split('T')[0] + 'T00:00:00');
     if (dateOnly.getTime() === today.getTime()) return 'Today';
     if (dateOnly.getTime() === yesterday.getTime()) return 'Yesterday';
-    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return d.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
   };
 
   const formatTime = (ts: string) => {
-    return new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    return new Date(ts).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
   };
 
   const grouped = filtered.reduce<Record<string, typeof filtered>>((acc, n) => {
@@ -217,9 +275,10 @@ export default function Notifications() {
             key={tab.id}
             onClick={() => setActiveFilter(tab.id)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors
-              ${activeFilter === tab.id
-                ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
-                : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'
+              ${
+                activeFilter === tab.id
+                  ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
+                  : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'
               }`}
           >
             {tab.label}
@@ -238,9 +297,13 @@ export default function Notifications() {
           <div className="w-14 h-14 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
             <Bell className="w-7 h-7 text-neutral-400" />
           </div>
-          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">No notifications</p>
+          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+            No notifications
+          </p>
           <p className="text-xs text-neutral-400 dark:text-neutral-500">
-            {activeFilter === 'unread' ? 'You\'re all caught up!' : 'Nothing here yet'}
+            {activeFilter === 'unread'
+              ? "You're all caught up!"
+              : 'Nothing here yet'}
           </p>
         </div>
       ) : (
@@ -262,20 +325,25 @@ export default function Notifications() {
                         if (n.meetingId) navigate(`/meetings/${n.meetingId}`);
                       }}
                       className={`w-full text-left flex items-start gap-3 p-3 rounded-lg transition-colors group
-                        ${n.isRead
-                          ? 'hover:bg-neutral-50 dark:hover:bg-neutral-800/30'
-                          : 'bg-neutral-50 dark:bg-neutral-800/40 hover:bg-neutral-100 dark:hover:bg-neutral-800/60'
+                        ${
+                          n.isRead
+                            ? 'hover:bg-neutral-50 dark:hover:bg-neutral-800/30'
+                            : 'bg-neutral-50 dark:bg-neutral-800/40 hover:bg-neutral-100 dark:hover:bg-neutral-800/60'
                         }`}
                     >
                       {/* Icon */}
-                      <div className={`w-9 h-9 rounded-full ${meta.bg} flex items-center justify-center shrink-0`}>
+                      <div
+                        className={`w-9 h-9 rounded-full ${meta.bg} flex items-center justify-center shrink-0`}
+                      >
                         <Icon className={`w-4 h-4 ${meta.color}`} />
                       </div>
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className={`text-sm font-medium truncate ${n.isRead ? 'text-neutral-600 dark:text-neutral-400' : 'text-neutral-950 dark:text-neutral-50'}`}>
+                          <p
+                            className={`text-sm font-medium truncate ${n.isRead ? 'text-neutral-600 dark:text-neutral-400' : 'text-neutral-950 dark:text-neutral-50'}`}
+                          >
                             {n.title}
                           </p>
                           {!n.isRead && (
@@ -286,13 +354,17 @@ export default function Notifications() {
                           {n.message}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] text-neutral-400">{formatTime(n.timestamp)}</span>
-                          {isPersonalView && n.orgSource && !n.orgSource.isPersonal && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] text-blue-500 dark:text-blue-400">
-                              <Building2 className="w-2.5 h-2.5" />
-                              {n.orgSource.orgName}
-                            </span>
-                          )}
+                          <span className="text-[10px] text-neutral-400">
+                            {formatTime(n.timestamp)}
+                          </span>
+                          {isPersonalView &&
+                            n.orgSource &&
+                            !n.orgSource.isPersonal && (
+                              <span className="inline-flex items-center gap-0.5 text-[10px] text-blue-500 dark:text-blue-400">
+                                <Building2 className="w-2.5 h-2.5" />
+                                {n.orgSource.orgName}
+                              </span>
+                            )}
                         </div>
                       </div>
 

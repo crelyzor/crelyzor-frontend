@@ -1,4 +1,5 @@
 import { Calendar, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import type { Meeting } from '@/types';
 
@@ -8,6 +9,8 @@ type ScheduleCardProps = {
 };
 
 export function ScheduleCard({ meetings, isPersonalView }: ScheduleCardProps) {
+  const navigate = useNavigate();
+
   return (
     <Card className="md:col-span-3 p-0 border-neutral-200 dark:border-neutral-800 overflow-hidden">
       <div className="p-5 pb-3 flex items-center justify-between">
@@ -30,6 +33,7 @@ export function ScheduleCard({ meetings, isPersonalView }: ScheduleCardProps) {
           {meetings.map((meeting, i) => (
             <div
               key={meeting.id}
+              onClick={() => navigate(`/meetings/${meeting.id}`)}
               className="flex items-start gap-3 group cursor-pointer"
             >
               <div className="flex flex-col items-center pt-1.5">

@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { ClipboardList, Check, Circle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import type { ActionItem } from '@/types';
 
@@ -15,6 +17,20 @@ export function ActionItemsCard({
 }: ActionItemsCardProps) {
   const openItems = items.filter((item) => !item.isCompleted);
   const completedCount = items.filter((item) => item.isCompleted).length;
+  const navigate = useNavigate();
+  const [toggledIds, setToggledIds] = useState<Set<string>>(new Set());
+
+  const toggleItem = (id: string) => {
+    setToggledIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const isCompleted = (item: ActionItem) =>
+    toggledIds.has(item.id) ? !item.isCompleted : item.isCompleted;
 
   return (
     <Card className="p-0 border-neutral-200 dark:border-neutral-800 overflow-hidden">
@@ -45,11 +61,18 @@ export function ActionItemsCard({
           {items.slice(0, 5).map((item) => (
             <div
               key={item.id}
+              onClick={() => navigate(`/meetings/${item.id}`)}
               className="flex items-start gap-3 py-2 group cursor-pointer rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/50 px-2 -mx-2 transition-colors"
             >
               {/* Checkbox */}
-              <div className="mt-0.5 shrink-0">
-                {item.isCompleted ? (
+              <div
+                className="mt-0.5 shrink-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleItem(item.id);
+                }}
+              >
+                {isCompleted(item) ? (
                   <div className="w-4 h-4 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center">
                     <Check className="w-2.5 h-2.5 text-neutral-400 dark:text-neutral-500" />
                   </div>
@@ -62,7 +85,7 @@ export function ActionItemsCard({
               <div className="flex-1 min-w-0">
                 <p
                   className={`text-sm leading-snug ${
-                    item.isCompleted
+                    isCompleted(item)
                       ? 'text-neutral-400 dark:text-neutral-500 line-through'
                       : 'text-neutral-900 dark:text-neutral-100'
                   }`}
@@ -91,7 +114,7 @@ export function ActionItemsCard({
               </div>
 
               {/* Due date */}
-              {item.dueDate && !item.isCompleted && (
+              {item.dueDate && !isCompleted(item) && (
                 <span
                   className={`text-[11px] font-medium shrink-0 ${
                     item.dueDate === 'Today'

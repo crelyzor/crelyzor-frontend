@@ -1,6 +1,8 @@
 import { Sparkles, User, Users } from 'lucide-react';
 import { motion, type MotionValue } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 import { quickActions } from '@/data';
+import { toast } from 'sonner';
 
 type BubbleTransform = {
   y: MotionValue<number>;
@@ -45,6 +47,16 @@ export function HeroSection({
   bubbleTransforms,
 }: HeroSectionProps) {
   const firstName = userName.split(' ')[0];
+  const navigate = useNavigate();
+
+  const handleQuickAction = (action: (typeof quickActions)[number]) => {
+    if (action.actionType === 'navigate' && action.path) {
+      navigate(action.path);
+    } else if (action.actionType === 'copy') {
+      navigator.clipboard.writeText('https://cal.harsh.dev/book/harsh');
+      toast.success('Booking link copied to clipboard');
+    }
+  };
 
   return (
     <div className="text-center">
@@ -116,6 +128,7 @@ export function HeroSection({
         {quickActions.map((action, i) => (
           <motion.button
             key={action.label}
+            onClick={() => handleQuickAction(action)}
             style={{
               y: bubbleTransforms[i].y,
               scale: bubbleTransforms[i].scale,

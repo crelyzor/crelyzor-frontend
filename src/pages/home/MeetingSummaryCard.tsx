@@ -1,4 +1,5 @@
 import { Users, ArrowUpRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -19,6 +20,7 @@ export function MeetingSummaryCard({
   isPersonalView,
   isTeamView,
 }: MeetingSummaryCardProps) {
+  const navigate = useNavigate();
   const now = new Date();
   const monthLabel = now.toLocaleDateString('en-US', {
     month: 'short',
@@ -56,7 +58,9 @@ export function MeetingSummaryCard({
             </Badge>
           )}
         </div>
-        <button className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors flex items-center gap-1 cursor-pointer">
+        <button
+          onClick={() => navigate('/meetings')}
+          className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors flex items-center gap-1 cursor-pointer">
           Details <ArrowUpRight className="w-3 h-3" />
         </button>
       </div>

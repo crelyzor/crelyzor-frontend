@@ -7,6 +7,7 @@ import {
   MapPin,
   User,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getCategoryStyle } from '@/constants';
@@ -23,6 +24,8 @@ export function RecentMeetings({
   isPersonalView,
   isTeamView,
 }: RecentMeetingsProps) {
+  const navigate = useNavigate();
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -34,7 +37,9 @@ export function RecentMeetings({
             </span>
           )}
         </h2>
-        <button className="text-xs text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors font-medium cursor-pointer">
+        <button
+          onClick={() => navigate('/meetings')}
+          className="text-xs text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors font-medium cursor-pointer">
           SEE ALL
         </button>
       </div>
@@ -43,6 +48,7 @@ export function RecentMeetings({
         {meetings.map((meeting) => (
           <Card
             key={meeting.id}
+            onClick={() => navigate(`/meetings/${meeting.id}`)}
             className="p-4 border-neutral-200 dark:border-neutral-800 hover:shadow-md transition-all cursor-pointer group"
           >
             <div className="flex items-center justify-between mb-2">

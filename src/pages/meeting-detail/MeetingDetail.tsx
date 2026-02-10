@@ -36,29 +36,104 @@ type SMATab = (typeof SMA_TABS)[number]['id'];
 
 // ── Mock transcript segments ──
 const mockTranscript = [
-  { speaker: 'Sarah Chen', time: '0:00', text: 'Alright, let\'s kick off. I\'ve shared the updated roadmap doc — have you all had a chance to look through it?' },
-  { speaker: 'Mike Ross', time: '0:42', text: 'Yes, I went through it. I think the Q2 timeline for the analytics dashboard is tight. Can we discuss dependencies?' },
-  { speaker: 'You', time: '1:15', text: 'Agreed. I think we should front-load the data pipeline work. That would unblock the visualization layer early.' },
-  { speaker: 'Alex Kim', time: '2:03', text: 'I can take on the pipeline POC this sprint if we prioritize it. Should be doable in a week.' },
-  { speaker: 'Sarah Chen', time: '2:38', text: 'Perfect. Let\'s also talk about the client demo — we need a working prototype by the 20th.' },
+  {
+    speaker: 'Sarah Chen',
+    time: '0:00',
+    text: "Alright, let's kick off. I've shared the updated roadmap doc — have you all had a chance to look through it?",
+  },
+  {
+    speaker: 'Mike Ross',
+    time: '0:42',
+    text: 'Yes, I went through it. I think the Q2 timeline for the analytics dashboard is tight. Can we discuss dependencies?',
+  },
+  {
+    speaker: 'You',
+    time: '1:15',
+    text: 'Agreed. I think we should front-load the data pipeline work. That would unblock the visualization layer early.',
+  },
+  {
+    speaker: 'Alex Kim',
+    time: '2:03',
+    text: 'I can take on the pipeline POC this sprint if we prioritize it. Should be doable in a week.',
+  },
+  {
+    speaker: 'Sarah Chen',
+    time: '2:38',
+    text: "Perfect. Let's also talk about the client demo — we need a working prototype by the 20th.",
+  },
 ];
 
 // ── Mock action items ──
 const mockActionItems = [
-  { id: '1', title: 'Set up analytics data pipeline POC', assignedTo: 'Alex Kim', dueDate: 'Feb 17', status: 'pending' as const, category: 'PARTICIPANT_TASK' },
-  { id: '2', title: 'Prepare client demo prototype', assignedTo: 'Sarah Chen', dueDate: 'Feb 20', status: 'pending' as const, category: 'UPCOMING_EVENT' },
-  { id: '3', title: 'Review Q2 timeline dependencies', assignedTo: 'Mike Ross', dueDate: 'Feb 14', status: 'completed' as const, category: 'SHARED_TASK' },
-  { id: '4', title: 'Share updated roadmap doc with stakeholders', assignedTo: 'You', dueDate: 'Feb 12', status: 'pending' as const, category: 'DOCUMENT_REQUIRED' },
+  {
+    id: '1',
+    title: 'Set up analytics data pipeline POC',
+    assignedTo: 'Alex Kim',
+    dueDate: 'Feb 17',
+    status: 'pending' as const,
+    category: 'PARTICIPANT_TASK',
+  },
+  {
+    id: '2',
+    title: 'Prepare client demo prototype',
+    assignedTo: 'Sarah Chen',
+    dueDate: 'Feb 20',
+    status: 'pending' as const,
+    category: 'UPCOMING_EVENT',
+  },
+  {
+    id: '3',
+    title: 'Review Q2 timeline dependencies',
+    assignedTo: 'Mike Ross',
+    dueDate: 'Feb 14',
+    status: 'completed' as const,
+    category: 'SHARED_TASK',
+  },
+  {
+    id: '4',
+    title: 'Share updated roadmap doc with stakeholders',
+    assignedTo: 'You',
+    dueDate: 'Feb 12',
+    status: 'pending' as const,
+    category: 'DOCUMENT_REQUIRED',
+  },
 ];
 
 // ── Status styling ─
-const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  confirmed: { bg: 'bg-emerald-50 dark:bg-emerald-950/30', text: 'text-emerald-600 dark:text-emerald-400', label: 'Confirmed' },
-  pending: { bg: 'bg-amber-50 dark:bg-amber-950/30', text: 'text-amber-600 dark:text-amber-400', label: 'Pending' },
-  completed: { bg: 'bg-neutral-100 dark:bg-neutral-800', text: 'text-neutral-600 dark:text-neutral-400', label: 'Completed' },
-  cancelled: { bg: 'bg-red-50 dark:bg-red-950/30', text: 'text-red-500 dark:text-red-400', label: 'Cancelled' },
-  declined: { bg: 'bg-red-50 dark:bg-red-950/30', text: 'text-red-500 dark:text-red-400', label: 'Declined' },
-  rescheduling: { bg: 'bg-blue-50 dark:bg-blue-950/30', text: 'text-blue-600 dark:text-blue-400', label: 'Rescheduling' },
+const STATUS_STYLES: Record<
+  string,
+  { bg: string; text: string; label: string }
+> = {
+  confirmed: {
+    bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+    text: 'text-emerald-600 dark:text-emerald-400',
+    label: 'Confirmed',
+  },
+  pending: {
+    bg: 'bg-amber-50 dark:bg-amber-950/30',
+    text: 'text-amber-600 dark:text-amber-400',
+    label: 'Pending',
+  },
+  completed: {
+    bg: 'bg-neutral-100 dark:bg-neutral-800',
+    text: 'text-neutral-600 dark:text-neutral-400',
+    label: 'Completed',
+  },
+  cancelled: {
+    bg: 'bg-red-50 dark:bg-red-950/30',
+    text: 'text-red-500 dark:text-red-400',
+    label: 'Cancelled',
+  },
+  declined: {
+    bg: 'bg-red-50 dark:bg-red-950/30',
+    text: 'text-red-500 dark:text-red-400',
+    label: 'Declined',
+  },
+  rescheduling: {
+    bg: 'bg-blue-50 dark:bg-blue-950/30',
+    text: 'text-blue-600 dark:text-blue-400',
+    label: 'Rescheduling',
+  },
 };
 
 export default function MeetingDetail() {
@@ -71,7 +146,9 @@ export default function MeetingDetail() {
   if (!meeting) {
     return (
       <div className="max-w-3xl mx-auto py-20 text-center">
-        <h2 className="text-lg font-semibold text-neutral-950 dark:text-neutral-50 mb-2">Meeting not found</h2>
+        <h2 className="text-lg font-semibold text-neutral-950 dark:text-neutral-50 mb-2">
+          Meeting not found
+        </h2>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
           This meeting may have been deleted or doesn't exist.
         </p>
@@ -83,7 +160,12 @@ export default function MeetingDetail() {
   }
 
   const status = STATUS_STYLES[meeting.status] ?? STATUS_STYLES.pending;
-  const hasSMA = !!(meeting.hasRecording || meeting.hasTranscript || meeting.hasSummary || meeting.hasActionItems);
+  const hasSMA = !!(
+    meeting.hasRecording ||
+    meeting.hasTranscript ||
+    meeting.hasSummary ||
+    meeting.hasActionItems
+  );
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -102,7 +184,9 @@ export default function MeetingDetail() {
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${status.bg} ${status.text}`}>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${status.bg} ${status.text}`}
+                >
                   {status.label}
                 </span>
                 {meeting.category && (
@@ -132,9 +216,15 @@ export default function MeetingDetail() {
                 <Calendar className="w-4 h-4 text-neutral-500" />
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Date</p>
+                <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                  Date
+                </p>
                 <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
-                  {new Date(meeting.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  {new Date(meeting.date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
                 </p>
               </div>
             </div>
@@ -143,7 +233,9 @@ export default function MeetingDetail() {
                 <Clock className="w-4 h-4 text-neutral-500" />
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Time</p>
+                <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                  Time
+                </p>
                 <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
                   {meeting.time} &middot; {meeting.duration}
                 </p>
@@ -155,8 +247,12 @@ export default function MeetingDetail() {
                   <MapPin className="w-4 h-4 text-neutral-500" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Location</p>
-                  <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">{meeting.location}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                    Location
+                  </p>
+                  <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
+                    {meeting.location}
+                  </p>
                 </div>
               </div>
             )}
@@ -166,8 +262,12 @@ export default function MeetingDetail() {
                   <Building2 className="w-4 h-4 text-blue-500" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Organization</p>
-                  <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">{meeting.orgSource.orgName}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                    Organization
+                  </p>
+                  <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
+                    {meeting.orgSource.orgName}
+                  </p>
                 </div>
               </div>
             )}
@@ -201,21 +301,37 @@ export default function MeetingDetail() {
           {/* Quick Actions */}
           <div className="flex gap-2 mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800">
             {meeting.status === 'confirmed' && (
-              <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
+              >
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 Mark Completed
               </Button>
             )}
-            <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
+            >
               <RefreshCcw className="w-3.5 h-3.5" />
               Reschedule
             </Button>
-            <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
+            >
               <Edit3 className="w-3.5 h-3.5" />
               Edit
             </Button>
             <div className="flex-1" />
-            <Button variant="ghost" size="sm" className="text-xs gap-1.5 h-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs gap-1.5 h-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+            >
               <XCircle className="w-3.5 h-3.5" />
               Cancel
             </Button>
@@ -236,9 +352,10 @@ export default function MeetingDetail() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-1.5 px-4 py-3 text-xs font-medium whitespace-nowrap border-b-2 transition-colors
-                    ${isActive
-                      ? 'border-neutral-900 dark:border-neutral-100 text-neutral-900 dark:text-neutral-100'
-                      : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
+                    ${
+                      isActive
+                        ? 'border-neutral-900 dark:border-neutral-100 text-neutral-900 dark:text-neutral-100'
+                        : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
                     }`}
                 >
                   {Icon && <Icon className="w-3.5 h-3.5" />}
@@ -273,31 +390,66 @@ export default function MeetingDetail() {
 }
 
 // ── Tab: Overview ──
-function OverviewTab({ meeting, hasSMA }: { meeting: (typeof allMeetings)[0]; hasSMA: boolean }) {
+function OverviewTab({
+  meeting,
+  hasSMA,
+}: {
+  meeting: (typeof allMeetings)[0];
+  hasSMA: boolean;
+}) {
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">Smart Meeting Assistant</h3>
+      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+        Smart Meeting Assistant
+      </h3>
       {hasSMA ? (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Voice Note', icon: Mic, ready: meeting.hasRecording, color: 'text-neutral-500' },
-            { label: 'Transcript', icon: FileText, ready: meeting.hasTranscript, color: 'text-neutral-500' },
-            { label: 'AI Summary', icon: Sparkles, ready: meeting.hasSummary, color: 'text-violet-500' },
-            { label: 'Action Items', icon: ClipboardList, ready: meeting.hasActionItems, color: 'text-neutral-500' },
+            {
+              label: 'Voice Note',
+              icon: Mic,
+              ready: meeting.hasRecording,
+              color: 'text-neutral-500',
+            },
+            {
+              label: 'Transcript',
+              icon: FileText,
+              ready: meeting.hasTranscript,
+              color: 'text-neutral-500',
+            },
+            {
+              label: 'AI Summary',
+              icon: Sparkles,
+              ready: meeting.hasSummary,
+              color: 'text-violet-500',
+            },
+            {
+              label: 'Action Items',
+              icon: ClipboardList,
+              ready: meeting.hasActionItems,
+              color: 'text-neutral-500',
+            },
           ].map((item) => (
             <div
               key={item.label}
               className={`flex flex-col items-center gap-2 p-4 rounded-lg border transition-colors
-                ${item.ready
-                  ? 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50'
-                  : 'border-dashed border-neutral-200 dark:border-neutral-700'
+                ${
+                  item.ready
+                    ? 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50'
+                    : 'border-dashed border-neutral-200 dark:border-neutral-700'
                 }`}
             >
-              <item.icon className={`w-5 h-5 ${item.ready ? item.color : 'text-neutral-300 dark:text-neutral-600'}`} />
-              <span className={`text-[11px] font-medium ${item.ready ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-400 dark:text-neutral-500'}`}>
+              <item.icon
+                className={`w-5 h-5 ${item.ready ? item.color : 'text-neutral-300 dark:text-neutral-600'}`}
+              />
+              <span
+                className={`text-[11px] font-medium ${item.ready ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-400 dark:text-neutral-500'}`}
+              >
                 {item.label}
               </span>
-              <span className={`text-[10px] ${item.ready ? 'text-emerald-500' : 'text-neutral-400'}`}>
+              <span
+                className={`text-[10px] ${item.ready ? 'text-emerald-500' : 'text-neutral-400'}`}
+              >
                 {item.ready ? 'Available' : 'Not available'}
               </span>
             </div>
@@ -308,9 +460,12 @@ function OverviewTab({ meeting, hasSMA }: { meeting: (typeof allMeetings)[0]; ha
           <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
             <Mic className="w-6 h-6 text-neutral-400" />
           </div>
-          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">No voice note uploaded</p>
+          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+            No voice note uploaded
+          </p>
           <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs mb-4">
-            Upload a recording to unlock transcript, AI summary, and auto-generated action items.
+            Upload a recording to unlock transcript, AI summary, and
+            auto-generated action items.
           </p>
           <Button variant="outline" size="sm" className="gap-1.5 text-xs">
             <Upload className="w-3.5 h-3.5" />
@@ -330,7 +485,9 @@ function RecordingTab({ hasRecording }: { hasRecording?: boolean }) {
         <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
           <Mic className="w-6 h-6 text-neutral-400" />
         </div>
-        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">No voice note yet</p>
+        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+          No voice note yet
+        </p>
         <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs mb-4">
           Upload an audio recording of this meeting to get started.
         </p>
@@ -345,12 +502,20 @@ function RecordingTab({ hasRecording }: { hasRecording?: boolean }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">Voice Note</h3>
-        <span className="text-[10px] text-neutral-400">meeting-recording.webm &middot; 12.4 MB</span>
+        <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+          Voice Note
+        </h3>
+        <span className="text-[10px] text-neutral-400">
+          meeting-recording.webm &middot; 12.4 MB
+        </span>
       </div>
       {/* Audio player placeholder */}
       <div className="flex items-center gap-3 p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
-        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-neutral-900 dark:bg-neutral-100 hover:bg-neutral-800 dark:hover:bg-neutral-200">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-10 w-10 rounded-full bg-neutral-900 dark:bg-neutral-100 hover:bg-neutral-800 dark:hover:bg-neutral-200"
+        >
           <Play className="w-4 h-4 text-white dark:text-neutral-900 ml-0.5" />
         </Button>
         <div className="flex-1">
@@ -375,9 +540,12 @@ function TranscriptTab({ hasTranscript }: { hasTranscript?: boolean }) {
         <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
           <FileText className="w-6 h-6 text-neutral-400" />
         </div>
-        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">No transcript available</p>
+        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+          No transcript available
+        </p>
         <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs">
-          Upload a voice note first. The transcript will be generated automatically.
+          Upload a voice note first. The transcript will be generated
+          automatically.
         </p>
       </div>
     );
@@ -385,13 +553,24 @@ function TranscriptTab({ hasTranscript }: { hasTranscript?: boolean }) {
 
   return (
     <div className="space-y-1">
-      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-4">Transcript</h3>
+      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-4">
+        Transcript
+      </h3>
       {mockTranscript.map((seg, i) => (
-        <div key={i} className="flex gap-3 py-2.5 group hover:bg-neutral-50 dark:hover:bg-neutral-800/30 -mx-2 px-2 rounded-md transition-colors">
-          <span className="text-[10px] text-neutral-400 dark:text-neutral-500 w-8 shrink-0 pt-0.5 font-mono">{seg.time}</span>
+        <div
+          key={i}
+          className="flex gap-3 py-2.5 group hover:bg-neutral-50 dark:hover:bg-neutral-800/30 -mx-2 px-2 rounded-md transition-colors"
+        >
+          <span className="text-[10px] text-neutral-400 dark:text-neutral-500 w-8 shrink-0 pt-0.5 font-mono">
+            {seg.time}
+          </span>
           <div className="flex-1 min-w-0">
-            <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">{seg.speaker}</span>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-0.5 leading-relaxed">{seg.text}</p>
+            <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+              {seg.speaker}
+            </span>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-0.5 leading-relaxed">
+              {seg.text}
+            </p>
           </div>
         </div>
       ))}
@@ -407,7 +586,9 @@ function SummaryTab({ hasSummary }: { hasSummary?: boolean }) {
         <div className="w-12 h-12 rounded-full bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center mb-3">
           <Sparkles className="w-6 h-6 text-violet-400" />
         </div>
-        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">No AI summary yet</p>
+        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+          No AI summary yet
+        </p>
         <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs">
           A summary will be generated once the transcript is processed.
         </p>
@@ -423,13 +604,18 @@ function SummaryTab({ hasSummary }: { hasSummary?: boolean }) {
           AI Summary
         </h3>
         <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-          The team discussed the Q1 roadmap and agreed to prioritize the analytics data pipeline. Alex will lead a POC this sprint. 
-          A client demo prototype is needed by Feb 20th, and Sarah will coordinate. The Q2 timeline for the analytics dashboard 
-          was flagged as tight, and Mike will review dependencies. The updated roadmap should be shared with stakeholders.
+          The team discussed the Q1 roadmap and agreed to prioritize the
+          analytics data pipeline. Alex will lead a POC this sprint. A client
+          demo prototype is needed by Feb 20th, and Sarah will coordinate. The
+          Q2 timeline for the analytics dashboard was flagged as tight, and Mike
+          will review dependencies. The updated roadmap should be shared with
+          stakeholders.
         </p>
       </div>
       <div>
-        <h4 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-2">Key Points</h4>
+        <h4 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-2">
+          Key Points
+        </h4>
         <ul className="space-y-1.5">
           {[
             'Analytics data pipeline POC approved — Alex leading',
@@ -437,7 +623,10 @@ function SummaryTab({ hasSummary }: { hasSummary?: boolean }) {
             'Q2 timeline dependencies need review',
             'Roadmap doc to be shared with stakeholders',
           ].map((point, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+            <li
+              key={i}
+              className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-400"
+            >
               <div className="w-1.5 h-1.5 rounded-full bg-violet-400 mt-1.5 shrink-0" />
               {point}
             </li>
@@ -456,9 +645,12 @@ function ActionsTab({ hasActionItems }: { hasActionItems?: boolean }) {
         <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
           <ClipboardList className="w-6 h-6 text-neutral-400" />
         </div>
-        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">No action items</p>
+        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+          No action items
+        </p>
         <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs">
-          Action items will be auto-generated from the AI summary once available.
+          Action items will be auto-generated from the AI summary once
+          available.
         </p>
       </div>
     );
@@ -466,32 +658,45 @@ function ActionsTab({ hasActionItems }: { hasActionItems?: boolean }) {
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">Action Items</h3>
+      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+        Action Items
+      </h3>
       {mockActionItems.map((item) => (
         <div
           key={item.id}
           className={`flex items-start gap-3 p-3 rounded-lg border transition-colors
-            ${item.status === 'completed'
-              ? 'border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/20'
-              : 'border-neutral-200 dark:border-neutral-700'
+            ${
+              item.status === 'completed'
+                ? 'border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/20'
+                : 'border-neutral-200 dark:border-neutral-700'
             }`}
         >
-          <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0
-            ${item.status === 'completed'
-              ? 'bg-emerald-100 dark:bg-emerald-900/30'
-              : 'border-2 border-neutral-300 dark:border-neutral-600'
+          <div
+            className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0
+            ${
+              item.status === 'completed'
+                ? 'bg-emerald-100 dark:bg-emerald-900/30'
+                : 'border-2 border-neutral-300 dark:border-neutral-600'
             }`}
           >
-            {item.status === 'completed' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
+            {item.status === 'completed' && (
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+            )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className={`text-sm font-medium ${item.status === 'completed' ? 'text-neutral-400 line-through' : 'text-neutral-900 dark:text-neutral-100'}`}>
+            <p
+              className={`text-sm font-medium ${item.status === 'completed' ? 'text-neutral-400 line-through' : 'text-neutral-900 dark:text-neutral-100'}`}
+            >
               {item.title}
             </p>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] text-neutral-400 dark:text-neutral-500">{item.assignedTo}</span>
+              <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                {item.assignedTo}
+              </span>
               {item.dueDate && (
-                <span className="text-[10px] text-neutral-400 dark:text-neutral-500">&middot; Due {item.dueDate}</span>
+                <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                  &middot; Due {item.dueDate}
+                </span>
               )}
               <span className="px-1.5 py-0.5 rounded text-[9px] font-medium uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
                 {item.category.replace('_', ' ')}

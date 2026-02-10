@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Grip } from 'lucide-react';
+import { toast } from 'sonner';
 import { useToolbarPins } from '@/hooks';
 import type { ToolbarItem } from '@/types';
 import {
@@ -28,6 +29,9 @@ export function Toolbar() {
     (item: ToolbarItem) => {
       if (item.action === 'navigate' && item.path) {
         navigate(item.path);
+      } else if (item.id === 'share-link') {
+        navigator.clipboard.writeText('https://cal.harsh.dev/book/harsh');
+        toast.success('Booking link copied to clipboard');
       }
     },
     [navigate]

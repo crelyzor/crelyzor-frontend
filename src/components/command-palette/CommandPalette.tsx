@@ -15,12 +15,14 @@ import {
   Plus,
   Settings,
   LogOut,
-  User,
+  Bell,
   Search,
   Link2,
   Mic,
+  Home,
 } from 'lucide-react';
 import { useUIStore } from '@/stores';
+import { toast } from 'sonner';
 
 export function CommandPalette() {
   const open = useUIStore((s) => s.commandPaletteOpen);
@@ -60,7 +62,16 @@ export function CommandPalette() {
             <Plus className="mr-3 h-4 w-4" />
             <span>Create Meeting</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => {})}>
+          <CommandItem
+            onSelect={() =>
+              runCommand(() => {
+                navigator.clipboard.writeText(
+                  'https://cal.harsh.dev/book/harsh'
+                );
+                toast.success('Booking link copied to clipboard');
+              })
+            }
+          >
             <Link2 className="mr-3 h-4 w-4" />
             <span>Share Booking Link</span>
           </CommandItem>
@@ -70,6 +81,12 @@ export function CommandPalette() {
 
         <CommandGroup heading="Navigate">
           <CommandItem onSelect={() => runCommand(() => navigate('/'))}>
+            <Home className="mr-3 h-4 w-4" />
+            <span>Home</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => runCommand(() => navigate('/meetings'))}
+          >
             <CalendarDays className="mr-3 h-4 w-4" />
             <span>Meetings</span>
           </CommandItem>
@@ -85,6 +102,12 @@ export function CommandPalette() {
             <Mic className="mr-2 h-4 w-4" />
             <span>Voice Notes</span>
           </CommandItem>
+          <CommandItem
+            onSelect={() => runCommand(() => navigate('/notifications'))}
+          >
+            <Bell className="mr-3 h-4 w-4" />
+            <span>Notifications</span>
+          </CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
@@ -94,30 +117,9 @@ export function CommandPalette() {
             <Settings className="mr-3 h-4 w-4" />
             <span>Settings</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate('/account'))}>
-            <User className="mr-3 h-4 w-4" />
-            <span>View Account</span>
-          </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate('/signin'))}>
             <LogOut className="mr-3 h-4 w-4 text-red-500" />
             <span className="text-red-500">Log Out</span>
-          </CommandItem>
-        </CommandGroup>
-
-        <CommandSeparator />
-
-        <CommandGroup heading="Recent Searches">
-          <CommandItem>
-            <Search className="mr-3 h-4 w-4 text-neutral-400 dark:text-neutral-500" />
-            <span className="text-neutral-500 dark:text-neutral-400">
-              Product Review Meeting
-            </span>
-          </CommandItem>
-          <CommandItem>
-            <Search className="mr-3 h-4 w-4 text-neutral-400 dark:text-neutral-500" />
-            <span className="text-neutral-500 dark:text-neutral-400">
-              Team Sync
-            </span>
           </CommandItem>
         </CommandGroup>
       </CommandList>

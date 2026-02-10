@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Toaster } from 'sonner';
 import { queryClient } from '@/lib/queryClient';
 import { ThemeProvider } from '@/components/theme';
 import { CommandPalette } from '@/components/command-palette';
@@ -10,8 +11,18 @@ import { PageLoader } from '@/components/PageLoader';
 import Layout from '@/layout/Layout';
 import { routes } from '@/routes/routes';
 
-const { Home, Meetings, CreateMeeting, MeetingDetail, Availability, VoiceNotes, Settings, Notifications, SignIn, PublicBooking } =
-  routes;
+const {
+  Home,
+  Meetings,
+  CreateMeeting,
+  MeetingDetail,
+  Availability,
+  VoiceNotes,
+  Settings,
+  Notifications,
+  SignIn,
+  PublicBooking,
+} = routes;
 
 function App() {
   return (
@@ -97,6 +108,13 @@ function App() {
               </Routes>
             </Suspense>
           </BrowserRouter>
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              className:
+                'text-sm font-medium',
+            }}
+          />
         </ThemeProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
