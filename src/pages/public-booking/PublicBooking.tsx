@@ -54,9 +54,7 @@ export default function PublicBooking() {
   }>;
 
   // Extract unique available dates
-  const availableDates = [
-    ...new Set(availableSlots.map((s) => s.date)),
-  ].sort();
+  const availableDates = [...new Set(availableSlots.map((s) => s.date))].sort();
 
   // Get time slots for the selected date
   const slotsForDate = selectedDate

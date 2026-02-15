@@ -26,7 +26,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { useOrganizationStore } from '@/stores/organizationStore';
 import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
-import { useOrgMembers, useUpdateOrg } from '@/hooks/queries/useOrganizationQueries';
+import {
+  useOrgMembers,
+  useUpdateOrg,
+} from '@/hooks/queries/useOrganizationQueries';
 import { useUpdateProfile } from '@/hooks/queries/useUserQueries';
 import {
   useCalendarStatus,
@@ -257,7 +260,7 @@ function OrganizationSection() {
   // Get members list from API response
   const membersList = Array.isArray(members)
     ? members
-    : (members as { members?: unknown[] })?.members ?? [];
+    : ((members as { members?: unknown[] })?.members ?? []);
 
   return (
     <div className="space-y-6">
@@ -291,7 +294,9 @@ function OrganizationSection() {
                   Members
                 </span>
                 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
-                  {(membersList as unknown[]).length || currentOrg?.memberCount || 1}
+                  {(membersList as unknown[]).length ||
+                    currentOrg?.memberCount ||
+                    1}
                 </span>
               </div>
               <Button
@@ -302,42 +307,51 @@ function OrganizationSection() {
                 Invite Member
               </Button>
             </div>
-            {(membersList as Array<{
-              id: string;
-              user: { id: string; name: string; email: string; avatarUrl?: string };
-              roles: Array<{ name?: string; systemRoleType?: string }>;
-              accessLevel?: string;
-            }>).slice(0, 5).map((member) => {
-              const roleName =
-                member.roles?.[0]?.name ??
-                member.roles?.[0]?.systemRoleType ??
-                member.accessLevel ??
-                'Member';
-              return (
-                <div
-                  key={member.id}
-                  className="flex items-center gap-3 py-2 border-b border-neutral-50 dark:border-neutral-800/50 last:border-0"
-                >
-                  {member.user.avatarUrl ? (
-                    <img
-                      src={member.user.avatarUrl}
-                      alt={member.user.name}
-                      className="w-7 h-7 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-semibold text-neutral-500">
-                      {member.user.name.charAt(0)}
-                    </div>
-                  )}
-                  <span className="text-xs text-neutral-700 dark:text-neutral-300 flex-1">
-                    {member.user.name} &mdash; {roleName}
-                  </span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6">
-                    <MoreHorizontal className="w-3.5 h-3.5 text-neutral-400" />
-                  </Button>
-                </div>
-              );
-            })}
+            {(
+              membersList as Array<{
+                id: string;
+                user: {
+                  id: string;
+                  name: string;
+                  email: string;
+                  avatarUrl?: string;
+                };
+                roles: Array<{ name?: string; systemRoleType?: string }>;
+                accessLevel?: string;
+              }>
+            )
+              .slice(0, 5)
+              .map((member) => {
+                const roleName =
+                  member.roles?.[0]?.name ??
+                  member.roles?.[0]?.systemRoleType ??
+                  member.accessLevel ??
+                  'Member';
+                return (
+                  <div
+                    key={member.id}
+                    className="flex items-center gap-3 py-2 border-b border-neutral-50 dark:border-neutral-800/50 last:border-0"
+                  >
+                    {member.user.avatarUrl ? (
+                      <img
+                        src={member.user.avatarUrl}
+                        alt={member.user.name}
+                        className="w-7 h-7 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-semibold text-neutral-500">
+                        {member.user.name.charAt(0)}
+                      </div>
+                    )}
+                    <span className="text-xs text-neutral-700 dark:text-neutral-300 flex-1">
+                      {member.user.name} &mdash; {roleName}
+                    </span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                      <MoreHorizontal className="w-3.5 h-3.5 text-neutral-400" />
+                    </Button>
+                  </div>
+                );
+              })}
           </div>
 
           <div className="flex justify-end pt-4 border-t border-neutral-100 dark:border-neutral-800">
@@ -616,11 +630,7 @@ function IntegrationsSection() {
                         Disconnect
                       </Button>
                     ) : (
-                      <Button
-                        size="sm"
-                        disabled
-                        className="text-xs h-8 px-3"
-                      >
+                      <Button size="sm" disabled className="text-xs h-8 px-3">
                         Coming Soon
                       </Button>
                     )}
@@ -697,36 +707,42 @@ function SecuritySection() {
             </h3>
             {sessions && Array.isArray(sessions) && sessions.length > 0 ? (
               <div className="space-y-2">
-                {sessions.map((session: {
-                  id: string;
-                  userAgent?: string;
-                  ipAddress?: string;
-                  createdAt: string;
-                  isCurrent?: boolean;
-                }) => (
-                  <div
-                    key={session.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                      <Monitor className="w-4 h-4 text-neutral-500" />
+                {sessions.map(
+                  (session: {
+                    id: string;
+                    userAgent?: string;
+                    ipAddress?: string;
+                    createdAt: string;
+                    isCurrent?: boolean;
+                  }) => (
+                    <div
+                      key={session.id}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                        <Monitor className="w-4 h-4 text-neutral-500" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                          {session.userAgent ?? 'Unknown device'}
+                        </p>
+                        <p className="text-xs text-neutral-400">
+                          {session.isCurrent
+                            ? 'Current session'
+                            : `Since ${new Date(session.createdAt).toLocaleDateString()}`}
+                          {session.ipAddress
+                            ? ` \u00B7 ${session.ipAddress}`
+                            : ''}
+                        </p>
+                      </div>
+                      {session.isCurrent && (
+                        <span className="text-[10px] font-medium text-emerald-500">
+                          Active
+                        </span>
+                      )}
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                        {session.userAgent ?? 'Unknown device'}
-                      </p>
-                      <p className="text-xs text-neutral-400">
-                        {session.isCurrent ? 'Current session' : `Since ${new Date(session.createdAt).toLocaleDateString()}`}
-                        {session.ipAddress ? ` \u00B7 ${session.ipAddress}` : ''}
-                      </p>
-                    </div>
-                    {session.isCurrent && (
-                      <span className="text-[10px] font-medium text-emerald-500">
-                        Active
-                      </span>
-                    )}
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             ) : (
               <div className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700">
@@ -737,9 +753,7 @@ function SecuritySection() {
                   <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                     Current session
                   </p>
-                  <p className="text-xs text-neutral-400">
-                    Active now
-                  </p>
+                  <p className="text-xs text-neutral-400">Active now</p>
                 </div>
                 <span className="text-[10px] font-medium text-emerald-500">
                   Active
