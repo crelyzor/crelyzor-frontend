@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Calendar } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -12,6 +13,22 @@ export function DatePicker({
   selectedDate,
   onSelectDate,
 }: DatePickerProps) {
+  // Determine the month to display from available dates or current month
+  const { year, month, daysInMonth, startDayOfWeek } = useMemo(() => {
+    const refDate =
+      availableDates.length > 0 ? new Date(availableDates[0]) : new Date();
+    const y = refDate.getFullYear();
+    const m = refDate.getMonth();
+    const dim = new Date(y, m + 1, 0).getDate();
+    const sdow = new Date(y, m, 1).getDay();
+    return { year: y, month: m, daysInMonth: dim, startDayOfWeek: sdow };
+  }, [availableDates]);
+
+  const monthLabel = new Date(year, month).toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
+  });
+
   return (
     <div>
       <h2 className="text-base font-semibold text-neutral-950 dark:text-neutral-50 mb-4">
@@ -20,6 +37,9 @@ export function DatePicker({
       </h2>
       <Card className="shadow-sm border-neutral-200 dark:border-neutral-800">
         <CardContent className="p-4">
+          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3 text-center">
+            {monthLabel}
+          </p>
           <div className="grid grid-cols-7 gap-2 mb-4">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
               <div
@@ -31,9 +51,13 @@ export function DatePicker({
             ))}
           </div>
           <div className="grid grid-cols-7 gap-2">
-            {[...Array(28)].map((_, i) => {
+            {/* Empty cells for offset */}
+            {[...Array(startDayOfWeek)].map((_, i) => (
+              <div key={`empty-${i}`} />
+            ))}
+            {[...Array(daysInMonth)].map((_, i) => {
               const day = i + 1;
-              const dateStr = `2026-02-${day.toString().padStart(2, '0')}`;
+              const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
               const isAvailable = availableDates.includes(dateStr);
               const isSelected = selectedDate === dateStr;
 

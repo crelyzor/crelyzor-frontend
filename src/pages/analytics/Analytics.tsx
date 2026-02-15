@@ -91,7 +91,7 @@ export default function Analytics() {
   const { currentOrg } = useOrganizationStore();
   const isPersonalView = currentOrg?.isPersonal ?? true;
   const isOwnerOrAdmin =
-    currentOrg?.role === 'owner' || currentOrg?.role === 'admin';
+    currentOrg?.role === 'OWNER' || currentOrg?.role === 'ADMIN';
   const showTeamToggle = !isPersonalView && isOwnerOrAdmin;
 
   const [isTeamView, setIsTeamView] = useState(false);

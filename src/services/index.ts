@@ -8,11 +8,16 @@ export { organizationsApi } from './organizationsService';
 export type { UpdateOrgPayload } from './organizationsService';
 
 export { availabilityApi } from './availabilityService';
-export type { BookingSlot, CreateBookingPayload } from './availabilityService';
+export type { CreateBookingPayload } from './availabilityService';
 
 export { authApi } from './authService';
+
+export { userApi } from './userService';
+export type { UpdateProfilePayload } from './userService';
+
+export { integrationsApi, sessionsApi } from './integrationsService';
 export type {
-  LoginPayload,
-  AuthResponse,
-  CurrentUserResponse,
-} from './authService';
+  CalendarAccessStatus,
+  GoogleScopesStatus,
+  SessionInfo,
+} from './integrationsService';

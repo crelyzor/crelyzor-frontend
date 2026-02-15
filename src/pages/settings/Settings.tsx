@@ -18,11 +18,21 @@ import {
   Calendar,
   ExternalLink,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { useOrganizationStore } from '@/stores/organizationStore';
+import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
+import { useOrgMembers, useUpdateOrg } from '@/hooks/queries/useOrganizationQueries';
+import { useUpdateProfile } from '@/hooks/queries/useUserQueries';
+import {
+  useCalendarStatus,
+  useConnectCalendar,
+  useSessions,
+} from '@/hooks/queries/useIntegrationQueries';
 
 // ── Settings sections ──
 const SETTINGS_SECTIONS = [
@@ -37,9 +47,17 @@ const SETTINGS_SECTIONS = [
 type SettingsSection = (typeof SETTINGS_SECTIONS)[number]['id'];
 
 export default function Settings() {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] =
     useState<SettingsSection>('profile');
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
+  const logoutMutation = useLogout();
+
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => navigate('/signin'),
+    });
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -79,7 +97,10 @@ export default function Settings() {
 
           {/* Sign out */}
           <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
-            <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+            >
               <LogOut className="w-4 h-4" />
               Sign Out
             </button>
@@ -104,6 +125,39 @@ export default function Settings() {
 
 // ── Profile ──
 function ProfileSection() {
+  const { data: profile } = useCurrentUser();
+  const updateProfile = useUpdateProfile();
+
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [nameInit, setNameInit] = useState(false);
+
+  // Initialize form fields from profile data
+  if (profile && !nameInit) {
+    setName(profile.name ?? '');
+    setPhone(profile.phoneNumber ?? '');
+    setNameInit(true);
+  }
+
+  const initials = (profile?.name ?? 'U')
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  const handleSave = () => {
+    const payload: Record<string, string> = {};
+    if (name && name !== profile?.name) payload.name = name;
+    if (phone !== (profile?.phoneNumber ?? '')) payload.phoneNumber = phone;
+    if (Object.keys(payload).length === 0) return;
+
+    updateProfile.mutate(payload, {
+      onSuccess: () => toast.success('Profile updated'),
+      onError: () => toast.error('Failed to update profile'),
+    });
+  };
+
   return (
     <div className="space-y-6">
       <SectionHeader
@@ -114,68 +168,66 @@ function ProfileSection() {
       <Card className="border-neutral-200 dark:border-neutral-800">
         <CardContent className="p-6">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-xl font-semibold text-neutral-500 dark:text-neutral-400">
-              HK
-            </div>
+            {profile?.avatarUrl ? (
+              <img
+                src={profile.avatarUrl}
+                alt={profile.name}
+                className="w-16 h-16 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-xl font-semibold text-neutral-500 dark:text-neutral-400">
+                {initials}
+              </div>
+            )}
             <div>
               <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
-                Harsh Keshari
+                {profile?.name ?? 'Loading...'}
               </h3>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                harsh@example.com
+                {profile?.email ?? ''}
               </p>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs mt-1 h-7 px-2 text-blue-500 hover:text-blue-600"
-              >
-                Change photo
-              </Button>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <FieldGroup label="Full Name">
               <Input
-                defaultValue="Harsh Keshari"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="border-neutral-200 dark:border-neutral-700"
               />
             </FieldGroup>
-            <FieldGroup label="Username">
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-neutral-400 dark:text-neutral-500">
-                  @
-                </span>
-                <Input
-                  defaultValue="harshkeshari"
-                  className="border-neutral-200 dark:border-neutral-700 pl-7"
-                />
-              </div>
-            </FieldGroup>
             <FieldGroup label="Email">
               <Input
-                defaultValue="harsh@example.com"
+                value={profile?.email ?? ''}
                 disabled
                 className="border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50"
               />
             </FieldGroup>
             <FieldGroup label="Phone">
               <Input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 placeholder="Add phone number"
                 className="border-neutral-200 dark:border-neutral-700"
               />
             </FieldGroup>
-            <FieldGroup label="Timezone">
+            <FieldGroup label="Country">
               <Input
-                defaultValue="Asia/Kolkata (IST)"
+                defaultValue={profile?.country ?? ''}
+                placeholder="Country"
                 className="border-neutral-200 dark:border-neutral-700"
               />
             </FieldGroup>
           </div>
 
           <div className="flex justify-end mt-6 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-            <Button className="bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-xs px-4 h-8">
-              Save Changes
+            <Button
+              onClick={handleSave}
+              disabled={updateProfile.isPending}
+              className="bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-xs px-4 h-8"
+            >
+              {updateProfile.isPending ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </CardContent>
@@ -187,6 +239,25 @@ function ProfileSection() {
 // ── Organization ──
 function OrganizationSection() {
   const { currentOrg } = useOrganizationStore();
+  const { data: members } = useOrgMembers();
+  const updateOrg = useUpdateOrg();
+  const [orgName, setOrgName] = useState(currentOrg?.name ?? '');
+
+  const handleSaveOrg = () => {
+    if (!orgName || orgName === currentOrg?.name) return;
+    updateOrg.mutate(
+      { name: orgName },
+      {
+        onSuccess: () => toast.success('Organization updated'),
+        onError: () => toast.error('Failed to update organization'),
+      }
+    );
+  };
+
+  // Get members list from API response
+  const membersList = Array.isArray(members)
+    ? members
+    : (members as { members?: unknown[] })?.members ?? [];
 
   return (
     <div className="space-y-6">
@@ -204,18 +275,10 @@ function OrganizationSection() {
           <div className="grid grid-cols-2 gap-4">
             <FieldGroup label="Organization Name">
               <Input
-                defaultValue={currentOrg?.name ?? ''}
+                value={orgName}
+                onChange={(e) => setOrgName(e.target.value)}
                 className="border-neutral-200 dark:border-neutral-700"
               />
-            </FieldGroup>
-            <FieldGroup label="Brand Color">
-              <div className="flex gap-2">
-                <div className="w-9 h-9 rounded-md bg-neutral-900 dark:bg-neutral-100 border border-neutral-200 dark:border-neutral-700" />
-                <Input
-                  defaultValue="#171717"
-                  className="border-neutral-200 dark:border-neutral-700 font-mono text-xs"
-                />
-              </div>
             </FieldGroup>
           </div>
 
@@ -228,7 +291,7 @@ function OrganizationSection() {
                   Members
                 </span>
                 <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
-                  {currentOrg?.memberCount ?? 1}
+                  {(membersList as unknown[]).length || currentOrg?.memberCount || 1}
                 </span>
               </div>
               <Button
@@ -239,32 +302,51 @@ function OrganizationSection() {
                 Invite Member
               </Button>
             </div>
-            {/* Sample members */}
-            {[
-              'Harsh Keshari (You) — Owner',
-              'Sarah Chen — Admin',
-              'Mike Ross — Member',
-            ].map((m, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 py-2 border-b border-neutral-50 dark:border-neutral-800/50 last:border-0"
-              >
-                <div className="w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-semibold text-neutral-500">
-                  {m.charAt(0)}
+            {(membersList as Array<{
+              id: string;
+              user: { id: string; name: string; email: string; avatarUrl?: string };
+              roles: Array<{ name?: string; systemRoleType?: string }>;
+              accessLevel?: string;
+            }>).slice(0, 5).map((member) => {
+              const roleName =
+                member.roles?.[0]?.name ??
+                member.roles?.[0]?.systemRoleType ??
+                member.accessLevel ??
+                'Member';
+              return (
+                <div
+                  key={member.id}
+                  className="flex items-center gap-3 py-2 border-b border-neutral-50 dark:border-neutral-800/50 last:border-0"
+                >
+                  {member.user.avatarUrl ? (
+                    <img
+                      src={member.user.avatarUrl}
+                      alt={member.user.name}
+                      className="w-7 h-7 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-semibold text-neutral-500">
+                      {member.user.name.charAt(0)}
+                    </div>
+                  )}
+                  <span className="text-xs text-neutral-700 dark:text-neutral-300 flex-1">
+                    {member.user.name} &mdash; {roleName}
+                  </span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <MoreHorizontal className="w-3.5 h-3.5 text-neutral-400" />
+                  </Button>
                 </div>
-                <span className="text-xs text-neutral-700 dark:text-neutral-300 flex-1">
-                  {m}
-                </span>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  <MoreHorizontal className="w-3.5 h-3.5 text-neutral-400" />
-                </Button>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="flex justify-end pt-4 border-t border-neutral-100 dark:border-neutral-800">
-            <Button className="bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-xs px-4 h-8">
-              Save Changes
+            <Button
+              onClick={handleSaveOrg}
+              disabled={updateOrg.isPending}
+              className="bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-xs px-4 h-8"
+            >
+              {updateOrg.isPending ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </CardContent>
@@ -281,13 +363,19 @@ function OrganizationSection() {
           </div>
           <div className="flex gap-2">
             <Input
-              defaultValue="https://cal.app/book/harsh-keshari"
+              defaultValue={`${window.location.origin}/book/${currentOrg?.id ?? ''}`}
               readOnly
               className="border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 text-xs font-mono"
             />
             <Button
               variant="outline"
               size="sm"
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  `${window.location.origin}/book/${currentOrg?.id ?? ''}`
+                );
+                toast.success('Link copied!');
+              }}
               className="text-xs h-9 px-3 shrink-0 border-neutral-200 dark:border-neutral-700"
             >
               Copy
@@ -429,35 +517,43 @@ function AppearanceSection({
 }
 
 // ── Integrations ──
-const INTEGRATIONS = [
-  {
-    id: 'google-calendar',
-    name: 'Google Calendar',
-    description:
-      'Sync your Google Calendar events and create meetings with Google Meet',
-    icon: Calendar,
-    connected: true,
-    account: 'harsh@example.com',
-  },
-  {
-    id: 'zoom',
-    name: 'Zoom',
-    description: 'Create Zoom meetings directly from your calendar',
-    icon: Video,
-    connected: false,
-    account: null,
-  },
-  {
-    id: 'google-meet',
-    name: 'Google Meet',
-    description: 'Generate Google Meet links for online meetings',
-    icon: Video,
-    connected: true,
-    account: 'Via Google Calendar',
-  },
-] as const;
-
 function IntegrationsSection() {
+  const { data: calStatus } = useCalendarStatus();
+  const { connect } = useConnectCalendar();
+
+  const integrations = [
+    {
+      id: 'google-calendar',
+      name: 'Google Calendar',
+      description:
+        'Sync your Google Calendar events and create meetings with Google Meet',
+      icon: Calendar,
+      connected: calStatus?.hasCalendarAccess ?? false,
+      account: calStatus?.connectedAt
+        ? `Connected ${new Date(calStatus.connectedAt).toLocaleDateString()}`
+        : null,
+      onConnect: connect,
+    },
+    {
+      id: 'zoom',
+      name: 'Zoom',
+      description: 'Create Zoom meetings directly from your calendar',
+      icon: Video,
+      connected: false,
+      account: null,
+      onConnect: undefined,
+    },
+    {
+      id: 'google-meet',
+      name: 'Google Meet',
+      description: 'Generate Google Meet links for online meetings',
+      icon: Video,
+      connected: calStatus?.hasCalendarAccess ?? false,
+      account: calStatus?.hasCalendarAccess ? 'Via Google Calendar' : null,
+      onConnect: undefined,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <SectionHeader
@@ -465,9 +561,8 @@ function IntegrationsSection() {
         description="Connect third-party services to enhance your workflow"
       />
 
-      {/* Connected integrations */}
       <div className="space-y-3">
-        {INTEGRATIONS.map((integration) => {
+        {integrations.map((integration) => {
           const Icon = integration.icon;
           return (
             <Card
@@ -504,7 +599,15 @@ function IntegrationsSection() {
                     )}
                   </div>
                   <div>
-                    {integration.connected ? (
+                    {!integration.connected && integration.onConnect ? (
+                      <Button
+                        size="sm"
+                        onClick={integration.onConnect}
+                        className="text-xs h-8 px-3 bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900"
+                      >
+                        Connect
+                      </Button>
+                    ) : integration.connected ? (
                       <Button
                         variant="outline"
                         size="sm"
@@ -515,9 +618,10 @@ function IntegrationsSection() {
                     ) : (
                       <Button
                         size="sm"
-                        className="text-xs h-8 px-3 bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900"
+                        disabled
+                        className="text-xs h-8 px-3"
                       >
-                        Connect
+                        Coming Soon
                       </Button>
                     )}
                   </div>
@@ -528,7 +632,6 @@ function IntegrationsSection() {
         })}
       </div>
 
-      {/* API / Webhooks hint */}
       <Card className="border-dashed border-neutral-200 dark:border-neutral-800">
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
@@ -552,6 +655,9 @@ function IntegrationsSection() {
 
 // ── Security ──
 function SecuritySection() {
+  const { data: profile } = useCurrentUser();
+  const { data: sessions } = useSessions();
+
   return (
     <div className="space-y-6">
       <SectionHeader
@@ -574,7 +680,9 @@ function SecuritySection() {
                 <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                   Google
                 </p>
-                <p className="text-xs text-neutral-400">harsh@example.com</p>
+                <p className="text-xs text-neutral-400">
+                  {profile?.email ?? ''}
+                </p>
               </div>
               <span className="text-[10px] font-medium text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-full">
                 Connected
@@ -587,22 +695,57 @@ function SecuritySection() {
             <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-3">
               Active Sessions
             </h3>
-            <div className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700">
-              <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                <Monitor className="w-4 h-4 text-neutral-500" />
+            {sessions && Array.isArray(sessions) && sessions.length > 0 ? (
+              <div className="space-y-2">
+                {sessions.map((session: {
+                  id: string;
+                  userAgent?: string;
+                  ipAddress?: string;
+                  createdAt: string;
+                  isCurrent?: boolean;
+                }) => (
+                  <div
+                    key={session.id}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                      <Monitor className="w-4 h-4 text-neutral-500" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                        {session.userAgent ?? 'Unknown device'}
+                      </p>
+                      <p className="text-xs text-neutral-400">
+                        {session.isCurrent ? 'Current session' : `Since ${new Date(session.createdAt).toLocaleDateString()}`}
+                        {session.ipAddress ? ` \u00B7 ${session.ipAddress}` : ''}
+                      </p>
+                    </div>
+                    {session.isCurrent && (
+                      <span className="text-[10px] font-medium text-emerald-500">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                  Chrome on macOS
-                </p>
-                <p className="text-xs text-neutral-400">
-                  Current session &middot; Mumbai, India
-                </p>
+            ) : (
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                  <Monitor className="w-4 h-4 text-neutral-500" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                    Current session
+                  </p>
+                  <p className="text-xs text-neutral-400">
+                    Active now
+                  </p>
+                </div>
+                <span className="text-[10px] font-medium text-emerald-500">
+                  Active
+                </span>
               </div>
-              <span className="text-[10px] font-medium text-emerald-500">
-                Active
-              </span>
-            </div>
+            )}
           </div>
 
           {/* Danger zone */}

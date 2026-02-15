@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { User, Mail, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,13 +10,29 @@ type BookingFormProps = {
   selectedDate: string;
   selectedTime: string;
   onBack: () => void;
+  onSubmit: (data: { name: string; email: string; message?: string }) => void;
+  isSubmitting?: boolean;
+  error?: string;
 };
 
 export function BookingForm({
   selectedDate,
   selectedTime,
   onBack,
+  onSubmit,
+  isSubmitting,
+  error,
 }: BookingFormProps) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !email) return;
+    onSubmit({ name, email, message: message || undefined });
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <Button
@@ -23,7 +40,7 @@ export function BookingForm({
         onClick={onBack}
         className="text-neutral-900 dark:text-neutral-100 hover:text-neutral-700 dark:hover:text-neutral-300 mb-6 px-0"
       >
-        ← Back to time selection
+        &larr; Back to time selection
       </Button>
 
       <Card className="shadow-sm border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 mb-6">
@@ -44,7 +61,7 @@ export function BookingForm({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label
                 htmlFor="name"
@@ -57,6 +74,8 @@ export function BookingForm({
                 id="name"
                 type="text"
                 required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your name"
                 className="border-neutral-200 dark:border-neutral-700 focus-visible:ring-neutral-900 dark:focus-visible:ring-neutral-400"
               />
@@ -74,6 +93,8 @@ export function BookingForm({
                 id="email"
                 type="email"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 className="border-neutral-200 dark:border-neutral-700 focus-visible:ring-neutral-900 dark:focus-visible:ring-neutral-400"
               />
@@ -93,16 +114,23 @@ export function BookingForm({
               <Textarea
                 id="message"
                 rows={4}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
                 placeholder="What would you like to discuss?"
                 className="border-neutral-200 dark:border-neutral-700 focus-visible:ring-neutral-900 dark:focus-visible:ring-neutral-400 resize-none"
               />
             </div>
 
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
+
             <Button
               type="submit"
+              disabled={isSubmitting}
               className="w-full bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-base py-6"
             >
-              Confirm Booking
+              {isSubmitting ? 'Confirming...' : 'Confirm Booking'}
             </Button>
 
             <p className="text-xs text-neutral-400 text-center">
