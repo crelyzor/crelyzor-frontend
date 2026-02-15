@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/stores';
+import { useOrganizationStore } from '@/stores';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
@@ -25,7 +26,10 @@ function buildUrl(
   path: string,
   params?: Record<string, string | number | boolean | undefined>
 ): string {
-  const url = new URL(`${API_BASE_URL}${path}`, window.location.origin);
+  const base = API_BASE_URL.startsWith('http')
+    ? API_BASE_URL
+    : `${window.location.origin}${API_BASE_URL}`;
+  const url = new URL(`${base}${path}`);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {
@@ -43,15 +47,19 @@ async function request<T>(
   const { method = 'GET', body, headers = {}, params, signal } = options;
 
   const token = useAuthStore.getState().accessToken;
+  const currentOrg = useOrganizationStore.getState().currentOrg;
+
+  const requestHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(currentOrg?.id ? { 'x-organization-id': currentOrg.id } : {}),
+    ...headers,
+  };
 
   const res = await fetch(buildUrl(path, params), {
     method,
     signal,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
-    },
+    headers: requestHeaders,
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
 
@@ -68,7 +76,15 @@ async function request<T>(
   // Handle 204 No Content
   if (res.status === 204) return undefined as T;
 
-  return res.json();
+  const json = await res.json();
+
+  // Backend wraps responses in { status, statusCode, message, data }
+  // Unwrap if the response has that shape
+  if (json && typeof json === 'object' && 'data' in json && 'statusCode' in json) {
+    return json.data as T;
+  }
+
+  return json as T;
 }
 
 export const apiClient = {

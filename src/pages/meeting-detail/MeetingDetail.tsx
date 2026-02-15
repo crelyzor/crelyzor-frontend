@@ -20,7 +20,10 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { allMeetings } from '@/data/meetings';
+import { useMeeting, useCompleteMeeting, useCancelMeeting } from '@/hooks/queries/useMeetingQueries';
+import { toDisplayMeeting } from '@/lib/meetingHelpers';
+import { getStatusStyle, getStatusLabel } from '@/types';
+import { PageLoader } from '@/components/PageLoader';
 
 // ── SMA Tab config ──
 const SMA_TABS = [
@@ -98,51 +101,18 @@ const mockActionItems = [
   },
 ];
 
-// ── Status styling ─
-const STATUS_STYLES: Record<
-  string,
-  { bg: string; text: string; label: string }
-> = {
-  confirmed: {
-    bg: 'bg-emerald-50 dark:bg-emerald-950/30',
-    text: 'text-emerald-600 dark:text-emerald-400',
-    label: 'Confirmed',
-  },
-  pending: {
-    bg: 'bg-amber-50 dark:bg-amber-950/30',
-    text: 'text-amber-600 dark:text-amber-400',
-    label: 'Pending',
-  },
-  completed: {
-    bg: 'bg-neutral-100 dark:bg-neutral-800',
-    text: 'text-neutral-600 dark:text-neutral-400',
-    label: 'Completed',
-  },
-  cancelled: {
-    bg: 'bg-red-50 dark:bg-red-950/30',
-    text: 'text-red-500 dark:text-red-400',
-    label: 'Cancelled',
-  },
-  declined: {
-    bg: 'bg-red-50 dark:bg-red-950/30',
-    text: 'text-red-500 dark:text-red-400',
-    label: 'Declined',
-  },
-  rescheduling: {
-    bg: 'bg-blue-50 dark:bg-blue-950/30',
-    text: 'text-blue-600 dark:text-blue-400',
-    label: 'Rescheduling',
-  },
-};
-
 export default function MeetingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<SMATab>('overview');
+  const completeMeeting = useCompleteMeeting();
+  const cancelMeeting = useCancelMeeting();
 
-  const meeting = allMeetings.find((m) => String(m.id) === id);
+  const { data: rawMeeting, isLoading } = useMeeting(id ?? '');
 
-  if (!meeting) {
+  if (isLoading) return <PageLoader />;
+
+  if (!rawMeeting) {
     return (
       <div className="max-w-3xl mx-auto py-20 text-center">
         <h2 className="text-lg font-semibold text-neutral-950 dark:text-neutral-50 mb-2">
@@ -158,7 +128,9 @@ export default function MeetingDetail() {
     );
   }
 
-  const status = STATUS_STYLES[meeting.status] ?? STATUS_STYLES.pending;
+  const meeting = toDisplayMeeting(rawMeeting);
+  const statusClasses = getStatusStyle(meeting.status);
+  const statusText = getStatusLabel(meeting.status);
   const hasSMA = !!(
     meeting.hasRecording ||
     meeting.hasTranscript ||
@@ -184,9 +156,9 @@ export default function MeetingDetail() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${status.bg} ${status.text}`}
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${statusClasses}`}
                 >
-                  {status.label}
+                  {statusText}
                 </span>
                 {meeting.category && (
                   <span className="px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
@@ -219,7 +191,7 @@ export default function MeetingDetail() {
                   Date
                 </p>
                 <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
-                  {new Date(meeting.date).toLocaleDateString('en-US', {
+                  {new Date(meeting._raw.startTime).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric',
@@ -299,7 +271,7 @@ export default function MeetingDetail() {
 
           {/* Quick Actions */}
           <div className="flex gap-2 mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800">
-            {meeting.status === 'confirmed' && (
+            {meeting.status === 'ACCEPTED' && (
               <Button
                 variant="outline"
                 size="sm"
@@ -393,7 +365,7 @@ function OverviewTab({
   meeting,
   hasSMA,
 }: {
-  meeting: (typeof allMeetings)[0];
+  meeting: ReturnType<typeof toDisplayMeeting>;
   hasSMA: boolean;
 }) {
   return (

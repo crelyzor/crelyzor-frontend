@@ -1,12 +1,11 @@
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useGoogleLogin } from '@/hooks/queries/useAuthQueries';
 
 export default function SignIn() {
-  const navigate = useNavigate();
+  const { login } = useGoogleLogin();
 
   const handleGoogleSignIn = () => {
-    // TODO: Implement Google OAuth flow
-    navigate('/');
+    login();
   };
 
   return (

@@ -9,6 +9,7 @@ import { CommandPalette } from '@/components/command-palette';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PageLoader } from '@/components/PageLoader';
 import Layout from '@/layout/Layout';
+import { AuthGuard } from '@/components/AuthGuard';
 import { routes } from '@/routes/routes';
 
 const {
@@ -22,6 +23,7 @@ const {
   Settings,
   Notifications,
   SignIn,
+  AuthCallback,
   PublicBooking,
 } = routes;
 
@@ -37,78 +39,97 @@ function App() {
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 <Route path="/signin" element={<SignIn />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
 
-                {/* Main Routes with Layout */}
+                {/* Main Routes with Layout + Auth */}
                 <Route
                   path="/"
                   element={
-                    <Layout>
-                      <Home />
-                    </Layout>
+                    <AuthGuard>
+                      <Layout>
+                        <Home />
+                      </Layout>
+                    </AuthGuard>
                   }
                 />
                 <Route
                   path="/meetings"
                   element={
-                    <Layout>
-                      <Meetings />
-                    </Layout>
+                    <AuthGuard>
+                      <Layout>
+                        <Meetings />
+                      </Layout>
+                    </AuthGuard>
                   }
                 />
                 <Route
                   path="/meetings/create"
                   element={
-                    <Layout>
-                      <CreateMeeting />
-                    </Layout>
+                    <AuthGuard>
+                      <Layout>
+                        <CreateMeeting />
+                      </Layout>
+                    </AuthGuard>
                   }
                 />
                 <Route
                   path="/meetings/:id"
                   element={
-                    <Layout>
-                      <MeetingDetail />
-                    </Layout>
+                    <AuthGuard>
+                      <Layout>
+                        <MeetingDetail />
+                      </Layout>
+                    </AuthGuard>
                   }
                 />
                 <Route
                   path="/availability"
                   element={
-                    <Layout>
-                      <Availability />
-                    </Layout>
+                    <AuthGuard>
+                      <Layout>
+                        <Availability />
+                      </Layout>
+                    </AuthGuard>
                   }
                 />
                 <Route
                   path="/voice-notes"
                   element={
-                    <Layout>
-                      <VoiceNotes />
-                    </Layout>
+                    <AuthGuard>
+                      <Layout>
+                        <VoiceNotes />
+                      </Layout>
+                    </AuthGuard>
                   }
                 />
                 <Route
                   path="/analytics"
                   element={
-                    <Layout>
-                      <Analytics />
-                    </Layout>
+                    <AuthGuard>
+                      <Layout>
+                        <Analytics />
+                      </Layout>
+                    </AuthGuard>
                   }
                 />
                 <Route
                   path="/settings"
                   element={
-                    <Layout>
-                      <Settings />
-                    </Layout>
+                    <AuthGuard>
+                      <Layout>
+                        <Settings />
+                      </Layout>
+                    </AuthGuard>
                   }
                 />
                 <Route
                   path="/notifications"
                   element={
-                    <Layout>
-                      <Notifications />
-                    </Layout>
+                    <AuthGuard>
+                      <Layout>
+                        <Notifications />
+                      </Layout>
+                    </AuthGuard>
                   }
                 />
 

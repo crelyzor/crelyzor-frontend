@@ -1,4 +1,4 @@
-export type OrgRole = 'owner' | 'admin' | 'member';
+export type OrgRole = 'OWNER' | 'ADMIN' | 'MEMBER';
 
 export type Organization = {
   id: string;
@@ -6,7 +6,9 @@ export type Organization = {
   avatar?: string;
   role: OrgRole;
   isPersonal: boolean;
-  plan?: string;
+  orgMemberId: string;
+  description?: string;
+  orgLogoUrl?: string;
   memberCount?: number;
 };
 
@@ -15,4 +17,33 @@ export type CurrentUser = {
   email: string;
   name: string;
   avatarUrl?: string;
+};
+
+// Shape returned by GET /auth/profile
+export type ProfileResponse = {
+  id: string;
+  email: string;
+  emailVerified: boolean;
+  name: string;
+  avatarUrl?: string;
+  countryCode?: string;
+  phoneNumber?: string;
+  country?: string;
+  state?: string;
+  lastLoginAt?: string;
+  isActive: boolean;
+  timezone: string;
+  organizations: {
+    orgMemberId: string;
+    orgId: string;
+    orgName: string;
+    orgLogoUrl?: string;
+    orgDescription?: string;
+    accessLevel: string;
+    isPersonal?: boolean;
+    roles: {
+      roleId: string;
+      roleName: OrgRole | null;
+    }[];
+  }[];
 };

@@ -12,11 +12,14 @@ import {
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { useOrganizationStore } from '@/stores/organizationStore';
+import { useCreateMeeting } from '@/hooks/queries/useMeetingQueries';
+import type { MeetingMode } from '@/types';
 
 const DURATION_OPTIONS = [
   '15 min',
@@ -35,10 +38,25 @@ const MEETING_MODES = [
 
 type MeetingModeId = (typeof MEETING_MODES)[number]['id'];
 
+// Map UI mode IDs to backend values
+function mapMode(modeId: MeetingModeId): MeetingMode {
+  return modeId === 'in-person' ? 'IN_PERSON' : 'ONLINE';
+}
+
+// Parse duration string to minutes
+function parseDurationMinutes(d: string): number {
+  if (d.includes('hour')) {
+    const hrs = parseFloat(d);
+    return hrs * 60;
+  }
+  return parseInt(d, 10);
+}
+
 export default function CreateMeeting() {
   const navigate = useNavigate();
   const { currentOrg } = useOrganizationStore();
   const isPersonalView = currentOrg?.isPersonal ?? true;
+  const createMeeting = useCreateMeeting();
 
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
@@ -117,7 +135,37 @@ export default function CreateMeeting() {
       {/* Form */}
       <Card className="border-neutral-200 dark:border-neutral-800">
         <CardContent className="p-6">
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-5" onSubmit={(e) => {
+              e.preventDefault();
+              if (!title || !date || !time) {
+                toast.error('Please fill in title, date, and time');
+                return;
+              }
+              const startTime = new Date(`${date}T${time}`).toISOString();
+              const durationMs = parseDurationMinutes(selectedDuration) * 60000;
+              const endTime = new Date(new Date(startTime).getTime() + durationMs).toISOString();
+
+              createMeeting.mutate(
+                {
+                  title,
+                  description: description || undefined,
+                  startTime,
+                  endTime,
+                  mode: mapMode(meetingMode),
+                  location: meetingMode === 'in-person' ? location || undefined : undefined,
+                  guestEmails: participants.length > 0 ? participants : undefined,
+                },
+                {
+                  onSuccess: (created) => {
+                    toast.success('Meeting created!');
+                    navigate(`/meetings/${created.id}`);
+                  },
+                  onError: () => {
+                    toast.error('Failed to create meeting');
+                  },
+                }
+              );
+            }}>
             {/* Meeting Title */}
             <div className="space-y-1.5">
               <Label
@@ -385,9 +433,10 @@ export default function CreateMeeting() {
               </Button>
               <Button
                 type="submit"
+                disabled={createMeeting.isPending}
                 className="bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 px-6"
               >
-                Schedule
+                {createMeeting.isPending ? 'Scheduling...' : 'Schedule'}
               </Button>
             </div>
           </form>

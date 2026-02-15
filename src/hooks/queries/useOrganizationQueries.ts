@@ -10,62 +10,43 @@ export function useOrganizations() {
   return useQuery({
     queryKey: queryKeys.organizations.list(),
     queryFn: async () => {
-      const data = await organizationsApi.list();
-      setOrganizations(data.organizations);
-      return data;
+      const orgs = await organizationsApi.list();
+      setOrganizations(orgs);
+      return orgs;
     },
   });
 }
 
-export function useOrganization(id: string) {
+export function useCurrentOrganization() {
   return useQuery({
-    queryKey: queryKeys.organizations.detail(id),
-    queryFn: () => organizationsApi.getById(id),
-    enabled: !!id,
+    queryKey: queryKeys.organizations.detail('current'),
+    queryFn: () => organizationsApi.getCurrent(),
   });
 }
 
-export function useOrgMembers(orgId: string) {
+export function useOrgMembers() {
   return useQuery({
-    queryKey: queryKeys.organizations.members(orgId),
-    queryFn: () => organizationsApi.getMembers(orgId),
-    enabled: !!orgId,
-  });
-}
-
-export function useOrgSettings(orgId: string) {
-  return useQuery({
-    queryKey: queryKeys.organizations.settings(orgId),
-    queryFn: () => organizationsApi.getSettings(orgId),
-    enabled: !!orgId,
+    queryKey: queryKeys.organizations.members('current'),
+    queryFn: () => organizationsApi.getMembers(),
   });
 }
 
 export function useUpdateOrg() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateOrgPayload }) =>
-      organizationsApi.update(id, data),
+    mutationFn: (data: UpdateOrgPayload) => organizationsApi.update(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.organizations.all });
     },
   });
 }
 
-export function useUpdateOrgSettings() {
+export function useCreateOrg() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      orgId,
-      data,
-    }: {
-      orgId: string;
-      data: Record<string, unknown>;
-    }) => organizationsApi.updateSettings(orgId, data),
-    onSuccess: (_data, vars) => {
-      qc.invalidateQueries({
-        queryKey: queryKeys.organizations.settings(vars.orgId),
-      });
+    mutationFn: (data: { name: string }) => organizationsApi.create(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.organizations.all });
     },
   });
 }

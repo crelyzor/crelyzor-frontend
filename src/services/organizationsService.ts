@@ -3,29 +3,52 @@ import type { Organization } from '@/types';
 
 export type UpdateOrgPayload = {
   name?: string;
-  plan?: string;
+};
+
+export type OrgMember = {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatarUrl?: string;
+  };
+  roles: { id: string; roleName: string }[];
+  joinedAt: string;
 };
 
 export const organizationsApi = {
+  /** GET /organizations/list — all orgs for current user */
   list: () =>
-    apiClient.get<{ organizations: Organization[] }>('/organizations'),
+    apiClient.get<Organization[]>('/organizations/list'),
 
-  getById: (id: string) => apiClient.get<Organization>(`/organizations/${id}`),
+  /** POST /organizations — create team org */
+  create: (data: { name: string }) =>
+    apiClient.post<Organization>('/organizations', data),
 
-  update: (id: string, data: UpdateOrgPayload) =>
-    apiClient.patch<Organization>(`/organizations/${id}`, data),
+  /** GET /organizations — details of current org (uses x-organization-id header) */
+  getCurrent: () => apiClient.get<Organization>('/organizations'),
 
-  getMembers: (orgId: string) =>
-    apiClient.get<{
-      members: { id: string; name: string; email: string; role: string }[];
-    }>(`/organizations/${orgId}/members`),
+  /** PATCH /organizations — update current org */
+  update: (data: UpdateOrgPayload) =>
+    apiClient.patch<Organization>('/organizations', data),
 
-  getSettings: (orgId: string) =>
-    apiClient.get<Record<string, unknown>>(`/organizations/${orgId}/settings`),
+  /** DELETE /organizations — delete current org */
+  delete: () => apiClient.delete<void>('/organizations'),
 
-  updateSettings: (orgId: string, data: Record<string, unknown>) =>
-    apiClient.patch<Record<string, unknown>>(
-      `/organizations/${orgId}/settings`,
-      data
-    ),
+  /** GET /organizations/members — list members of current org */
+  getMembers: () =>
+    apiClient.get<OrgMember[]>('/organizations/members'),
+
+  /** GET /organizations/members/:memberId */
+  getMember: (memberId: string) =>
+    apiClient.get<OrgMember>(`/organizations/members/${memberId}`),
+
+  /** DELETE /organizations/members/:memberId */
+  removeMember: (memberId: string) =>
+    apiClient.delete<void>(`/organizations/members/${memberId}`),
+
+  /** PATCH /organizations/members/:memberId/role */
+  updateMemberRole: (memberId: string, role: string) =>
+    apiClient.patch<void>(`/organizations/members/${memberId}/role`, { role }),
 };

@@ -1,34 +1,25 @@
 import { apiClient } from '@/lib/apiClient';
+import type { ProfileResponse } from '@/types';
 
-export type LoginPayload = {
-  email: string;
-  password: string;
-};
-
-export type AuthResponse = {
-  accessToken: string;
-  user: {
-    id: string;
-    email: string;
-    name: string;
-  };
-};
-
-export type CurrentUserResponse = {
-  id: string;
-  email: string;
-  name: string;
-  avatar?: string;
-};
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 export const authApi = {
-  login: (data: LoginPayload) =>
-    apiClient.post<AuthResponse>('/auth/login', data),
+  // Google OAuth: redirect to backend's Google login endpoint
+  getGoogleLoginUrl: (redirectUrl: string): string => {
+    return `${API_BASE_URL}/auth/google/login?redirectUrl=${encodeURIComponent(redirectUrl)}`;
+  },
 
-  googleLogin: (code: string) =>
-    apiClient.post<AuthResponse>('/auth/google', { code }),
+  // Get current user profile (includes organizations)
+  profile: () => apiClient.get<ProfileResponse>('/auth/profile'),
 
-  me: () => apiClient.get<CurrentUserResponse>('/auth/me'),
+  // Logout
+  logout: (refreshToken?: string) =>
+    apiClient.post<void>('/auth/logout', { refreshToken }),
 
-  logout: () => apiClient.post<void>('/auth/logout'),
+  // Refresh access token
+  refreshToken: (refreshToken: string) =>
+    apiClient.post<{ accessToken: string; refreshToken: string; expiresIn: number }>(
+      '/auth/refresh-token',
+      { refreshToken }
+    ),
 };

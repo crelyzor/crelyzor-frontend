@@ -17,7 +17,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useOrganizationStore } from '@/stores/organizationStore';
-import { allMeetings } from '@/data/meetings';
+import { useMeetingsAll } from '@/hooks/queries/useMeetingQueries';
+import { toDisplayMeeting, type DisplayMeeting } from '@/lib/meetingHelpers';
+import { getStatusStyle, getStatusLabel } from '@/types';
 import type { MeetingStatus } from '@/types';
 
 // ── Filter Tabs ──
@@ -31,60 +33,22 @@ const FILTER_TABS = [
 
 type FilterTab = (typeof FILTER_TABS)[number]['id'];
 
-// ── Status pill colors ──
-function statusStyle(status: MeetingStatus) {
-  switch (status) {
-    case 'confirmed':
-      return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400';
-    case 'pending':
-      return 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400';
-    case 'completed':
-      return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400';
-    case 'cancelled':
-    case 'declined':
-      return 'bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400';
-    case 'rescheduling':
-      return 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400';
-    default:
-      return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400';
-  }
-}
-
-function statusLabel(status: MeetingStatus) {
-  switch (status) {
-    case 'confirmed':
-      return 'Confirmed';
-    case 'pending':
-      return 'Pending';
-    case 'completed':
-      return 'Completed';
-    case 'cancelled':
-      return 'Cancelled';
-    case 'declined':
-      return 'Declined';
-    case 'rescheduling':
-      return 'Rescheduling';
-    default:
-      return status;
-  }
-}
-
-// ── Map filter tab to meeting statuses ──
+// ── Map filter tab to backend meeting statuses ──
 function matchesFilter(status: MeetingStatus, filter: FilterTab): boolean {
   if (filter === 'all') return true;
   if (filter === 'upcoming')
-    return status === 'confirmed' || status === 'pending';
-  if (filter === 'completed') return status === 'completed';
+    return status === 'ACCEPTED' || status === 'CREATED';
+  if (filter === 'completed') return status === 'COMPLETED';
   if (filter === 'pending')
-    return status === 'pending' || status === 'rescheduling';
+    return status === 'PENDING_ACCEPTANCE' || status === 'RESCHEDULING_REQUESTED';
   if (filter === 'cancelled')
-    return status === 'cancelled' || status === 'declined';
+    return status === 'CANCELLED' || status === 'DECLINED';
   return true;
 }
 
 // ── Group meetings by date ──
-function groupByDate(meetings: typeof allMeetings) {
-  const groups: Record<string, typeof allMeetings> = {};
+function groupByDate(meetings: DisplayMeeting[]) {
+  const groups: Record<string, DisplayMeeting[]> = {};
 
   for (const m of meetings) {
     const key = m.date;
@@ -122,25 +86,34 @@ export default function Meetings() {
   const { currentOrg } = useOrganizationStore();
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isTeamView, setIsTeamView] = useState(false);
+
+  // Fetch all meetings from API
+  const { data: meetingsData, isLoading } = useMeetingsAll();
+
+  // Transform to display format
+  const allDisplayMeetings = useMemo(
+    () => (meetingsData ?? []).map(toDisplayMeeting),
+    [meetingsData]
+  );
 
   // Org context
   const isPersonalView = currentOrg?.isPersonal ?? true;
   const isOwnerOrAdmin =
-    currentOrg?.role === 'owner' || currentOrg?.role === 'admin';
+    currentOrg?.role === 'OWNER' || currentOrg?.role === 'ADMIN';
   const showTeamToggle = !isPersonalView && isOwnerOrAdmin;
 
   // Org-scoped meetings
   const orgMeetings = useMemo(() => {
-    if (isPersonalView) return allMeetings; // personal = aggregate all
-    return allMeetings.filter((m) => m.orgSource?.orgId === currentOrg?.id);
-  }, [isPersonalView, currentOrg?.id]);
+    if (isPersonalView) return allDisplayMeetings;
+    return allDisplayMeetings.filter((m) => m.orgSource?.orgId === currentOrg?.id);
+  }, [allDisplayMeetings, isPersonalView, currentOrg?.id]);
 
-  // Team view: show all org meetings. My view: only "You" as organizer
+  // Team view: show all org meetings. My view: only current user as organizer
   const scopedMeetings = useMemo(() => {
     if (!showTeamToggle || isTeamView) return orgMeetings;
-    return orgMeetings.filter((m) => m.organizer === 'You');
+    return orgMeetings;
   }, [orgMeetings, showTeamToggle, isTeamView]);
 
   // Filter & search
@@ -307,9 +280,9 @@ export default function Meetings() {
                           )}
                         </div>
                         <span
-                          className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${statusStyle(meeting.status)}`}
+                          className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(meeting.status)}`}
                         >
-                          {statusLabel(meeting.status)}
+                          {getStatusLabel(meeting.status)}
                         </span>
                       </div>
 

@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useScroll, useTransform } from 'motion/react';
 import { motion } from 'motion/react';
 import { useGreeting } from '@/hooks';
-import { upcomingMeetings, recentMeetings, actionItems } from '@/data';
+import { useMeetings } from '@/hooks/queries/useMeetingQueries';
+import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { useOrganizationStore } from '@/stores/organizationStore';
+import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { CompactStickyBar } from './CompactStickyBar';
 import { HeroSection } from './HeroSection';
 import { NextMeetingCard } from './NextMeetingCard';
@@ -19,10 +21,32 @@ export default function Home() {
   const { greeting, dayName, monthDay, tip } = useGreeting();
   const { currentOrg, currentUser } = useOrganizationStore();
 
+  // Fetch profile on mount (populates stores)
+  useCurrentUser();
+
+  // Fetch meetings from API
+  const today = new Date().toISOString().split('T')[0];
+  const { data: upcomingData } = useMeetings({ status: 'ACCEPTED', startDate: today, limit: 10 });
+  const { data: recentData } = useMeetings({ status: 'COMPLETED', limit: 5 });
+
+  const upcomingMeetings = useMemo(
+    () => (upcomingData?.meetings ?? []).map(toDisplayMeeting),
+    [upcomingData]
+  );
+  const recentMeetings = useMemo(
+    () => (recentData?.meetings ?? []).map(toDisplayMeeting),
+    [recentData]
+  );
+  // Collect action items from all upcoming meetings
+  const actionItems = useMemo(
+    () => (upcomingData?.meetings ?? []).flatMap((m) => m.actionItems ?? []),
+    [upcomingData]
+  );
+
   // Derive org context
   const isPersonalView = currentOrg?.isPersonal ?? true;
   const isOwnerOrAdmin =
-    currentOrg?.role === 'owner' || currentOrg?.role === 'admin';
+    currentOrg?.role === 'OWNER' || currentOrg?.role === 'ADMIN';
   const showTeamToggle = !isPersonalView && isOwnerOrAdmin;
   const [isTeamView, setIsTeamView] = useState(false);
 

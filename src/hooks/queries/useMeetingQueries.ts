@@ -4,6 +4,7 @@ import { meetingsApi } from '@/services/meetingsService';
 import type {
   MeetingsListParams,
   CreateMeetingPayload,
+  UpdateMeetingPayload,
 } from '@/services/meetingsService';
 
 export function useMeetings(params?: MeetingsListParams) {
@@ -13,7 +14,14 @@ export function useMeetings(params?: MeetingsListParams) {
   });
 }
 
-export function useMeeting(id: string | number) {
+export function useMeetingsAll(params?: { status?: string; startDate?: string; endDate?: string }) {
+  return useQuery({
+    queryKey: queryKeys.meetings.list({ ...params, noPagination: true }),
+    queryFn: () => meetingsApi.listAll(params as any),
+  });
+}
+
+export function useMeeting(id: string) {
   return useQuery({
     queryKey: queryKeys.meetings.detail(id),
     queryFn: () => meetingsApi.getById(id),
@@ -34,13 +42,29 @@ export function useCreateMeeting() {
 export function useUpdateMeeting() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string | number;
-      data: Partial<CreateMeetingPayload>;
-    }) => meetingsApi.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateMeetingPayload }) =>
+      meetingsApi.update(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
+    },
+  });
+}
+
+export function useAcceptMeeting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => meetingsApi.accept(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
+    },
+  });
+}
+
+export function useDeclineMeeting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      meetingsApi.decline(id, reason),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
     },
@@ -50,17 +74,18 @@ export function useUpdateMeeting() {
 export function useCancelMeeting() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string | number) => meetingsApi.cancel(id),
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      meetingsApi.cancel(id, reason),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
     },
   });
 }
 
-export function useDeleteMeeting() {
+export function useCompleteMeeting() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: string | number) => meetingsApi.delete(id),
+    mutationFn: (id: string) => meetingsApi.complete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
     },

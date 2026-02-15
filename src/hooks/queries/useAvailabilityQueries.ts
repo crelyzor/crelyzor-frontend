@@ -1,38 +1,55 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { availabilityApi } from '@/services/availabilityService';
-import type { CreateBookingPayload } from '@/services/availabilityService';
-import type { WeeklySchedule } from '@/types';
+import type { CreateRecurringPayload, CreateBookingPayload } from '@/services/availabilityService';
 
-export function useAvailabilitySchedule() {
+export function useRecurringAvailability(orgMemberId?: string) {
   return useQuery({
     queryKey: queryKeys.availability.schedule(),
-    queryFn: () => availabilityApi.getSchedule(),
+    queryFn: () => availabilityApi.getRecurring(orgMemberId),
   });
 }
 
-export function useUpdateAvailability() {
+export function useCreateRecurringBatch() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (schedule: WeeklySchedule) =>
-      availabilityApi.updateSchedule(schedule),
+    mutationFn: (slots: CreateRecurringPayload[]) =>
+      availabilityApi.createRecurringBatch(slots),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.availability.all });
     },
   });
 }
 
-export function useBookingSlots(token: string, date: string) {
-  return useQuery({
-    queryKey: queryKeys.availability.booking(token),
-    queryFn: () => availabilityApi.getBookingSlots(token, date),
-    enabled: !!token && !!date,
+export function useDeleteRecurring() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => availabilityApi.deleteRecurring(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.availability.all });
+    },
   });
 }
 
-export function useCreateBooking(token: string) {
+export function useAvailableSlots(orgMemberId: string, startDate: string, endDate: string) {
+  return useQuery({
+    queryKey: queryKeys.availability.booking(orgMemberId),
+    queryFn: () => availabilityApi.getAvailableSlots(orgMemberId, startDate, endDate),
+    enabled: !!orgMemberId && !!startDate && !!endDate,
+  });
+}
+
+export function usePublicBookingProfile(shareToken: string) {
+  return useQuery({
+    queryKey: queryKeys.availability.booking(shareToken),
+    queryFn: () => availabilityApi.getPublicBookingProfile(shareToken),
+    enabled: !!shareToken,
+  });
+}
+
+export function useCreatePublicBooking(shareToken: string) {
   return useMutation({
     mutationFn: (data: CreateBookingPayload) =>
-      availabilityApi.createBooking(token, data),
+      availabilityApi.createPublicBooking(shareToken, data),
   });
 }
