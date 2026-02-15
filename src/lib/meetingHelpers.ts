@@ -1,5 +1,10 @@
 import type { Meeting } from '@/types';
-import { formatMeetingTime, formatMeetingDate, formatMeetingDuration, getParticipantNames } from '@/types';
+import {
+  formatMeetingTime,
+  formatMeetingDate,
+  formatMeetingDuration,
+  getParticipantNames,
+} from '@/types';
 
 /**
  * Display-friendly shape derived from backend Meeting.
@@ -10,9 +15,9 @@ export type DisplayMeeting = {
   id: string;
   title: string;
   description?: string;
-  date: string;         // "YYYY-MM-DD"
-  time: string;         // "2:00 PM"
-  duration: string;     // "45 min"
+  date: string; // "YYYY-MM-DD"
+  time: string; // "2:00 PM"
+  duration: string; // "45 min"
   participants: string[];
   status: Meeting['status'];
   location?: string;
@@ -45,7 +50,11 @@ export function toDisplayMeeting(m: Meeting): DisplayMeeting {
     hasSummary: !!m.aiSummary,
     hasActionItems: (m.actionItems?.length ?? 0) > 0,
     orgSource: m.organization
-      ? { orgId: m.organization.id, orgName: m.organization.name, isPersonal: m.organization.isPersonal }
+      ? {
+          orgId: m.organization.id,
+          orgName: m.organization.name,
+          isPersonal: m.organization.isPersonal,
+        }
       : undefined,
     _raw: m,
   };

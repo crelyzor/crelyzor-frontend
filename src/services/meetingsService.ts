@@ -27,17 +27,19 @@ export type UpdateMeetingPayload = Partial<CreateMeetingPayload>;
 export const meetingsApi = {
   /** GET /meetings — paginated list with filters */
   list: (params?: MeetingsListParams) =>
-    apiClient.get<{ meetings: Meeting[]; total: number }>(
-      '/meetings',
-      { params: params as Record<string, string> }
-    ),
+    apiClient.get<{ meetings: Meeting[]; total: number }>('/meetings', {
+      params: params as Record<string, string>,
+    }),
 
   /** GET /meetings/without-pagination — all meetings (calendar view, max 1000) */
-  listAll: (params?: { status?: MeetingStatus; startDate?: string; endDate?: string }) =>
-    apiClient.get<Meeting[]>(
-      '/meetings/without-pagination',
-      { params: params as Record<string, string> }
-    ),
+  listAll: (params?: {
+    status?: MeetingStatus;
+    startDate?: string;
+    endDate?: string;
+  }) =>
+    apiClient.get<Meeting[]>('/meetings/without-pagination', {
+      params: params as Record<string, string>,
+    }),
 
   /** GET /meetings/:id */
   getById: (id: string) => apiClient.get<Meeting>(`/meetings/${id}`),
@@ -55,8 +57,7 @@ export const meetingsApi = {
     apiClient.patch<Meeting>(`/meetings/${id}`, data),
 
   /** PATCH /meetings/:id/accept */
-  accept: (id: string) =>
-    apiClient.patch<Meeting>(`/meetings/${id}/accept`),
+  accept: (id: string) => apiClient.patch<Meeting>(`/meetings/${id}/accept`),
 
   /** PATCH /meetings/:id/decline */
   decline: (id: string, reason?: string) =>
@@ -71,16 +72,22 @@ export const meetingsApi = {
     apiClient.patch<Meeting>(`/meetings/${id}/complete`),
 
   /** POST /meetings/:id/reschedule */
-  reschedule: (id: string, data: { newStartTime: string; newEndTime: string; reason?: string }) =>
-    apiClient.post<void>(`/meetings/${id}/reschedule`, data),
+  reschedule: (
+    id: string,
+    data: { newStartTime: string; newEndTime: string; reason?: string }
+  ) => apiClient.post<void>(`/meetings/${id}/reschedule`, data),
 
   /** POST /meetings/public-booking/generate */
   generatePublicLink: () =>
-    apiClient.post<{ shareToken: string; bookingUrl: string }>('/meetings/public-booking/generate'),
+    apiClient.post<{ shareToken: string; bookingUrl: string }>(
+      '/meetings/public-booking/generate'
+    ),
 
   /** GET /meetings/public-booking/status */
   getPublicBookingStatus: () =>
-    apiClient.get<{ isActive: boolean; shareToken?: string }>('/meetings/public-booking/status'),
+    apiClient.get<{ isActive: boolean; shareToken?: string }>(
+      '/meetings/public-booking/status'
+    ),
 
   /** POST /meetings/public-booking/disable */
   disablePublicBooking: () =>

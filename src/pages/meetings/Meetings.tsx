@@ -40,7 +40,9 @@ function matchesFilter(status: MeetingStatus, filter: FilterTab): boolean {
     return status === 'ACCEPTED' || status === 'CREATED';
   if (filter === 'completed') return status === 'COMPLETED';
   if (filter === 'pending')
-    return status === 'PENDING_ACCEPTANCE' || status === 'RESCHEDULING_REQUESTED';
+    return (
+      status === 'PENDING_ACCEPTANCE' || status === 'RESCHEDULING_REQUESTED'
+    );
   if (filter === 'cancelled')
     return status === 'CANCELLED' || status === 'DECLINED';
   return true;
@@ -90,7 +92,7 @@ export default function Meetings() {
   const [isTeamView, setIsTeamView] = useState(false);
 
   // Fetch all meetings from API
-  const { data: meetingsData, isLoading } = useMeetingsAll();
+  const { data: meetingsData } = useMeetingsAll();
 
   // Transform to display format
   const allDisplayMeetings = useMemo(
@@ -107,7 +109,9 @@ export default function Meetings() {
   // Org-scoped meetings
   const orgMeetings = useMemo(() => {
     if (isPersonalView) return allDisplayMeetings;
-    return allDisplayMeetings.filter((m) => m.orgSource?.orgId === currentOrg?.id);
+    return allDisplayMeetings.filter(
+      (m) => m.orgSource?.orgId === currentOrg?.id
+    );
   }, [allDisplayMeetings, isPersonalView, currentOrg?.id]);
 
   // Team view: show all org meetings. My view: only current user as organizer

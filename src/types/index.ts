@@ -21,7 +21,12 @@ export {
   getStatusStyle,
 } from './meeting';
 
-export type { Organization, OrgRole, CurrentUser, ProfileResponse } from './organization';
+export type {
+  Organization,
+  OrgRole,
+  CurrentUser,
+  ProfileResponse,
+} from './organization';
 
 export type { ToolbarItem, ToolbarItemGroup } from './toolbar';
 

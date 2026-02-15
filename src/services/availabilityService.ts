@@ -1,10 +1,16 @@
 import { apiClient } from '@/lib/apiClient';
-import type { RecurringAvailability, CustomSlot, BlockedTime, AvailableSlot, DayOfWeek } from '@/types';
+import type {
+  RecurringAvailability,
+  CustomSlot,
+  BlockedTime,
+  AvailableSlot,
+  DayOfWeek,
+} from '@/types';
 
 export type CreateRecurringPayload = {
   dayOfWeek: DayOfWeek;
   startTime: string; // "HH:MM"
-  endTime: string;   // "HH:MM"
+  endTime: string; // "HH:MM"
 };
 
 export type CreateBookingPayload = {
@@ -29,7 +35,9 @@ export const availabilityApi = {
 
   /** POST /availability/recurring/batch — create multiple patterns */
   createRecurringBatch: (slots: CreateRecurringPayload[]) =>
-    apiClient.post<RecurringAvailability[]>('/availability/recurring/batch', { slots }),
+    apiClient.post<RecurringAvailability[]>('/availability/recurring/batch', {
+      slots,
+    }),
 
   /** PUT /availability/recurring/:id — update pattern */
   updateRecurring: (id: string, data: Partial<CreateRecurringPayload>) =>
@@ -46,8 +54,11 @@ export const availabilityApi = {
     }),
 
   /** POST /availability/custom — create custom slot */
-  createCustomSlot: (data: { date: string; startTime: string; endTime: string }) =>
-    apiClient.post<CustomSlot>('/availability/custom', data),
+  createCustomSlot: (data: {
+    date: string;
+    startTime: string;
+    endTime: string;
+  }) => apiClient.post<CustomSlot>('/availability/custom', data),
 
   /** DELETE /availability/custom/:id */
   deleteCustomSlot: (id: string) =>
@@ -60,24 +71,43 @@ export const availabilityApi = {
     }),
 
   /** POST /availability/blocked — create blocked time */
-  createBlockedTime: (data: { startTime: string; endTime: string; reason?: string; isRecurring?: boolean; recurrencePattern?: string }) =>
-    apiClient.post<BlockedTime>('/availability/blocked', data),
+  createBlockedTime: (data: {
+    startTime: string;
+    endTime: string;
+    reason?: string;
+    isRecurring?: boolean;
+    recurrencePattern?: string;
+  }) => apiClient.post<BlockedTime>('/availability/blocked', data),
 
   /** DELETE /availability/blocked/:id */
   deleteBlockedTime: (id: string) =>
     apiClient.delete<void>(`/availability/blocked/${id}`),
 
   /** GET /availability/slots/:orgMemberId — computed available slots */
-  getAvailableSlots: (orgMemberId: string, startDate: string, endDate: string, slotDuration?: number) =>
+  getAvailableSlots: (
+    orgMemberId: string,
+    startDate: string,
+    endDate: string,
+    slotDuration?: number
+  ) =>
     apiClient.get<AvailableSlot[]>(`/availability/slots/${orgMemberId}`, {
-      params: { startDate, endDate, ...(slotDuration ? { slotDuration: String(slotDuration) } : {}) },
+      params: {
+        startDate,
+        endDate,
+        ...(slotDuration ? { slotDuration: String(slotDuration) } : {}),
+      },
     }),
 
   /** GET /public/booking/:shareToken — public booking profile (no auth) */
   getPublicBookingProfile: (shareToken: string) =>
-    apiClient.get<{ consultant: unknown; slots: AvailableSlot[] }>(`/public/booking/${shareToken}`),
+    apiClient.get<{ consultant: unknown; slots: AvailableSlot[] }>(
+      `/public/booking/${shareToken}`
+    ),
 
   /** POST /public/booking/:shareToken/request — guest requests meeting (no auth) */
   createPublicBooking: (shareToken: string, data: CreateBookingPayload) =>
-    apiClient.post<{ meetingId: string }>(`/public/booking/${shareToken}/request`, data),
+    apiClient.post<{ meetingId: string }>(
+      `/public/booking/${shareToken}/request`,
+      data
+    ),
 };

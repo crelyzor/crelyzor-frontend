@@ -1,7 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { availabilityApi } from '@/services/availabilityService';
-import type { CreateRecurringPayload, CreateBookingPayload } from '@/services/availabilityService';
+import type {
+  CreateRecurringPayload,
+  CreateBookingPayload,
+} from '@/services/availabilityService';
 
 export function useRecurringAvailability(orgMemberId?: string) {
   return useQuery({
@@ -31,10 +34,15 @@ export function useDeleteRecurring() {
   });
 }
 
-export function useAvailableSlots(orgMemberId: string, startDate: string, endDate: string) {
+export function useAvailableSlots(
+  orgMemberId: string,
+  startDate: string,
+  endDate: string
+) {
   return useQuery({
     queryKey: queryKeys.availability.booking(orgMemberId),
-    queryFn: () => availabilityApi.getAvailableSlots(orgMemberId, startDate, endDate),
+    queryFn: () =>
+      availabilityApi.getAvailableSlots(orgMemberId, startDate, endDate),
     enabled: !!orgMemberId && !!startDate && !!endDate,
   });
 }

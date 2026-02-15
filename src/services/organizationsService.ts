@@ -19,8 +19,7 @@ export type OrgMember = {
 
 export const organizationsApi = {
   /** GET /organizations/list — all orgs for current user */
-  list: () =>
-    apiClient.get<Organization[]>('/organizations/list'),
+  list: () => apiClient.get<Organization[]>('/organizations/list'),
 
   /** POST /organizations — create team org */
   create: (data: { name: string }) =>
@@ -37,8 +36,7 @@ export const organizationsApi = {
   delete: () => apiClient.delete<void>('/organizations'),
 
   /** GET /organizations/members — list members of current org */
-  getMembers: () =>
-    apiClient.get<OrgMember[]>('/organizations/members'),
+  getMembers: () => apiClient.get<OrgMember[]>('/organizations/members'),
 
   /** GET /organizations/members/:memberId */
   getMember: (memberId: string) =>

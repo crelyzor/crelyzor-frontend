@@ -88,7 +88,13 @@ export type Meeting = {
   updatedAt: string;
   participants: MeetingParticipant[];
   guests: MeetingGuest[];
-  recording?: { id: string; gcsPath: string; duration: number; fileSize: number; fileName: string };
+  recording?: {
+    id: string;
+    gcsPath: string;
+    duration: number;
+    fileSize: number;
+    fileName: string;
+  };
   aiSummary?: { id: string; summary: string; keyPoints: string[] };
   actionItems?: ActionItem[];
   createdByMember?: {

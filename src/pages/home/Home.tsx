@@ -26,7 +26,11 @@ export default function Home() {
 
   // Fetch meetings from API
   const today = new Date().toISOString().split('T')[0];
-  const { data: upcomingData } = useMeetings({ status: 'ACCEPTED', startDate: today, limit: 10 });
+  const { data: upcomingData } = useMeetings({
+    status: 'ACCEPTED',
+    startDate: today,
+    limit: 10,
+  });
   const { data: recentData } = useMeetings({ status: 'COMPLETED', limit: 5 });
 
   const upcomingMeetings = useMemo(

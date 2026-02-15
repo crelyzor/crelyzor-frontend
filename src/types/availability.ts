@@ -6,7 +6,14 @@ export type DaySchedule = {
 
 export type WeeklySchedule = Record<string, DaySchedule>;
 
-export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+export type DayOfWeek =
+  | 'MONDAY'
+  | 'TUESDAY'
+  | 'WEDNESDAY'
+  | 'THURSDAY'
+  | 'FRIDAY'
+  | 'SATURDAY'
+  | 'SUNDAY';
 
 // Backend recurring availability
 export type RecurringAvailability = {
@@ -14,7 +21,7 @@ export type RecurringAvailability = {
   orgMemberId: string;
   dayOfWeek: DayOfWeek;
   startTime: string; // "HH:MM"
-  endTime: string;   // "HH:MM"
+  endTime: string; // "HH:MM"
   timezone: string;
   isActive: boolean;
 };

@@ -14,10 +14,14 @@ export function useMeetings(params?: MeetingsListParams) {
   });
 }
 
-export function useMeetingsAll(params?: { status?: string; startDate?: string; endDate?: string }) {
+export function useMeetingsAll(params?: {
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+}) {
   return useQuery({
     queryKey: queryKeys.meetings.list({ ...params, noPagination: true }),
-    queryFn: () => meetingsApi.listAll(params as any),
+    queryFn: () => meetingsApi.listAll(params as MeetingsListParams),
   });
 }
 

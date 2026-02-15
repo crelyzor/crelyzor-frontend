@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useMeeting, useCompleteMeeting, useCancelMeeting } from '@/hooks/queries/useMeetingQueries';
+import { useMeeting } from '@/hooks/queries/useMeetingQueries';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { getStatusStyle, getStatusLabel } from '@/types';
 import { PageLoader } from '@/components/PageLoader';
@@ -105,9 +105,6 @@ export default function MeetingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<SMATab>('overview');
-  const completeMeeting = useCompleteMeeting();
-  const cancelMeeting = useCancelMeeting();
-
   const { data: rawMeeting, isLoading } = useMeeting(id ?? '');
 
   if (isLoading) return <PageLoader />;
@@ -191,11 +188,14 @@ export default function MeetingDetail() {
                   Date
                 </p>
                 <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
-                  {new Date(meeting._raw.startTime).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
+                  {new Date(meeting._raw.startTime).toLocaleDateString(
+                    'en-US',
+                    {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    }
+                  )}
                 </p>
               </div>
             </div>

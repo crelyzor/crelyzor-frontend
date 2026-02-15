@@ -1,4 +1,4 @@
-import { Clock, Plus, X, Save } from 'lucide-react';
+import { Clock, Plus, Save } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { WeeklySchedule, DayOfWeek } from '@/types';
 import { DAY_MAP, DAY_MAP_REVERSE } from '@/types';
-import { useRecurringAvailability, useCreateRecurringBatch } from '@/hooks/queries/useAvailabilityQueries';
+import {
+  useRecurringAvailability,
+  useCreateRecurringBatch,
+} from '@/hooks/queries/useAvailabilityQueries';
 import { WeeklyScheduleForm } from './WeeklyScheduleForm';
 import { AvailabilityPreview } from './AvailabilityPreview';
 
@@ -32,7 +35,11 @@ export default function Availability() {
     for (const slot of recurring) {
       const dayKey = DAY_MAP_REVERSE[slot.dayOfWeek];
       if (dayKey) {
-        s[dayKey] = { enabled: true, startTime: slot.startTime, endTime: slot.endTime };
+        s[dayKey] = {
+          enabled: true,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+        };
       }
     }
     return s;

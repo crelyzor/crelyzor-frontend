@@ -18,8 +18,9 @@ export const authApi = {
 
   // Refresh access token
   refreshToken: (refreshToken: string) =>
-    apiClient.post<{ accessToken: string; refreshToken: string; expiresIn: number }>(
-      '/auth/refresh-token',
-      { refreshToken }
-    ),
+    apiClient.post<{
+      accessToken: string;
+      refreshToken: string;
+      expiresIn: number;
+    }>('/auth/refresh-token', { refreshToken }),
 };

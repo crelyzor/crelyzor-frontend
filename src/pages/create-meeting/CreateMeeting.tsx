@@ -135,7 +135,9 @@ export default function CreateMeeting() {
       {/* Form */}
       <Card className="border-neutral-200 dark:border-neutral-800">
         <CardContent className="p-6">
-          <form className="space-y-5" onSubmit={(e) => {
+          <form
+            className="space-y-5"
+            onSubmit={(e) => {
               e.preventDefault();
               if (!title || !date || !time) {
                 toast.error('Please fill in title, date, and time');
@@ -143,7 +145,9 @@ export default function CreateMeeting() {
               }
               const startTime = new Date(`${date}T${time}`).toISOString();
               const durationMs = parseDurationMinutes(selectedDuration) * 60000;
-              const endTime = new Date(new Date(startTime).getTime() + durationMs).toISOString();
+              const endTime = new Date(
+                new Date(startTime).getTime() + durationMs
+              ).toISOString();
 
               createMeeting.mutate(
                 {
@@ -152,8 +156,12 @@ export default function CreateMeeting() {
                   startTime,
                   endTime,
                   mode: mapMode(meetingMode),
-                  location: meetingMode === 'in-person' ? location || undefined : undefined,
-                  guestEmails: participants.length > 0 ? participants : undefined,
+                  location:
+                    meetingMode === 'in-person'
+                      ? location || undefined
+                      : undefined,
+                  guestEmails:
+                    participants.length > 0 ? participants : undefined,
                 },
                 {
                   onSuccess: (created) => {
@@ -165,7 +173,8 @@ export default function CreateMeeting() {
                   },
                 }
               );
-            }}>
+            }}
+          >
             {/* Meeting Title */}
             <div className="space-y-1.5">
               <Label

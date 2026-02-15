@@ -80,7 +80,12 @@ async function request<T>(
 
   // Backend wraps responses in { status, statusCode, message, data }
   // Unwrap if the response has that shape
-  if (json && typeof json === 'object' && 'data' in json && 'statusCode' in json) {
+  if (
+    json &&
+    typeof json === 'object' &&
+    'data' in json &&
+    'statusCode' in json
+  ) {
     return json.data as T;
   }
 
