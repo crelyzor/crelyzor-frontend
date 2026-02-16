@@ -193,9 +193,7 @@ export function OrganizationSelector() {
             className="w-full flex items-center gap-3 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors text-left cursor-pointer"
           >
             <LogOut className="w-4 h-4 text-red-500" />
-            <span className="text-sm text-red-500 font-medium">
-              Log out
-            </span>
+            <span className="text-sm text-red-500 font-medium">Log out</span>
           </button>
         </div>
       </PopoverContent>
