@@ -1,24 +1,29 @@
 import type { Card } from '@/types';
 
-const CARDS_PUBLIC_URL = import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
+const CARDS_PUBLIC_URL =
+  import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
 
 interface SignatureOptions {
   includeSocials: boolean;
 }
 
-export function generateSignatureHtml(card: Card, options: SignatureOptions): string {
+export function generateSignatureHtml(
+  card: Card,
+  options: SignatureOptions
+): string {
   const cf = (card.contactFields ?? {}) as Record<string, string | undefined>;
   const links = (card.links ?? []).filter((l) => l.url);
   const cardUrl = `${CARDS_PUBLIC_URL}/${card.slug}`;
 
-  const socialLinks = options.includeSocials && links.length > 0
-    ? links
-        .map(
-          (l) =>
-            `<a href="${l.url}" style="color:#525252;text-decoration:none;font-size:12px;" target="_blank">${l.label || l.type}</a>`
-        )
-        .join(' &middot; ')
-    : '';
+  const socialLinks =
+    options.includeSocials && links.length > 0
+      ? links
+          .map(
+            (l) =>
+              `<a href="${l.url}" style="color:#525252;text-decoration:none;font-size:12px;" target="_blank">${l.label || l.type}</a>`
+          )
+          .join(' &middot; ')
+      : '';
 
   return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,Helvetica,sans-serif;color:#171717;line-height:1.4;">
   <tr>

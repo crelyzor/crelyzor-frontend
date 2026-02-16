@@ -279,9 +279,7 @@ export default function CardContacts() {
               ) : (
                 <Square className="w-3.5 h-3.5" />
               )}
-              {selected.size > 0
-                ? `${selected.size} selected`
-                : 'Select all'}
+              {selected.size > 0 ? `${selected.size} selected` : 'Select all'}
             </button>
           </div>
 

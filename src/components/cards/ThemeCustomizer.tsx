@@ -5,19 +5,40 @@ const PRESETS: { name: string; theme: CardTheme }[] = [
   { name: 'Default', theme: {} },
   {
     name: 'Professional',
-    theme: { primaryColor: '#1e3a5f', backgroundColor: '#f8fafc', fontFamily: 'Inter', layout: 'classic' },
+    theme: {
+      primaryColor: '#1e3a5f',
+      backgroundColor: '#f8fafc',
+      fontFamily: 'Inter',
+      layout: 'classic',
+    },
   },
   {
     name: 'Creative',
-    theme: { primaryColor: '#7c3aed', backgroundColor: '#faf5ff', fontFamily: 'Playfair Display', layout: 'modern' },
+    theme: {
+      primaryColor: '#7c3aed',
+      backgroundColor: '#faf5ff',
+      fontFamily: 'Playfair Display',
+      layout: 'modern',
+    },
   },
   {
     name: 'Minimal',
-    theme: { primaryColor: '#171717', backgroundColor: '#ffffff', fontFamily: 'Inter', layout: 'minimal' },
+    theme: {
+      primaryColor: '#171717',
+      backgroundColor: '#ffffff',
+      fontFamily: 'Inter',
+      layout: 'minimal',
+    },
   },
   {
     name: 'Bold',
-    theme: { primaryColor: '#dc2626', backgroundColor: '#0a0a0a', fontFamily: 'Montserrat', layout: 'classic', darkMode: true },
+    theme: {
+      primaryColor: '#dc2626',
+      backgroundColor: '#0a0a0a',
+      fontFamily: 'Montserrat',
+      layout: 'classic',
+      darkMode: true,
+    },
   },
 ];
 
@@ -102,13 +123,17 @@ export function ThemeCustomizer({ theme, onChange }: ThemeCustomizerProps) {
             <input
               type="color"
               value={theme.primaryColor || '#171717'}
-              onChange={(e) => onChange({ ...theme, primaryColor: e.target.value })}
+              onChange={(e) =>
+                onChange({ ...theme, primaryColor: e.target.value })
+              }
               className="w-9 h-9 rounded-lg border border-neutral-200 dark:border-neutral-800 cursor-pointer p-0.5"
             />
             <input
               type="text"
               value={theme.primaryColor || '#171717'}
-              onChange={(e) => onChange({ ...theme, primaryColor: e.target.value })}
+              onChange={(e) =>
+                onChange({ ...theme, primaryColor: e.target.value })
+              }
               className="flex-1 h-9 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900
                          text-xs text-neutral-700 dark:text-neutral-300 px-3 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
               placeholder="#171717"
@@ -124,13 +149,17 @@ export function ThemeCustomizer({ theme, onChange }: ThemeCustomizerProps) {
             <input
               type="color"
               value={theme.backgroundColor || '#ffffff'}
-              onChange={(e) => onChange({ ...theme, backgroundColor: e.target.value })}
+              onChange={(e) =>
+                onChange({ ...theme, backgroundColor: e.target.value })
+              }
               className="w-9 h-9 rounded-lg border border-neutral-200 dark:border-neutral-800 cursor-pointer p-0.5"
             />
             <input
               type="text"
               value={theme.backgroundColor || '#ffffff'}
-              onChange={(e) => onChange({ ...theme, backgroundColor: e.target.value })}
+              onChange={(e) =>
+                onChange({ ...theme, backgroundColor: e.target.value })
+              }
               className="flex-1 h-9 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900
                          text-xs text-neutral-700 dark:text-neutral-300 px-3 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
               placeholder="#ffffff"
@@ -146,7 +175,9 @@ export function ThemeCustomizer({ theme, onChange }: ThemeCustomizerProps) {
         </Label>
         <select
           value={theme.fontFamily || ''}
-          onChange={(e) => onChange({ ...theme, fontFamily: e.target.value || undefined })}
+          onChange={(e) =>
+            onChange({ ...theme, fontFamily: e.target.value || undefined })
+          }
           className="w-full h-9 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900
                      text-sm text-neutral-700 dark:text-neutral-300 px-3 focus:outline-none focus:ring-2 focus:ring-neutral-900/10"
         >

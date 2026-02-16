@@ -8,7 +8,11 @@ interface TagInputProps {
   placeholder?: string;
 }
 
-export function TagInput({ tags, onChange, placeholder = 'Add tag...' }: TagInputProps) {
+export function TagInput({
+  tags,
+  onChange,
+  placeholder = 'Add tag...',
+}: TagInputProps) {
   const [input, setInput] = useState('');
 
   const addTag = (value: string) => {

@@ -32,7 +32,10 @@ export default function CardAnalytics() {
         <div className="h-8 w-48 rounded bg-neutral-100 dark:bg-neutral-800 animate-pulse mb-8" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
+            <div
+              key={i}
+              className="h-24 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse"
+            />
           ))}
         </div>
         <div className="h-64 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
@@ -48,9 +51,18 @@ export default function CardAnalytics() {
     );
   }
 
-  const maxViews = Math.max(...(analytics.viewsByDay?.map((d) => d.count) ?? [1]), 1);
-  const maxClicks = Math.max(...(analytics.linkClicks?.map((d) => d.count) ?? [1]), 1);
-  const maxCountry = Math.max(...(analytics.topCountries?.map((d) => d.count) ?? [1]), 1);
+  const maxViews = Math.max(
+    ...(analytics.viewsByDay?.map((d) => d.count) ?? [1]),
+    1
+  );
+  const maxClicks = Math.max(
+    ...(analytics.linkClicks?.map((d) => d.count) ?? [1]),
+    1
+  );
+  const maxCountry = Math.max(
+    ...(analytics.topCountries?.map((d) => d.count) ?? [1]),
+    1
+  );
 
   return (
     <div className="max-w-4xl mx-auto pb-12">
@@ -169,7 +181,10 @@ export default function CardAnalytics() {
                 />
                 {analytics.viewsByDay.length <= 14 && (
                   <span className="text-[9px] text-neutral-400 whitespace-nowrap">
-                    {new Date(day.date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+                    {new Date(day.date).toLocaleDateString('en', {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
                   </span>
                 )}
               </div>

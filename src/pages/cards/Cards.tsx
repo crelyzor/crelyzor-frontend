@@ -27,7 +27,8 @@ import type { Card as CardType } from '@/types';
 import { QRCodeDialog } from '@/components/cards/QRCodeDialog';
 import { EmailSignatureDialog } from '@/components/cards/EmailSignatureDialog';
 
-const CARDS_PUBLIC_URL = import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
+const CARDS_PUBLIC_URL =
+  import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
 
 export default function Cards() {
   const navigate = useNavigate();

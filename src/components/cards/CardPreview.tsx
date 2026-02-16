@@ -74,10 +74,7 @@ export function CardPreview({
         />
       )}
 
-      <div
-        className="px-5"
-        style={{ backgroundColor: surfaceColor }}
-      >
+      <div className="px-5" style={{ backgroundColor: surfaceColor }}>
         {/* Avatar */}
         <div className={layout !== 'minimal' ? '-mt-8 mb-3' : 'pt-5 mb-3'}>
           <div
@@ -87,7 +84,10 @@ export function CardPreview({
               backgroundColor: borderColor,
             }}
           >
-            <span className="text-lg font-semibold" style={{ color: textSecondary }}>
+            <span
+              className="text-lg font-semibold"
+              style={{ color: textSecondary }}
+            >
               {displayName ? displayName.charAt(0).toUpperCase() : '?'}
             </span>
           </div>
@@ -95,7 +95,10 @@ export function CardPreview({
 
         {/* Name & title */}
         <div className="mb-4">
-          <p className="text-sm font-semibold leading-tight" style={{ color: textPrimary }}>
+          <p
+            className="text-sm font-semibold leading-tight"
+            style={{ color: textPrimary }}
+          >
             {displayName || 'Your Name'}
           </p>
           {title && (
@@ -104,7 +107,10 @@ export function CardPreview({
             </p>
           )}
           {bio && (
-            <p className="text-xs mt-2 leading-relaxed" style={{ color: textSecondary }}>
+            <p
+              className="text-xs mt-2 leading-relaxed"
+              style={{ color: textSecondary }}
+            >
               {bio}
             </p>
           )}
@@ -142,7 +148,10 @@ export function CardPreview({
 
         {/* Location */}
         {contactFields.location && (
-          <div className="flex items-center gap-1.5 mb-4 text-[10px]" style={{ color: textSecondary }}>
+          <div
+            className="flex items-center gap-1.5 mb-4 text-[10px]"
+            style={{ color: textSecondary }}
+          >
             <MapPin className="w-3 h-3 shrink-0" />
             {contactFields.location}
           </div>
@@ -162,8 +171,14 @@ export function CardPreview({
                   className="flex items-center gap-2 px-3 py-2 rounded-lg border"
                   style={{ borderColor }}
                 >
-                  <Icon className="w-3 h-3 shrink-0" style={{ color: textSecondary }} />
-                  <span className="flex-1 text-[10px] font-medium truncate" style={{ color: textPrimary }}>
+                  <Icon
+                    className="w-3 h-3 shrink-0"
+                    style={{ color: textSecondary }}
+                  />
+                  <span
+                    className="flex-1 text-[10px] font-medium truncate"
+                    style={{ color: textPrimary }}
+                  >
                     {link.label || link.type}
                   </span>
                 </div>
@@ -174,7 +189,10 @@ export function CardPreview({
       )}
 
       {/* Action buttons */}
-      <div className="px-5 pb-4 flex gap-1.5" style={{ backgroundColor: surfaceColor }}>
+      <div
+        className="px-5 pb-4 flex gap-1.5"
+        style={{ backgroundColor: surfaceColor }}
+      >
         <div
           className="flex-1 flex items-center justify-center gap-1 h-8 rounded-xl text-white text-[10px] font-medium"
           style={{ backgroundColor: primaryColor }}

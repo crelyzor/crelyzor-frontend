@@ -287,7 +287,10 @@ export default function CardEditor() {
                   placeholder="Email address"
                   value={contactFields.email ?? ''}
                   onChange={(e) =>
-                    setContactFields({ ...contactFields, email: e.target.value })
+                    setContactFields({
+                      ...contactFields,
+                      email: e.target.value,
+                    })
                   }
                   className="h-11"
                 />
@@ -301,7 +304,10 @@ export default function CardEditor() {
                   placeholder="Phone number"
                   value={contactFields.phone ?? ''}
                   onChange={(e) =>
-                    setContactFields({ ...contactFields, phone: e.target.value })
+                    setContactFields({
+                      ...contactFields,
+                      phone: e.target.value,
+                    })
                   }
                   className="h-11"
                 />

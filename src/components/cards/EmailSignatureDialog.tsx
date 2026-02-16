@@ -38,9 +38,7 @@ export function EmailSignatureDialog({
 
   const copyFormatted = async () => {
     const blob = new Blob([html], { type: 'text/html' });
-    await navigator.clipboard.write([
-      new ClipboardItem({ 'text/html': blob }),
-    ]);
+    await navigator.clipboard.write([new ClipboardItem({ 'text/html': blob })]);
     setCopied('formatted');
     setTimeout(() => setCopied(null), 2000);
   };
