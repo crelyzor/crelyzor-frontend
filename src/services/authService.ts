@@ -23,4 +23,12 @@ export const authApi = {
       refreshToken: string;
       expiresIn: number;
     }>('/auth/refresh-token', { refreshToken }),
+
+  // Check username availability
+  checkUsername: (username: string) =>
+    apiClient.get<{ available: boolean }>(`/auth/username/check?username=${encodeURIComponent(username)}`),
+
+  // Set username (onboarding or update)
+  setUsername: (username: string) =>
+    apiClient.post<ProfileResponse>('/auth/username', { username }),
 };

@@ -16,6 +16,7 @@ export type CurrentUser = {
   id: string;
   email: string;
   name: string;
+  username: string | null;
   avatarUrl?: string;
 };
 
@@ -23,6 +24,7 @@ export type CurrentUser = {
 export type ProfileResponse = {
   id: string;
   email: string;
+  username: string | null;
   emailVerified: boolean;
   name: string;
   avatarUrl?: string;
@@ -39,11 +41,7 @@ export type ProfileResponse = {
     orgName: string;
     orgLogoUrl?: string;
     orgDescription?: string;
-    accessLevel: string;
+    accessLevel: OrgRole;
     isPersonal?: boolean;
-    roles: {
-      roleId: string;
-      roleName: OrgRole | null;
-    }[];
   }[];
 };

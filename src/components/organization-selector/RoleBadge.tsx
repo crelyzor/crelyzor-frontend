@@ -20,7 +20,7 @@ export function RoleBadge({ role, size = 'sm' }: RoleBadgeProps) {
           Home
         </span>
       );
-    case 'owner':
+    case 'OWNER':
       return (
         <span
           className={`${baseClass} bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900`}
@@ -28,7 +28,7 @@ export function RoleBadge({ role, size = 'sm' }: RoleBadgeProps) {
           Owner
         </span>
       );
-    case 'admin':
+    case 'ADMIN':
       return (
         <span
           className={`${baseClass} bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400`}
@@ -36,7 +36,7 @@ export function RoleBadge({ role, size = 'sm' }: RoleBadgeProps) {
           Admin
         </span>
       );
-    case 'member':
+    case 'MEMBER':
       return (
         <span
           className={`${baseClass} bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300`}

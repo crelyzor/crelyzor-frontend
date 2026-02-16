@@ -13,6 +13,8 @@ const Notifications = lazy(() => import('@/pages/notifications'));
 const SignIn = lazy(() => import('@/pages/sign-in'));
 const AuthCallback = lazy(() => import('@/pages/auth-callback'));
 const PublicBooking = lazy(() => import('@/pages/public-booking'));
+const CreateOrganization = lazy(() => import('@/pages/create-organization'));
+const Setup = lazy(() => import('@/pages/setup'));
 
 export type RouteConfig = {
   path: string;
@@ -33,4 +35,6 @@ export const routes = {
   SignIn,
   AuthCallback,
   PublicBooking,
+  CreateOrganization,
+  Setup,
 };

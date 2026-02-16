@@ -19,14 +19,23 @@ export function useCurrentUser() {
       const profile = await authApi.profile();
 
       // Populate stores from profile
-      setCurrentUser({ email: profile.email, name: profile.name });
+      setCurrentUser({
+        id: profile.id,
+        email: profile.email,
+        name: profile.name,
+        username: profile.username,
+        avatarUrl: profile.avatarUrl,
+      });
 
       // Map backend org shape to frontend Organization type
       const orgs: Organization[] = profile.organizations.map((o) => ({
         id: o.orgId,
         name: o.orgName,
         orgMemberId: o.orgMemberId,
-        role: o.roles[0]?.roleName ?? 'MEMBER',
+        role: (o.accessLevel as Organization['role']) ?? 'MEMBER',
+        isPersonal: o.isPersonal ?? false,
+        description: o.orgDescription,
+        orgLogoUrl: o.orgLogoUrl,
       }));
       setOrganizations(orgs);
 

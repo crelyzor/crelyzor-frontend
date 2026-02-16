@@ -25,6 +25,8 @@ const {
   SignIn,
   AuthCallback,
   PublicBooking,
+  CreateOrganization,
+  Setup,
 } = routes;
 
 function App() {
@@ -40,6 +42,26 @@ function App() {
               <Routes>
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
+
+                {/* Onboarding - Username Setup (No Layout) */}
+                <Route
+                  path="/setup"
+                  element={
+                    <AuthGuard>
+                      <Setup />
+                    </AuthGuard>
+                  }
+                />
+
+                {/* Create Organization (No Layout) */}
+                <Route
+                  path="/organizations/create"
+                  element={
+                    <AuthGuard>
+                      <CreateOrganization />
+                    </AuthGuard>
+                  }
+                />
 
                 {/* Main Routes with Layout + Auth */}
                 <Route

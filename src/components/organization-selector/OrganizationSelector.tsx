@@ -1,57 +1,48 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Settings, Check, LogOut, Home } from 'lucide-react';
+import { ChevronDown, Settings, Check, LogOut, Home, Plus } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { mockOrganizations, currentUser } from '@/data';
 import type { Organization } from '@/types';
 import { useOrganizationStore } from '@/stores';
 import { useLogout } from '@/hooks/queries/useAuthQueries';
 import { OrgAvatar } from './OrgAvatar';
 import { RoleBadge } from './RoleBadge';
+import { CreateOrganizationModal } from './CreateOrganizationModal';
 
 type OrgGroup = { label: string; orgs: Organization[] };
 
 export function OrganizationSelector() {
   const [open, setOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const navigate = useNavigate();
   const logoutMutation = useLogout();
 
   const currentOrg = useOrganizationStore((s) => s.currentOrg);
   const organizations = useOrganizationStore((s) => s.organizations);
-  const setOrganizations = useOrganizationStore((s) => s.setOrganizations);
+  const currentUser = useOrganizationStore((s) => s.currentUser);
   const setCurrentOrg = useOrganizationStore((s) => s.setCurrentOrg);
-  const setCurrentUser = useOrganizationStore((s) => s.setCurrentUser);
 
-  // Seed mock data until API is integrated
-  useEffect(() => {
-    if (organizations.length === 0) {
-      setOrganizations(mockOrganizations);
-      setCurrentUser(currentUser);
-    }
-  }, [organizations.length, setOrganizations, setCurrentUser]);
-
-  const selectedOrg = currentOrg ?? mockOrganizations[0];
-  const orgList = organizations.length > 0 ? organizations : mockOrganizations;
+  const selectedOrg = currentOrg ?? organizations[0] ?? null;
 
   // Group orgs: Home (personal) → Owner → Admin → Member
   const orgGroups = useMemo<OrgGroup[]>(() => {
-    const personal = orgList.filter((o) => o.isPersonal);
-    const owner = orgList.filter((o) => !o.isPersonal && o.role === 'owner');
-    const admin = orgList.filter((o) => !o.isPersonal && o.role === 'admin');
-    const member = orgList.filter((o) => !o.isPersonal && o.role === 'member');
+    const personal = organizations.filter((o) => o.isPersonal);
+    const owner = organizations.filter((o) => !o.isPersonal && o.role === 'OWNER');
+    const admin = organizations.filter((o) => !o.isPersonal && o.role === 'ADMIN');
+    const member = organizations.filter((o) => !o.isPersonal && o.role === 'MEMBER');
 
     const groups: OrgGroup[] = [];
-    if (personal.length) groups.push({ label: '', orgs: personal }); // no header for home — it's obvious
+    if (personal.length) groups.push({ label: '', orgs: personal });
     if (owner.length) groups.push({ label: 'Owner', orgs: owner });
     if (admin.length) groups.push({ label: 'Admin', orgs: admin });
     if (member.length) groups.push({ label: 'Member', orgs: member });
     return groups;
-  }, [orgList]);
+  }, [organizations]);
 
   const handleOrgSelect = (org: Organization) => {
     setCurrentOrg(org);
@@ -67,8 +58,16 @@ export function OrganizationSelector() {
     });
   };
 
+  const handleCreateOrg = () => {
+    setOpen(false);
+    setCreateModalOpen(true);
+  };
+
+  if (!selectedOrg) return null;
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button className="flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg px-2 py-1.5 transition-colors cursor-pointer">
           <OrgAvatar name={selectedOrg.name} size="sm" />
@@ -119,7 +118,7 @@ export function OrganizationSelector() {
         {/* User Email */}
         <div className="px-3 py-2">
           <span className="text-xs text-neutral-500 dark:text-neutral-400">
-            {currentUser.email}
+            {currentUser?.email}
           </span>
         </div>
 
@@ -189,6 +188,15 @@ export function OrganizationSelector() {
         {/* Actions */}
         <div className="py-1">
           <button
+            onClick={handleCreateOrg}
+            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-left cursor-pointer"
+          >
+            <Plus className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+            <span className="text-sm text-neutral-700 dark:text-neutral-300">
+              Create Organization
+            </span>
+          </button>
+          <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors text-left cursor-pointer"
           >
@@ -198,5 +206,12 @@ export function OrganizationSelector() {
         </div>
       </PopoverContent>
     </Popover>
+
+      {/* Create Organization Modal */}
+      <CreateOrganizationModal
+        open={createModalOpen}
+        onOpenChange={setCreateModalOpen}
+      />
+    </>
   );
 }
