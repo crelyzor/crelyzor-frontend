@@ -27,6 +27,9 @@ const {
   PublicBooking,
   CreateOrganization,
   Setup,
+  Cards,
+  CardEditor,
+  CardContacts,
 } = routes;
 
 function App() {
@@ -150,6 +153,48 @@ function App() {
                     <AuthGuard>
                       <Layout>
                         <Notifications />
+                      </Layout>
+                    </AuthGuard>
+                  }
+                />
+
+                {/* Card Routes */}
+                <Route
+                  path="/cards"
+                  element={
+                    <AuthGuard>
+                      <Layout>
+                        <Cards />
+                      </Layout>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/cards/create"
+                  element={
+                    <AuthGuard>
+                      <Layout>
+                        <CardEditor />
+                      </Layout>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/cards/:id"
+                  element={
+                    <AuthGuard>
+                      <Layout>
+                        <CardEditor />
+                      </Layout>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/cards/contacts"
+                  element={
+                    <AuthGuard>
+                      <Layout>
+                        <CardContacts />
                       </Layout>
                     </AuthGuard>
                   }

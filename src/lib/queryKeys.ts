@@ -76,4 +76,18 @@ export const queryKeys = {
     all: ['sync'] as const,
     status: () => [...queryKeys.sync.all, 'status'] as const,
   },
+  // Cards
+  cards: {
+    all: ['cards'] as const,
+    list: () => [...queryKeys.cards.all, 'list'] as const,
+    detail: (id: string) => [...queryKeys.cards.all, 'detail', id] as const,
+    analytics: (id: string, days?: number) =>
+      [...queryKeys.cards.all, 'analytics', id, days] as const,
+    contacts: (filters?: Record<string, unknown>) =>
+      [
+        ...queryKeys.cards.all,
+        'contacts',
+        ...(filters ? [filters] : []),
+      ] as const,
+  },
 } as const;

@@ -9,6 +9,7 @@ import {
   BarChart3,
   Bell,
   Globe,
+  CreditCard,
 } from 'lucide-react';
 import type { ToolbarItem, ToolbarItemGroup } from '@/types';
 
@@ -50,6 +51,15 @@ export const TOOLBAR_ITEMS: ToolbarItem[] = [
     path: '/availability',
     group: 'navigation',
     description: 'Set your schedule',
+  },
+  {
+    id: 'cards',
+    label: 'Cards',
+    icon: CreditCard,
+    action: 'navigate',
+    path: '/cards',
+    group: 'navigation',
+    description: 'Digital business cards',
   },
 
   // Quick Actions

@@ -45,3 +45,15 @@ export { DAY_MAP, DAY_MAP_REVERSE } from './availability';
 export type { Theme, ResolvedTheme } from './theme';
 
 export type { QuickAction } from './quickAction';
+
+export type {
+  Card,
+  CardLink,
+  CardContactFields,
+  CardTheme,
+  CardContact,
+  CardAnalytics,
+  CreateCardPayload,
+  UpdateCardPayload,
+  ContactsResponse,
+} from './card';

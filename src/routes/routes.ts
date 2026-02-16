@@ -15,6 +15,9 @@ const AuthCallback = lazy(() => import('@/pages/auth-callback'));
 const PublicBooking = lazy(() => import('@/pages/public-booking'));
 const CreateOrganization = lazy(() => import('@/pages/create-organization'));
 const Setup = lazy(() => import('@/pages/setup'));
+const Cards = lazy(() => import('@/pages/cards'));
+const CardEditor = lazy(() => import('@/pages/card-editor'));
+const CardContacts = lazy(() => import('@/pages/card-contacts'));
 
 export type RouteConfig = {
   path: string;
@@ -37,4 +40,7 @@ export const routes = {
   PublicBooking,
   CreateOrganization,
   Setup,
+  Cards,
+  CardEditor,
+  CardContacts,
 };

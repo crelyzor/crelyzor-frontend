@@ -19,6 +19,7 @@ import {
   Link2,
   Mic,
   Home,
+  CreditCard,
 } from 'lucide-react';
 import { useUIStore } from '@/stores';
 import { toast } from 'sonner';
@@ -74,6 +75,12 @@ export function CommandPalette() {
             <Link2 className="mr-3 h-4 w-4" />
             <span>Share Booking Link</span>
           </CommandItem>
+          <CommandItem
+            onSelect={() => runCommand(() => navigate('/cards/create'))}
+          >
+            <CreditCard className="mr-3 h-4 w-4" />
+            <span>Create Card</span>
+          </CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
@@ -92,6 +99,12 @@ export function CommandPalette() {
           >
             <Clock className="mr-3 h-4 w-4" />
             <span>Availability</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => runCommand(() => navigate('/cards'))}
+          >
+            <CreditCard className="mr-3 h-4 w-4" />
+            <span>Cards</span>
           </CommandItem>
           <CommandItem
             onSelect={() => runCommand(() => navigate('/voice-notes'))}
