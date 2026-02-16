@@ -82,7 +82,10 @@ export default function SetupPage() {
       await qc.invalidateQueries({ queryKey: queryKeys.auth.me() });
       navigate('/', { replace: true });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to set username. Please try again.';
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Failed to set username. Please try again.';
       setError(message);
     } finally {
       setIsSubmitting(false);

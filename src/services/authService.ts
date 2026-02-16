@@ -26,7 +26,9 @@ export const authApi = {
 
   // Check username availability
   checkUsername: (username: string) =>
-    apiClient.get<{ available: boolean }>(`/auth/username/check?username=${encodeURIComponent(username)}`),
+    apiClient.get<{ available: boolean }>(
+      `/auth/username/check?username=${encodeURIComponent(username)}`
+    ),
 
   // Set username (onboarding or update)
   setUsername: (username: string) =>
