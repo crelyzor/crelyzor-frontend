@@ -58,11 +58,15 @@ export function useLogout() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: () => authApi.logout(),
+    mutationFn: () => {
+      const refreshToken = localStorage.getItem('calendar-refresh-token');
+      return authApi.logout(refreshToken || undefined);
+    },
     onSettled: () => {
       logout();
       resetOrg();
       qc.clear();
+      localStorage.removeItem('calendar-refresh-token');
     },
   });
 }

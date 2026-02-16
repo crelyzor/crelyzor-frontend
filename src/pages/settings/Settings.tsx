@@ -58,7 +58,11 @@ export default function Settings() {
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
-      onSuccess: () => navigate('/signin'),
+      onSettled: () => {
+        // Always redirect to signin, even if API call fails
+        // (local state is cleared in useLogout hook)
+        navigate('/signin', { replace: true });
+      },
     });
   };
 

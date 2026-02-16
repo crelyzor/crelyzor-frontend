@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Settings, Check, LogOut, Home } from 'lucide-react';
 import {
   Popover,
@@ -9,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { mockOrganizations, currentUser } from '@/data';
 import type { Organization } from '@/types';
 import { useOrganizationStore } from '@/stores';
+import { useLogout } from '@/hooks/queries/useAuthQueries';
 import { OrgAvatar } from './OrgAvatar';
 import { RoleBadge } from './RoleBadge';
 
@@ -16,6 +18,8 @@ type OrgGroup = { label: string; orgs: Organization[] };
 
 export function OrganizationSelector() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const logoutMutation = useLogout();
 
   const currentOrg = useOrganizationStore((s) => s.currentOrg);
   const organizations = useOrganizationStore((s) => s.organizations);
@@ -52,6 +56,15 @@ export function OrganizationSelector() {
   const handleOrgSelect = (org: Organization) => {
     setCurrentOrg(org);
     setOpen(false);
+  };
+
+  const handleLogout = () => {
+    setOpen(false);
+    logoutMutation.mutate(undefined, {
+      onSettled: () => {
+        navigate('/signin', { replace: true });
+      },
+    });
   };
 
   return (
@@ -175,9 +188,12 @@ export function OrganizationSelector() {
 
         {/* Actions */}
         <div className="py-1">
-          <button className="w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-left cursor-pointer">
-            <LogOut className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors text-left cursor-pointer"
+          >
+            <LogOut className="w-4 h-4 text-red-500" />
+            <span className="text-sm text-red-500 font-medium">
               Log out
             </span>
           </button>
