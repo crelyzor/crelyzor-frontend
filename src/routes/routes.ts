@@ -18,6 +18,7 @@ const Setup = lazy(() => import('@/pages/setup'));
 const Cards = lazy(() => import('@/pages/cards'));
 const CardEditor = lazy(() => import('@/pages/card-editor'));
 const CardContacts = lazy(() => import('@/pages/card-contacts'));
+const CardAnalytics = lazy(() => import('@/pages/card-analytics'));
 
 export type RouteConfig = {
   path: string;
@@ -43,4 +44,5 @@ export const routes = {
   Cards,
   CardEditor,
   CardContacts,
+  CardAnalytics,
 };

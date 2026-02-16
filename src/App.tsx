@@ -30,6 +30,7 @@ const {
   Cards,
   CardEditor,
   CardContacts,
+  CardAnalytics,
 } = routes;
 
 function App() {
@@ -195,6 +196,16 @@ function App() {
                     <AuthGuard>
                       <Layout>
                         <CardContacts />
+                      </Layout>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/cards/:id/analytics"
+                  element={
+                    <AuthGuard>
+                      <Layout>
+                        <CardAnalytics />
                       </Layout>
                     </AuthGuard>
                   }

@@ -11,6 +11,7 @@ import {
   ExternalLink,
   CreditCard,
   QrCode,
+  FileSignature,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -23,6 +24,10 @@ import {
 import { toast } from 'sonner';
 import { useState } from 'react';
 import type { Card as CardType } from '@/types';
+import { QRCodeDialog } from '@/components/cards/QRCodeDialog';
+import { EmailSignatureDialog } from '@/components/cards/EmailSignatureDialog';
+
+const CARDS_PUBLIC_URL = import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
 
 export default function Cards() {
   const navigate = useNavigate();
@@ -30,6 +35,8 @@ export default function Cards() {
   const deleteCard = useDeleteCard();
   const updateCard = useUpdateCard();
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
+  const [qrCard, setQrCard] = useState<CardType | null>(null);
+  const [sigCard, setSigCard] = useState<CardType | null>(null);
 
   const handleToggleActive = (card: CardType) => {
     updateCard.mutate(
@@ -200,7 +207,7 @@ export default function Cards() {
                             onClick={(e) => {
                               e.stopPropagation();
                               navigator.clipboard.writeText(
-                                `${window.location.origin}/c/${card.slug}`
+                                `${CARDS_PUBLIC_URL}/${card.slug}`
                               );
                               toast.success('Link copied');
                               setMenuOpen(null);
@@ -208,6 +215,39 @@ export default function Cards() {
                           >
                             <Copy className="w-3.5 h-3.5" />
                             Copy link
+                          </button>
+                          <button
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setQrCard(card);
+                              setMenuOpen(null);
+                            }}
+                          >
+                            <QrCode className="w-3.5 h-3.5" />
+                            QR Code
+                          </button>
+                          <button
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/cards/${card.id}/analytics`);
+                              setMenuOpen(null);
+                            }}
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            Analytics
+                          </button>
+                          <button
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSigCard(card);
+                              setMenuOpen(null);
+                            }}
+                          >
+                            <FileSignature className="w-3.5 h-3.5" />
+                            Email Signature
                           </button>
                           <button
                             className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800"
@@ -280,6 +320,23 @@ export default function Cards() {
             New Card
           </Button>
         </div>
+      )}
+
+      {qrCard && (
+        <QRCodeDialog
+          open={!!qrCard}
+          onOpenChange={(open) => !open && setQrCard(null)}
+          cardUrl={`${CARDS_PUBLIC_URL}/${qrCard.slug}`}
+          cardName={qrCard.displayName}
+        />
+      )}
+
+      {sigCard && (
+        <EmailSignatureDialog
+          open={!!sigCard}
+          onOpenChange={(open) => !open && setSigCard(null)}
+          card={sigCard}
+        />
       )}
     </div>
   );

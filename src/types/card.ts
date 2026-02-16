@@ -10,6 +10,7 @@ export interface CardContactFields {
   email?: string;
   location?: string;
   website?: string;
+  bookingUrl?: string;
 }
 
 export interface CardTheme {
