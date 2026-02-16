@@ -100,9 +100,7 @@ export function CommandPalette() {
             <Clock className="mr-3 h-4 w-4" />
             <span>Availability</span>
           </CommandItem>
-          <CommandItem
-            onSelect={() => runCommand(() => navigate('/cards'))}
-          >
+          <CommandItem onSelect={() => runCommand(() => navigate('/cards'))}>
             <CreditCard className="mr-3 h-4 w-4" />
             <span>Cards</span>
           </CommandItem>

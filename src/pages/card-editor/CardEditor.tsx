@@ -70,9 +70,7 @@ export default function CardEditor() {
       setBio(existingCard.bio ?? '');
       setSlug(existingCard.slug);
       setLinks((existingCard.links as CardLink[]) ?? []);
-      setContactFields(
-        (existingCard.contactFields as CardContactFields) ?? {}
-      );
+      setContactFields((existingCard.contactFields as CardContactFields) ?? {});
       setIsDefault(existingCard.isDefault);
     }
   }, [existingCard]);
@@ -215,9 +213,7 @@ export default function CardEditor() {
                 value={slug}
                 onChange={(e) =>
                   setSlug(
-                    e.target.value
-                      .toLowerCase()
-                      .replace(/[^a-z0-9-]/g, '')
+                    e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')
                   )
                 }
                 className="h-11"

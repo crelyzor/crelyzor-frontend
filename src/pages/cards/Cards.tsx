@@ -15,7 +15,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useCards, useDeleteCard, useUpdateCard } from '@/hooks/queries/useCardQueries';
+import {
+  useCards,
+  useDeleteCard,
+  useUpdateCard,
+} from '@/hooks/queries/useCardQueries';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import type { Card as CardType } from '@/types';
