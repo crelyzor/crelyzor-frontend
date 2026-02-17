@@ -12,7 +12,6 @@ import {
   CreditCard,
   QrCode,
   FileSignature,
-  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,66 +21,15 @@ import {
   useUpdateCard,
 } from '@/hooks/queries/useCardQueries';
 import { toast } from 'sonner';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState } from 'react';
 import type { Card as CardType } from '@/types';
 import { CardPreview } from '@/components/cards/CardPreview';
 import { QRCodeDialog } from '@/components/cards/QRCodeDialog';
 import { EmailSignatureDialog } from '@/components/cards/EmailSignatureDialog';
 import { useOrganizationStore } from '@/stores';
-import QRCode from 'qrcode';
 
 const CARDS_PUBLIC_URL =
   import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
-
-// Inline QR overlay rendered on top of a card preview
-function QROverlay({
-  cardUrl,
-  cardName,
-  onClose,
-}: {
-  cardUrl: string;
-  cardName: string;
-  onClose: () => void;
-}) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const renderQR = useCallback(async () => {
-    if (!canvasRef.current) return;
-    await QRCode.toCanvas(canvasRef.current, cardUrl, {
-      width: 180,
-      margin: 2,
-      color: { dark: '#171717', light: '#ffffff' },
-    });
-  }, [cardUrl]);
-
-  useEffect(() => {
-    renderQR();
-  }, [renderQR]);
-
-  return (
-    <div
-      className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-2xl
-                 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm transition-all animate-in fade-in duration-200"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <button
-        onClick={onClose}
-        className="absolute top-2.5 right-2.5 p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-      >
-        <X className="w-4 h-4 text-neutral-400" />
-      </button>
-      <div className="rounded-xl border border-neutral-100 dark:border-neutral-800 p-2.5 bg-white">
-        <canvas ref={canvasRef} className="rounded-lg" />
-      </div>
-      <p className="text-[11px] text-neutral-400 text-center px-4 truncate max-w-full">
-        {cardUrl}
-      </p>
-      <p className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
-        {cardName}
-      </p>
-    </div>
-  );
-}
 
 export default function Cards() {
   const navigate = useNavigate();
@@ -90,7 +38,6 @@ export default function Cards() {
   const updateCard = useUpdateCard();
   const currentUser = useOrganizationStore((s) => s.currentUser);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
-  const [qrOpen, setQrOpen] = useState<string | null>(null);
   const [qrDialogCard, setQrDialogCard] = useState<CardType | null>(null);
   const [sigCard, setSigCard] = useState<CardType | null>(null);
 
@@ -182,7 +129,8 @@ export default function Cards() {
             >
               {/* Card preview — clickable to edit */}
               <div
-                className="cursor-pointer transition-transform hover:scale-[1.02] hover:shadow-lg rounded-2xl overflow-hidden"
+                className="cursor-pointer transition-transform hover:scale-[1.02] rounded-2xl overflow-hidden ring-1 ring-white/10 dark:ring-white/10"
+                style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.06)' }}
                 onClick={() => navigate(`/cards/${card.id}`)}
               >
                 <div className="h-full">
@@ -200,15 +148,6 @@ export default function Cards() {
                   />
                 </div>
               </div>
-
-              {/* QR overlay */}
-              {qrOpen === card.id && (
-                <QROverlay
-                  cardUrl={getCardUrl(card)}
-                  cardName={card.displayName}
-                  onClose={() => setQrOpen(null)}
-                />
-              )}
 
               {/* Badge bar — positioned over the card */}
               <div className="absolute top-2.5 left-3 flex items-center gap-1.5 z-[5]">
@@ -232,19 +171,15 @@ export default function Cards() {
 
               {/* Action buttons — visible on hover */}
               <div className="absolute top-2.5 right-3 flex items-center gap-1 z-[5] opacity-0 group-hover:opacity-100 transition-opacity">
-                {/* QR toggle */}
+                {/* QR download */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setQrOpen(qrOpen === card.id ? null : card.id);
+                    setQrDialogCard(card);
                   }}
-                  className={`p-1.5 rounded-lg shadow-sm transition-colors
-                    ${
-                      qrOpen === card.id
-                        ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-                        : 'bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800'
-                    }`}
-                  title="Toggle QR Code"
+                  className="p-1.5 rounded-lg bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-sm
+                             text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800 transition-colors"
+                  title="Download QR Code"
                 >
                   <QrCode className="w-3.5 h-3.5" />
                 </button>

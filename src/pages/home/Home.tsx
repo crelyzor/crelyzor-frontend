@@ -15,6 +15,7 @@ import { MeetingSummaryCard } from './MeetingSummaryCard';
 import { ActionItemsCard } from './ActionItemsCard';
 import { RecentMeetings } from './RecentMeetings';
 import { BookingLinkCard } from './BookingLinkCard';
+import { DefaultCardWidget } from './DefaultCardWidget';
 
 export default function Home() {
   const { scrollY } = useScroll();
@@ -166,6 +167,9 @@ export default function Home() {
             isPersonalView={isPersonalView}
             isTeamView={showTeamToggle && isTeamView}
           />
+
+          {/* Default Card */}
+          <DefaultCardWidget />
 
           {/* Booking Link */}
           <BookingLinkCard />
