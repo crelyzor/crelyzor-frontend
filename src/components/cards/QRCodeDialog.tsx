@@ -35,8 +35,13 @@ export function QRCodeDialog({
   }, [cardUrl, open]);
 
   useEffect(() => {
+    if (!open) return;
+    // The dialog content animates in, so the canvas ref may not be ready immediately.
+    // Retry after a short delay to ensure the canvas is mounted.
     renderQR();
-  }, [renderQR]);
+    const timer = setTimeout(renderQR, 100);
+    return () => clearTimeout(timer);
+  }, [renderQR, open]);
 
   const downloadPNG = async () => {
     const canvas = document.createElement('canvas');
