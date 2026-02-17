@@ -16,6 +16,8 @@ import {
   Calendar,
   Eye,
   EyeOff,
+  X,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,9 +29,8 @@ import {
   useUpdateCard,
 } from '@/hooks/queries/useCardQueries';
 import { toast } from 'sonner';
-import type { CardLink, CardContactFields, CardTheme } from '@/types';
+import type { CardLink, CardContactFields } from '@/types';
 import { CardPreview } from '@/components/cards/CardPreview';
-import { ThemeCustomizer } from '@/components/cards/ThemeCustomizer';
 
 const LINK_ICONS: Record<string, typeof Globe> = {
   linkedin: Linkedin,
@@ -66,8 +67,10 @@ export default function CardEditor() {
   const [links, setLinks] = useState<CardLink[]>([]);
   const [contactFields, setContactFields] = useState<CardContactFields>({});
   const [isDefault, setIsDefault] = useState(false);
-  const [theme, setTheme] = useState<CardTheme>({});
   const [showPreview, setShowPreview] = useState(false);
+  const [previewFace, setPreviewFace] = useState<'front' | 'back'>('front');
+  const [show3DModal, setShow3DModal] = useState(false);
+  const [modalFlipped, setModalFlipped] = useState(false);
 
   // Load existing card data
   useEffect(() => {
@@ -79,7 +82,6 @@ export default function CardEditor() {
       setLinks((existingCard.links as CardLink[]) ?? []);
       setContactFields((existingCard.contactFields as CardContactFields) ?? {});
       setIsDefault(existingCard.isDefault);
-      setTheme((existingCard.theme as CardTheme) ?? {});
     }
   }, [existingCard]);
 
@@ -108,7 +110,6 @@ export default function CardEditor() {
       slug: slug.trim() || undefined,
       links: links.filter((l) => l.url.trim()),
       contactFields,
-      theme,
       isDefault,
     };
 
@@ -202,7 +203,6 @@ export default function CardEditor() {
                 bio={bio}
                 links={links}
                 contactFields={contactFields}
-                theme={theme}
               />
             </div>
           )}
@@ -453,14 +453,6 @@ export default function CardEditor() {
             )}
           </section>
 
-          {/* Theme */}
-          <section className="space-y-4">
-            <h2 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-              Theme & Customization
-            </h2>
-            <ThemeCustomizer theme={theme} onChange={setTheme} />
-          </section>
-
           {/* Options */}
           <section className="space-y-4">
             <h2 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
@@ -487,22 +479,135 @@ export default function CardEditor() {
         </div>
 
         {/* Right column — Preview (desktop only) */}
-        <div className="hidden lg:block w-[340px] shrink-0">
+        <div className="hidden lg:block w-[480px] shrink-0">
           <div className="sticky top-6">
-            <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-4">
-              Preview
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                Preview
+              </p>
+              <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
+                <button
+                  onClick={() => setPreviewFace('front')}
+                  className={`px-2.5 py-1 text-[10px] font-medium rounded-md transition-colors ${
+                    previewFace === 'front'
+                      ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                      : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
+                  }`}
+                >
+                  Front
+                </button>
+                <button
+                  onClick={() => setPreviewFace('back')}
+                  className={`px-2.5 py-1 text-[10px] font-medium rounded-md transition-colors ${
+                    previewFace === 'back'
+                      ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                      : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
+                  }`}
+                >
+                  Back
+                </button>
+              </div>
+            </div>
+            <div
+              className="cursor-pointer transition-transform hover:scale-[1.02]"
+              onClick={() => {
+                setModalFlipped(false);
+                setShow3DModal(true);
+              }}
+              title="Click for 3D view"
+            >
+              <CardPreview
+                displayName={displayName}
+                title={title}
+                bio={bio}
+                links={links}
+                contactFields={contactFields}
+                face={previewFace}
+              />
+            </div>
+            <p className="text-[10px] text-neutral-400 dark:text-neutral-500 text-center mt-2">
+              Click card for 3D view
             </p>
-            <CardPreview
-              displayName={displayName}
-              title={title}
-              bio={bio}
-              links={links}
-              contactFields={contactFields}
-              theme={theme}
-            />
           </div>
         </div>
       </div>
+
+      {/* 3D Card Modal */}
+      {show3DModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setShow3DModal(false)}
+        >
+          <div
+            className="relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setShow3DModal(false)}
+              className="absolute -top-10 right-0 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Flip toggle */}
+            <button
+              onClick={() => setModalFlipped(!modalFlipped)}
+              className="absolute -top-10 left-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs transition-colors"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Flip
+            </button>
+
+            {/* 3D card container */}
+            <div style={{ perspective: '1200px' }}>
+              <div
+                className="w-130 sm:w-150 transition-transform duration-700 cursor-pointer"
+                onClick={() => setModalFlipped(!modalFlipped)}
+                style={{
+                  transformStyle: 'preserve-3d',
+                  transform: modalFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                }}
+              >
+                {/* Front */}
+                <div style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}>
+                  <CardPreview
+                    displayName={displayName}
+                    title={title}
+                    bio={bio}
+                    links={links}
+                    contactFields={contactFields}
+                    face="front"
+                  />
+                </div>
+
+                {/* Back */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                    transform: 'rotateY(180deg)',
+                  }}
+                >
+                  <CardPreview
+                    displayName={displayName}
+                    title={title}
+                    bio={bio}
+                    links={links}
+                    contactFields={contactFields}
+                    face="back"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <p className="text-center text-white/40 text-[11px] mt-4">
+              Click "Flip" or press the card to rotate
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Sticky footer */}
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl">
