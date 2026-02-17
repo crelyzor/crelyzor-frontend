@@ -69,15 +69,18 @@ export default function Home() {
   const bubble1Y = useTransform(scrollY, [40, 150], [0, -18]);
   const bubble2Y = useTransform(scrollY, [50, 160], [0, -18]);
   const bubble3Y = useTransform(scrollY, [60, 170], [0, -18]);
+  const bubble4Y = useTransform(scrollY, [70, 180], [0, -18]);
   const bubble0Scale = useTransform(scrollY, [30, 140], [1, 0.85]);
   const bubble1Scale = useTransform(scrollY, [40, 150], [1, 0.85]);
   const bubble2Scale = useTransform(scrollY, [50, 160], [1, 0.85]);
   const bubble3Scale = useTransform(scrollY, [60, 170], [1, 0.85]);
+  const bubble4Scale = useTransform(scrollY, [70, 180], [1, 0.85]);
   const bubbleTransforms = [
     { y: bubble0Y, scale: bubble0Scale },
     { y: bubble1Y, scale: bubble1Scale },
     { y: bubble2Y, scale: bubble2Scale },
     { y: bubble3Y, scale: bubble3Scale },
+    { y: bubble4Y, scale: bubble4Scale },
   ];
 
   // Compact sticky bar fades IN
