@@ -182,19 +182,21 @@ export default function Cards() {
             >
               {/* Card preview — clickable to edit */}
               <div
-                className="cursor-pointer transition-transform hover:scale-[1.02] hover:shadow-lg rounded-2xl"
+                className="cursor-pointer transition-transform hover:scale-[1.02] hover:shadow-lg rounded-2xl overflow-hidden"
                 onClick={() => navigate(`/cards/${card.id}`)}
               >
-                <CardPreview
-                  displayName={card.displayName}
-                  title={card.title ?? undefined}
-                  bio={card.bio ?? undefined}
-                  avatarUrl={card.avatarUrl}
-                  coverUrl={card.coverUrl}
-                  links={card.links}
-                  contactFields={card.contactFields}
-                  theme={card.theme}
-                />
+                <div className="h-full">
+                  <CardPreview
+                    displayName={card.displayName}
+                    title={card.title ?? undefined}
+                    bio={card.bio ?? undefined}
+                    avatarUrl={card.avatarUrl}
+                    coverUrl={card.coverUrl}
+                    links={card.links}
+                    contactFields={card.contactFields}
+                    theme={card.theme}
+                  />
+                </div>
               </div>
 
               {/* QR overlay */}
@@ -235,9 +237,10 @@ export default function Cards() {
                     setQrOpen(qrOpen === card.id ? null : card.id);
                   }}
                   className={`p-1.5 rounded-lg shadow-sm transition-colors
-                    ${qrOpen === card.id
-                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-                      : 'bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800'
+                    ${
+                      qrOpen === card.id
+                        ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
+                        : 'bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800'
                     }`}
                   title="Toggle QR Code"
                 >

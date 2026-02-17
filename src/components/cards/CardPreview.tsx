@@ -62,6 +62,7 @@ export function CardPreview({
         backgroundColor: bgColor,
         borderColor,
         color: textPrimary,
+        aspectRatio: '7 / 4',
       }}
     >
       {/* Cover */}
