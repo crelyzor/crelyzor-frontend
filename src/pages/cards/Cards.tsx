@@ -195,6 +195,8 @@ export default function Cards() {
                     links={card.links}
                     contactFields={card.contactFields}
                     theme={card.theme}
+                    htmlContent={card.htmlContent}
+                    htmlBackContent={card.htmlBackContent}
                   />
                 </div>
               </div>

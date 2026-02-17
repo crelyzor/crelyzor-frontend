@@ -31,6 +31,9 @@ interface CardPreviewProps {
   theme?: CardTheme;
   /** Which face to show — defaults to 'front' */
   face?: 'front' | 'back';
+  /** Pre-rendered HTML from backend (takes priority over React rendering) */
+  htmlContent?: string | null;
+  htmlBackContent?: string | null;
 }
 
 export function CardPreview({
@@ -43,7 +46,25 @@ export function CardPreview({
   theme,
   coverUrl,
   face = 'front',
+  htmlContent,
+  htmlBackContent,
 }: CardPreviewProps) {
+  // ── HTML mode: render stored HTML from backend ──
+  const html = face === 'back' ? htmlBackContent : htmlContent;
+  if (html) {
+    return (
+      <div
+        className="rounded-2xl overflow-hidden select-none"
+        style={{
+          aspectRatio: '1.586 / 1',
+          boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 8px 30px rgba(0,0,0,0.4)',
+        }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    );
+  }
+
+  // ── Fallback: React rendering (for cards without stored HTML) ──
   const accent = theme?.primaryColor || GOLD;
   const socialLinks = links.filter((l) => SOCIAL_ICONS[l.type]);
 

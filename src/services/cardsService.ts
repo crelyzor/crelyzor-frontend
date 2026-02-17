@@ -1,14 +1,24 @@
 import { apiClient } from '@/lib/apiClient';
 import type {
   Card,
+  CardTemplate,
   CardAnalytics,
   ContactsResponse,
   CardContact,
   CreateCardPayload,
   UpdateCardPayload,
+  PreviewCardPayload,
+  PreviewCardResponse,
 } from '@/types';
 
 export const cardsApi = {
+  /** GET /cards/templates — available card templates */
+  getTemplates: () => apiClient.get<CardTemplate[]>('/cards/templates'),
+
+  /** POST /cards/preview — generate preview HTML without saving */
+  preview: (data: PreviewCardPayload) =>
+    apiClient.post<PreviewCardResponse>('/cards/preview', data),
+
   /** GET /cards — list all user's cards */
   list: () => apiClient.get<Card[]>('/cards'),
 

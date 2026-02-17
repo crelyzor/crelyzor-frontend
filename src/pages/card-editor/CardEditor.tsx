@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -18,6 +18,7 @@ import {
   EyeOff,
   X,
   RotateCcw,
+  QrCode,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,10 +28,11 @@ import {
   useCard,
   useCreateCard,
   useUpdateCard,
+  useTemplates,
+  usePreviewCard,
 } from '@/hooks/queries/useCardQueries';
 import { toast } from 'sonner';
 import type { CardLink, CardContactFields } from '@/types';
-import { CardPreview } from '@/components/cards/CardPreview';
 
 const LINK_ICONS: Record<string, typeof Globe> = {
   linkedin: Linkedin,
@@ -50,6 +52,8 @@ const LINK_TYPES = [
   { value: 'custom', label: 'Custom Link' },
 ];
 
+const MAX_LINKS = 5;
+
 export default function CardEditor() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -58,8 +62,11 @@ export default function CardEditor() {
   const { data: existingCard, isLoading } = useCard(id ?? '');
   const createCard = useCreateCard();
   const updateCard = useUpdateCard();
+  const { data: templates } = useTemplates();
+  const previewCard = usePreviewCard();
 
   // Form state
+  const [templateId, setTemplateId] = useState('executive');
   const [displayName, setDisplayName] = useState('');
   const [title, setTitle] = useState('');
   const [bio, setBio] = useState('');
@@ -67,14 +74,22 @@ export default function CardEditor() {
   const [links, setLinks] = useState<CardLink[]>([]);
   const [contactFields, setContactFields] = useState<CardContactFields>({});
   const [isDefault, setIsDefault] = useState(false);
+  const [showQr, setShowQr] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
   const [previewFace, setPreviewFace] = useState<'front' | 'back'>('front');
   const [show3DModal, setShow3DModal] = useState(false);
   const [modalFlipped, setModalFlipped] = useState(false);
 
+  // Preview HTML state
+  const [previewHtml, setPreviewHtml] = useState<{
+    front: string;
+    back: string;
+  } | null>(null);
+
   // Load existing card data
   useEffect(() => {
     if (existingCard) {
+      setTemplateId(existingCard.templateId || 'executive');
       setDisplayName(existingCard.displayName);
       setTitle(existingCard.title ?? '');
       setBio(existingCard.bio ?? '');
@@ -82,10 +97,56 @@ export default function CardEditor() {
       setLinks((existingCard.links as CardLink[]) ?? []);
       setContactFields((existingCard.contactFields as CardContactFields) ?? {});
       setIsDefault(existingCard.isDefault);
+      setShowQr(existingCard.showQr ?? true);
+      // Load existing HTML as initial preview
+      if (existingCard.htmlContent) {
+        setPreviewHtml({
+          front: existingCard.htmlContent,
+          back: existingCard.htmlBackContent || '',
+        });
+      }
     }
   }, [existingCard]);
 
+  // Debounced preview generation
+  const debounceRef = useRef<NodeJS.Timeout>();
+  const fetchPreview = useCallback(() => {
+    if (!displayName.trim()) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      previewCard.mutate(
+        {
+          templateId,
+          displayName: displayName.trim(),
+          title: title.trim() || undefined,
+          bio: bio.trim() || undefined,
+          links: links.filter((l) => l.url.trim()),
+          contactFields,
+          showQr,
+          slug: slug.trim() || undefined,
+        },
+        {
+          onSuccess: (data) => {
+            setPreviewHtml({
+              front: data.htmlContent,
+              back: data.htmlBackContent,
+            });
+          },
+        },
+      );
+    }, 600);
+  }, [templateId, displayName, title, bio, links, contactFields, showQr, slug, previewCard]);
+
+  useEffect(() => {
+    fetchPreview();
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [fetchPreview]);
+
   const addLink = () => {
+    if (links.length >= MAX_LINKS) return;
     setLinks([...links, { type: 'website', url: '', label: '' }]);
   };
 
@@ -104,12 +165,14 @@ export default function CardEditor() {
     }
 
     const data = {
+      templateId,
       displayName: displayName.trim(),
       title: title.trim() || undefined,
       bio: bio.trim() || undefined,
       slug: slug.trim() || undefined,
       links: links.filter((l) => l.url.trim()),
       contactFields,
+      showQr,
       isDefault,
     };
 
@@ -122,7 +185,7 @@ export default function CardEditor() {
             navigate('/cards');
           },
           onError: () => toast.error('Failed to update card'),
-        }
+        },
       );
     } else {
       createCard.mutate(data, {
@@ -165,7 +228,7 @@ export default function CardEditor() {
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
               {isEditing
                 ? 'Update your digital card details'
-                : 'Set up your digital business card'}
+                : 'Pick a template and fill in your info'}
             </p>
           </div>
         </div>
@@ -195,17 +258,54 @@ export default function CardEditor() {
         {/* Left column — Form */}
         <div className="flex-1 min-w-0 space-y-8">
           {/* Mobile preview */}
-          {showPreview && (
+          {showPreview && previewHtml && (
             <div className="lg:hidden">
-              <CardPreview
-                displayName={displayName}
-                title={title}
-                bio={bio}
-                links={links}
-                contactFields={contactFields}
+              <div
+                className="rounded-2xl overflow-hidden"
+                style={{
+                  aspectRatio: '1.586 / 1',
+                  boxShadow:
+                    '0 0 0 1px rgba(255,255,255,0.08), 0 8px 30px rgba(0,0,0,0.4)',
+                }}
+                dangerouslySetInnerHTML={{
+                  __html:
+                    previewFace === 'back'
+                      ? previewHtml.back
+                      : previewHtml.front,
+                }}
               />
             </div>
           )}
+
+          {/* Template Picker */}
+          <section className="space-y-4">
+            <h2 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+              Template
+            </h2>
+            <div className="grid grid-cols-3 gap-3">
+              {(templates ?? []).map((tpl) => (
+                <button
+                  key={tpl.id}
+                  onClick={() => setTemplateId(tpl.id)}
+                  className={`relative p-3 rounded-xl border-2 transition-all text-left ${
+                    templateId === tpl.id
+                      ? 'border-neutral-900 dark:border-neutral-100 bg-neutral-50 dark:bg-neutral-900'
+                      : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700'
+                  }`}
+                >
+                  <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                    {tpl.name}
+                  </p>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-2">
+                    {tpl.description}
+                  </p>
+                  {templateId === tpl.id && (
+                    <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-neutral-900 dark:bg-neutral-100" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </section>
 
           {/* Basic Info */}
           <section className="space-y-4">
@@ -260,7 +360,7 @@ export default function CardEditor() {
                   value={slug}
                   onChange={(e) =>
                     setSlug(
-                      e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')
+                      e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''),
                     )
                   }
                   className="h-11"
@@ -369,14 +469,20 @@ export default function CardEditor() {
           {/* Social Links */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
-                Social Links
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                  Social Links
+                </h2>
+                <span className="text-[10px] tabular-nums text-neutral-400 dark:text-neutral-600">
+                  {links.length}/{MAX_LINKS}
+                </span>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs h-7 text-neutral-600 dark:text-neutral-400"
+                className="text-xs h-7 text-neutral-600 dark:text-neutral-400 disabled:opacity-40 disabled:cursor-not-allowed"
                 onClick={addLink}
+                disabled={links.length >= MAX_LINKS}
               >
                 <Plus className="w-3.5 h-3.5 mr-1" />
                 Add Link
@@ -462,6 +568,25 @@ export default function CardEditor() {
             <label className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors">
               <input
                 type="checkbox"
+                checked={showQr}
+                onChange={(e) => setShowQr(e.target.checked)}
+                className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 focus:ring-neutral-900/20"
+              />
+              <div>
+                <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                  <QrCode className="w-3.5 h-3.5" />
+                  Show QR code on card
+                </p>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Useful for physical/printed cards. Turn off for digital-only
+                  sharing.
+                </p>
+              </div>
+            </label>
+
+            <label className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors">
+              <input
+                type="checkbox"
                 checked={isDefault}
                 onChange={(e) => setIsDefault(e.target.checked)}
                 className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 focus:ring-neutral-900/20"
@@ -516,14 +641,27 @@ export default function CardEditor() {
               }}
               title="Click for 3D view"
             >
-              <CardPreview
-                displayName={displayName}
-                title={title}
-                bio={bio}
-                links={links}
-                contactFields={contactFields}
-                face={previewFace}
-              />
+              {previewHtml ? (
+                <div
+                  className="rounded-2xl overflow-hidden"
+                  style={{
+                    aspectRatio: '1.586 / 1',
+                    boxShadow:
+                      '0 0 0 1px rgba(255,255,255,0.08), 0 8px 30px rgba(0,0,0,0.4)',
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      previewFace === 'back'
+                        ? previewHtml.back
+                        : previewHtml.front,
+                  }}
+                />
+              ) : (
+                <div
+                  className="rounded-2xl bg-neutral-100 dark:bg-neutral-800 animate-pulse"
+                  style={{ aspectRatio: '1.586 / 1' }}
+                />
+              )}
             </div>
             <p className="text-[10px] text-neutral-400 dark:text-neutral-500 text-center mt-2">
               Click card for 3D view
@@ -533,7 +671,7 @@ export default function CardEditor() {
       </div>
 
       {/* 3D Card Modal */}
-      {show3DModal && (
+      {show3DModal && previewHtml && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
           onClick={() => setShow3DModal(false)}
@@ -563,7 +701,9 @@ export default function CardEditor() {
                 onClick={() => setModalFlipped(!modalFlipped)}
                 style={{
                   transformStyle: 'preserve-3d',
-                  transform: modalFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                  transform: modalFlipped
+                    ? 'rotateY(180deg)'
+                    : 'rotateY(0deg)',
                 }}
               >
                 {/* Front */}
@@ -573,13 +713,14 @@ export default function CardEditor() {
                     WebkitBackfaceVisibility: 'hidden',
                   }}
                 >
-                  <CardPreview
-                    displayName={displayName}
-                    title={title}
-                    bio={bio}
-                    links={links}
-                    contactFields={contactFields}
-                    face="front"
+                  <div
+                    className="rounded-2xl overflow-hidden"
+                    style={{
+                      aspectRatio: '1.586 / 1',
+                      boxShadow:
+                        '0 0 0 1px rgba(255,255,255,0.08), 0 8px 30px rgba(0,0,0,0.4)',
+                    }}
+                    dangerouslySetInnerHTML={{ __html: previewHtml.front }}
                   />
                 </div>
 
@@ -592,20 +733,21 @@ export default function CardEditor() {
                     transform: 'rotateY(180deg)',
                   }}
                 >
-                  <CardPreview
-                    displayName={displayName}
-                    title={title}
-                    bio={bio}
-                    links={links}
-                    contactFields={contactFields}
-                    face="back"
+                  <div
+                    className="rounded-2xl overflow-hidden"
+                    style={{
+                      aspectRatio: '1.586 / 1',
+                      boxShadow:
+                        '0 0 0 1px rgba(255,255,255,0.08), 0 8px 30px rgba(0,0,0,0.4)',
+                    }}
+                    dangerouslySetInnerHTML={{ __html: previewHtml.back }}
                   />
                 </div>
               </div>
             </div>
 
             <p className="text-center text-white/40 text-[11px] mt-4">
-              Click "Flip" or press the card to rotate
+              Click &ldquo;Flip&rdquo; or press the card to rotate
             </p>
           </div>
         </div>

@@ -51,9 +51,12 @@ export type {
   CardLink,
   CardContactFields,
   CardTheme,
+  CardTemplate,
   CardContact,
   CardAnalytics,
   CreateCardPayload,
   UpdateCardPayload,
+  PreviewCardPayload,
+  PreviewCardResponse,
   ContactsResponse,
 } from './card';
