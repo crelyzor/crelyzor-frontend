@@ -130,7 +130,10 @@ export default function Cards() {
               {/* Card preview — clickable to edit */}
               <div
                 className="cursor-pointer transition-transform hover:scale-[1.02] rounded-2xl overflow-hidden ring-1 ring-white/10 dark:ring-white/10"
-                style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.06)' }}
+                style={{
+                  boxShadow:
+                    '0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.06)',
+                }}
                 onClick={() => navigate(`/cards/${card.id}`)}
               >
                 <div className="h-full">
