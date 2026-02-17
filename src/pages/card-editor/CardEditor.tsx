@@ -109,7 +109,7 @@ export default function CardEditor() {
   }, [existingCard]);
 
   // Debounced preview generation
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<NodeJS.Timeout>(null);
   const fetchPreview = useCallback(() => {
     if (!displayName.trim()) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -133,10 +133,20 @@ export default function CardEditor() {
               back: data.htmlBackContent,
             });
           },
-        },
+        }
       );
     }, 600);
-  }, [templateId, displayName, title, bio, links, contactFields, showQr, slug, previewCard]);
+  }, [
+    templateId,
+    displayName,
+    title,
+    bio,
+    links,
+    contactFields,
+    showQr,
+    slug,
+    previewCard,
+  ]);
 
   useEffect(() => {
     fetchPreview();
@@ -185,7 +195,7 @@ export default function CardEditor() {
             navigate('/cards');
           },
           onError: () => toast.error('Failed to update card'),
-        },
+        }
       );
     } else {
       createCard.mutate(data, {
@@ -360,7 +370,7 @@ export default function CardEditor() {
                   value={slug}
                   onChange={(e) =>
                     setSlug(
-                      e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''),
+                      e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')
                     )
                   }
                   className="h-11"
@@ -701,9 +711,7 @@ export default function CardEditor() {
                 onClick={() => setModalFlipped(!modalFlipped)}
                 style={{
                   transformStyle: 'preserve-3d',
-                  transform: modalFlipped
-                    ? 'rotateY(180deg)'
-                    : 'rotateY(0deg)',
+                  transform: modalFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
                 }}
               >
                 {/* Front */}

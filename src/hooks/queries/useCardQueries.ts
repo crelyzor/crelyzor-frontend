@@ -1,7 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { cardsApi } from '@/services/cardsService';
-import type { CreateCardPayload, UpdateCardPayload, PreviewCardPayload } from '@/types';
+import type {
+  CreateCardPayload,
+  UpdateCardPayload,
+  PreviewCardPayload,
+} from '@/types';
 
 export function useTemplates() {
   return useQuery({

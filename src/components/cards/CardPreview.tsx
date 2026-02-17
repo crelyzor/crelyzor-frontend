@@ -57,7 +57,8 @@ export function CardPreview({
         className="rounded-2xl overflow-hidden select-none"
         style={{
           aspectRatio: '1.586 / 1',
-          boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 8px 30px rgba(0,0,0,0.4)',
+          boxShadow:
+            '0 0 0 1px rgba(255,255,255,0.08), 0 8px 30px rgba(0,0,0,0.4)',
         }}
         dangerouslySetInnerHTML={{ __html: html }}
       />
