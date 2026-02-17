@@ -538,10 +538,7 @@ export default function CardEditor() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
           onClick={() => setShow3DModal(false)}
         >
-          <div
-            className="relative"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
             {/* Close button */}
             <button
               onClick={() => setShow3DModal(false)}
@@ -570,7 +567,12 @@ export default function CardEditor() {
                 }}
               >
                 {/* Front */}
-                <div style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}>
+                <div
+                  style={{
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                  }}
+                >
                   <CardPreview
                     displayName={displayName}
                     title={title}

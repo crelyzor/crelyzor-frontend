@@ -84,11 +84,20 @@ export function CardPreview({
               </p>
             ) : (
               <div className="flex items-center gap-2">
-                <div className="h-px flex-1" style={{ backgroundColor: `${accent}55` }} />
-                <span className="text-[8px] tracking-widest uppercase" style={{ color: accent }}>
+                <div
+                  className="h-px flex-1"
+                  style={{ backgroundColor: `${accent}55` }}
+                />
+                <span
+                  className="text-[8px] tracking-widest uppercase"
+                  style={{ color: accent }}
+                >
                   {displayName || 'Your Name'}
                 </span>
-                <div className="h-px flex-1" style={{ backgroundColor: `${accent}55` }} />
+                <div
+                  className="h-px flex-1"
+                  style={{ backgroundColor: `${accent}55` }}
+                />
               </div>
             )}
           </div>
@@ -117,8 +126,14 @@ export function CardPreview({
               className="flex items-center gap-1.5 px-2 py-1 rounded-md mb-1"
               style={{ backgroundColor: `${accent}18` }}
             >
-              <Calendar className="w-2.5 h-2.5 shrink-0" style={{ color: accent }} />
-              <p className="text-[8px] font-medium truncate" style={{ color: accent }}>
+              <Calendar
+                className="w-2.5 h-2.5 shrink-0"
+                style={{ color: accent }}
+              />
+              <p
+                className="text-[8px] font-medium truncate"
+                style={{ color: accent }}
+              >
                 Book a meeting
               </p>
             </div>
@@ -139,7 +154,9 @@ export function CardPreview({
         {/* Top accent bar */}
         <div
           className="absolute top-0 left-0 right-0 h-0.5"
-          style={{ background: `linear-gradient(90deg, ${accent}66, ${accent})` }}
+          style={{
+            background: `linear-gradient(90deg, ${accent}66, ${accent})`,
+          }}
         />
       </div>
     );
@@ -189,7 +206,11 @@ export function CardPreview({
             }}
           >
             {avatarUrl ? (
-              <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                className="w-full h-full object-cover"
+              />
             ) : (
               <span className="text-sm font-semibold" style={{ color: accent }}>
                 {displayName ? displayName.charAt(0).toUpperCase() : '?'}
