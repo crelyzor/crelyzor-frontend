@@ -1,10 +1,10 @@
 import { Calendar, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
-import type { Meeting } from '@/types';
+import type { DisplayMeeting } from '@/lib/meetingHelpers';
 
 type ScheduleCardProps = {
-  meetings: Meeting[];
+  meetings: DisplayMeeting[];
   isPersonalView?: boolean;
 };
 

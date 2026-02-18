@@ -46,7 +46,7 @@ export default function PublicBooking() {
     email?: string;
     title?: string;
   };
-  const availableSlots = (data.availableSlots ?? data.slots ?? []) as Array<{
+  const availableSlots = (data.slots ?? []) as Array<{
     date: string;
     slots?: Array<{ startTime: string; endTime: string }>;
     startTime?: string;
@@ -59,17 +59,17 @@ export default function PublicBooking() {
   // Get time slots for the selected date
   const slotsForDate = selectedDate
     ? availableSlots
-        .filter((s) => s.date === selectedDate)
-        .flatMap((s) =>
-          s.slots
-            ? s.slots.map((slot) => ({
-                startTime: slot.startTime,
-                endTime: slot.endTime,
-              }))
-            : s.startTime && s.endTime
-              ? [{ startTime: s.startTime, endTime: s.endTime }]
-              : []
-        )
+      .filter((s) => s.date === selectedDate)
+      .flatMap((s) =>
+        s.slots
+          ? s.slots.map((slot) => ({
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+          }))
+          : s.startTime && s.endTime
+            ? [{ startTime: s.startTime, endTime: s.endTime }]
+            : []
+      )
     : [];
 
   const initials = (consultant.name ?? 'U')

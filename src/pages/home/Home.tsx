@@ -16,6 +16,7 @@ import { ActionItemsCard } from './ActionItemsCard';
 import { RecentMeetings } from './RecentMeetings';
 import { BookingLinkCard } from './BookingLinkCard';
 import { DefaultCardWidget } from './DefaultCardWidget';
+import { StartMeetingFab } from '@/components/home/StartMeetingFab';
 
 export default function Home() {
   const { scrollY } = useScroll();
@@ -44,7 +45,24 @@ export default function Home() {
   );
   // Collect action items from all upcoming meetings
   const actionItems = useMemo(
-    () => (upcomingData?.meetings ?? []).flatMap((m) => m.actionItems ?? []),
+    () =>
+      (upcomingData?.meetings ?? []).flatMap((m) =>
+        (m.actionItems ?? []).map((ai) => ({
+          ...ai,
+          meetingTitle: m.title,
+          isCompleted: false, // Default until backend provides status
+          dueDate: ai.suggestedStartDate
+            ? new Date(ai.suggestedStartDate).toLocaleDateString()
+            : undefined,
+          orgSource: m.organization
+            ? {
+              orgId: m.organization.id,
+              orgName: m.organization.name,
+              isPersonal: m.organization.isPersonal,
+            }
+            : undefined,
+        }))
+      ),
     [upcomingData]
   );
 
@@ -86,7 +104,7 @@ export default function Home() {
   const barDateX = useTransform(scrollY, [130, 180], [-8, 0]);
   const barBorder = useTransform(scrollY, [120, 170], [0, 1]);
   const barPointerEvents = useTransform(barOpacity, (v) =>
-    v > 0.3 ? 'auto' : 'none'
+    v > 0.3 ? ('auto' as string) : ('none' as string)
   );
 
   return (
@@ -171,10 +189,14 @@ export default function Home() {
           {/* Default Card */}
           <DefaultCardWidget />
 
+
           {/* Booking Link */}
           <BookingLinkCard />
         </div>
       </motion.div>
+
+      {/* Floating Action Button for New Meeting */}
+      <StartMeetingFab />
     </div>
   );
 }

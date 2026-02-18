@@ -9,42 +9,44 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { ScheduledMeeting, MeetingStatus, MeetingPlatform } from '@/types';
+import type { MeetingStatus } from '@/types';
+import type { DisplayMeeting } from '@/lib/meetingHelpers';
 
 type MeetingsTableProps = {
-  meetings: ScheduledMeeting[];
+  meetings: DisplayMeeting[];
 };
 
 function getStatusVariant(status: MeetingStatus) {
   switch (status) {
-    case 'confirmed':
+    case 'ACCEPTED':
       return 'default' as const;
-    case 'pending':
+    case 'PENDING_ACCEPTANCE':
+    case 'RESCHEDULING_REQUESTED':
       return 'secondary' as const;
-    case 'cancelled':
+    case 'CANCELLED':
+    case 'DECLINED':
       return 'destructive' as const;
-    case 'completed':
+    case 'COMPLETED':
       return 'outline' as const;
     default:
       return 'outline' as const;
   }
 }
 
-function getMeetingIcon(type: MeetingPlatform) {
-  switch (type) {
-    case 'google-meet':
-    case 'zoom':
-      return <Video className="w-3.5 h-3.5" strokeWidth={1.5} />;
-    case 'in-person':
-      return <MapPin className="w-3.5 h-3.5" strokeWidth={1.5} />;
-  }
+function getMeetingIcon(platform?: string) {
+  const p = platform?.toLowerCase();
+  if (p?.includes('google'))
+    return <Video className="w-3.5 h-3.5" strokeWidth={1.5} />;
+  if (p?.includes('zoom'))
+    return <Video className="w-3.5 h-3.5" strokeWidth={1.5} />;
+  return <MapPin className="w-3.5 h-3.5" strokeWidth={1.5} />;
 }
 
-function formatPlatformLabel(type: MeetingPlatform, location?: string) {
-  if (type === 'in-person') return location;
-  return type
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+function formatPlatformLabel(platform?: string, location?: string) {
+  if (!platform || platform === 'IN_PERSON') return location || 'In Person';
+  return platform
+    .split('_')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join(' ');
 }
 
@@ -100,8 +102,11 @@ export function MeetingsTable({ meetings }: MeetingsTableProps) {
                     {meeting.title}
                   </span>
                   <span className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
-                    {getMeetingIcon(meeting.type)}
-                    {formatPlatformLabel(meeting.type, meeting.location)}
+                    {getMeetingIcon(meeting.meetingProvider)}
+                    {formatPlatformLabel(
+                      meeting.meetingProvider,
+                      meeting.location
+                    )}
                   </span>
                 </div>
               </TableCell>

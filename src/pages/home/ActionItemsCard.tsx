@@ -4,8 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import type { ActionItem } from '@/types';
 
+export type DisplayActionItem = ActionItem & {
+  meetingTitle: string;
+  isCompleted?: boolean;
+  dueDate?: string;
+  orgSource?: { orgId: string; orgName: string; isPersonal: boolean };
+};
+
 type ActionItemsCardProps = {
-  items: ActionItem[];
+  items: DisplayActionItem[];
   isPersonalView?: boolean;
   isTeamView?: boolean;
 };
@@ -29,7 +36,7 @@ export function ActionItemsCard({
     });
   };
 
-  const isCompleted = (item: ActionItem) =>
+  const isCompleted = (item: DisplayActionItem) =>
     toggledIds.has(item.id) ? !item.isCompleted : item.isCompleted;
 
   return (
@@ -84,11 +91,10 @@ export function ActionItemsCard({
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <p
-                  className={`text-sm leading-snug ${
-                    isCompleted(item)
-                      ? 'text-neutral-400 dark:text-neutral-500 line-through'
-                      : 'text-neutral-900 dark:text-neutral-100'
-                  }`}
+                  className={`text-sm leading-snug ${isCompleted(item)
+                    ? 'text-neutral-400 dark:text-neutral-500 line-through'
+                    : 'text-neutral-900 dark:text-neutral-100'
+                    }`}
                 >
                   {item.title}
                 </p>
@@ -116,11 +122,10 @@ export function ActionItemsCard({
               {/* Due date */}
               {item.dueDate && !isCompleted(item) && (
                 <span
-                  className={`text-[11px] font-medium shrink-0 ${
-                    item.dueDate === 'Today'
-                      ? 'text-amber-600 dark:text-amber-400'
-                      : 'text-neutral-400 dark:text-neutral-500'
-                  }`}
+                  className={`text-[11px] font-medium shrink-0 ${item.dueDate === 'Today'
+                    ? 'text-amber-600 dark:text-amber-400'
+                    : 'text-neutral-400 dark:text-neutral-500'
+                    }`}
                 >
                   {item.dueDate}
                 </span>

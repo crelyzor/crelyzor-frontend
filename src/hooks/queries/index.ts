@@ -1,31 +1,38 @@
+// Re-export all meeting queries
 export {
   useMeetings,
+  useMeetingsAll,
   useMeeting,
   useCreateMeeting,
   useUpdateMeeting,
+  useAcceptMeeting,
+  useDeclineMeeting,
   useCancelMeeting,
-  useDeleteMeeting,
+  useCompleteMeeting,
 } from './useMeetingQueries';
 
+// Re-export all organization queries
 export {
   useOrganizations,
-  useOrganization,
+  useCurrentOrganization,
   useOrgMembers,
-  useOrgSettings,
   useUpdateOrg,
-  useUpdateOrgSettings,
+  useCreateOrg,
 } from './useOrganizationQueries';
 
+// Re-export all availability queries
 export {
-  useAvailabilitySchedule,
-  useUpdateAvailability,
-  useBookingSlots,
-  useCreateBooking,
+  useRecurringAvailability,
+  useCreateRecurringBatch,
+  useDeleteRecurring,
+  useAvailableSlots,
+  usePublicBookingProfile,
+  useCreatePublicBooking,
 } from './useAvailabilityQueries';
 
+// Re-export all auth queries
 export {
   useCurrentUser,
-  useLogin,
   useGoogleLogin,
   useLogout,
 } from './useAuthQueries';

@@ -10,10 +10,10 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getCategoryStyle } from '@/constants';
-import type { Meeting } from '@/types';
+import type { DisplayMeeting } from '@/lib/meetingHelpers';
 
 type RecentMeetingsProps = {
-  meetings: Meeting[];
+  meetings: DisplayMeeting[];
   isPersonalView?: boolean;
   isTeamView?: boolean;
 };

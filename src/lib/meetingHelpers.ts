@@ -27,6 +27,7 @@ export type DisplayMeeting = {
   hasTranscript: boolean;
   hasSummary: boolean;
   hasActionItems: boolean;
+  meetingProvider?: Meeting['meetingProvider'];
   orgSource?: { orgId: string; orgName: string; isPersonal: boolean };
   // Keep original for detailed views
   _raw: Meeting;
@@ -49,12 +50,13 @@ export function toDisplayMeeting(m: Meeting): DisplayMeeting {
     hasTranscript: m.transcriptionStatus === 'COMPLETED',
     hasSummary: !!m.aiSummary,
     hasActionItems: (m.actionItems?.length ?? 0) > 0,
+    meetingProvider: m.meetingProvider,
     orgSource: m.organization
       ? {
-          orgId: m.organization.id,
-          orgName: m.organization.name,
-          isPersonal: m.organization.isPersonal,
-        }
+        orgId: m.organization.id,
+        orgName: m.organization.name,
+        isPersonal: m.organization.isPersonal,
+      }
       : undefined,
     _raw: m,
   };

@@ -56,7 +56,7 @@ export default function CardContacts() {
   const deleteContact = useDeleteContact();
   const updateTags = useUpdateContactTags();
 
-  const contacts = data?.contacts ?? [];
+  const contacts = useMemo(() => data?.contacts ?? [], [data]);
   const pagination = data?.pagination;
 
   // Collect all unique tags from visible contacts
@@ -287,11 +287,10 @@ export default function CardContacts() {
             {contacts.map((contact: CardContact) => (
               <Card
                 key={contact.id}
-                className={`p-0 border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors ${
-                  selected.has(contact.id)
+                className={`p-0 border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors ${selected.has(contact.id)
                     ? 'ring-2 ring-neutral-900/10 dark:ring-neutral-100/10'
                     : ''
-                }`}
+                  }`}
               >
                 <div className="px-4 py-3.5">
                   <div className="flex items-start justify-between gap-3">

@@ -1,10 +1,10 @@
 import { MapPin, Users, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
-import type { Meeting } from '@/types';
+import type { DisplayMeeting } from '@/lib/meetingHelpers';
 
 type NextMeetingCardProps = {
-  meeting: Meeting | undefined;
+  meeting: DisplayMeeting | undefined;
 };
 
 export function NextMeetingCard({ meeting }: NextMeetingCardProps) {

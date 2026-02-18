@@ -89,10 +89,9 @@ export default function Settings() {
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
                   className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                    ${
-                      isActive
-                        ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
-                        : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                    ${isActive
+                      ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
+                      : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
                     }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -262,9 +261,7 @@ function OrganizationSection() {
   };
 
   // Get members list from API response
-  const membersList = Array.isArray(members)
-    ? members
-    : ((members as { members?: unknown[] })?.members ?? []);
+  const membersList = Array.isArray(members) ? members : [];
 
   return (
     <div className="space-y-6">
@@ -510,10 +507,9 @@ function AppearanceSection({
                   key={t.id}
                   onClick={() => setTheme(t.id)}
                   className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors
-                    ${
-                      isActive
-                        ? 'border-neutral-900 dark:border-neutral-100 bg-neutral-50 dark:bg-neutral-800'
-                        : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
+                    ${isActive
+                      ? 'border-neutral-900 dark:border-neutral-100 bg-neutral-50 dark:bg-neutral-800'
+                      : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
                     }`}
                 >
                   <Icon
@@ -826,10 +822,9 @@ function ToggleChip({ label, active }: { label: string; active: boolean }) {
   return (
     <button
       className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors
-        ${
-          active
-            ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
-            : 'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500'
+        ${active
+          ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
+          : 'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500'
         }`}
     >
       {label}
