@@ -10,6 +10,7 @@ import {
   Bell,
   Globe,
   CreditCard,
+  Calendar,
 } from 'lucide-react';
 import type { ToolbarItem, ToolbarItemGroup } from '@/types';
 
@@ -51,6 +52,15 @@ export const TOOLBAR_ITEMS: ToolbarItem[] = [
     path: '/availability',
     group: 'navigation',
     description: 'Set your schedule',
+  },
+  {
+    id: 'event-types',
+    label: 'Event Types',
+    icon: Calendar,
+    action: 'navigate',
+    path: '/event-types',
+    group: 'navigation',
+    description: 'Manage booking event types',
   },
   {
     id: 'cards',

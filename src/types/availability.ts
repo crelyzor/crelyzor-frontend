@@ -15,31 +15,65 @@ export type DayOfWeek =
   | 'SATURDAY'
   | 'SUNDAY';
 
-// Backend recurring availability
+// Schedule (user-level)
+export type AvailabilitySchedule = {
+  id: string;
+  userId: string;
+  name: string;
+  timezone: string;
+  isDefault: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// Event Type (user-level)
+export type EventType = {
+  id: string;
+  userId: string;
+  title: string;
+  slug: string;
+  description?: string;
+  duration: number; // minutes
+  scheduleId: string;
+  bookingModel: 'ONE_ON_ONE' | 'ROUND_ROBIN' | 'COLLECTIVE';
+  bufferBefore: number;
+  bufferAfter: number;
+  minNotice: number; // hours
+  maxAdvance: number; // days
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  schedule?: {
+    id: string;
+    name: string;
+    timezone: string;
+  };
+};
+
+// Backend recurring availability (schedule-scoped)
 export type RecurringAvailability = {
   id: string;
-  orgMemberId: string;
+  scheduleId: string;
   dayOfWeek: DayOfWeek;
   startTime: string; // "HH:MM"
   endTime: string; // "HH:MM"
-  timezone: string;
   isActive: boolean;
 };
 
-export type CustomSlot = {
+export type ScheduleOverride = {
   id: string;
-  orgMemberId: string;
+  scheduleId: string;
   date: string;
   startTime: string;
   endTime: string;
-  timezone: string;
   isActive: boolean;
   notes?: string;
 };
 
 export type BlockedTime = {
   id: string;
-  orgMemberId: string;
+  scheduleId: string;
   startTime: string;
   endTime: string;
   reason?: string;
@@ -49,10 +83,12 @@ export type BlockedTime = {
 };
 
 export type AvailableSlot = {
-  date: string;
-  startTime: string;
-  endTime: string;
+  start: string;
+  end: string;
 };
+
+// Keep backward compat alias
+export type CustomSlot = ScheduleOverride;
 
 // Map between frontend day names and backend DayOfWeek enum
 export const DAY_MAP: Record<string, DayOfWeek> = {

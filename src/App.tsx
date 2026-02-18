@@ -18,6 +18,8 @@ const {
   CreateMeeting,
   MeetingDetail,
   Availability,
+  EventTypes,
+  EventTypeForm,
   Analytics,
   Settings,
   Notifications,
@@ -118,6 +120,36 @@ function App() {
                   }
                 />
                 <Route
+                  path="/event-types"
+                  element={
+                    <AuthGuard>
+                      <Layout>
+                        <EventTypes />
+                      </Layout>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/event-types/create"
+                  element={
+                    <AuthGuard>
+                      <Layout>
+                        <EventTypeForm />
+                      </Layout>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/event-types/:id"
+                  element={
+                    <AuthGuard>
+                      <Layout>
+                        <EventTypeForm />
+                      </Layout>
+                    </AuthGuard>
+                  }
+                />
+                <Route
                   path="/analytics"
                   element={
                     <AuthGuard>
@@ -201,7 +233,10 @@ function App() {
                 />
 
                 {/* Public Routes (No Layout) */}
-                <Route path="/book/:shareToken" element={<PublicBooking />} />
+                <Route
+                  path="/book/:username/:eventSlug"
+                  element={<PublicBooking />}
+                />
               </Routes>
             </Suspense>
           </BrowserRouter>

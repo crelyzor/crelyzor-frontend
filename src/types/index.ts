@@ -37,6 +37,9 @@ export type {
   CustomSlot,
   BlockedTime,
   AvailableSlot,
+  AvailabilitySchedule,
+  EventType,
+  ScheduleOverride,
   DayOfWeek,
 } from './availability';
 

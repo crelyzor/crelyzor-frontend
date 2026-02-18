@@ -14,6 +14,8 @@ const AuthCallback = lazy(() => import('@/pages/auth-callback'));
 const PublicBooking = lazy(() => import('@/pages/public-booking'));
 const CreateOrganization = lazy(() => import('@/pages/create-organization'));
 const Setup = lazy(() => import('@/pages/setup'));
+const EventTypes = lazy(() => import('@/pages/event-types'));
+const EventTypeForm = lazy(() => import('@/pages/event-types/EventTypeForm'));
 const Cards = lazy(() => import('@/pages/cards'));
 const CardEditor = lazy(() => import('@/pages/card-editor'));
 const CardContacts = lazy(() => import('@/pages/card-contacts'));
@@ -31,6 +33,8 @@ export const routes = {
   CreateMeeting,
   MeetingDetail,
   Availability,
+  EventTypes,
+  EventTypeForm,
   Analytics,
   Settings,
   Notifications,

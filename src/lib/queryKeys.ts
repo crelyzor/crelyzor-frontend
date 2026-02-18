@@ -43,12 +43,54 @@ export const queryKeys = {
     live: () => [...queryKeys.meetings.all, 'live'] as const,
   },
 
-  // Availability
+  // Schedules (user-level)
+  schedules: {
+    all: ['schedules'] as const,
+    list: () => [...queryKeys.schedules.all, 'list'] as const,
+    detail: (id: string) =>
+      [...queryKeys.schedules.all, 'detail', id] as const,
+    default: () => [...queryKeys.schedules.all, 'default'] as const,
+  },
+
+  // Event Types (user-level)
+  eventTypes: {
+    all: ['eventTypes'] as const,
+    list: () => [...queryKeys.eventTypes.all, 'list'] as const,
+    detail: (id: string) =>
+      [...queryKeys.eventTypes.all, 'detail', id] as const,
+  },
+
+  // Availability (schedule-scoped)
   availability: {
     all: ['availability'] as const,
-    schedule: () => [...queryKeys.availability.all, 'schedule'] as const,
-    booking: (token: string) =>
-      [...queryKeys.availability.all, 'booking', token] as const,
+    recurring: (scheduleId: string) =>
+      [...queryKeys.availability.all, 'recurring', scheduleId] as const,
+    overrides: (scheduleId: string) =>
+      [...queryKeys.availability.all, 'overrides', scheduleId] as const,
+    blocked: (scheduleId: string) =>
+      [...queryKeys.availability.all, 'blocked', scheduleId] as const,
+    slots: (scheduleId: string, params?: Record<string, unknown>) =>
+      [
+        ...queryKeys.availability.all,
+        'slots',
+        scheduleId,
+        ...(params ? [params] : []),
+      ] as const,
+  },
+
+  // Public Booking (no auth)
+  publicBooking: {
+    all: ['publicBooking'] as const,
+    page: (username: string, eventSlug: string) =>
+      [...queryKeys.publicBooking.all, 'page', username, eventSlug] as const,
+    slots: (username: string, eventSlug: string, date: string) =>
+      [
+        ...queryKeys.publicBooking.all,
+        'slots',
+        username,
+        eventSlug,
+        date,
+      ] as const,
   },
 
   // Recordings

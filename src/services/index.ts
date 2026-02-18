@@ -8,7 +8,22 @@ export { organizationsApi } from './organizationsService';
 export type { UpdateOrgPayload } from './organizationsService';
 
 export { availabilityApi } from './availabilityService';
-export type { CreateBookingPayload } from './availabilityService';
+export type { CreateRecurringPayload } from './availabilityService';
+
+export { scheduleApi } from './scheduleService';
+export type {
+  CreateSchedulePayload,
+  UpdateSchedulePayload,
+} from './scheduleService';
+
+export { eventTypeApi } from './eventTypeService';
+export type {
+  CreateEventTypePayload,
+  UpdateEventTypePayload,
+} from './eventTypeService';
+
+export { publicBookingApi } from './publicBookingService';
+export type { CreatePublicBookingPayload } from './publicBookingService';
 
 export { authApi } from './authService';
 

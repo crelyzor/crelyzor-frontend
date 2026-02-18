@@ -1,16 +1,21 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  usePublicBookingProfile,
+  usePublicBookingPage,
+  usePublicBookingSlots,
   useCreatePublicBooking,
-} from '@/hooks/queries/useAvailabilityQueries';
+} from '@/hooks/queries/usePublicBookingQueries';
 import { DatePicker } from './DatePicker';
 import { TimeSlotPicker } from './TimeSlotPicker';
 import { BookingForm } from './BookingForm';
 import { PageLoader } from '@/components/PageLoader';
+import { Clock } from 'lucide-react';
 
 export default function PublicBooking() {
-  const { shareToken } = useParams<{ shareToken: string }>();
+  const { username, eventSlug } = useParams<{
+    username: string;
+    eventSlug: string;
+  }>();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<{
     startTime: string;
@@ -19,65 +24,62 @@ export default function PublicBooking() {
   } | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
 
-  const { data, isLoading, isError } = usePublicBookingProfile(
-    shareToken ?? ''
+  const {
+    data: pageData,
+    isLoading,
+    isError,
+  } = usePublicBookingPage(username ?? '', eventSlug ?? '');
+
+  const { data: slots } = usePublicBookingSlots(
+    username ?? '',
+    eventSlug ?? '',
+    selectedDate ?? '',
   );
-  const createBooking = useCreatePublicBooking(shareToken ?? '');
+
+  const createBooking = useCreatePublicBooking(
+    username ?? '',
+    eventSlug ?? '',
+  );
 
   if (isLoading) return <PageLoader />;
-  if (isError || !data) {
+  if (isError || !pageData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950">
         <div className="text-center">
           <h1 className="text-xl font-semibold text-neutral-950 dark:text-neutral-50 mb-2">
-            Booking link not found
+            Booking page not found
           </h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            This booking link may be invalid or has been disabled.
+            This booking link may be invalid or the event type has been
+            disabled.
           </p>
         </div>
       </div>
     );
   }
 
-  const consultant = data.consultant as {
-    id?: string;
-    name?: string;
-    email?: string;
-    title?: string;
-  };
-  const availableSlots = (data.slots ?? []) as Array<{
-    date: string;
-    slots?: Array<{ startTime: string; endTime: string }>;
-    startTime?: string;
-    endTime?: string;
-  }>;
+  const { user: host, eventType } = pageData;
 
-  // Extract unique available dates
-  const availableDates = [...new Set(availableSlots.map((s) => s.date))].sort();
-
-  // Get time slots for the selected date
-  const slotsForDate = selectedDate
-    ? availableSlots
-        .filter((s) => s.date === selectedDate)
-        .flatMap((s) =>
-          s.slots
-            ? s.slots.map((slot) => ({
-                startTime: slot.startTime,
-                endTime: slot.endTime,
-              }))
-            : s.startTime && s.endTime
-              ? [{ startTime: s.startTime, endTime: s.endTime }]
-              : []
-        )
-    : [];
-
-  const initials = (consultant.name ?? 'U')
+  const initials = (host.name ?? 'U')
     .split(' ')
     .map((n) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
+
+  // Generate available dates from slots (next maxAdvance days)
+  const today = new Date();
+  const availableDates: string[] = [];
+  for (let i = 0; i < (eventType.maxAdvance || 60); i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() + i);
+    availableDates.push(d.toISOString().split('T')[0]);
+  }
+
+  // Time slots from the API for selected date
+  const slotsForDate = slots
+    ? slots.map((s) => ({ startTime: s.start, endTime: s.end }))
+    : [];
 
   if (bookingSuccess) {
     return (
@@ -102,9 +104,8 @@ export default function PublicBooking() {
             Booking Requested!
           </h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Your meeting request has been sent to{' '}
-            {consultant.name ?? 'the consultant'}. You&apos;ll receive a
-            confirmation email once it&apos;s accepted.
+            Your meeting request has been sent to {host.name ?? 'the host'}.
+            You&apos;ll receive a confirmation email once it&apos;s accepted.
           </p>
         </div>
       </div>
@@ -120,16 +121,16 @@ export default function PublicBooking() {
 
     createBooking.mutate(
       {
-        title: `Meeting with ${formData.name}`,
         startTime: selectedSlot.startTime,
         endTime: selectedSlot.endTime,
         guestName: formData.name,
         guestEmail: formData.email,
         guestMessage: formData.message,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       },
       {
         onSuccess: () => setBookingSuccess(true),
-      }
+      },
     );
   };
 
@@ -144,18 +145,20 @@ export default function PublicBooking() {
             </div>
             <div>
               <h1 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
-                {consultant.name ?? 'Consultant'}
+                {host.name}
               </h1>
-              {consultant.title && (
-                <p className="text-neutral-500 dark:text-neutral-400 text-sm">
-                  {consultant.title}
-                </p>
-              )}
+              <p className="text-neutral-600 dark:text-neutral-400 text-base mt-1">
+                {eventType.title}
+              </p>
             </div>
           </div>
-          <p className="mt-4 text-neutral-600 dark:text-neutral-400 text-base">
-            Select a time to meet with me
-          </p>
+          <div className="flex items-center gap-4 mt-4 text-sm text-neutral-500 dark:text-neutral-400">
+            <span className="flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              {eventType.duration} min
+            </span>
+            {eventType.description && <span>{eventType.description}</span>}
+          </div>
         </div>
       </div>
 
