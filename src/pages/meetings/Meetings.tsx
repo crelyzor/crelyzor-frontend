@@ -139,12 +139,6 @@ export default function Meetings() {
 
   const grouped = useMemo(() => groupByDate(filtered), [filtered]);
 
-  const smaCount = useMemo(() => {
-    return scopedMeetings.filter(
-      (m) => m.hasRecording || m.hasTranscript || m.hasSummary
-    ).length;
-  }, [scopedMeetings]);
-
   return (
     <div className="max-w-3xl mx-auto">
       {/* ── Header ── */}
@@ -154,7 +148,7 @@ export default function Meetings() {
             Meetings
           </h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
-            {scopedMeetings.length} total &middot; {smaCount} with voice notes
+            {scopedMeetings.length} total
             {!isPersonalView && currentOrg && (
               <span> &middot; {currentOrg.name}</span>
             )}

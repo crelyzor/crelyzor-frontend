@@ -6,7 +6,6 @@ import {
   Clock,
   Users,
   CalendarDays,
-  Mic,
   FileText,
   Building2,
   User,
@@ -16,8 +15,8 @@ import { useOrganizationStore } from '@/stores/organizationStore';
 
 // ── Mock analytics data ──
 const myAnalytics = {
-  thisWeek: { meetings: 12, hours: 8.5, voiceNotes: 7, avgDuration: 42 },
-  lastWeek: { meetings: 10, hours: 7.2, voiceNotes: 5, avgDuration: 38 },
+  thisWeek: { meetings: 12, hours: 8.5, avgDuration: 42 },
+  lastWeek: { meetings: 10, hours: 7.2, avgDuration: 38 },
   categoryBreakdown: [
     { label: '1:1', count: 8, percentage: 24 },
     { label: 'Standup', count: 12, percentage: 35 },
@@ -51,8 +50,8 @@ const myAnalytics = {
 };
 
 const teamAnalytics = {
-  thisWeek: { meetings: 34, hours: 22, voiceNotes: 18, avgDuration: 39 },
-  lastWeek: { meetings: 28, hours: 19, voiceNotes: 14, avgDuration: 41 },
+  thisWeek: { meetings: 34, hours: 22, avgDuration: 39 },
+  lastWeek: { meetings: 28, hours: 19, avgDuration: 41 },
   categoryBreakdown: [
     { label: '1:1', count: 14, percentage: 20 },
     { label: 'Standup', count: 18, percentage: 26 },
@@ -187,12 +186,6 @@ export default function Analytics() {
           delta={hoursDelta}
           suffix="hrs"
           icon={Clock}
-        />
-        <KPICard
-          label="Voice Notes"
-          value={data.thisWeek.voiceNotes}
-          delta={data.thisWeek.voiceNotes - data.lastWeek.voiceNotes}
-          icon={Mic}
         />
         <KPICard
           label="Avg Duration"

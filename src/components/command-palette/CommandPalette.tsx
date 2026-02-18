@@ -17,7 +17,6 @@ import {
   LogOut,
   Bell,
   Link2,
-  Mic,
   Home,
   CreditCard,
 } from 'lucide-react';
@@ -103,12 +102,6 @@ export function CommandPalette() {
           <CommandItem onSelect={() => runCommand(() => navigate('/cards'))}>
             <CreditCard className="mr-3 h-4 w-4" />
             <span>Cards</span>
-          </CommandItem>
-          <CommandItem
-            onSelect={() => runCommand(() => navigate('/voice-notes'))}
-          >
-            <Mic className="mr-2 h-4 w-4" />
-            <span>Voice Notes</span>
           </CommandItem>
           <CommandItem
             onSelect={() => runCommand(() => navigate('/notifications'))}

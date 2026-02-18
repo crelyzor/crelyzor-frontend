@@ -1,4 +1,4 @@
-import { Calendar, Mic, Link2, Clock, CreditCard } from 'lucide-react';
+import { Calendar, Link2, Clock, CreditCard } from 'lucide-react';
 import type { QuickAction } from '@/types';
 
 export const quickActions: QuickAction[] = [
@@ -21,13 +21,6 @@ export const quickActions: QuickAction[] = [
     label: 'Cards',
     desc: 'Manage your digital cards',
     path: '/cards',
-    actionType: 'navigate',
-  },
-  {
-    icon: Mic,
-    label: 'Voice Note',
-    desc: 'Upload & view voice notes',
-    path: '/voice-notes',
     actionType: 'navigate',
   },
   {

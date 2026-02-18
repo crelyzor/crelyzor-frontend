@@ -1,4 +1,4 @@
-import { TrendingUp, Mic } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 
@@ -9,7 +9,6 @@ type StatsCardProps = {
 const myStats = {
   totalMeetings: 12,
   hours: 8.5,
-  voiceNotes: 7,
   avgMeetings: 10,
   avgHours: 7.2,
 };
@@ -17,7 +16,6 @@ const myStats = {
 const teamStats = {
   totalMeetings: 34,
   hours: 22,
-  voiceNotes: 18,
   avgMeetings: 28,
   avgHours: 19,
 };
@@ -55,18 +53,6 @@ export function StatsCard({ isTeamView }: StatsCardProps) {
           </div>
           <p className="text-xs text-neutral-400 dark:text-neutral-500 uppercase tracking-wide">
             Time in Meetings
-          </p>
-        </div>
-        <div
-          onClick={() => navigate('/voice-notes')}
-          className="cursor-pointer hover:opacity-70 transition-opacity"
-        >
-          <div className="text-3xl font-semibold text-neutral-950 dark:text-neutral-50 flex items-baseline gap-1.5">
-            {stats.voiceNotes}
-            <Mic className="w-4 h-4 text-neutral-400 dark:text-neutral-500" />
-          </div>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500 uppercase tracking-wide">
-            Voice Notes
           </p>
         </div>
       </div>

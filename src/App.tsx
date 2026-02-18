@@ -18,7 +18,6 @@ const {
   CreateMeeting,
   MeetingDetail,
   Availability,
-  VoiceNotes,
   Analytics,
   Settings,
   Notifications,
@@ -114,16 +113,6 @@ function App() {
                     <AuthGuard>
                       <Layout>
                         <Availability />
-                      </Layout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/voice-notes"
-                  element={
-                    <AuthGuard>
-                      <Layout>
-                        <VoiceNotes />
                       </Layout>
                     </AuthGuard>
                   }
