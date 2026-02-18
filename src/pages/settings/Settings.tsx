@@ -437,7 +437,7 @@ function NotificationsSection() {
             },
             {
               label: 'Transcription complete',
-              description: 'When a voice note transcription finishes',
+              description: 'When a recording transcription finishes',
               email: false,
               inApp: true,
             },

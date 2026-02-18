@@ -28,7 +28,7 @@ import { PageLoader } from '@/components/PageLoader';
 // ── SMA Tab config ──
 const SMA_TABS = [
   { id: 'overview', label: 'Overview' },
-  { id: 'recording', label: 'Voice Note', icon: Mic },
+  { id: 'recording', label: 'Recording', icon: Mic },
   { id: 'transcript', label: 'Transcript', icon: FileText },
   { id: 'summary', label: 'AI Summary', icon: FileText },
   { id: 'actions', label: 'Action Items', icon: ClipboardList },
@@ -377,7 +377,7 @@ function OverviewTab({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             {
-              label: 'Voice Note',
+              label: 'Recording',
               icon: Mic,
               ready: meeting.hasRecording,
               color: 'text-neutral-500',
@@ -440,7 +440,7 @@ function OverviewTab({
           </p>
           <Button variant="outline" size="sm" className="gap-1.5 text-xs">
             <Upload className="w-3.5 h-3.5" />
-            Upload Voice Note
+            Upload Recording
           </Button>
         </div>
       )}
@@ -474,7 +474,7 @@ function RecordingTab({ hasRecording }: { hasRecording?: boolean }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
-          Voice Note
+          Recording
         </h3>
         <span className="text-[10px] text-neutral-400">
           meeting-recording.webm &middot; 12.4 MB

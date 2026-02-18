@@ -332,7 +332,7 @@ export default function Meetings() {
                             {meeting.hasRecording && (
                               <div
                                 className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
-                                title="Voice note"
+                                title="Recording"
                               >
                                 <Mic className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
                               </div>

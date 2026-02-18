@@ -116,7 +116,7 @@ const mockNotifications: Notification[] = [
     id: 'n-3',
     type: 'transcription_complete',
     title: 'Transcription complete',
-    message: 'Voice note for Client Feedback Session has been transcribed',
+    message: 'Recording for Client Feedback Session has been transcribed',
     timestamp: '2026-02-09T16:45:00',
     isRead: true,
     meetingId: 106,
