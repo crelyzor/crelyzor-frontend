@@ -56,10 +56,10 @@ export default function Home() {
             : undefined,
           orgSource: m.organization
             ? {
-              orgId: m.organization.id,
-              orgName: m.organization.name,
-              isPersonal: m.organization.isPersonal,
-            }
+                orgId: m.organization.id,
+                orgName: m.organization.name,
+                isPersonal: m.organization.isPersonal,
+              }
             : undefined,
         }))
       ),
@@ -188,7 +188,6 @@ export default function Home() {
 
           {/* Default Card */}
           <DefaultCardWidget />
-
 
           {/* Booking Link */}
           <BookingLinkCard />

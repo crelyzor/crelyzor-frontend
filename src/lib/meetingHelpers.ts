@@ -53,10 +53,10 @@ export function toDisplayMeeting(m: Meeting): DisplayMeeting {
     meetingProvider: m.meetingProvider,
     orgSource: m.organization
       ? {
-        orgId: m.organization.id,
-        orgName: m.organization.name,
-        isPersonal: m.organization.isPersonal,
-      }
+          orgId: m.organization.id,
+          orgName: m.organization.name,
+          isPersonal: m.organization.isPersonal,
+        }
       : undefined,
     _raw: m,
   };

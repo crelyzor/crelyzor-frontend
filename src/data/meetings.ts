@@ -17,7 +17,6 @@ const mockPart = (name: string): MeetingParticipant => ({
   },
 });
 
-
 const acmeOrg = { id: '2', name: 'Acme Inc', isPersonal: false };
 const designOrg = { id: '3', name: 'Design Studio', isPersonal: false };
 
@@ -126,7 +125,7 @@ export const recentMeetings: Meeting[] = [
         meetingId: '4',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      }
+      },
     ],
   },
 ];

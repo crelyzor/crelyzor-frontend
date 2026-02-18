@@ -131,20 +131,22 @@ export default function Analytics() {
             <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
               <button
                 onClick={() => setIsTeamView(false)}
-                className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${!isTeamView
-                  ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                  : 'text-neutral-500 dark:text-neutral-400'
-                  }`}
+                className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
+                  !isTeamView
+                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                    : 'text-neutral-500 dark:text-neutral-400'
+                }`}
               >
                 <User className="w-3 h-3" />
                 My
               </button>
               <button
                 onClick={() => setIsTeamView(true)}
-                className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${isTeamView
-                  ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                  : 'text-neutral-500 dark:text-neutral-400'
-                  }`}
+                className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
+                  isTeamView
+                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                    : 'text-neutral-500 dark:text-neutral-400'
+                }`}
               >
                 <Users className="w-3 h-3" />
                 Team
@@ -158,10 +160,11 @@ export default function Analytics() {
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer capitalize ${timeRange === range
-                  ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                  : 'text-neutral-500 dark:text-neutral-400'
-                  }`}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer capitalize ${
+                  timeRange === range
+                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                    : 'text-neutral-500 dark:text-neutral-400'
+                }`}
               >
                 {range}
               </button>
@@ -393,10 +396,11 @@ function KPICard({
           </div>
           {!isNeutral && (
             <span
-              className={`flex items-center gap-0.5 text-[11px] font-medium ${isPositive
-                ? 'text-emerald-600 dark:text-emerald-400'
-                : 'text-red-500 dark:text-red-400'
-                }`}
+              className={`flex items-center gap-0.5 text-[11px] font-medium ${
+                isPositive
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-red-500 dark:text-red-400'
+              }`}
             >
               {isPositive ? (
                 <TrendingUp className="w-3 h-3" />
@@ -440,16 +444,18 @@ function SMAMetric({
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2.5">
         <div
-          className={`w-7 h-7 rounded-lg flex items-center justify-center ${highlight
-            ? 'bg-violet-50 dark:bg-violet-950/30'
-            : 'bg-neutral-100 dark:bg-neutral-800'
-            }`}
+          className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+            highlight
+              ? 'bg-violet-50 dark:bg-violet-950/30'
+              : 'bg-neutral-100 dark:bg-neutral-800'
+          }`}
         >
           <Icon
-            className={`w-3.5 h-3.5 ${highlight
-              ? 'text-violet-500 dark:text-violet-400'
-              : 'text-neutral-500 dark:text-neutral-400'
-              }`}
+            className={`w-3.5 h-3.5 ${
+              highlight
+                ? 'text-violet-500 dark:text-violet-400'
+                : 'text-neutral-500 dark:text-neutral-400'
+            }`}
           />
         </div>
         <span className="text-sm text-neutral-700 dark:text-neutral-300">

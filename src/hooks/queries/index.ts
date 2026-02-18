@@ -31,8 +31,4 @@ export {
 } from './useAvailabilityQueries';
 
 // Re-export all auth queries
-export {
-  useCurrentUser,
-  useGoogleLogin,
-  useLogout,
-} from './useAuthQueries';
+export { useCurrentUser, useGoogleLogin, useLogout } from './useAuthQueries';
