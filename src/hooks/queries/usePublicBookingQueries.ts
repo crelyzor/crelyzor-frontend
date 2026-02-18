@@ -16,7 +16,7 @@ export function usePublicBookingPage(username: string, eventSlug: string) {
 export function usePublicBookingSlots(
   username: string,
   eventSlug: string,
-  date: string,
+  date: string
 ) {
   return useQuery({
     queryKey: queryKeys.publicBooking.slots(username, eventSlug, date),

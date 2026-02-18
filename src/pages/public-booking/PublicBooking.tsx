@@ -33,13 +33,10 @@ export default function PublicBooking() {
   const { data: slots } = usePublicBookingSlots(
     username ?? '',
     eventSlug ?? '',
-    selectedDate ?? '',
+    selectedDate ?? ''
   );
 
-  const createBooking = useCreatePublicBooking(
-    username ?? '',
-    eventSlug ?? '',
-  );
+  const createBooking = useCreatePublicBooking(username ?? '', eventSlug ?? '');
 
   if (isLoading) return <PageLoader />;
   if (isError || !pageData) {
@@ -130,7 +127,7 @@ export default function PublicBooking() {
       },
       {
         onSuccess: () => setBookingSuccess(true),
-      },
+      }
     );
   };
 

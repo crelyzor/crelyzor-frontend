@@ -27,7 +27,7 @@ export const scheduleApi = {
   /** PUT /schedules/:id — update schedule */
   updateSchedule: (
     id: string,
-    data: { name?: string; timezone?: string; isActive?: boolean },
+    data: { name?: string; timezone?: string; isActive?: boolean }
   ) => apiClient.put<AvailabilitySchedule>(`/schedules/${id}`, data),
 
   /** DELETE /schedules/:id — delete schedule */

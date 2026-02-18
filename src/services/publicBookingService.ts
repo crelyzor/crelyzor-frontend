@@ -18,13 +18,18 @@ async function publicFetch<T>(path: string, options?: RequestInit): Promise<T> {
   if (!res.ok) {
     const data = await res.json().catch(() => null);
     throw new Error(
-      data?.message ?? `Request failed: ${res.status} ${res.statusText}`,
+      data?.message ?? `Request failed: ${res.status} ${res.statusText}`
     );
   }
 
   const json = await res.json();
 
-  if (json && typeof json === 'object' && 'data' in json && 'statusCode' in json) {
+  if (
+    json &&
+    typeof json === 'object' &&
+    'data' in json &&
+    'statusCode' in json
+  ) {
     return json.data as T;
   }
 
@@ -53,17 +58,17 @@ export const publicBookingApi = {
   /** GET /public/book/:username/:eventSlug/slots?date=YYYY-MM-DD */
   getSlots: (username: string, eventSlug: string, date: string) =>
     publicFetch<AvailableSlot[]>(
-      `/public/book/${username}/${eventSlug}/slots?date=${date}`,
+      `/public/book/${username}/${eventSlug}/slots?date=${date}`
     ),
 
   /** POST /public/book/:username/:eventSlug — submit booking */
   createBooking: (
     username: string,
     eventSlug: string,
-    data: CreatePublicBookingPayload,
+    data: CreatePublicBookingPayload
   ) =>
     publicFetch<{ meetingId: string }>(
       `/public/book/${username}/${eventSlug}`,
-      { method: 'POST', body: JSON.stringify(data) },
+      { method: 'POST', body: JSON.stringify(data) }
     ),
 };

@@ -47,8 +47,7 @@ export const queryKeys = {
   schedules: {
     all: ['schedules'] as const,
     list: () => [...queryKeys.schedules.all, 'list'] as const,
-    detail: (id: string) =>
-      [...queryKeys.schedules.all, 'detail', id] as const,
+    detail: (id: string) => [...queryKeys.schedules.all, 'detail', id] as const,
     default: () => [...queryKeys.schedules.all, 'default'] as const,
   },
 

@@ -31,7 +31,7 @@ export default function EventTypeForm() {
   const isEdit = !!id;
 
   const { data: existingEventType, isLoading: loadingET } = useEventType(
-    id ?? '',
+    id ?? ''
   );
   const { data: schedules, isLoading: loadingSchedules } = useSchedules();
   const { data: user } = useCurrentUser();
@@ -68,7 +68,8 @@ export default function EventTypeForm() {
   // Auto-set scheduleId to first schedule
   useEffect(() => {
     if (!scheduleId && schedules && schedules.length > 0) {
-      const defaultSchedule = schedules.find((s) => s.isDefault) ?? schedules[0];
+      const defaultSchedule =
+        schedules.find((s) => s.isDefault) ?? schedules[0];
       setScheduleId(defaultSchedule.id);
     }
   }, [schedules, scheduleId]);
@@ -113,7 +114,7 @@ export default function EventTypeForm() {
             navigate('/event-types');
           },
           onError: () => toast.error('Failed to update event type'),
-        },
+        }
       );
     } else {
       createEventType.mutate(payload, {
@@ -130,9 +131,7 @@ export default function EventTypeForm() {
   if (loadingSchedules) return <PageLoader />;
 
   const bookingPreview =
-    user?.username && slug
-      ? `${APP_URL}/book/${user.username}/${slug}`
-      : null;
+    user?.username && slug ? `${APP_URL}/book/${user.username}/${slug}` : null;
 
   const isPending = createEventType.isPending || updateEventType.isPending;
 

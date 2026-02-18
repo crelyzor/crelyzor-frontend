@@ -104,7 +104,7 @@ export function useAvailableSlots(
   scheduleId: string,
   startDate: string,
   endDate: string,
-  options?: { slotDuration?: number; eventTypeId?: string },
+  options?: { slotDuration?: number; eventTypeId?: string }
 ) {
   return useQuery({
     queryKey: queryKeys.availability.slots(scheduleId, {
@@ -118,7 +118,7 @@ export function useAvailableSlots(
         startDate,
         endDate,
         options?.slotDuration,
-        options?.eventTypeId,
+        options?.eventTypeId
       ),
     enabled: !!scheduleId && !!startDate && !!endDate,
   });

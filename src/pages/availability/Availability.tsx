@@ -101,7 +101,7 @@ export default function Availability() {
   const handleTimeChange = (
     day: string,
     field: 'startTime' | 'endTime',
-    value: string,
+    value: string
   ) => {
     setSchedule((prev) => ({
       ...prev,
@@ -146,7 +146,7 @@ export default function Availability() {
           setOverrideNotes('');
         },
         onError: () => toast.error('Failed to add override'),
-      },
+      }
     );
   };
 
@@ -170,7 +170,7 @@ export default function Availability() {
           setBlockedReason('');
         },
         onError: () => toast.error('Failed to add blocked time'),
-      },
+      }
     );
   };
 

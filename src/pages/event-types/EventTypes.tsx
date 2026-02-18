@@ -33,7 +33,9 @@ export default function EventTypes() {
   const handleToggle = (et: EventType) => {
     toggleEventType.mutate(et.id, {
       onSuccess: () =>
-        toast.success(et.isActive ? 'Event type disabled' : 'Event type enabled'),
+        toast.success(
+          et.isActive ? 'Event type disabled' : 'Event type enabled'
+        ),
     });
   };
 
