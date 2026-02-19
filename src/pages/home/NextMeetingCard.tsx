@@ -88,7 +88,6 @@ export function NextMeetingCard({ meeting }: NextMeetingCardProps) {
             {meeting.participants.length !== 1 ? 's' : ''}
           </span>
         </div>
-
       </div>
     </Card>
   );

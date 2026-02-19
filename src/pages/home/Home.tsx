@@ -135,9 +135,7 @@ export default function Home() {
           </div>
 
           {/* Today's Schedule */}
-          <ScheduleCard
-            meetings={upcomingMeetings}
-          />
+          <ScheduleCard meetings={upcomingMeetings} />
 
           {/* Meeting Summary */}
           <MeetingSummaryCard />
@@ -146,14 +144,10 @@ export default function Home() {
         {/* ── Right Column (1/3 width) ── */}
         <div className="lg:col-span-1 space-y-6">
           {/* Action Items */}
-          <ActionItemsCard
-            items={actionItems}
-          />
+          <ActionItemsCard items={actionItems} />
 
           {/* Recent Meetings */}
-          <RecentMeetings
-            meetings={recentMeetings}
-          />
+          <RecentMeetings meetings={recentMeetings} />
 
           {/* Default Card */}
           <DefaultCardWidget />

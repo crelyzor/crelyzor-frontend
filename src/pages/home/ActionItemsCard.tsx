@@ -14,9 +14,7 @@ type ActionItemsCardProps = {
   items: DisplayActionItem[];
 };
 
-export function ActionItemsCard({
-  items,
-}: ActionItemsCardProps) {
+export function ActionItemsCard({ items }: ActionItemsCardProps) {
   const openItems = items.filter((item) => !item.isCompleted);
   const completedCount = items.filter((item) => item.isCompleted).length;
   const navigate = useNavigate();

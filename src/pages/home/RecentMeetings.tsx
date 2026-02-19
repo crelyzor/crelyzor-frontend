@@ -1,10 +1,4 @@
-import {
-  Clock,
-  Mic,
-  ClipboardList,
-  FileText,
-  MapPin,
-} from 'lucide-react';
+import { Clock, Mic, ClipboardList, FileText, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,9 +9,7 @@ type RecentMeetingsProps = {
   meetings: DisplayMeeting[];
 };
 
-export function RecentMeetings({
-  meetings,
-}: RecentMeetingsProps) {
+export function RecentMeetings({ meetings }: RecentMeetingsProps) {
   const navigate = useNavigate();
 
   return (

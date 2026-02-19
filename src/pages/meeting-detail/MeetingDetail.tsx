@@ -11,7 +11,6 @@ import {
   ClipboardList,
   Upload,
   Play,
-  Building2,
   MoreHorizontal,
   Edit3,
   RefreshCcw,
@@ -223,21 +222,6 @@ export default function MeetingDetail() {
                   </p>
                   <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
                     {meeting.location}
-                  </p>
-                </div>
-              </div>
-            )}
-            {meeting.orgSource && !meeting.orgSource.isPersonal && (
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center">
-                  <Building2 className="w-4 h-4 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                    Organization
-                  </p>
-                  <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
-                    {meeting.orgSource.orgName}
                   </p>
                 </div>
               </div>

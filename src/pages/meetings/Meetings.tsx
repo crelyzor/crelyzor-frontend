@@ -127,7 +127,6 @@ export default function Meetings() {
             {scopedMeetings.length} total
           </p>
         </div>
-
       </div>
 
       {/* ── Search + Filters ── */}
