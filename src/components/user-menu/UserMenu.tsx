@@ -69,7 +69,10 @@ export function UserMenu() {
 
         {/* Menu items */}
         <button
-          onClick={() => { setOpen(false); navigate('/settings'); }}
+          onClick={() => {
+            setOpen(false);
+            navigate('/settings');
+          }}
           className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
         >
           <Settings className="w-4 h-4 text-neutral-400" />
@@ -77,7 +80,10 @@ export function UserMenu() {
         </button>
 
         <button
-          onClick={() => { setOpen(false); navigate('/settings'); }}
+          onClick={() => {
+            setOpen(false);
+            navigate('/settings');
+          }}
           className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
         >
           <User className="w-4 h-4 text-neutral-400" />
