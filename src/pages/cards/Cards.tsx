@@ -26,7 +26,7 @@ import type { Card as CardType } from '@/types';
 import { CardPreview } from '@/components/cards/CardPreview';
 import { QRCodeDialog } from '@/components/cards/QRCodeDialog';
 import { EmailSignatureDialog } from '@/components/cards/EmailSignatureDialog';
-import { useOrganizationStore } from '@/stores';
+import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 
 const CARDS_PUBLIC_URL =
   import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
@@ -36,7 +36,7 @@ export default function Cards() {
   const { data: cards, isLoading } = useCards();
   const deleteCard = useDeleteCard();
   const updateCard = useUpdateCard();
-  const currentUser = useOrganizationStore((s) => s.currentUser);
+  const { data: currentUser } = useCurrentUser();
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [qrDialogCard, setQrDialogCard] = useState<CardType | null>(null);
   const [sigCard, setSigCard] = useState<CardType | null>(null);

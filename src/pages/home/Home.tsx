@@ -1,10 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useScroll, useTransform } from 'motion/react';
 import { motion } from 'motion/react';
 import { useGreeting } from '@/hooks';
 import { useMeetings } from '@/hooks/queries/useMeetingQueries';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
-import { useOrganizationStore } from '@/stores/organizationStore';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { CompactStickyBar } from './CompactStickyBar';
 import { HeroSection } from './HeroSection';
@@ -21,10 +20,7 @@ import { StartMeetingFab } from '@/components/home/StartMeetingFab';
 export default function Home() {
   const { scrollY } = useScroll();
   const { greeting, dayName, monthDay, tip } = useGreeting();
-  const { currentOrg, currentUser } = useOrganizationStore();
-
-  // Fetch profile on mount (populates stores)
-  useCurrentUser();
+  const { data: currentUser } = useCurrentUser();
 
   // Fetch meetings from API
   const today = new Date().toISOString().split('T')[0];
@@ -50,28 +46,14 @@ export default function Home() {
         (m.actionItems ?? []).map((ai) => ({
           ...ai,
           meetingTitle: m.title,
-          isCompleted: false, // Default until backend provides status
+          isCompleted: false,
           dueDate: ai.suggestedStartDate
             ? new Date(ai.suggestedStartDate).toLocaleDateString()
-            : undefined,
-          orgSource: m.organization
-            ? {
-                orgId: m.organization.id,
-                orgName: m.organization.name,
-                isPersonal: m.organization.isPersonal,
-              }
             : undefined,
         }))
       ),
     [upcomingData]
   );
-
-  // Derive org context
-  const isPersonalView = currentOrg?.isPersonal ?? true;
-  const isOwnerOrAdmin =
-    currentOrg?.role === 'OWNER' || currentOrg?.role === 'ADMIN';
-  const showTeamToggle = !isPersonalView && isOwnerOrAdmin;
-  const [isTeamView, setIsTeamView] = useState(false);
 
   // ── Scroll-linked transforms (all continuous, no state) ──
 
@@ -127,11 +109,6 @@ export default function Home() {
         monthDay={monthDay}
         tip={tip}
         userName={currentUser?.name ?? 'there'}
-        orgName={currentOrg?.name}
-        isPersonalView={isPersonalView}
-        showTeamToggle={showTeamToggle}
-        isTeamView={isTeamView}
-        onToggleTeamView={setIsTeamView}
         greetingOpacity={greetingOpacity}
         greetingY={greetingY}
         greetingScale={greetingScale}
@@ -154,20 +131,16 @@ export default function Home() {
             <div className="md:col-span-3">
               <NextMeetingCard meeting={upcomingMeetings[0]} />
             </div>
-            <StatsCard isTeamView={showTeamToggle && isTeamView} />
+            <StatsCard />
           </div>
 
           {/* Today's Schedule */}
           <ScheduleCard
             meetings={upcomingMeetings}
-            isPersonalView={isPersonalView}
           />
 
           {/* Meeting Summary */}
-          <MeetingSummaryCard
-            isPersonalView={isPersonalView}
-            isTeamView={showTeamToggle && isTeamView}
-          />
+          <MeetingSummaryCard />
         </div>
 
         {/* ── Right Column (1/3 width) ── */}
@@ -175,15 +148,11 @@ export default function Home() {
           {/* Action Items */}
           <ActionItemsCard
             items={actionItems}
-            isPersonalView={isPersonalView}
-            isTeamView={showTeamToggle && isTeamView}
           />
 
           {/* Recent Meetings */}
           <RecentMeetings
             meetings={recentMeetings}
-            isPersonalView={isPersonalView}
-            isTeamView={showTeamToggle && isTeamView}
           />
 
           {/* Default Card */}

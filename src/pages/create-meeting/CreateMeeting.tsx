@@ -5,7 +5,6 @@ import {
   MapPin,
   X,
   ArrowLeft,
-  Building2,
   FileText,
   Video,
   ChevronDown,
@@ -17,7 +16,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { useOrganizationStore } from '@/stores/organizationStore';
 import { useCreateMeeting } from '@/hooks/queries/useMeetingQueries';
 import type { MeetingMode } from '@/types';
 
@@ -54,8 +52,6 @@ function parseDurationMinutes(d: string): number {
 
 export default function CreateMeeting() {
   const navigate = useNavigate();
-  const { currentOrg } = useOrganizationStore();
-  const isPersonalView = currentOrg?.isPersonal ?? true;
   const createMeeting = useCreateMeeting();
 
   const [title, setTitle] = useState('');
@@ -117,19 +113,9 @@ export default function CreateMeeting() {
         <h1 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
           New Meeting
         </h1>
-        <div className="flex items-center gap-2 mt-1">
-          {!isPersonalView && currentOrg && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400">
-              <Building2 className="w-3 h-3" />
-              {currentOrg.name}
-            </span>
-          )}
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            {isPersonalView
-              ? 'Creating in your personal workspace'
-              : `This meeting will be under ${currentOrg?.name}`}
-          </p>
-        </div>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+          Schedule a new meeting
+        </p>
       </div>
 
       {/* Form */}

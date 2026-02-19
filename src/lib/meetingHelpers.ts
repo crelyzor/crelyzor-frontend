@@ -28,7 +28,6 @@ export type DisplayMeeting = {
   hasSummary: boolean;
   hasActionItems: boolean;
   meetingProvider?: Meeting['meetingProvider'];
-  orgSource?: { orgId: string; orgName: string; isPersonal: boolean };
   // Keep original for detailed views
   _raw: Meeting;
 };
@@ -44,20 +43,13 @@ export function toDisplayMeeting(m: Meeting): DisplayMeeting {
     participants: getParticipantNames(m),
     status: m.status,
     location: m.mode === 'IN_PERSON' ? m.location : m.meetingLink,
-    category: undefined, // backend doesn't return category on list endpoint yet
-    organizer: m.createdByMember?.user.name,
+    category: undefined,
+    organizer: m.createdBy?.name,
     hasRecording: !!m.recording,
     hasTranscript: m.transcriptionStatus === 'COMPLETED',
     hasSummary: !!m.aiSummary,
     hasActionItems: (m.actionItems?.length ?? 0) > 0,
     meetingProvider: m.meetingProvider,
-    orgSource: m.organization
-      ? {
-          orgId: m.organization.id,
-          orgName: m.organization.name,
-          isPersonal: m.organization.isPersonal,
-        }
-      : undefined,
     _raw: m,
   };
 }

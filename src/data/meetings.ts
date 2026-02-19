@@ -4,21 +4,15 @@ import type { Meeting, ActionItem, MeetingParticipant } from '@/types';
 const mockPart = (name: string): MeetingParticipant => ({
   id: `mp-${name.replace(/\s+/g, '-')}`,
   meetingId: 'm-1',
-  orgMemberId: `om-${name.replace(/\s+/g, '-')}`,
+  userId: `u-${name.replace(/\s+/g, '-')}`,
   participantType: 'ATTENDEE',
   responseStatus: 'ACCEPTED',
-  orgMember: {
-    id: `om-${name.replace(/\s+/g, '-')}`,
-    user: {
-      id: `u-${name.replace(/\s+/g, '-')}`,
-      name,
-      email: `${name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
-    },
+  user: {
+    id: `u-${name.replace(/\s+/g, '-')}`,
+    name,
+    email: `${name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
   },
 });
-
-const acmeOrg = { id: '2', name: 'Acme Inc', isPersonal: false };
-const designOrg = { id: '3', name: 'Design Studio', isPersonal: false };
 
 // ── Unified meeting type for the Meetings page ──
 export const allMeetings: Meeting[] = []; // Empty for now or populate if needed, but based on usage it seems strict typing is required.
@@ -36,13 +30,11 @@ export const upcomingMeetings: Meeting[] = [
     participants: ['Sarah Chen', 'Mike Ross', 'Alex Kim'].map(mockPart),
     guests: [],
     createdById: 'u1',
-    organizationId: '2',
     isDeleted: false,
     transcriptionStatus: 'NONE',
     createdAt: '2026-02-01T10:00:00Z',
     updatedAt: '2026-02-01T10:00:00Z',
     location: 'Conference Room A',
-    organization: acmeOrg,
     meetingProvider: 'GOOGLE',
   },
   {
@@ -56,13 +48,11 @@ export const upcomingMeetings: Meeting[] = [
     participants: ['Emma Wilson'].map(mockPart),
     guests: [],
     createdById: 'u1',
-    organizationId: '3',
     isDeleted: false,
     transcriptionStatus: 'NONE',
     createdAt: '2026-02-01T10:00:00Z',
     updatedAt: '2026-02-01T10:00:00Z',
     location: 'Meeting Room 2B',
-    organization: designOrg,
   },
   {
     id: '3',
@@ -75,13 +65,11 @@ export const upcomingMeetings: Meeting[] = [
     participants: ['Engineering Team'].map(mockPart),
     guests: [],
     createdById: 'u1',
-    organizationId: '2',
     isDeleted: false,
     transcriptionStatus: 'NONE',
     createdAt: '2026-02-01T10:00:00Z',
     updatedAt: '2026-02-01T10:00:00Z',
     location: 'Main Hall',
-    organization: acmeOrg,
   },
 ];
 
@@ -97,13 +85,11 @@ export const recentMeetings: Meeting[] = [
     participants: ['Team'].map(mockPart),
     guests: [],
     createdById: 'u1',
-    organizationId: '2',
     isDeleted: false,
     transcriptionStatus: 'COMPLETED', // hasTranscript: true
     createdAt: '2026-02-01T10:00:00Z',
     updatedAt: '2026-02-01T10:00:00Z',
     location: 'Room 3A',
-    organization: acmeOrg,
     recording: {
       id: 'rec-1',
       gcsPath: 'path/to/rec',
@@ -166,7 +152,6 @@ export const scheduledMeetings: Meeting[] = [
     participants: ['John Doe', 'Jane Smith'].map(mockPart),
     guests: [],
     createdById: 'u1',
-    organizationId: '1',
     isDeleted: false,
     transcriptionStatus: 'NONE',
     createdAt: '2026-02-01T10:00:00Z',

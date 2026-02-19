@@ -1,7 +1,6 @@
 import { Search, Command } from 'lucide-react';
 import { ReactNode } from 'react';
 import { useCommandPalette } from '@/hooks';
-import { OrganizationSelector } from '@/components/organization-selector';
 import { Toolbar } from '@/components/toolbar';
 
 type LayoutProps = {
@@ -16,11 +15,6 @@ export default function Layout({ children }: LayoutProps) {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white dark:bg-neutral-900 border-b border-neutral-200/60 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-8 h-14 flex items-center justify-between">
-          {/* Left - Org Selector */}
-          <div className="flex items-center shrink-0">
-            <OrganizationSelector />
-          </div>
-
           {/* Center - Search Bar */}
           <button
             onClick={openCommandPalette}

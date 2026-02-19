@@ -7,11 +7,9 @@ import {
   ClipboardList,
   CheckCheck,
   ArrowUpRight,
-  Building2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useOrganizationStore } from '@/stores/organizationStore';
 
 // ── Filter tabs ──
 const FILTER_TABS = [
@@ -40,7 +38,6 @@ type Notification = {
   timestamp: string;
   isRead: boolean;
   meetingId?: number;
-  orgSource?: { orgId: string; orgName: string; isPersonal: boolean };
 };
 
 const NOTIFICATION_META: Record<
@@ -100,7 +97,6 @@ const mockNotifications: Notification[] = [
     timestamp: '2026-02-10T09:30:00',
     isRead: false,
     meetingId: 101,
-    orgSource: { orgId: '2', orgName: 'Acme Inc', isPersonal: false },
   },
   {
     id: 'n-2',
@@ -110,7 +106,6 @@ const mockNotifications: Notification[] = [
     timestamp: '2026-02-10T08:15:00',
     isRead: false,
     meetingId: 103,
-    orgSource: { orgId: '2', orgName: 'Acme Inc', isPersonal: false },
   },
   {
     id: 'n-3',
@@ -120,7 +115,6 @@ const mockNotifications: Notification[] = [
     timestamp: '2026-02-09T16:45:00',
     isRead: true,
     meetingId: 106,
-    orgSource: { orgId: '2', orgName: 'Acme Inc', isPersonal: false },
   },
   {
     id: 'n-4',
@@ -130,16 +124,6 @@ const mockNotifications: Notification[] = [
     timestamp: '2026-02-09T16:15:00',
     isRead: true,
     meetingId: 102,
-    orgSource: { orgId: '3', orgName: 'Design Studio', isPersonal: false },
-  },
-  {
-    id: 'n-5',
-    type: 'new_team_member',
-    title: 'New team member joined',
-    message: 'Alex Kim has joined Acme Inc as a Member',
-    timestamp: '2026-02-09T10:00:00',
-    isRead: true,
-    orgSource: { orgId: '2', orgName: 'Acme Inc', isPersonal: false },
   },
   {
     id: 'n-6',
@@ -149,7 +133,6 @@ const mockNotifications: Notification[] = [
     timestamp: '2026-02-08T14:20:00',
     isRead: true,
     meetingId: 112,
-    orgSource: { orgId: '2', orgName: 'Acme Inc', isPersonal: false },
   },
   {
     id: 'n-7',
@@ -159,7 +142,6 @@ const mockNotifications: Notification[] = [
     timestamp: '2026-02-08T11:00:00',
     isRead: true,
     meetingId: 110,
-    orgSource: { orgId: '3', orgName: 'Design Studio', isPersonal: false },
   },
   {
     id: 'n-8',
@@ -169,24 +151,17 @@ const mockNotifications: Notification[] = [
     timestamp: '2026-02-07T09:00:00',
     isRead: true,
     meetingId: 108,
-    orgSource: { orgId: '2', orgName: 'Acme Inc', isPersonal: false },
   },
 ];
 
 export default function Notifications() {
   const navigate = useNavigate();
-  const { currentOrg } = useOrganizationStore();
-  const isPersonalView = currentOrg?.isPersonal ?? true;
 
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [notifications, setNotifications] = useState(mockNotifications);
 
-  // Filter by org
-  let filtered = isPersonalView
-    ? notifications
-    : notifications.filter((n) => n.orgSource?.orgId === currentOrg?.id);
-
   // Filter by tab
+  let filtered = notifications;
   if (activeFilter === 'unread') filtered = filtered.filter((n) => !n.isRead);
   if (activeFilter === 'meetings')
     filtered = filtered.filter(
@@ -197,11 +172,7 @@ export default function Notifications() {
       (n) => NOTIFICATION_META[n.type].filterGroup === 'sma'
     );
 
-  const unreadCount = (
-    isPersonalView
-      ? notifications
-      : notifications.filter((n) => n.orgSource?.orgId === currentOrg?.id)
-  ).filter((n) => !n.isRead).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
@@ -357,14 +328,6 @@ export default function Notifications() {
                           <span className="text-[10px] text-neutral-400">
                             {formatTime(n.timestamp)}
                           </span>
-                          {isPersonalView &&
-                            n.orgSource &&
-                            !n.orgSource.isPersonal && (
-                              <span className="inline-flex items-center gap-0.5 text-[10px] text-blue-500 dark:text-blue-400">
-                                <Building2 className="w-2.5 h-2.5" />
-                                {n.orgSource.orgName}
-                              </span>
-                            )}
                         </div>
                       </div>
 

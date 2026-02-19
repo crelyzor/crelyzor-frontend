@@ -1,4 +1,3 @@
-export { mockOrganizations, currentUser } from './organizations';
 export {
   upcomingMeetings,
   recentMeetings,

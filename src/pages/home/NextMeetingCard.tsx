@@ -89,14 +89,6 @@ export function NextMeetingCard({ meeting }: NextMeetingCardProps) {
           </span>
         </div>
 
-        {/* Org source badge (only shown in personal workspace / aggregated view) */}
-        {meeting.orgSource && !meeting.orgSource.isPersonal && (
-          <div className="mt-3">
-            <span className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded">
-              {meeting.orgSource.orgName}
-            </span>
-          </div>
-        )}
       </div>
     </Card>
   );

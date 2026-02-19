@@ -26,7 +26,6 @@ const {
   SignIn,
   AuthCallback,
   PublicBooking,
-  CreateOrganization,
   Setup,
   Cards,
   CardEditor,
@@ -54,16 +53,6 @@ function App() {
                   element={
                     <AuthGuard>
                       <Setup />
-                    </AuthGuard>
-                  }
-                />
-
-                {/* Create Organization (No Layout) */}
-                <Route
-                  path="/organizations/create"
-                  element={
-                    <AuthGuard>
-                      <CreateOrganization />
                     </AuthGuard>
                   }
                 />

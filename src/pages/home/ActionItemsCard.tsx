@@ -8,19 +8,14 @@ export type DisplayActionItem = ActionItem & {
   meetingTitle: string;
   isCompleted?: boolean;
   dueDate?: string;
-  orgSource?: { orgId: string; orgName: string; isPersonal: boolean };
 };
 
 type ActionItemsCardProps = {
   items: DisplayActionItem[];
-  isPersonalView?: boolean;
-  isTeamView?: boolean;
 };
 
 export function ActionItemsCard({
   items,
-  isPersonalView,
-  isTeamView,
 }: ActionItemsCardProps) {
   const openItems = items.filter((item) => !item.isCompleted);
   const completedCount = items.filter((item) => item.isCompleted).length;
@@ -45,11 +40,6 @@ export function ActionItemsCard({
         <div className="flex items-center gap-2 text-xs tracking-widest text-neutral-500 dark:text-neutral-400 font-medium">
           <ClipboardList className="w-4 h-4" />
           ACTION ITEMS
-          {isTeamView && (
-            <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded ml-1">
-              Team
-            </span>
-          )}
         </div>
         <div className="flex items-center gap-2">
           {completedCount > 0 && (
@@ -103,20 +93,6 @@ export function ActionItemsCard({
                   <span className="text-[11px] text-neutral-400 dark:text-neutral-500">
                     from {item.meetingTitle}
                   </span>
-                  {/* Show assignee in team view */}
-                  {isTeamView && item.assignedTo && (
-                    <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
-                      → {item.assignedTo}
-                    </span>
-                  )}
-                  {/* Show org source in personal view */}
-                  {isPersonalView &&
-                    item.orgSource &&
-                    !item.orgSource.isPersonal && (
-                      <span className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
-                        {item.orgSource.orgName}
-                      </span>
-                    )}
                 </div>
               </div>
 

@@ -36,19 +36,16 @@ export type ResponseStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED';
 export type MeetingParticipant = {
   id: string;
   meetingId: string;
-  orgMemberId: string;
+  userId: string;
   participantType: ParticipantType;
   responseStatus: ResponseStatus;
   respondedAt?: string;
   joinedAt?: string;
-  orgMember?: {
+  user?: {
     id: string;
-    user: {
-      id: string;
-      name: string;
-      email: string;
-      avatarUrl?: string;
-    };
+    name: string;
+    email: string;
+    avatarUrl?: string;
   };
 };
 
@@ -80,8 +77,6 @@ export type Meeting = {
   guestName?: string;
   guestMessage?: string;
   createdById: string;
-  createdByRole?: string;
-  organizationId: string;
   isDeleted: boolean;
   transcriptionStatus: TranscriptionStatus;
   createdAt: string;
@@ -97,11 +92,12 @@ export type Meeting = {
   };
   aiSummary?: { id: string; summary: string; keyPoints: string[] };
   actionItems?: ActionItem[];
-  createdByMember?: {
+  createdBy?: {
     id: string;
-    user: { id: string; name: string; email: string; avatarUrl?: string };
+    name: string;
+    email: string;
+    avatarUrl?: string;
   };
-  organization?: { id: string; name: string; isPersonal: boolean };
 };
 
 // Simplified meeting for list views (same shape, just aliased)
@@ -147,7 +143,7 @@ export function formatMeetingDuration(meeting: Meeting): string {
 export function getParticipantNames(meeting: Meeting): string[] {
   const names: string[] = [];
   for (const p of meeting.participants) {
-    names.push(p.orgMember?.user?.name ?? 'Unknown');
+    names.push(p.user?.name ?? 'Unknown');
   }
   for (const g of meeting.guests) {
     names.push(g.name ?? g.email);

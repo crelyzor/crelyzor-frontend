@@ -5,10 +5,9 @@ import type { DisplayMeeting } from '@/lib/meetingHelpers';
 
 type ScheduleCardProps = {
   meetings: DisplayMeeting[];
-  isPersonalView?: boolean;
 };
 
-export function ScheduleCard({ meetings, isPersonalView }: ScheduleCardProps) {
+export function ScheduleCard({ meetings }: ScheduleCardProps) {
   const navigate = useNavigate();
 
   return (
@@ -62,14 +61,6 @@ export function ScheduleCard({ meetings, isPersonalView }: ScheduleCardProps) {
                     </span>
                   )}
                 </div>
-                {/* Show org badge when in personal/aggregated view */}
-                {isPersonalView &&
-                  meeting.orgSource &&
-                  !meeting.orgSource.isPersonal && (
-                    <span className="inline-block mt-1 text-[10px] font-medium text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
-                      {meeting.orgSource.orgName}
-                    </span>
-                  )}
               </div>
             </div>
           ))}

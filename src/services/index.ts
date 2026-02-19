@@ -4,9 +4,6 @@ export type {
   CreateMeetingPayload,
 } from './meetingsService';
 
-export { organizationsApi } from './organizationsService';
-export type { UpdateOrgPayload } from './organizationsService';
-
 export { availabilityApi } from './availabilityService';
 export type { CreateRecurringPayload } from './availabilityService';
 

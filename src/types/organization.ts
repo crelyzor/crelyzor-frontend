@@ -1,17 +1,3 @@
-export type OrgRole = 'OWNER' | 'ADMIN' | 'MEMBER';
-
-export type Organization = {
-  id: string;
-  name: string;
-  avatar?: string;
-  role: OrgRole;
-  isPersonal: boolean;
-  orgMemberId: string;
-  description?: string;
-  orgLogoUrl?: string;
-  memberCount?: number;
-};
-
 export type CurrentUser = {
   id: string;
   email: string;
@@ -35,13 +21,4 @@ export type ProfileResponse = {
   lastLoginAt?: string;
   isActive: boolean;
   timezone: string;
-  organizations: {
-    orgMemberId: string;
-    orgId: string;
-    orgName: string;
-    orgLogoUrl?: string;
-    orgDescription?: string;
-    accessLevel: OrgRole;
-    isPersonal?: boolean;
-  }[];
 };

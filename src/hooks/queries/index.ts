@@ -11,15 +11,6 @@ export {
   useCompleteMeeting,
 } from './useMeetingQueries';
 
-// Re-export all organization queries
-export {
-  useOrganizations,
-  useCurrentOrganization,
-  useOrgMembers,
-  useUpdateOrg,
-  useCreateOrg,
-} from './useOrganizationQueries';
-
 // Re-export all schedule queries
 export {
   useSchedules,

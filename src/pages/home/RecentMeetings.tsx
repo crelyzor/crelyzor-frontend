@@ -4,7 +4,6 @@ import {
   ClipboardList,
   FileText,
   MapPin,
-  User,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
@@ -14,14 +13,10 @@ import type { DisplayMeeting } from '@/lib/meetingHelpers';
 
 type RecentMeetingsProps = {
   meetings: DisplayMeeting[];
-  isPersonalView?: boolean;
-  isTeamView?: boolean;
 };
 
 export function RecentMeetings({
   meetings,
-  isPersonalView,
-  isTeamView,
 }: RecentMeetingsProps) {
   const navigate = useNavigate();
 
@@ -30,11 +25,6 @@ export function RecentMeetings({
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xs tracking-widest text-neutral-500 dark:text-neutral-400 font-medium">
           RECENT MEETINGS
-          {isTeamView && (
-            <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded ml-1">
-              Team
-            </span>
-          )}
         </h2>
         <button
           onClick={() => navigate('/meetings')}
@@ -65,21 +55,6 @@ export function RecentMeetings({
               <div className="flex items-center gap-1 mb-2 text-xs text-neutral-400 dark:text-neutral-500">
                 <MapPin className="w-3 h-3" />
                 <span>{meeting.location}</span>
-                {/* Organizer in team view */}
-                {isTeamView && meeting.organizer && (
-                  <>
-                    <span className="mx-1">&middot;</span>
-                    <User className="w-3 h-3" />
-                    <span>{meeting.organizer}</span>
-                  </>
-                )}
-              </div>
-            )}
-            {/* Organizer fallback when no location */}
-            {!meeting.location && isTeamView && meeting.organizer && (
-              <div className="flex items-center gap-1 mb-2 text-xs text-neutral-400 dark:text-neutral-500">
-                <User className="w-3 h-3" />
-                <span>{meeting.organizer}</span>
               </div>
             )}
 
@@ -106,14 +81,6 @@ export function RecentMeetings({
               </div>
 
               <div className="flex items-center gap-2">
-                {/* Org badge in personal view */}
-                {isPersonalView &&
-                  meeting.orgSource &&
-                  !meeting.orgSource.isPersonal && (
-                    <span className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
-                      {meeting.orgSource.orgName}
-                    </span>
-                  )}
                 <Badge
                   variant="outline"
                   className={`text-[10px] font-medium border ${getCategoryStyle(meeting.category)}`}

@@ -1,5 +1,4 @@
 import { useAuthStore } from '@/stores';
-import { useOrganizationStore } from '@/stores';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
@@ -47,12 +46,10 @@ async function request<T>(
   const { method = 'GET', body, headers = {}, params, signal } = options;
 
   const token = useAuthStore.getState().accessToken;
-  const currentOrg = useOrganizationStore.getState().currentOrg;
 
   const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...(currentOrg?.id ? { 'x-organization-id': currentOrg.id } : {}),
     ...headers,
   };
 

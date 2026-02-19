@@ -4,15 +4,11 @@ import {
   TrendingUp,
   TrendingDown,
   Clock,
-  Users,
   CalendarDays,
   FileText,
-  Building2,
-  User,
   Mic,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { useOrganizationStore } from '@/stores/organizationStore';
 
 // ── Mock analytics data ──
 const myAnalytics = {
@@ -50,54 +46,12 @@ const myAnalytics = {
   sma: { recordings: 7, transcribed: 5, summarized: 4, actionItems: 12 },
 };
 
-const teamAnalytics = {
-  thisWeek: { meetings: 34, hours: 22, avgDuration: 39 },
-  lastWeek: { meetings: 28, hours: 19, avgDuration: 41 },
-  categoryBreakdown: [
-    { label: '1:1', count: 14, percentage: 20 },
-    { label: 'Standup', count: 18, percentage: 26 },
-    { label: 'Client', count: 12, percentage: 17 },
-    { label: 'Review', count: 16, percentage: 23 },
-    { label: 'Internal', count: 10, percentage: 14 },
-  ],
-  statusBreakdown: [
-    { label: 'Completed', count: 58, color: 'bg-emerald-500' },
-    { label: 'Confirmed', count: 8, color: 'bg-blue-500' },
-    { label: 'Pending', count: 4, color: 'bg-amber-500' },
-    { label: 'Cancelled', count: 2, color: 'bg-red-500' },
-  ],
-  dailyMeetings: [
-    { day: 'Mon', count: 8 },
-    { day: 'Tue', count: 7 },
-    { day: 'Wed', count: 9 },
-    { day: 'Thu', count: 5 },
-    { day: 'Fri', count: 6 },
-    { day: 'Sat', count: 0 },
-    { day: 'Sun', count: 0 },
-  ],
-  topParticipants: [
-    { name: 'Sarah Chen', meetings: 14 },
-    { name: 'Mike Ross', meetings: 11 },
-    { name: 'Emma Wilson', meetings: 9 },
-    { name: 'Alex Kim', meetings: 8 },
-    { name: 'Priya Sharma', meetings: 7 },
-  ],
-  sma: { recordings: 18, transcribed: 14, summarized: 11, actionItems: 32 },
-};
-
 type TimeRange = 'week' | 'month' | 'quarter';
 
 export default function Analytics() {
-  const { currentOrg } = useOrganizationStore();
-  const isPersonalView = currentOrg?.isPersonal ?? true;
-  const isOwnerOrAdmin =
-    currentOrg?.role === 'OWNER' || currentOrg?.role === 'ADMIN';
-  const showTeamToggle = !isPersonalView && isOwnerOrAdmin;
-
-  const [isTeamView, setIsTeamView] = useState(false);
   const [timeRange, setTimeRange] = useState<TimeRange>('week');
 
-  const data = isTeamView ? teamAnalytics : myAnalytics;
+  const data = myAnalytics;
   const maxDaily = Math.max(...data.dailyMeetings.map((d) => d.count), 1);
 
   // Compute deltas
@@ -112,48 +66,12 @@ export default function Analytics() {
           <h1 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
             Analytics
           </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              Meeting insights & activity overview
-            </p>
-            {!isPersonalView && currentOrg && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">
-                <Building2 className="w-3 h-3" />
-                {currentOrg.name}
-              </span>
-            )}
-          </div>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+            Meeting insights & activity overview
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Team toggle */}
-          {showTeamToggle && (
-            <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
-              <button
-                onClick={() => setIsTeamView(false)}
-                className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
-                  !isTeamView
-                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                    : 'text-neutral-500 dark:text-neutral-400'
-                }`}
-              >
-                <User className="w-3 h-3" />
-                My
-              </button>
-              <button
-                onClick={() => setIsTeamView(true)}
-                className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
-                  isTeamView
-                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
-                    : 'text-neutral-500 dark:text-neutral-400'
-                }`}
-              >
-                <Users className="w-3 h-3" />
-                Team
-              </button>
-            </div>
-          )}
-
           {/* Time range pills */}
           <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
             {(['week', 'month', 'quarter'] as const).map((range) => (

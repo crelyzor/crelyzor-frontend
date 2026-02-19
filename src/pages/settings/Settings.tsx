@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   User,
-  Building2,
   Bell,
   Palette,
   Shield,
@@ -10,9 +9,6 @@ import {
   Sun,
   Monitor,
   LogOut,
-  Users,
-  Link2,
-  MoreHorizontal,
   Plug,
   Video,
   Calendar,
@@ -24,12 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { useOrganizationStore } from '@/stores/organizationStore';
 import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
-import {
-  useOrgMembers,
-  useUpdateOrg,
-} from '@/hooks/queries/useOrganizationQueries';
 import { useUpdateProfile } from '@/hooks/queries/useUserQueries';
 import {
   useCalendarStatus,
@@ -40,7 +31,6 @@ import {
 // ── Settings sections ──
 const SETTINGS_SECTIONS = [
   { id: 'profile', label: 'Profile', icon: User },
-  { id: 'organization', label: 'Organization', icon: Building2 },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'integrations', label: 'Integrations', icon: Plug },
   { id: 'appearance', label: 'Appearance', icon: Palette },
@@ -73,7 +63,7 @@ export default function Settings() {
           Settings
         </h1>
         <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-          Manage your account, organization, and preferences
+          Manage your account and preferences
         </p>
       </div>
 
@@ -117,7 +107,6 @@ export default function Settings() {
         {/* ── Content ── */}
         <div className="flex-1 min-w-0">
           {activeSection === 'profile' && <ProfileSection />}
-          {activeSection === 'organization' && <OrganizationSection />}
           {activeSection === 'notifications' && <NotificationsSection />}
           {activeSection === 'integrations' && <IntegrationsSection />}
           {activeSection === 'appearance' && (
@@ -235,166 +224,6 @@ function ProfileSection() {
               className="bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-xs px-4 h-8"
             >
               {updateProfile.isPending ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// ── Organization ──
-function OrganizationSection() {
-  const { currentOrg } = useOrganizationStore();
-  const { data: members } = useOrgMembers();
-  const updateOrg = useUpdateOrg();
-  const [orgName, setOrgName] = useState(currentOrg?.name ?? '');
-
-  const handleSaveOrg = () => {
-    if (!orgName || orgName === currentOrg?.name) return;
-    updateOrg.mutate(
-      { name: orgName },
-      {
-        onSuccess: () => toast.success('Organization updated'),
-        onError: () => toast.error('Failed to update organization'),
-      }
-    );
-  };
-
-  // Get members list from API response
-  const membersList = Array.isArray(members) ? members : [];
-
-  return (
-    <div className="space-y-6">
-      <SectionHeader
-        title="Organization"
-        description={
-          currentOrg?.isPersonal
-            ? 'Your personal workspace settings'
-            : `Settings for ${currentOrg?.name ?? 'your organization'}`
-        }
-      />
-
-      <Card className="border-neutral-200 dark:border-neutral-800">
-        <CardContent className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <FieldGroup label="Organization Name">
-              <Input
-                value={orgName}
-                onChange={(e) => setOrgName(e.target.value)}
-                className="border-neutral-200 dark:border-neutral-700"
-              />
-            </FieldGroup>
-          </div>
-
-          {/* Members preview */}
-          <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-neutral-400" />
-                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  Members
-                </span>
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
-                  {(membersList as unknown[]).length ||
-                    currentOrg?.memberCount ||
-                    1}
-                </span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs h-7 gap-1 border-neutral-200 dark:border-neutral-700"
-              >
-                Invite Member
-              </Button>
-            </div>
-            {(
-              membersList as Array<{
-                id: string;
-                user: {
-                  id: string;
-                  name: string;
-                  email: string;
-                  avatarUrl?: string;
-                };
-                roles: Array<{ name?: string; systemRoleType?: string }>;
-                accessLevel?: string;
-              }>
-            )
-              .slice(0, 5)
-              .map((member) => {
-                const roleName =
-                  member.roles?.[0]?.name ??
-                  member.roles?.[0]?.systemRoleType ??
-                  member.accessLevel ??
-                  'Member';
-                return (
-                  <div
-                    key={member.id}
-                    className="flex items-center gap-3 py-2 border-b border-neutral-50 dark:border-neutral-800/50 last:border-0"
-                  >
-                    {member.user.avatarUrl ? (
-                      <img
-                        src={member.user.avatarUrl}
-                        alt={member.user.name}
-                        className="w-7 h-7 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-semibold text-neutral-500">
-                        {member.user.name.charAt(0)}
-                      </div>
-                    )}
-                    <span className="text-xs text-neutral-700 dark:text-neutral-300 flex-1">
-                      {member.user.name} &mdash; {roleName}
-                    </span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                      <MoreHorizontal className="w-3.5 h-3.5 text-neutral-400" />
-                    </Button>
-                  </div>
-                );
-              })}
-          </div>
-
-          <div className="flex justify-end pt-4 border-t border-neutral-100 dark:border-neutral-800">
-            <Button
-              onClick={handleSaveOrg}
-              disabled={updateOrg.isPending}
-              className="bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-xs px-4 h-8"
-            >
-              {updateOrg.isPending ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Booking Link */}
-      <Card className="border-neutral-200 dark:border-neutral-800">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-2 mb-3">
-            <Link2 className="w-4 h-4 text-neutral-400" />
-            <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
-              Public Booking Link
-            </h3>
-          </div>
-          <div className="flex gap-2">
-            <Input
-              defaultValue={`${window.location.origin}/book/${currentOrg?.id ?? ''}`}
-              readOnly
-              className="border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 text-xs font-mono"
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                navigator.clipboard.writeText(
-                  `${window.location.origin}/book/${currentOrg?.id ?? ''}`
-                );
-                toast.success('Link copied!');
-              }}
-              className="text-xs h-9 px-3 shrink-0 border-neutral-200 dark:border-neutral-700"
-            >
-              Copy
             </Button>
           </div>
         </CardContent>
