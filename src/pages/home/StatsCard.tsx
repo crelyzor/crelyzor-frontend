@@ -2,26 +2,14 @@ import { TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 
-type StatsCardProps = {
-  isTeamView?: boolean;
-};
-
-const myStats = {
+const stats = {
   totalMeetings: 12,
   hours: 8.5,
   avgMeetings: 10,
   avgHours: 7.2,
 };
 
-const teamStats = {
-  totalMeetings: 34,
-  hours: 22,
-  avgMeetings: 28,
-  avgHours: 19,
-};
-
-export function StatsCard({ isTeamView }: StatsCardProps) {
-  const stats = isTeamView ? teamStats : myStats;
+export function StatsCard() {
   const navigate = useNavigate();
 
   return (
