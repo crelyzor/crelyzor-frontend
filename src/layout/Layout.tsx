@@ -2,6 +2,7 @@ import { Search, Command } from 'lucide-react';
 import { ReactNode } from 'react';
 import { useCommandPalette } from '@/hooks';
 import { Toolbar } from '@/components/toolbar';
+import { UserMenu } from '@/components/user-menu/UserMenu';
 
 type LayoutProps = {
   children: ReactNode;
@@ -15,6 +16,9 @@ export default function Layout({ children }: LayoutProps) {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white dark:bg-neutral-900 border-b border-neutral-200/60 dark:border-neutral-800">
         <div className="max-w-7xl mx-auto px-8 h-14 flex items-center justify-between">
+          {/* Left - User Menu */}
+          <UserMenu />
+
           {/* Center - Search Bar */}
           <button
             onClick={openCommandPalette}
