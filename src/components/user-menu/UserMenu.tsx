@@ -10,6 +10,7 @@ import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
 
 export function UserMenu() {
   const [open, setOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const navigate = useNavigate();
   const { data: user } = useCurrentUser();
   const logoutMutation = useLogout();
@@ -20,6 +21,8 @@ export function UserMenu() {
     .join('')
     .toUpperCase()
     .slice(0, 2);
+
+  const showAvatar = !!user?.avatarUrl && !imgError;
 
   const handleLogout = () => {
     setOpen(false);
@@ -33,11 +36,13 @@ export function UserMenu() {
       <PopoverTrigger asChild>
         <button className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer">
           {/* Avatar */}
-          {user?.avatarUrl ? (
+          {showAvatar ? (
             <img
-              src={user.avatarUrl}
-              alt={user.name}
+              src={user!.avatarUrl!}
+              alt={user!.name}
+              referrerPolicy="no-referrer"
               className="w-7 h-7 rounded-full object-cover"
+              onError={() => setImgError(true)}
             />
           ) : (
             <div className="w-7 h-7 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">
