@@ -5,7 +5,6 @@ import {
   TOOLBAR_GROUP_ORDER,
 } from '@/constants';
 import type { ToolbarItem } from '@/types';
-import { Separator } from '@/components/ui/separator';
 import {
   Tooltip,
   TooltipContent,
@@ -36,22 +35,22 @@ export function ControlCenter({
 
   return (
     <div>
-      <div className="p-3 pb-2">
-        <h3 className="text-xs tracking-widest text-neutral-400 dark:text-neutral-500 font-medium">
-          CONTROL CENTER
+      <div className="px-4 pt-4 pb-2">
+        <h3 className="text-[11px] tracking-widest text-neutral-500 font-medium uppercase">
+          Control Center
         </h3>
-        <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+        <p className="text-[11px] text-neutral-600 mt-0.5">
           Pin items to your toolbar
         </p>
       </div>
 
-      <Separator className="bg-neutral-100 dark:bg-neutral-800" />
+      <div className="h-px bg-white/5 mx-3" />
 
       <div className="max-h-80 overflow-y-auto py-1">
         {TOOLBAR_GROUP_ORDER.map((group) => (
           <div key={group}>
-            <div className="px-3 pt-3 pb-1">
-              <span className="text-[10px] tracking-widest text-neutral-400 dark:text-neutral-500 font-medium">
+            <div className="px-4 pt-3 pb-1">
+              <span className="text-[10px] tracking-widest text-neutral-600 font-medium uppercase">
                 {TOOLBAR_GROUP_LABELS[group]}
               </span>
             </div>
@@ -60,20 +59,20 @@ export function ControlCenter({
               return (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 px-3 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2 mx-1 rounded-[14px] hover:bg-white/5 transition-colors cursor-pointer"
                 >
                   <button
                     onClick={() => onItemClick(item)}
                     className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
-                      <item.icon className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+                    <div className="w-8 h-8 rounded-full bg-[#2C2C2E] flex items-center justify-center shrink-0">
+                      <item.icon className="w-4 h-4 text-neutral-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                      <div className="text-[13px] font-medium text-neutral-200">
                         {item.label}
                       </div>
-                      <div className="text-[11px] text-neutral-400 dark:text-neutral-500 truncate">
+                      <div className="text-[11px] text-neutral-600 truncate">
                         {item.description}
                       </div>
                     </div>
@@ -85,10 +84,10 @@ export function ControlCenter({
                           e.stopPropagation();
                           togglePin(item.id);
                         }}
-                        className={`w-7 h-7 flex items-center justify-center rounded-md shrink-0 transition-all cursor-pointer ${
+                        className={`w-7 h-7 flex items-center justify-center rounded-full shrink-0 transition-all cursor-pointer ${
                           pinned
-                            ? 'text-neutral-900 bg-neutral-100 hover:bg-neutral-200 dark:text-neutral-100 dark:bg-neutral-700 dark:hover:bg-neutral-600'
-                            : 'text-neutral-300 hover:text-neutral-500 hover:bg-neutral-100 dark:text-neutral-600 dark:hover:text-neutral-400 dark:hover:bg-neutral-800'
+                            ? 'text-white bg-[#3A3A3C] hover:bg-[#48484A]'
+                            : 'text-neutral-600 hover:text-neutral-400 hover:bg-white/5'
                         }`}
                       >
                         {pinned ? (
@@ -109,12 +108,12 @@ export function ControlCenter({
         ))}
       </div>
 
-      <Separator className="bg-neutral-100 dark:bg-neutral-800" />
+      <div className="h-px bg-white/5 mx-3" />
 
       <div className="p-2">
         <button
           onClick={resetToDefaults}
-          className="w-full text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 py-1.5 transition-colors cursor-pointer"
+          className="w-full text-[12px] text-neutral-600 hover:text-neutral-400 py-2 transition-colors cursor-pointer rounded-[14px] hover:bg-white/5"
         >
           Reset to defaults
         </button>

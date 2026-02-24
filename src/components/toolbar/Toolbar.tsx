@@ -2,13 +2,9 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Grip } from 'lucide-react';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'motion/react';
 import { useToolbarPins } from '@/hooks';
 import type { ToolbarItem } from '@/types';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import {
   Tooltip,
   TooltipContent,
@@ -39,24 +35,62 @@ export function Toolbar() {
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex items-center gap-0.5">
-        {/* Pinned toolbar items */}
-        {pinnedItems.map((item) => (
-          <ToolbarButton key={item.id} item={item} onClick={handleItemClick} />
-        ))}
+      <>
+        {/* Backdrop for click-outside */}
+        <AnimatePresence>
+          {controlCenterOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setControlCenterOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-40"
+            />
+          )}
+        </AnimatePresence>
 
-        {/* Theme Toggle */}
-        <ThemeToggle />
+        <div className="flex items-center gap-0.5">
+          {/* Pinned toolbar items */}
+          {pinnedItems.map((item) => (
+            <ToolbarButton key={item.id} item={item} onClick={handleItemClick} />
+          ))}
 
-        {/* Separator + Control Center trigger */}
-        <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />
+          {/* Theme Toggle */}
+          <ThemeToggle />
 
-        <Popover open={controlCenterOpen} onOpenChange={setControlCenterOpen}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <PopoverTrigger asChild>
+          {/* Separator + Control Center trigger */}
+          <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />
+
+          <div className="relative">
+            <AnimatePresence>
+              {controlCenterOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                  transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                  className="absolute top-full right-0 mt-2 z-50 w-[280px]"
+                >
+                  <div className="bg-[#1C1C1E] border border-white/5 rounded-[24px] shadow-2xl overflow-hidden">
+                    <ControlCenter
+                      isPinned={isPinned}
+                      togglePin={togglePin}
+                      resetToDefaults={resetToDefaults}
+                      onItemClick={(item) => {
+                        setControlCenterOpen(false);
+                        handleItemClick(item);
+                      }}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <button
-                  className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all cursor-pointer ${
+                  onClick={() => setControlCenterOpen((v) => !v)}
+                  className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all cursor-pointer z-50 relative ${
                     controlCenterOpen
                       ? 'text-neutral-900 bg-neutral-100 dark:text-neutral-100 dark:bg-neutral-800'
                       : 'text-neutral-400 hover:text-neutral-600 hover:bg-neutral-50 dark:hover:text-neutral-300 dark:hover:bg-neutral-800'
@@ -64,27 +98,14 @@ export function Toolbar() {
                 >
                   <Grip className="w-[18px] h-[18px]" />
                 </button>
-              </PopoverTrigger>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-xs">
-              Control Center
-            </TooltipContent>
-          </Tooltip>
-
-          <PopoverContent
-            className="w-72 p-0 bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 shadow-xl rounded-xl"
-            align="start"
-            sideOffset={8}
-          >
-            <ControlCenter
-              isPinned={isPinned}
-              togglePin={togglePin}
-              resetToDefaults={resetToDefaults}
-              onItemClick={handleItemClick}
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                Control Center
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
+      </>
     </TooltipProvider>
   );
 }
