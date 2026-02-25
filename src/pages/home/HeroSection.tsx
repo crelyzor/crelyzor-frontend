@@ -48,24 +48,26 @@ export function HeroSection({
         }}
         className="mb-10 origin-top"
       >
-        <p className="text-xs tracking-widest text-neutral-400 dark:text-neutral-500 mb-2">
-          {greeting.toUpperCase()}, {firstName.toUpperCase()}
+        <p className="text-[11px] tracking-[0.18em] text-neutral-400 dark:text-neutral-500 mb-3 uppercase">
+          {greeting}, {firstName}
         </p>
-        <h1 className="text-3xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight mb-1">
+        <h1
+          className="text-3xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight mb-1"
+        >
           It&apos;s {dayName}, {monthDay}
         </h1>
         <motion.div
           style={{ opacity: tipOpacity }}
-          className="flex items-center justify-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mt-2"
+          className="flex items-center justify-center gap-2 text-sm text-neutral-400 dark:text-neutral-500 mt-3"
         >
-          <span>{tip}</span>
+          <span className="font-light">{tip}</span>
         </motion.div>
       </motion.div>
 
-      {/* Full Quick Actions — Floating Bubbles with staggered scroll */}
+      {/* Quick action bubbles — staggered scroll */}
       <motion.div
         style={{ opacity: bubblesOpacity }}
-        className="flex items-start gap-12 justify-center mb-14"
+        className="flex items-start gap-10 justify-center mb-14"
       >
         {quickActions.map((action, i) => (
           <motion.button
@@ -75,12 +77,21 @@ export function HeroSection({
               y: bubbleTransforms[i]?.y,
               scale: bubbleTransforms[i]?.scale,
             }}
-            className="group flex flex-col items-center gap-3 cursor-pointer origin-bottom"
+            className="group flex flex-col items-center gap-2.5 cursor-pointer origin-bottom"
           >
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-neutral-100/80 dark:bg-neutral-800/80 text-neutral-500 dark:text-neutral-400 group-hover:bg-neutral-900 group-hover:text-white dark:group-hover:bg-neutral-100 dark:group-hover:text-neutral-900 group-hover:-translate-y-1 group-hover:shadow-lg transition-all duration-200">
-              <action.icon className="w-6 h-6" />
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center
+                            bg-white dark:bg-neutral-800/80
+                            border border-neutral-200/80 dark:border-neutral-700/50
+                            text-neutral-500 dark:text-neutral-400
+                            group-hover:bg-neutral-950 group-hover:text-white group-hover:border-neutral-950
+                            dark:group-hover:bg-neutral-100 dark:group-hover:text-neutral-900 dark:group-hover:border-neutral-100
+                            group-hover:-translate-y-1.5 group-hover:shadow-xl group-hover:shadow-neutral-900/15
+                            dark:group-hover:shadow-neutral-100/10
+                            transition-all duration-200 ease-out">
+              <action.icon className="w-5 h-5" />
             </div>
-            <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-100 transition-colors">
+            <span className="text-[11px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400
+                             group-hover:text-neutral-900 dark:group-hover:text-neutral-100 transition-colors">
               {action.label}
             </span>
           </motion.button>

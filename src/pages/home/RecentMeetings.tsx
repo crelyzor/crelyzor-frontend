@@ -1,7 +1,6 @@
-import { Clock, Mic, ClipboardList, FileText, MapPin } from 'lucide-react';
+import { Clock, Mic, ClipboardList, FileText, MapPin, ArrowUpRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { motion } from 'motion/react';
 import { getCategoryStyle } from '@/constants';
 import type { DisplayMeeting } from '@/lib/meetingHelpers';
 
@@ -15,74 +14,87 @@ export function RecentMeetings({ meetings }: RecentMeetingsProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xs tracking-widest text-neutral-500 dark:text-neutral-400 font-medium">
-          RECENT MEETINGS
+        <h2 className="text-[11px] tracking-[0.15em] text-neutral-400 dark:text-neutral-500 font-medium uppercase">
+          Recent Meetings
         </h2>
         <button
           onClick={() => navigate('/meetings')}
-          className="text-xs text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors font-medium cursor-pointer"
+          className="flex items-center gap-1 text-[11px] text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors font-medium cursor-pointer group"
         >
-          SEE ALL
+          See all
+          <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
         </button>
       </div>
 
-      <div className="space-y-3">
-        {meetings.map((meeting) => (
-          <Card
+      <div className="space-y-2">
+        {meetings.map((meeting, i) => (
+          <motion.div
             key={meeting.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: i * 0.04, ease: [0.25, 0.1, 0.25, 1] }}
             onClick={() => navigate(`/meetings/${meeting.id}`)}
-            className="p-4 border-neutral-200 dark:border-neutral-800 hover:shadow-md transition-all cursor-pointer group"
+            className="group flex items-center gap-4 px-4 py-3.5
+                       bg-white dark:bg-neutral-900
+                       border border-neutral-100 dark:border-neutral-800
+                       hover:border-neutral-200 dark:hover:border-neutral-700
+                       hover:shadow-sm
+                       rounded-xl cursor-pointer transition-all duration-200"
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate flex-1">
-                {meeting.title}
-              </span>
-              <span className="text-[11px] text-neutral-400 dark:text-neutral-500 ml-2 whitespace-nowrap">
-                {meeting.date}, {meeting.time}
-              </span>
+            {/* Time column */}
+            <div className="shrink-0 text-right w-16">
+              <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{meeting.time}</p>
+              <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-0.5">{meeting.duration}</p>
             </div>
 
-            {/* Location */}
-            {meeting.location && (
-              <div className="flex items-center gap-1 mb-2 text-xs text-neutral-400 dark:text-neutral-500">
-                <MapPin className="w-3 h-3" />
-                <span>{meeting.location}</span>
-              </div>
-            )}
+            {/* Divider */}
+            <div className="w-px h-8 bg-neutral-200 dark:bg-neutral-700 shrink-0" />
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {/* Duration */}
-                <div className="flex items-center gap-1 text-xs text-neutral-400 dark:text-neutral-500">
-                  <Clock className="w-3 h-3" />
-                  <span>{meeting.duration}</span>
-                </div>
-
-                {/* SMA indicators — subtle icons showing what's inside */}
-                <div className="flex items-center gap-1.5 ml-1">
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate group-hover:text-neutral-950 dark:group-hover:text-white transition-colors">
+                {meeting.title}
+              </p>
+              <div className="flex items-center gap-2 mt-0.5">
+                {meeting.location && (
+                  <div className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
+                    <MapPin className="w-2.5 h-2.5" />
+                    <span className="truncate max-w-[120px]">{meeting.location}</span>
+                  </div>
+                )}
+                {/* SMA indicators */}
+                <div className="flex items-center gap-1 ml-0.5">
                   {meeting.hasRecording && (
-                    <Mic className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
+                    <Mic className="w-2.5 h-2.5 text-neutral-400 dark:text-neutral-500" />
                   )}
                   {meeting.hasTranscript && (
-                    <FileText className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
+                    <FileText className="w-2.5 h-2.5 text-neutral-400 dark:text-neutral-500" />
                   )}
                   {meeting.hasActionItems && (
-                    <ClipboardList className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
+                    <ClipboardList className="w-2.5 h-2.5 text-neutral-400 dark:text-neutral-500" />
                   )}
                 </div>
               </div>
-
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className={`text-[10px] font-medium border ${getCategoryStyle(meeting.category)}`}
-                >
-                  {meeting.category}
-                </Badge>
-              </div>
             </div>
-          </Card>
+
+            {/* Category badge */}
+            {meeting.category && (
+              <span className={`shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md border ${getCategoryStyle(meeting.category)}`}>
+                {meeting.category}
+              </span>
+            )}
+
+            {/* Arrow on hover */}
+            <ArrowUpRight className="w-3.5 h-3.5 text-neutral-300 dark:text-neutral-600 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all duration-200 shrink-0" />
+          </motion.div>
         ))}
+
+        {meetings.length === 0 && (
+          <div className="text-center py-10 text-neutral-400 dark:text-neutral-600">
+            <Clock className="w-8 h-8 mx-auto mb-2 opacity-40" />
+            <p className="text-xs">No recent meetings</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -14,13 +14,12 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { motion, AnimatePresence } from 'motion/react';
 import { useMeetingsAll } from '@/hooks/queries/useMeetingQueries';
 import { toDisplayMeeting, type DisplayMeeting } from '@/lib/meetingHelpers';
 import { getStatusStyle, getStatusLabel } from '@/types';
 import type { MeetingStatus } from '@/types';
 
-// ── Filter Tabs ──
 const FILTER_TABS = [
   { id: 'all', label: 'All' },
   { id: 'upcoming', label: 'Upcoming' },
@@ -31,29 +30,20 @@ const FILTER_TABS = [
 
 type FilterTab = (typeof FILTER_TABS)[number]['id'];
 
-// ── Map filter tab to backend meeting statuses ──
 function matchesFilter(status: MeetingStatus, filter: FilterTab): boolean {
   if (filter === 'all') return true;
-  if (filter === 'upcoming')
-    return status === 'ACCEPTED' || status === 'CREATED';
+  if (filter === 'upcoming') return status === 'ACCEPTED' || status === 'CREATED';
   if (filter === 'completed') return status === 'COMPLETED';
-  if (filter === 'pending')
-    return (
-      status === 'PENDING_ACCEPTANCE' || status === 'RESCHEDULING_REQUESTED'
-    );
-  if (filter === 'cancelled')
-    return status === 'CANCELLED' || status === 'DECLINED';
+  if (filter === 'pending') return status === 'PENDING_ACCEPTANCE' || status === 'RESCHEDULING_REQUESTED';
+  if (filter === 'cancelled') return status === 'CANCELLED' || status === 'DECLINED';
   return true;
 }
 
-// ── Group meetings by date ──
 function groupByDate(meetings: DisplayMeeting[]) {
   const groups: Record<string, DisplayMeeting[]> = {};
-
   for (const m of meetings) {
-    const key = m.date;
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(m);
+    if (!groups[m.date]) groups[m.date] = [];
+    groups[m.date].push(m);
   }
 
   const today = new Date();
@@ -66,17 +56,9 @@ function groupByDate(meetings: DisplayMeeting[]) {
     .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
     .map(([date, items]) => {
       let label: string;
-      if (date === todayStr) {
-        label = 'Today';
-      } else if (date === tomorrowStr) {
-        label = 'Tomorrow';
-      } else {
-        label = new Date(date + 'T00:00:00').toLocaleDateString('en-US', {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric',
-        });
-      }
+      if (date === todayStr) label = 'Today';
+      else if (date === tomorrowStr) label = 'Tomorrow';
+      else label = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
       return { label, date, meetings: items };
     });
 }
@@ -87,16 +69,13 @@ export default function Meetings() {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Fetch all meetings from API
   const { data: meetingsData } = useMeetingsAll();
 
-  // Transform to display format
   const scopedMeetings = useMemo(
     () => (meetingsData ?? []).map(toDisplayMeeting),
     [meetingsData]
   );
 
-  // Filter & search
   const filtered = useMemo(() => {
     return scopedMeetings.filter((m) => {
       if (!matchesFilter(m.status, activeTab)) return false;
@@ -104,9 +83,7 @@ export default function Meetings() {
         searchQuery &&
         !m.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
         !m.location?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !m.participants.some((p) =>
-          p.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+        !m.participants.some((p) => p.toLowerCase().includes(searchQuery.toLowerCase()))
       )
         return false;
       return true;
@@ -115,15 +92,25 @@ export default function Meetings() {
 
   const grouped = useMemo(() => groupByDate(filtered), [filtered]);
 
+  let globalIndex = 0;
+
   return (
-    <div className="max-w-3xl mx-auto">
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+      className="max-w-3xl mx-auto"
+    >
       {/* ── Header ── */}
-      <div className="flex items-end justify-between mb-6">
+      <div className="flex items-end justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
+          <h1
+            className="font-display text-[2rem] text-neutral-950 dark:text-neutral-50"
+            style={{ fontStyle: 'italic' }}
+          >
             Meetings
           </h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+          <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">
             {scopedMeetings.length} total
           </p>
         </div>
@@ -131,123 +118,126 @@ export default function Meetings() {
 
       {/* ── Search + Filters ── */}
       <div className="space-y-3 mb-6">
-        {/* Search bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
           <input
             type="text"
             placeholder="Search meetings, people, or places..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-10 pl-10 pr-4 rounded-lg border border-neutral-200 dark:border-neutral-800 
-                       bg-white dark:bg-neutral-900 text-sm text-neutral-950 dark:text-neutral-50
-                       placeholder:text-neutral-400 dark:placeholder:text-neutral-500
-                       focus:outline-none focus:ring-2 focus:ring-neutral-900/10 dark:focus:ring-neutral-100/10
-                       transition-shadow"
+            className="w-full h-10 pl-10 pr-4 rounded-xl
+                       border border-neutral-200 dark:border-neutral-800
+                       bg-white dark:bg-neutral-900
+                       text-sm text-neutral-950 dark:text-neutral-50
+                       placeholder:text-neutral-400 dark:placeholder:text-neutral-600
+                       focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600
+                       transition-colors"
           />
         </div>
 
-        {/* Filter tabs */}
-        <div className="flex items-center gap-1.5">
+        {/* Animated filter tabs */}
+        <div className="flex items-center gap-1">
           {FILTER_TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors
-                ${
-                  activeTab === tab.id
-                    ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
-                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700'
+              className={`relative px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors duration-150
+                ${activeTab === tab.id
+                  ? 'text-white dark:text-neutral-900'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                 }`}
             >
-              {tab.label}
+              {activeTab === tab.id && (
+                <motion.span
+                  layoutId="activeTab"
+                  className="absolute inset-0 bg-neutral-900 dark:bg-neutral-100 rounded-full"
+                  transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+                />
+              )}
+              <span className="relative z-10">{tab.label}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* ── Meeting List ── */}
-      <div className="space-y-6 pb-24">
+      <div className="space-y-7 pb-24">
         {grouped.length === 0 && (
-          <div className="text-center py-16">
-            <Calendar className="w-10 h-10 mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              No meetings found
-            </p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20"
+          >
+            <Calendar className="w-9 h-9 mx-auto text-neutral-200 dark:text-neutral-700 mb-3" />
+            <p className="text-sm text-neutral-400 dark:text-neutral-500">No meetings found</p>
+          </motion.div>
         )}
 
         {grouped.map((group) => (
           <div key={group.date}>
             {/* Date header */}
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.12em]">
                 {group.label}
               </span>
-              <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800" />
+              <div className="flex-1 h-px bg-neutral-100 dark:bg-neutral-800" />
             </div>
 
             {/* Meeting cards */}
             <div className="space-y-2">
               {group.meetings.map((meeting) => {
+                const idx = globalIndex++;
                 const isExpanded = expandedId === meeting.id;
-                const hasSMA =
-                  meeting.hasRecording ||
-                  meeting.hasTranscript ||
-                  meeting.hasSummary ||
-                  meeting.hasActionItems;
+                const hasSMA = meeting.hasRecording || meeting.hasTranscript || meeting.hasSummary || meeting.hasActionItems;
 
                 return (
-                  <Card
+                  <motion.div
                     key={meeting.id}
-                    className={`p-0 border-neutral-200 dark:border-neutral-800 overflow-hidden transition-shadow
-                      hover:shadow-md hover:border-neutral-300 dark:hover:border-neutral-700 cursor-pointer
-                      ${isExpanded ? 'ring-1 ring-neutral-300 dark:ring-neutral-700' : ''}`}
-                    onClick={() =>
-                      setExpandedId(isExpanded ? null : meeting.id)
-                    }
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.28, delay: idx * 0.04, ease: [0.25, 0.1, 0.25, 1] }}
+                    onClick={() => setExpandedId(isExpanded ? null : meeting.id)}
+                    className={`group bg-white dark:bg-neutral-900 rounded-xl border cursor-pointer
+                                transition-all duration-200 overflow-hidden
+                                ${isExpanded
+                                  ? 'border-neutral-300 dark:border-neutral-600 shadow-md'
+                                  : 'border-neutral-100 dark:border-neutral-800 hover:border-neutral-200 dark:hover:border-neutral-700 hover:shadow-sm'
+                                }`}
                   >
                     <div className="px-4 py-3.5">
-                      {/* Top row: title + status */}
+                      {/* Top row */}
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 truncate">
+                          <h3 className="text-sm font-medium text-neutral-950 dark:text-neutral-50 truncate">
                             {meeting.title}
                           </h3>
                           {meeting.description && (
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-1">
+                            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5 line-clamp-1">
                               {meeting.description}
                             </p>
                           )}
                         </div>
-                        <span
-                          className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(meeting.status)}`}
-                        >
+                        <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(meeting.status)}`}>
                           {getStatusLabel(meeting.status)}
                         </span>
                       </div>
 
                       {/* Meta row */}
                       <div className="flex items-center gap-3 mt-2.5 flex-wrap">
-                        {/* Time */}
-                        <div className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>
-                            {meeting.time} &middot; {meeting.duration}
-                          </span>
+                        <div className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
+                          <Clock className="w-3 h-3" />
+                          <span>{meeting.time} · {meeting.duration}</span>
                         </div>
 
-                        {/* Location */}
                         {meeting.location && (
-                          <div className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
-                            <MapPin className="w-3.5 h-3.5" />
+                          <div className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
+                            <MapPin className="w-3 h-3" />
                             <span>{meeting.location}</span>
                           </div>
                         )}
 
-                        {/* Participants */}
-                        <div className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
-                          <Users className="w-3.5 h-3.5" />
+                        <div className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
+                          <Users className="w-3 h-3" />
                           <span>
                             {meeting.participants.length > 2
                               ? `${meeting.participants[0]} +${meeting.participants.length - 1}`
@@ -255,86 +245,82 @@ export default function Meetings() {
                           </span>
                         </div>
 
-                        {/* Spacer */}
                         <div className="flex-1" />
 
-                        {/* SMA indicators */}
                         {hasSMA && (
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1">
                             {meeting.hasRecording && (
-                              <div
-                                className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
-                                title="Recording"
-                              >
-                                <Mic className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
+                              <div className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center" title="Recording">
+                                <Mic className="w-2.5 h-2.5 text-neutral-500 dark:text-neutral-400" />
                               </div>
                             )}
                             {meeting.hasTranscript && (
-                              <div
-                                className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
-                                title="Transcript"
-                              >
-                                <FileText className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
+                              <div className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center" title="Transcript">
+                                <FileText className="w-2.5 h-2.5 text-neutral-500 dark:text-neutral-400" />
                               </div>
                             )}
                             {meeting.hasSummary && (
-                              <div
-                                className="w-5 h-5 rounded-full bg-violet-50 dark:bg-violet-950/40 flex items-center justify-center"
-                                title="AI Summary"
-                              ></div>
+                              <div className="w-5 h-5 rounded-full bg-violet-50 dark:bg-violet-950/40 flex items-center justify-center" title="AI Summary" />
                             )}
                             {meeting.hasActionItems && (
-                              <div
-                                className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
-                                title="Action items"
-                              >
-                                <ClipboardList className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
+                              <div className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center" title="Action items">
+                                <ClipboardList className="w-2.5 h-2.5 text-neutral-500 dark:text-neutral-400" />
                               </div>
                             )}
                           </div>
                         )}
                       </div>
 
-                      {/* Expanded details */}
-                      {isExpanded && (
-                        <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {meeting.category && (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-                                {meeting.category}
-                              </span>
-                            )}
-                            {meeting.organizer && (
-                              <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                                by {meeting.organizer}
-                              </span>
-                            )}
-                            <div className="flex-1" />
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 text-xs text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 gap-1"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate(`/meetings/${meeting.id}`);
-                              }}
-                            >
-                              Open
-                              <ArrowUpRight className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <MoreHorizontal className="w-4 h-4 text-neutral-500" />
-                            </Button>
-                          </div>
-                        </div>
-                      )}
+                      {/* Expanded — animated */}
+                      <AnimatePresence>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                            className="overflow-hidden"
+                          >
+                            <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {meeting.category && (
+                                  <span className="px-2 py-0.5 rounded-md text-[10px] font-medium uppercase tracking-wide bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                                    {meeting.category}
+                                  </span>
+                                )}
+                                {meeting.organizer && (
+                                  <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                                    by {meeting.organizer}
+                                  </span>
+                                )}
+                                <div className="flex-1" />
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 text-xs text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 gap-1"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/meetings/${meeting.id}`);
+                                  }}
+                                >
+                                  Open
+                                  <ArrowUpRight className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <MoreHorizontal className="w-4 h-4 text-neutral-400" />
+                                </Button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                  </Card>
+                  </motion.div>
                 );
               })}
             </div>
@@ -344,16 +330,24 @@ export default function Meetings() {
 
       {/* ── Floating CTA ── */}
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40">
-        <Button
-          onClick={() => navigate('/meetings/create')}
-          className="h-12 px-6 rounded-full bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 
-                     text-white dark:text-neutral-900 shadow-xl shadow-neutral-900/20 dark:shadow-neutral-100/10
-                     text-sm font-medium gap-2"
+        <motion.div
+          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <Plus className="w-4 h-4" />
-          New Meeting
-        </Button>
+          <Button
+            onClick={() => navigate('/meetings/create')}
+            className="h-11 px-5 rounded-full bg-neutral-950 hover:bg-neutral-800
+                       dark:bg-neutral-50 dark:hover:bg-neutral-200
+                       text-white dark:text-neutral-900
+                       shadow-lg shadow-neutral-900/20 dark:shadow-neutral-100/10
+                       text-sm font-medium gap-2 transition-all duration-200"
+          >
+            <Plus className="w-4 h-4" />
+            New Meeting
+          </Button>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
