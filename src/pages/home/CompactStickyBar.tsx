@@ -1,7 +1,6 @@
 import { motion, type MotionValue } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { quickActions } from '@/data';
-import { toast } from 'sonner';
 
 type CompactStickyBarProps = {
   barOpacity: MotionValue<number>;
@@ -23,15 +22,6 @@ export function CompactStickyBar({
   monthDay,
 }: CompactStickyBarProps) {
   const navigate = useNavigate();
-
-  const handleQuickAction = (action: (typeof quickActions)[number]) => {
-    if (action.actionType === 'navigate' && action.path) {
-      navigate(action.path);
-    } else if (action.actionType === 'copy') {
-      navigator.clipboard.writeText('https://cal.harsh.dev/book/harsh');
-      toast.success('Booking link copied to clipboard');
-    }
-  };
 
   return (
     <motion.div
@@ -59,7 +49,7 @@ export function CompactStickyBar({
           {quickActions.map((action) => (
             <button
               key={action.label}
-              onClick={() => handleQuickAction(action)}
+              onClick={() => navigate(action.path!)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
             >
               <action.icon className="w-3.5 h-3.5" />

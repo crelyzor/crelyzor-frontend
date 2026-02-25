@@ -1,7 +1,6 @@
 import { motion, type MotionValue } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { quickActions } from '@/data';
-import { toast } from 'sonner';
 
 type BubbleTransform = {
   y: MotionValue<number>;
@@ -38,15 +37,6 @@ export function HeroSection({
   const firstName = userName.split(' ')[0];
   const navigate = useNavigate();
 
-  const handleQuickAction = (action: (typeof quickActions)[number]) => {
-    if (action.actionType === 'navigate' && action.path) {
-      navigate(action.path);
-    } else if (action.actionType === 'copy') {
-      navigator.clipboard.writeText('https://cal.harsh.dev/book/harsh');
-      toast.success('Booking link copied to clipboard');
-    }
-  };
-
   return (
     <div className="text-center">
       {/* Greeting — dissolves with scroll */}
@@ -80,10 +70,10 @@ export function HeroSection({
         {quickActions.map((action, i) => (
           <motion.button
             key={action.label}
-            onClick={() => handleQuickAction(action)}
+            onClick={() => navigate(action.path!)}
             style={{
-              y: bubbleTransforms[i].y,
-              scale: bubbleTransforms[i].scale,
+              y: bubbleTransforms[i]?.y,
+              scale: bubbleTransforms[i]?.scale,
             }}
             className="group flex flex-col items-center gap-3 cursor-pointer origin-bottom"
           >

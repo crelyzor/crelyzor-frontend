@@ -52,9 +52,7 @@ export function CommandPalette() {
         <CommandEmpty>No results found.</CommandEmpty>
 
         <CommandGroup heading="Quick Actions">
-          <CommandItem
-            onSelect={() => runCommand(() => navigate('/meetings'))}
-          >
+          <CommandItem onSelect={() => runCommand(() => navigate('/meetings'))}>
             <Mic className="mr-3 h-4 w-4" />
             <span>Start Recording</span>
           </CommandItem>

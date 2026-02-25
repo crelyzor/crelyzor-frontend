@@ -98,6 +98,9 @@ export const meetingsApi = {
     const form = new FormData();
     form.append('recording', blob, 'recording.webm');
     form.append('duration', String(Math.round(duration)));
-    return apiClient.post<{ id: string }>(`/sma/meetings/${meetingId}/recordings`, form);
+    return apiClient.post<{ id: string }>(
+      `/sma/meetings/${meetingId}/recordings`,
+      form
+    );
   },
 };
