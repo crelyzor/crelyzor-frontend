@@ -9,9 +9,5 @@ export { authApi } from './authService';
 export { userApi } from './userService';
 export type { UpdateProfilePayload } from './userService';
 
-export { integrationsApi, sessionsApi } from './integrationsService';
-export type {
-  CalendarAccessStatus,
-  GoogleScopesStatus,
-  SessionInfo,
-} from './integrationsService';
+export { sessionsApi } from './integrationsService';
+export type { SessionInfo } from './integrationsService';

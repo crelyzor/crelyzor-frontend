@@ -8,10 +8,6 @@ import {
   Sun,
   Monitor,
   LogOut,
-  Plug,
-  Video,
-  Calendar,
-  ExternalLink,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -21,16 +17,11 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
 import { useUpdateProfile } from '@/hooks/queries/useUserQueries';
-import {
-  useCalendarStatus,
-  useConnectCalendar,
-  useSessions,
-} from '@/hooks/queries/useIntegrationQueries';
+import { useSessions } from '@/hooks/queries/useIntegrationQueries';
 
 // ── Settings sections ──
 const SETTINGS_SECTIONS = [
   { id: 'profile', label: 'Profile', icon: User },
-  { id: 'integrations', label: 'Integrations', icon: Plug },
   { id: 'appearance', label: 'Appearance', icon: Palette },
   { id: 'security', label: 'Security', icon: Shield },
 ] as const;
@@ -105,7 +96,6 @@ export default function Settings() {
         {/* ── Content ── */}
         <div className="flex-1 min-w-0">
           {activeSection === 'profile' && <ProfileSection />}
-          {activeSection === 'integrations' && <IntegrationsSection />}
           {activeSection === 'appearance' && (
             <AppearanceSection theme={theme} setTheme={setTheme} />
           )}
@@ -288,139 +278,6 @@ function AppearanceSection({
   );
 }
 
-// ── Integrations ──
-function IntegrationsSection() {
-  const { data: calStatus } = useCalendarStatus();
-  const { connect } = useConnectCalendar();
-
-  const integrations = [
-    {
-      id: 'google-calendar',
-      name: 'Google Calendar',
-      description:
-        'Sync your Google Calendar events and create meetings with Google Meet',
-      icon: Calendar,
-      connected: calStatus?.hasCalendarAccess ?? false,
-      account: calStatus?.connectedAt
-        ? `Connected ${new Date(calStatus.connectedAt).toLocaleDateString()}`
-        : null,
-      onConnect: connect,
-    },
-    {
-      id: 'zoom',
-      name: 'Zoom',
-      description: 'Create Zoom meetings directly from your calendar',
-      icon: Video,
-      connected: false,
-      account: null,
-      onConnect: undefined,
-    },
-    {
-      id: 'google-meet',
-      name: 'Google Meet',
-      description: 'Generate Google Meet links for online meetings',
-      icon: Video,
-      connected: calStatus?.hasCalendarAccess ?? false,
-      account: calStatus?.hasCalendarAccess ? 'Via Google Calendar' : null,
-      onConnect: undefined,
-    },
-  ];
-
-  return (
-    <div className="space-y-6">
-      <SectionHeader
-        title="Integrations"
-        description="Connect third-party services to enhance your workflow"
-      />
-
-      <div className="space-y-3">
-        {integrations.map((integration) => {
-          const Icon = integration.icon;
-          return (
-            <Card
-              key={integration.id}
-              className="border-neutral-200 dark:border-neutral-800"
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
-                        {integration.name}
-                      </h3>
-                      {integration.connected ? (
-                        <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 dark:text-emerald-400 px-2 py-0.5 rounded-full">
-                          Connected
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-medium text-neutral-400 bg-neutral-100 dark:bg-neutral-800 dark:text-neutral-500 px-2 py-0.5 rounded-full">
-                          Not connected
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                      {integration.description}
-                    </p>
-                    {integration.connected && integration.account && (
-                      <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-1">
-                        {integration.account}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    {!integration.connected && integration.onConnect ? (
-                      <Button
-                        size="sm"
-                        onClick={integration.onConnect}
-                        className="text-xs h-8 px-3 bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900"
-                      >
-                        Connect
-                      </Button>
-                    ) : integration.connected ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs h-8 px-3 border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:text-red-500 hover:border-red-200"
-                      >
-                        Disconnect
-                      </Button>
-                    ) : (
-                      <Button size="sm" disabled className="text-xs h-8 px-3">
-                        Coming Soon
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      <Card className="border-dashed border-neutral-200 dark:border-neutral-800">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-neutral-50 dark:bg-neutral-800/50 flex items-center justify-center">
-              <ExternalLink className="w-5 h-5 text-neutral-300 dark:text-neutral-600" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                More integrations coming soon
-              </h3>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
-                Slack, Microsoft Teams, Notion, and more
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
 // ── Security ──
 function SecuritySection() {
   const { data: profile } = useCurrentUser();
@@ -575,4 +432,3 @@ function FieldGroup({
     </div>
   );
 }
-
