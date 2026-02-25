@@ -45,7 +45,10 @@ export default function Cards() {
   const handleToggleActive = (card: CardType) => {
     updateCard.mutate(
       { id: card.id, data: { isActive: !card.isActive } },
-      { onSuccess: () => toast.success(card.isActive ? 'Card paused' : 'Card activated') }
+      {
+        onSuccess: () =>
+          toast.success(card.isActive ? 'Card paused' : 'Card activated'),
+      }
     );
   };
 
@@ -116,7 +119,8 @@ export default function Cards() {
             No cards yet
           </h3>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6 max-w-xs mx-auto">
-            Create your first digital card and start sharing your contact info with a QR code.
+            Create your first digital card and start sharing your contact info
+            with a QR code.
           </p>
           <Button
             onClick={() => navigate('/cards/create')}
@@ -134,14 +138,19 @@ export default function Cards() {
               key={card.id}
               initial={{ opacity: 0, y: 16, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.35, delay: i * 0.07, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{
+                duration: 0.35,
+                delay: i * 0.07,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
               className={`relative group transition-opacity ${!card.isActive ? 'opacity-60' : ''}`}
             >
               {/* Card preview */}
               <div
                 className="cursor-pointer transition-transform duration-200 hover:scale-[1.02] rounded-2xl overflow-hidden"
                 style={{
-                  boxShadow: '0 4px 24px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.06)',
+                  boxShadow:
+                    '0 4px 24px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.06)',
                 }}
                 onClick={() => navigate(`/cards/${card.id}`)}
               >
@@ -162,12 +171,18 @@ export default function Cards() {
               {/* Badges */}
               <div className="absolute top-2.5 left-3 flex items-center gap-1.5 z-[5]">
                 {card.isDefault && (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-sm">
+                  <Badge
+                    variant="secondary"
+                    className="text-[10px] px-1.5 py-0 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-sm"
+                  >
                     Default
                   </Badge>
                 )}
                 {!card.isActive && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-neutral-400 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-sm">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] px-1.5 py-0 text-neutral-400 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-sm"
+                  >
                     Paused
                   </Badge>
                 )}
@@ -176,7 +191,10 @@ export default function Cards() {
               {/* Action buttons — visible on hover */}
               <div className="absolute top-2.5 right-3 flex items-center gap-1 z-[5] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                 <button
-                  onClick={(e) => { e.stopPropagation(); setQrDialogCard(card); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setQrDialogCard(card);
+                  }}
                   className="p-1.5 rounded-lg bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-sm
                              text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800 transition-colors"
                   title="Download QR Code"
@@ -186,7 +204,10 @@ export default function Cards() {
 
                 <div className="relative">
                   <button
-                    onClick={(e) => { e.stopPropagation(); setMenuOpen(menuOpen === card.id ? null : card.id); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMenuOpen(menuOpen === card.id ? null : card.id);
+                    }}
                     className="p-1.5 rounded-lg bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-sm
                                text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800 transition-colors"
                     title="More options"
@@ -196,19 +217,64 @@ export default function Cards() {
 
                   {menuOpen === card.id && (
                     <>
-                      <div className="fixed inset-0 z-10" onClick={(e) => { e.stopPropagation(); setMenuOpen(null); }} />
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMenuOpen(null);
+                        }}
+                      />
                       <div className="absolute right-0 top-9 z-20 w-44 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl py-1 overflow-hidden">
                         {[
-                          { icon: ExternalLink, label: 'Edit card', action: () => { navigate(`/cards/${card.id}`); setMenuOpen(null); } },
-                          { icon: Copy, label: 'Copy link', action: () => { navigator.clipboard.writeText(getCardUrl(card)); toast.success('Link copied'); setMenuOpen(null); } },
-                          { icon: QrCode, label: 'Download QR', action: () => { setQrDialogCard(card); setMenuOpen(null); } },
-                          { icon: Eye, label: 'Analytics', action: () => { navigate(`/cards/${card.id}/analytics`); setMenuOpen(null); } },
-                          { icon: FileSignature, label: 'Email Signature', action: () => { setSigCard(card); setMenuOpen(null); } },
+                          {
+                            icon: ExternalLink,
+                            label: 'Edit card',
+                            action: () => {
+                              navigate(`/cards/${card.id}`);
+                              setMenuOpen(null);
+                            },
+                          },
+                          {
+                            icon: Copy,
+                            label: 'Copy link',
+                            action: () => {
+                              navigator.clipboard.writeText(getCardUrl(card));
+                              toast.success('Link copied');
+                              setMenuOpen(null);
+                            },
+                          },
+                          {
+                            icon: QrCode,
+                            label: 'Download QR',
+                            action: () => {
+                              setQrDialogCard(card);
+                              setMenuOpen(null);
+                            },
+                          },
+                          {
+                            icon: Eye,
+                            label: 'Analytics',
+                            action: () => {
+                              navigate(`/cards/${card.id}/analytics`);
+                              setMenuOpen(null);
+                            },
+                          },
+                          {
+                            icon: FileSignature,
+                            label: 'Email Signature',
+                            action: () => {
+                              setSigCard(card);
+                              setMenuOpen(null);
+                            },
+                          },
                         ].map(({ icon: Icon, label, action }) => (
                           <button
                             key={label}
                             className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                            onClick={(e) => { e.stopPropagation(); action(); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              action();
+                            }}
                           >
                             <Icon className="w-3.5 h-3.5" />
                             {label}
@@ -216,14 +282,31 @@ export default function Cards() {
                         ))}
                         <button
                           className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                          onClick={(e) => { e.stopPropagation(); handleToggleActive(card); setMenuOpen(null); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleActive(card);
+                            setMenuOpen(null);
+                          }}
                         >
-                          {card.isActive ? <><Pause className="w-3.5 h-3.5" />Pause card</> : <><Play className="w-3.5 h-3.5" />Activate card</>}
+                          {card.isActive ? (
+                            <>
+                              <Pause className="w-3.5 h-3.5" />
+                              Pause card
+                            </>
+                          ) : (
+                            <>
+                              <Play className="w-3.5 h-3.5" />
+                              Activate card
+                            </>
+                          )}
                         </button>
                         <div className="h-px bg-neutral-100 dark:bg-neutral-800 my-1" />
                         <button
                           className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                          onClick={(e) => { e.stopPropagation(); handleDelete(card.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(card.id);
+                          }}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           Delete card
@@ -246,7 +329,9 @@ export default function Cards() {
                     <span>{card._count?.contacts ?? 0}</span>
                   </div>
                 </div>
-                <span className="text-[11px] text-neutral-400 dark:text-neutral-600">/{card.slug}</span>
+                <span className="text-[11px] text-neutral-400 dark:text-neutral-600">
+                  /{card.slug}
+                </span>
               </div>
             </motion.div>
           ))}
@@ -259,7 +344,11 @@ export default function Cards() {
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.4, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{
+              duration: 0.4,
+              delay: 0.3,
+              ease: [0.25, 0.1, 0.25, 1],
+            }}
           >
             <Button
               onClick={() => navigate('/cards/create')}

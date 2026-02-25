@@ -32,10 +32,15 @@ type FilterTab = (typeof FILTER_TABS)[number]['id'];
 
 function matchesFilter(status: MeetingStatus, filter: FilterTab): boolean {
   if (filter === 'all') return true;
-  if (filter === 'upcoming') return status === 'ACCEPTED' || status === 'CREATED';
+  if (filter === 'upcoming')
+    return status === 'ACCEPTED' || status === 'CREATED';
   if (filter === 'completed') return status === 'COMPLETED';
-  if (filter === 'pending') return status === 'PENDING_ACCEPTANCE' || status === 'RESCHEDULING_REQUESTED';
-  if (filter === 'cancelled') return status === 'CANCELLED' || status === 'DECLINED';
+  if (filter === 'pending')
+    return (
+      status === 'PENDING_ACCEPTANCE' || status === 'RESCHEDULING_REQUESTED'
+    );
+  if (filter === 'cancelled')
+    return status === 'CANCELLED' || status === 'DECLINED';
   return true;
 }
 
@@ -58,7 +63,12 @@ function groupByDate(meetings: DisplayMeeting[]) {
       let label: string;
       if (date === todayStr) label = 'Today';
       else if (date === tomorrowStr) label = 'Tomorrow';
-      else label = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      else
+        label = new Date(date + 'T00:00:00').toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+        });
       return { label, date, meetings: items };
     });
 }
@@ -83,7 +93,9 @@ export default function Meetings() {
         searchQuery &&
         !m.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
         !m.location?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !m.participants.some((p) => p.toLowerCase().includes(searchQuery.toLowerCase()))
+        !m.participants.some((p) =>
+          p.toLowerCase().includes(searchQuery.toLowerCase())
+        )
       )
         return false;
       return true;
@@ -142,9 +154,10 @@ export default function Meetings() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`relative px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors duration-150
-                ${activeTab === tab.id
-                  ? 'text-white dark:text-neutral-900'
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                ${
+                  activeTab === tab.id
+                    ? 'text-white dark:text-neutral-900'
+                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                 }`}
             >
               {activeTab === tab.id && (
@@ -169,7 +182,9 @@ export default function Meetings() {
             className="text-center py-20"
           >
             <Calendar className="w-9 h-9 mx-auto text-neutral-200 dark:text-neutral-700 mb-3" />
-            <p className="text-sm text-neutral-400 dark:text-neutral-500">No meetings found</p>
+            <p className="text-sm text-neutral-400 dark:text-neutral-500">
+              No meetings found
+            </p>
           </motion.div>
         )}
 
@@ -188,20 +203,31 @@ export default function Meetings() {
               {group.meetings.map((meeting) => {
                 const idx = globalIndex++;
                 const isExpanded = expandedId === meeting.id;
-                const hasSMA = meeting.hasRecording || meeting.hasTranscript || meeting.hasSummary || meeting.hasActionItems;
+                const hasSMA =
+                  meeting.hasRecording ||
+                  meeting.hasTranscript ||
+                  meeting.hasSummary ||
+                  meeting.hasActionItems;
 
                 return (
                   <motion.div
                     key={meeting.id}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.28, delay: idx * 0.04, ease: [0.25, 0.1, 0.25, 1] }}
-                    onClick={() => setExpandedId(isExpanded ? null : meeting.id)}
+                    transition={{
+                      duration: 0.28,
+                      delay: idx * 0.04,
+                      ease: [0.25, 0.1, 0.25, 1],
+                    }}
+                    onClick={() =>
+                      setExpandedId(isExpanded ? null : meeting.id)
+                    }
                     className={`group bg-white dark:bg-neutral-900 rounded-xl border cursor-pointer
                                 transition-all duration-200 overflow-hidden
-                                ${isExpanded
-                                  ? 'border-neutral-300 dark:border-neutral-600 shadow-md'
-                                  : 'border-neutral-100 dark:border-neutral-800 hover:border-neutral-200 dark:hover:border-neutral-700 hover:shadow-sm'
+                                ${
+                                  isExpanded
+                                    ? 'border-neutral-300 dark:border-neutral-600 shadow-md'
+                                    : 'border-neutral-100 dark:border-neutral-800 hover:border-neutral-200 dark:hover:border-neutral-700 hover:shadow-sm'
                                 }`}
                   >
                     <div className="px-4 py-3.5">
@@ -217,7 +243,9 @@ export default function Meetings() {
                             </p>
                           )}
                         </div>
-                        <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(meeting.status)}`}>
+                        <span
+                          className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(meeting.status)}`}
+                        >
                           {getStatusLabel(meeting.status)}
                         </span>
                       </div>
@@ -226,7 +254,9 @@ export default function Meetings() {
                       <div className="flex items-center gap-3 mt-2.5 flex-wrap">
                         <div className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
                           <Clock className="w-3 h-3" />
-                          <span>{meeting.time} · {meeting.duration}</span>
+                          <span>
+                            {meeting.time} · {meeting.duration}
+                          </span>
                         </div>
 
                         {meeting.location && (
@@ -250,20 +280,32 @@ export default function Meetings() {
                         {hasSMA && (
                           <div className="flex items-center gap-1">
                             {meeting.hasRecording && (
-                              <div className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center" title="Recording">
+                              <div
+                                className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
+                                title="Recording"
+                              >
                                 <Mic className="w-2.5 h-2.5 text-neutral-500 dark:text-neutral-400" />
                               </div>
                             )}
                             {meeting.hasTranscript && (
-                              <div className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center" title="Transcript">
+                              <div
+                                className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
+                                title="Transcript"
+                              >
                                 <FileText className="w-2.5 h-2.5 text-neutral-500 dark:text-neutral-400" />
                               </div>
                             )}
                             {meeting.hasSummary && (
-                              <div className="w-5 h-5 rounded-full bg-violet-50 dark:bg-violet-950/40 flex items-center justify-center" title="AI Summary" />
+                              <div
+                                className="w-5 h-5 rounded-full bg-violet-50 dark:bg-violet-950/40 flex items-center justify-center"
+                                title="AI Summary"
+                              />
                             )}
                             {meeting.hasActionItems && (
-                              <div className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center" title="Action items">
+                              <div
+                                className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
+                                title="Action items"
+                              >
                                 <ClipboardList className="w-2.5 h-2.5 text-neutral-500 dark:text-neutral-400" />
                               </div>
                             )}
@@ -278,7 +320,10 @@ export default function Meetings() {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                            transition={{
+                              duration: 0.2,
+                              ease: [0.25, 0.1, 0.25, 1],
+                            }}
                             className="overflow-hidden"
                           >
                             <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
@@ -333,7 +378,11 @@ export default function Meetings() {
         <motion.div
           initial={{ opacity: 0, y: 10, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+          transition={{
+            duration: 0.4,
+            delay: 0.25,
+            ease: [0.25, 0.1, 0.25, 1],
+          }}
         >
           <Button
             onClick={() => navigate('/meetings/create')}

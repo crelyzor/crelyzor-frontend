@@ -1,4 +1,11 @@
-import { Clock, Mic, ClipboardList, FileText, MapPin, ArrowUpRight } from 'lucide-react';
+import {
+  Clock,
+  Mic,
+  ClipboardList,
+  FileText,
+  MapPin,
+  ArrowUpRight,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { getCategoryStyle } from '@/constants';
@@ -32,7 +39,11 @@ export function RecentMeetings({ meetings }: RecentMeetingsProps) {
             key={meeting.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.04, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{
+              duration: 0.3,
+              delay: i * 0.04,
+              ease: [0.25, 0.1, 0.25, 1],
+            }}
             onClick={() => navigate(`/meetings/${meeting.id}`)}
             className="group flex items-center gap-4 px-4 py-3.5
                        bg-white dark:bg-neutral-900
@@ -43,8 +54,12 @@ export function RecentMeetings({ meetings }: RecentMeetingsProps) {
           >
             {/* Time column */}
             <div className="shrink-0 text-right w-16">
-              <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{meeting.time}</p>
-              <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-0.5">{meeting.duration}</p>
+              <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                {meeting.time}
+              </p>
+              <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-0.5">
+                {meeting.duration}
+              </p>
             </div>
 
             {/* Divider */}
@@ -59,7 +74,9 @@ export function RecentMeetings({ meetings }: RecentMeetingsProps) {
                 {meeting.location && (
                   <div className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
                     <MapPin className="w-2.5 h-2.5" />
-                    <span className="truncate max-w-[120px]">{meeting.location}</span>
+                    <span className="truncate max-w-[120px]">
+                      {meeting.location}
+                    </span>
                   </div>
                 )}
                 {/* SMA indicators */}
@@ -79,7 +96,9 @@ export function RecentMeetings({ meetings }: RecentMeetingsProps) {
 
             {/* Category badge */}
             {meeting.category && (
-              <span className={`shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md border ${getCategoryStyle(meeting.category)}`}>
+              <span
+                className={`shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md border ${getCategoryStyle(meeting.category)}`}
+              >
                 {meeting.category}
               </span>
             )}

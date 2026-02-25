@@ -51,9 +51,7 @@ export function HeroSection({
         <p className="text-[11px] tracking-[0.18em] text-neutral-400 dark:text-neutral-500 mb-3 uppercase">
           {greeting}, {firstName}
         </p>
-        <h1
-          className="text-3xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight mb-1"
-        >
+        <h1 className="text-3xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight mb-1">
           It&apos;s {dayName}, {monthDay}
         </h1>
         <motion.div
@@ -79,7 +77,8 @@ export function HeroSection({
             }}
             className="group flex flex-col items-center gap-2.5 cursor-pointer origin-bottom"
           >
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center
                             bg-white dark:bg-neutral-800/80
                             border border-neutral-200/80 dark:border-neutral-700/50
                             text-neutral-500 dark:text-neutral-400
@@ -87,11 +86,14 @@ export function HeroSection({
                             dark:group-hover:bg-neutral-100 dark:group-hover:text-neutral-900 dark:group-hover:border-neutral-100
                             group-hover:-translate-y-1.5 group-hover:shadow-xl group-hover:shadow-neutral-900/15
                             dark:group-hover:shadow-neutral-100/10
-                            transition-all duration-200 ease-out">
+                            transition-all duration-200 ease-out"
+            >
               <action.icon className="w-5 h-5" />
             </div>
-            <span className="text-[11px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400
-                             group-hover:text-neutral-900 dark:group-hover:text-neutral-100 transition-colors">
+            <span
+              className="text-[11px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400
+                             group-hover:text-neutral-900 dark:group-hover:text-neutral-100 transition-colors"
+            >
               {action.label}
             </span>
           </motion.button>
