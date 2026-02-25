@@ -48,63 +48,63 @@ export default function Settings() {
 
   return (
     <PageMotion>
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
-          Settings
-        </h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-          Manage your account and preferences
-        </p>
-      </div>
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
+            Settings
+          </h1>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+            Manage your account and preferences
+          </p>
+        </div>
 
-      <div className="flex gap-6">
-        {/* ── Sidebar ── */}
-        <nav className="w-48 shrink-0">
-          <div className="space-y-1">
-            {SETTINGS_SECTIONS.map((section) => {
-              const Icon = section.icon;
-              const isActive = activeSection === section.id;
-              return (
-                <button
-                  key={section.id}
-                  onClick={() => setActiveSection(section.id)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+        <div className="flex gap-6">
+          {/* ── Sidebar ── */}
+          <nav className="w-48 shrink-0">
+            <div className="space-y-1">
+              {SETTINGS_SECTIONS.map((section) => {
+                const Icon = section.icon;
+                const isActive = activeSection === section.id;
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => setActiveSection(section.id)}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors
                     ${
                       isActive
                         ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
                         : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
                     }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {section.label}
-                </button>
-              );
-            })}
-          </div>
+                  >
+                    <Icon className="w-4 h-4" />
+                    {section.label}
+                  </button>
+                );
+              })}
+            </div>
 
-          {/* Sign out */}
-          <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
-          </div>
-        </nav>
+            {/* Sign out */}
+            <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </button>
+            </div>
+          </nav>
 
-        {/* ── Content ── */}
-        <div className="flex-1 min-w-0">
-          {activeSection === 'profile' && <ProfileSection />}
-          {activeSection === 'appearance' && (
-            <AppearanceSection theme={theme} setTheme={setTheme} />
-          )}
-          {activeSection === 'security' && <SecuritySection />}
+          {/* ── Content ── */}
+          <div className="flex-1 min-w-0">
+            {activeSection === 'profile' && <ProfileSection />}
+            {activeSection === 'appearance' && (
+              <AppearanceSection theme={theme} setTheme={setTheme} />
+            )}
+            {activeSection === 'security' && <SecuritySection />}
+          </div>
         </div>
       </div>
-    </div>
     </PageMotion>
   );
 }

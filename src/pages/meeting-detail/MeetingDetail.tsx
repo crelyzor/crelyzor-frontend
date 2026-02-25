@@ -137,212 +137,212 @@ export default function MeetingDetail() {
 
   return (
     <PageMotion>
-    <div className="max-w-3xl mx-auto">
-      {/* ── Back ── */}
-      <button
-        onClick={() => navigate('/meetings')}
-        className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 mb-4 transition-colors"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        Back to Meetings
-      </button>
+      <div className="max-w-3xl mx-auto">
+        {/* ── Back ── */}
+        <button
+          onClick={() => navigate('/meetings')}
+          className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 mb-4 transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back to Meetings
+        </button>
 
-      {/* ── Header Card ── */}
-      <Card className="border-neutral-200 dark:border-neutral-800 mb-4">
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${statusClasses}`}
-                >
-                  {statusText}
-                </span>
-                {meeting.category && (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
-                    {meeting.category}
+        {/* ── Header Card ── */}
+        <Card className="border-neutral-200 dark:border-neutral-800 mb-4">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${statusClasses}`}
+                  >
+                    {statusText}
                   </span>
+                  {meeting.category && (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
+                      {meeting.category}
+                    </span>
+                  )}
+                </div>
+                <h1 className="text-xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
+                  {meeting.title}
+                </h1>
+                {meeting.description && (
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                    {meeting.description}
+                  </p>
                 )}
               </div>
-              <h1 className="text-xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
-                {meeting.title}
-              </h1>
-              {meeting.description && (
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                  {meeting.description}
-                </p>
-              )}
+              <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
+                <MoreHorizontal className="w-4 h-4 text-neutral-500" />
+              </Button>
             </div>
-            <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
-              <MoreHorizontal className="w-4 h-4 text-neutral-500" />
-            </Button>
-          </div>
 
-          {/* Meta grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                <Calendar className="w-4 h-4 text-neutral-500" />
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                  Date
-                </p>
-                <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
-                  {new Date(meeting._raw.startTime).toLocaleDateString(
-                    'en-US',
-                    {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    }
-                  )}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                <Clock className="w-4 h-4 text-neutral-500" />
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                  Time
-                </p>
-                <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
-                  {meeting.time} &middot; {meeting.duration}
-                </p>
-              </div>
-            </div>
-            {meeting.location && (
+            {/* Meta grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                  <MapPin className="w-4 h-4 text-neutral-500" />
+                  <Calendar className="w-4 h-4 text-neutral-500" />
                 </div>
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                    Location
+                    Date
                   </p>
                   <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
-                    {meeting.location}
+                    {new Date(meeting._raw.startTime).toLocaleDateString(
+                      'en-US',
+                      {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      }
+                    )}
                   </p>
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* Participants */}
-          <div className="mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Users className="w-3.5 h-3.5 text-neutral-400" />
-              <span className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                Participants ({meeting.participants.length})
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {meeting.organizer && (
-                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900">
-                  {meeting.organizer} (Organizer)
-                </span>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-neutral-500" />
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                    Time
+                  </p>
+                  <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
+                    {meeting.time} &middot; {meeting.duration}
+                  </p>
+                </div>
+              </div>
+              {meeting.location && (
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                    <MapPin className="w-4 h-4 text-neutral-500" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                      Location
+                    </p>
+                    <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
+                      {meeting.location}
+                    </p>
+                  </div>
+                </div>
               )}
-              {meeting.participants.map((p) => (
-                <span
-                  key={p}
-                  className="px-2.5 py-1 rounded-full text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700"
-                >
-                  {p}
-                </span>
-              ))}
             </div>
-          </div>
 
-          {/* Quick Actions */}
-          <div className="flex gap-2 mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800">
-            {meeting.status === 'ACCEPTED' && (
+            {/* Participants */}
+            <div className="mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Users className="w-3.5 h-3.5 text-neutral-400" />
+                <span className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                  Participants ({meeting.participants.length})
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {meeting.organizer && (
+                  <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900">
+                    {meeting.organizer} (Organizer)
+                  </span>
+                )}
+                {meeting.participants.map((p) => (
+                  <span
+                    key={p}
+                    className="px-2.5 py-1 rounded-full text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700"
+                  >
+                    {p}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="flex gap-2 mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800">
+              {meeting.status === 'ACCEPTED' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Mark Completed
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
                 className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
               >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Mark Completed
+                <RefreshCcw className="w-3.5 h-3.5" />
+                Reschedule
               </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
-            >
-              <RefreshCcw className="w-3.5 h-3.5" />
-              Reschedule
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              Edit
-            </Button>
-            <div className="flex-1" />
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs gap-1.5 h-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
-            >
-              <XCircle className="w-3.5 h-3.5" />
-              Cancel
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                Edit
+              </Button>
+              <div className="flex-1" />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs gap-1.5 h-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+              >
+                <XCircle className="w-3.5 h-3.5" />
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* ── SMA Section ── */}
-      <Card className="border-neutral-200 dark:border-neutral-800">
-        <CardContent className="p-0">
-          {/* Tab bar */}
-          <div className="flex border-b border-neutral-200 dark:border-neutral-800 overflow-x-auto">
-            {SMA_TABS.map((tab) => {
-              const isActive = activeTab === tab.id;
-              const Icon = 'icon' in tab ? tab.icon : null;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-1.5 px-4 py-3 text-xs font-medium whitespace-nowrap border-b-2 transition-colors
+        {/* ── SMA Section ── */}
+        <Card className="border-neutral-200 dark:border-neutral-800">
+          <CardContent className="p-0">
+            {/* Tab bar */}
+            <div className="flex border-b border-neutral-200 dark:border-neutral-800 overflow-x-auto">
+              {SMA_TABS.map((tab) => {
+                const isActive = activeTab === tab.id;
+                const Icon = 'icon' in tab ? tab.icon : null;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-1.5 px-4 py-3 text-xs font-medium whitespace-nowrap border-b-2 transition-colors
                     ${
                       isActive
                         ? 'border-neutral-900 dark:border-neutral-100 text-neutral-900 dark:text-neutral-100'
                         : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
                     }`}
-                >
-                  {Icon && <Icon className="w-3.5 h-3.5" />}
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
+                  >
+                    {Icon && <Icon className="w-3.5 h-3.5" />}
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
 
-          {/* Tab content */}
-          <div className="p-6">
-            {activeTab === 'overview' && (
-              <OverviewTab meeting={meeting} hasSMA={hasSMA} />
-            )}
-            {activeTab === 'recording' && (
-              <RecordingTab hasRecording={meeting.hasRecording} />
-            )}
-            {activeTab === 'transcript' && (
-              <TranscriptTab hasTranscript={meeting.hasTranscript} />
-            )}
-            {activeTab === 'summary' && (
-              <SummaryTab hasSummary={meeting.hasSummary} />
-            )}
-            {activeTab === 'actions' && (
-              <ActionsTab hasActionItems={meeting.hasActionItems} />
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+            {/* Tab content */}
+            <div className="p-6">
+              {activeTab === 'overview' && (
+                <OverviewTab meeting={meeting} hasSMA={hasSMA} />
+              )}
+              {activeTab === 'recording' && (
+                <RecordingTab hasRecording={meeting.hasRecording} />
+              )}
+              {activeTab === 'transcript' && (
+                <TranscriptTab hasTranscript={meeting.hasTranscript} />
+              )}
+              {activeTab === 'summary' && (
+                <SummaryTab hasSummary={meeting.hasSummary} />
+              )}
+              {activeTab === 'actions' && (
+                <ActionsTab hasActionItems={meeting.hasActionItems} />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </PageMotion>
   );
 }
