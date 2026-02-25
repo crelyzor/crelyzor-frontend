@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageMotion } from '@/components/PageMotion';
 import {
   User,
   Palette,
@@ -46,6 +47,7 @@ export default function Settings() {
   };
 
   return (
+    <PageMotion>
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
@@ -103,6 +105,7 @@ export default function Settings() {
         </div>
       </div>
     </div>
+    </PageMotion>
   );
 }
 

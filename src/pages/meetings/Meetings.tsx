@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PageMotion } from '@/components/PageMotion';
 import {
   Search,
   Plus,
@@ -107,19 +108,12 @@ export default function Meetings() {
   let globalIndex = 0;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-      className="max-w-3xl mx-auto"
-    >
+    <PageMotion>
+    <div className="max-w-3xl mx-auto">
       {/* ── Header ── */}
       <div className="flex items-end justify-between mb-8">
         <div>
-          <h1
-            className="font-display text-[2rem] text-neutral-950 dark:text-neutral-50"
-            style={{ fontStyle: 'italic' }}
-          >
+          <h1 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
             Meetings
           </h1>
           <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">
@@ -397,6 +391,7 @@ export default function Meetings() {
           </Button>
         </motion.div>
       </div>
-    </motion.div>
+    </div>
+    </PageMotion>
   );
 }

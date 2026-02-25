@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { PageMotion } from '@/components/PageMotion';
 import {
   ArrowLeft,
   Eye,
@@ -65,6 +66,7 @@ export default function CardAnalytics() {
   );
 
   return (
+    <PageMotion>
     <div className="max-w-4xl mx-auto pb-12">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
@@ -254,5 +256,6 @@ export default function CardAnalytics() {
         )}
       </div>
     </div>
+    </PageMotion>
   );
 }

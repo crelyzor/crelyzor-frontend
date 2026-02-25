@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { PageMotion } from '@/components/PageMotion';
 import {
   ArrowLeft,
   Calendar,
@@ -135,6 +136,7 @@ export default function MeetingDetail() {
   );
 
   return (
+    <PageMotion>
     <div className="max-w-3xl mx-auto">
       {/* ── Back ── */}
       <button
@@ -341,6 +343,7 @@ export default function MeetingDetail() {
         </CardContent>
       </Card>
     </div>
+    </PageMotion>
   );
 }
 

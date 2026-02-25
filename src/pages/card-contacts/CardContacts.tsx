@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PageMotion } from '@/components/PageMotion';
 import {
   ArrowLeft,
   Search,
@@ -160,6 +161,7 @@ export default function CardContacts() {
   };
 
   return (
+    <PageMotion>
     <div className="max-w-3xl mx-auto pb-24">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
@@ -509,5 +511,6 @@ export default function CardContacts() {
         </div>
       )}
     </div>
+    </PageMotion>
   );
 }

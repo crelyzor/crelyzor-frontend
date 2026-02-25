@@ -45,7 +45,11 @@ export function CommandPalette() {
   };
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
+    <CommandDialog
+      open={open}
+      onOpenChange={setOpen}
+      className="cmd-spring shadow-2xl shadow-neutral-900/20 dark:shadow-neutral-950/60 border-neutral-200/80 dark:border-neutral-700/60 rounded-2xl overflow-hidden"
+    >
       <CommandInput placeholder="Search..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>

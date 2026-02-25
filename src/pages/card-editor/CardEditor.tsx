@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { PageMotion } from '@/components/PageMotion';
 import {
   ArrowLeft,
   Plus,
@@ -219,6 +220,7 @@ export default function CardEditor() {
   }
 
   return (
+    <PageMotion>
     <div className="max-w-6xl mx-auto pb-24">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
@@ -786,5 +788,6 @@ export default function CardEditor() {
         </div>
       </div>
     </div>
+    </PageMotion>
   );
 }
