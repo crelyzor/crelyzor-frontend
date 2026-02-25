@@ -48,11 +48,7 @@ export function CommandPalette() {
   };
 
   return (
-    <CommandDialog
-      open={open}
-      onOpenChange={setOpen}
-      className="cmd-spring"
-    >
+    <CommandDialog open={open} onOpenChange={setOpen} className="cmd-spring">
       <CommandInput placeholder="Search anything..." />
       <CommandList className="max-h-[360px] py-2">
         <CommandEmpty>
