@@ -51,7 +51,7 @@ export function CommandPalette() {
     <CommandDialog
       open={open}
       onOpenChange={setOpen}
-      className="cmd-spring w-full max-w-[520px] rounded-2xl shadow-2xl shadow-neutral-900/25 dark:shadow-neutral-950/70 ring-1 ring-neutral-200/80 dark:ring-neutral-700/60"
+      className="cmd-spring"
     >
       <CommandInput placeholder="Search anything..." />
       <CommandList className="max-h-[360px] py-2">
@@ -62,7 +62,9 @@ export function CommandPalette() {
         </CommandEmpty>
 
         <CommandGroup heading="Quick Actions">
-          <CommandItem onSelect={() => runCommand(() => navigate('/meetings/create'))}>
+          <CommandItem
+            onSelect={() => runCommand(() => navigate('/meetings/create'))}
+          >
             <Mic className="text-neutral-500 dark:text-neutral-400" />
             <span>New Meeting</span>
             <CommandShortcut>
@@ -114,15 +116,21 @@ export function CommandPalette() {
       {/* Footer hint */}
       <div className="flex items-center gap-4 px-4 py-2.5 border-t border-neutral-100 dark:border-neutral-800">
         <span className="flex items-center gap-1.5 text-[10px] text-neutral-400 dark:text-neutral-500">
-          <kbd className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 font-mono text-[9px]">↑↓</kbd>
+          <kbd className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 font-mono text-[9px]">
+            ↑↓
+          </kbd>
           navigate
         </span>
         <span className="flex items-center gap-1.5 text-[10px] text-neutral-400 dark:text-neutral-500">
-          <kbd className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 font-mono text-[9px]">↵</kbd>
+          <kbd className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 font-mono text-[9px]">
+            ↵
+          </kbd>
           select
         </span>
         <span className="flex items-center gap-1.5 text-[10px] text-neutral-400 dark:text-neutral-500">
-          <kbd className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 font-mono text-[9px]">esc</kbd>
+          <kbd className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 font-mono text-[9px]">
+            esc
+          </kbd>
           close
         </span>
       </div>
