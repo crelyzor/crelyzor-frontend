@@ -1,19 +1,12 @@
 import { useMemo } from 'react';
-import { useScroll, useTransform } from 'motion/react';
-import { motion } from 'motion/react';
+import { useScroll, useTransform, motion } from 'motion/react';
 import { useGreeting } from '@/hooks';
 import { useMeetings } from '@/hooks/queries/useMeetingQueries';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { CompactStickyBar } from './CompactStickyBar';
 import { HeroSection } from './HeroSection';
-import { NextMeetingCard } from './NextMeetingCard';
-import { ScheduleCard } from './ScheduleCard';
-import { StatsCard } from './StatsCard';
-import { MeetingSummaryCard } from './MeetingSummaryCard';
-import { ActionItemsCard } from './ActionItemsCard';
 import { RecentMeetings } from './RecentMeetings';
-import { BookingLinkCard } from './BookingLinkCard';
 import { DefaultCardWidget } from './DefaultCardWidget';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
 
@@ -22,40 +15,12 @@ export default function Home() {
   const { greeting, dayName, monthDay, tip } = useGreeting();
   const { data: currentUser } = useCurrentUser();
 
-  // Fetch meetings from API
-  const today = new Date().toISOString().split('T')[0];
-  const { data: upcomingData } = useMeetings({
-    status: 'ACCEPTED',
-    startDate: today,
-    limit: 10,
-  });
-  const { data: recentData } = useMeetings({ status: 'COMPLETED', limit: 5 });
+  const { data: recentData } = useMeetings({ limit: 8 });
 
-  const upcomingMeetings = useMemo(
-    () => (upcomingData?.meetings ?? []).map(toDisplayMeeting),
-    [upcomingData]
-  );
   const recentMeetings = useMemo(
     () => (recentData?.meetings ?? []).map(toDisplayMeeting),
     [recentData]
   );
-  // Collect action items from all upcoming meetings
-  const actionItems = useMemo(
-    () =>
-      (upcomingData?.meetings ?? []).flatMap((m) =>
-        (m.actionItems ?? []).map((ai) => ({
-          ...ai,
-          meetingTitle: m.title,
-          isCompleted: false,
-          dueDate: ai.suggestedStartDate
-            ? new Date(ai.suggestedStartDate).toLocaleDateString()
-            : undefined,
-        }))
-      ),
-    [upcomingData]
-  );
-
-  // ── Scroll-linked transforms (all continuous, no state) ──
 
   // Greeting dissolves
   const greetingOpacity = useTransform(scrollY, [0, 80], [1, 0]);
@@ -91,7 +56,6 @@ export default function Home() {
 
   return (
     <div>
-      {/* ===== Compact Sticky Bar (always mounted, fades in via scroll) ===== */}
       <CompactStickyBar
         barOpacity={barOpacity}
         barY={barY}
@@ -102,7 +66,6 @@ export default function Home() {
         monthDay={monthDay}
       />
 
-      {/* ===== Hero Section ===== */}
       <HeroSection
         greeting={greeting}
         dayName={dayName}
@@ -117,47 +80,23 @@ export default function Home() {
         bubbleTransforms={bubbleTransforms}
       />
 
-      {/* ===== Main Grid ===== */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
         className="grid grid-cols-1 lg:grid-cols-3 gap-8"
       >
-        {/* ── Left Column (2/3 width) ── */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Next Meeting + Stats Row */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-            <div className="md:col-span-3">
-              <NextMeetingCard meeting={upcomingMeetings[0]} />
-            </div>
-            <StatsCard />
-          </div>
-
-          {/* Today's Schedule */}
-          <ScheduleCard meetings={upcomingMeetings} />
-
-          {/* Meeting Summary */}
-          <MeetingSummaryCard />
+        {/* Left — recent meetings (2/3) */}
+        <div className="lg:col-span-2">
+          <RecentMeetings meetings={recentMeetings} />
         </div>
 
-        {/* ── Right Column (1/3 width) ── */}
-        <div className="lg:col-span-1 space-y-6">
-          {/* Action Items */}
-          <ActionItemsCard items={actionItems} />
-
-          {/* Recent Meetings */}
-          <RecentMeetings meetings={recentMeetings} />
-
-          {/* Default Card */}
+        {/* Right — default card widget (1/3) */}
+        <div className="lg:col-span-1">
           <DefaultCardWidget />
-
-          {/* Booking Link */}
-          <BookingLinkCard />
         </div>
       </motion.div>
 
-      {/* Floating Action Button for New Meeting */}
       <StartMeetingFab />
     </div>
   );

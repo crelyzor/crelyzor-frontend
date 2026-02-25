@@ -1,16 +1,9 @@
 import {
   Home,
   CalendarDays,
-  Clock,
-  Video,
-  Link2,
   Settings,
-  Users,
-  BarChart3,
   Bell,
-  Globe,
   CreditCard,
-  Calendar,
 } from 'lucide-react';
 import type { ToolbarItem, ToolbarItemGroup } from '@/types';
 
@@ -19,7 +12,7 @@ export const TOOLBAR_STORAGE_KEY = 'toolbar-pinned-items';
 export const DEFAULT_PINNED_IDS = [
   'home',
   'meetings',
-  'share-link',
+  'cards',
   'notifications',
   'settings',
 ] as const;
@@ -45,24 +38,6 @@ export const TOOLBAR_ITEMS: ToolbarItem[] = [
     description: 'All your meetings',
   },
   {
-    id: 'availability',
-    label: 'Availability',
-    icon: Clock,
-    action: 'navigate',
-    path: '/availability',
-    group: 'navigation',
-    description: 'Set your schedule',
-  },
-  {
-    id: 'event-types',
-    label: 'Event Types',
-    icon: Calendar,
-    action: 'navigate',
-    path: '/event-types',
-    group: 'navigation',
-    description: 'Manage booking event types',
-  },
-  {
     id: 'cards',
     label: 'Cards',
     icon: CreditCard,
@@ -72,44 +47,7 @@ export const TOOLBAR_ITEMS: ToolbarItem[] = [
     description: 'Digital business cards',
   },
 
-  // Quick Actions
-  {
-    id: 'instant-meeting',
-    label: 'Instant Meeting',
-    icon: Video,
-    action: 'navigate',
-    path: '/meetings/create',
-    group: 'actions',
-    description: 'Start a meeting now',
-  },
-  {
-    id: 'share-link',
-    label: 'Booking Link',
-    icon: Link2,
-    action: 'action',
-    group: 'actions',
-    description: 'Share your booking page',
-  },
-  {
-    id: 'invite-people',
-    label: 'Invite People',
-    icon: Users,
-    action: 'navigate',
-    path: '/settings',
-    group: 'actions',
-    description: 'Invite team members',
-  },
-
   // Tools
-  {
-    id: 'analytics',
-    label: 'Analytics',
-    icon: BarChart3,
-    action: 'navigate',
-    path: '/analytics',
-    group: 'tools',
-    description: 'Meeting insights',
-  },
   {
     id: 'notifications',
     label: 'Notifications',
@@ -118,15 +56,6 @@ export const TOOLBAR_ITEMS: ToolbarItem[] = [
     path: '/notifications',
     group: 'tools',
     description: 'Notification center',
-  },
-  {
-    id: 'integrations',
-    label: 'Integrations',
-    icon: Globe,
-    action: 'navigate',
-    path: '/settings',
-    group: 'tools',
-    description: 'Connected apps',
   },
 
   // Settings
@@ -150,7 +79,6 @@ export const TOOLBAR_GROUP_LABELS: Record<ToolbarItemGroup, string> = {
 
 export const TOOLBAR_GROUP_ORDER: ToolbarItemGroup[] = [
   'navigation',
-  'actions',
   'tools',
   'settings',
 ];

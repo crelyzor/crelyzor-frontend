@@ -25,21 +25,6 @@ export type { CurrentUser, ProfileResponse } from './organization';
 
 export type { ToolbarItem, ToolbarItemGroup } from './toolbar';
 
-export type {
-  DaySchedule,
-  WeeklySchedule,
-  RecurringAvailability,
-  CustomSlot,
-  BlockedTime,
-  AvailableSlot,
-  AvailabilitySchedule,
-  EventType,
-  ScheduleOverride,
-  DayOfWeek,
-} from './availability';
-
-export { DAY_MAP, DAY_MAP_REVERSE } from './availability';
-
 export type { Theme, ResolvedTheme } from './theme';
 
 export type { QuickAction } from './quickAction';

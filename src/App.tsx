@@ -15,17 +15,11 @@ import { routes } from '@/routes/routes';
 const {
   Home,
   Meetings,
-  CreateMeeting,
   MeetingDetail,
-  Availability,
-  EventTypes,
-  EventTypeForm,
-  Analytics,
   Settings,
   Notifications,
   SignIn,
   AuthCallback,
-  PublicBooking,
   Setup,
   Cards,
   CardEditor,
@@ -39,7 +33,6 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <BrowserRouter>
-            {/* Global Command Palette */}
             <CommandPalette />
 
             <Suspense fallback={<PageLoader />}>
@@ -47,7 +40,6 @@ function App() {
                 <Route path="/signin" element={<SignIn />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
 
-                {/* Onboarding - Username Setup (No Layout) */}
                 <Route
                   path="/setup"
                   element={
@@ -57,7 +49,6 @@ function App() {
                   }
                 />
 
-                {/* Main Routes with Layout + Auth */}
                 <Route
                   path="/"
                   element={
@@ -79,71 +70,11 @@ function App() {
                   }
                 />
                 <Route
-                  path="/meetings/create"
-                  element={
-                    <AuthGuard>
-                      <Layout>
-                        <CreateMeeting />
-                      </Layout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
                   path="/meetings/:id"
                   element={
                     <AuthGuard>
                       <Layout>
                         <MeetingDetail />
-                      </Layout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/availability"
-                  element={
-                    <AuthGuard>
-                      <Layout>
-                        <Availability />
-                      </Layout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/event-types"
-                  element={
-                    <AuthGuard>
-                      <Layout>
-                        <EventTypes />
-                      </Layout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/event-types/create"
-                  element={
-                    <AuthGuard>
-                      <Layout>
-                        <EventTypeForm />
-                      </Layout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/event-types/:id"
-                  element={
-                    <AuthGuard>
-                      <Layout>
-                        <EventTypeForm />
-                      </Layout>
-                    </AuthGuard>
-                  }
-                />
-                <Route
-                  path="/analytics"
-                  element={
-                    <AuthGuard>
-                      <Layout>
-                        <Analytics />
                       </Layout>
                     </AuthGuard>
                   }
@@ -219,12 +150,6 @@ function App() {
                       </Layout>
                     </AuthGuard>
                   }
-                />
-
-                {/* Public Routes (No Layout) */}
-                <Route
-                  path="/book/:username/:eventSlug"
-                  element={<PublicBooking />}
                 />
               </Routes>
             </Suspense>

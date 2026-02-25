@@ -4,24 +4,6 @@ export type {
   CreateMeetingPayload,
 } from './meetingsService';
 
-export { availabilityApi } from './availabilityService';
-export type { CreateRecurringPayload } from './availabilityService';
-
-export { scheduleApi } from './scheduleService';
-export type {
-  CreateSchedulePayload,
-  UpdateSchedulePayload,
-} from './scheduleService';
-
-export { eventTypeApi } from './eventTypeService';
-export type {
-  CreateEventTypePayload,
-  UpdateEventTypePayload,
-} from './eventTypeService';
-
-export { publicBookingApi } from './publicBookingService';
-export type { CreatePublicBookingPayload } from './publicBookingService';
-
 export { authApi } from './authService';
 
 export { userApi } from './userService';

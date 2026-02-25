@@ -92,4 +92,12 @@ export const meetingsApi = {
   /** POST /meetings/public-booking/disable */
   disablePublicBooking: () =>
     apiClient.post<void>('/meetings/public-booking/disable'),
+
+  /** POST /sma/meetings/:id/recordings — upload audio blob */
+  uploadRecording: (meetingId: string, blob: Blob, duration: number) => {
+    const form = new FormData();
+    form.append('recording', blob, 'recording.webm');
+    form.append('duration', String(Math.round(duration)));
+    return apiClient.post<{ id: string }>(`/sma/meetings/${meetingId}/recordings`, form);
+  },
 };

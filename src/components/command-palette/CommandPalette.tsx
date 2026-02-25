@@ -11,17 +11,14 @@ import {
 } from '@/components/ui/command';
 import {
   CalendarDays,
-  Clock,
-  Plus,
   Settings,
   LogOut,
   Bell,
-  Link2,
   Home,
   CreditCard,
+  Mic,
 } from 'lucide-react';
 import { useUIStore } from '@/stores';
-import { toast } from 'sonner';
 
 export function CommandPalette() {
   const open = useUIStore((s) => s.commandPaletteOpen);
@@ -56,23 +53,10 @@ export function CommandPalette() {
 
         <CommandGroup heading="Quick Actions">
           <CommandItem
-            onSelect={() => runCommand(() => navigate('/meetings/create'))}
+            onSelect={() => runCommand(() => navigate('/meetings'))}
           >
-            <Plus className="mr-3 h-4 w-4" />
-            <span>Create Meeting</span>
-          </CommandItem>
-          <CommandItem
-            onSelect={() =>
-              runCommand(() => {
-                navigator.clipboard.writeText(
-                  'https://cal.harsh.dev/book/harsh'
-                );
-                toast.success('Booking link copied to clipboard');
-              })
-            }
-          >
-            <Link2 className="mr-3 h-4 w-4" />
-            <span>Share Booking Link</span>
+            <Mic className="mr-3 h-4 w-4" />
+            <span>Start Recording</span>
           </CommandItem>
           <CommandItem
             onSelect={() => runCommand(() => navigate('/cards/create'))}
@@ -92,12 +76,6 @@ export function CommandPalette() {
           <CommandItem onSelect={() => runCommand(() => navigate('/meetings'))}>
             <CalendarDays className="mr-3 h-4 w-4" />
             <span>Meetings</span>
-          </CommandItem>
-          <CommandItem
-            onSelect={() => runCommand(() => navigate('/availability'))}
-          >
-            <Clock className="mr-3 h-4 w-4" />
-            <span>Availability</span>
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate('/cards'))}>
             <CreditCard className="mr-3 h-4 w-4" />
