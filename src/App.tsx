@@ -17,7 +17,6 @@ const {
   Meetings,
   MeetingDetail,
   Settings,
-  Notifications,
   SignIn,
   AuthCallback,
   Setup,
@@ -89,17 +88,6 @@ function App() {
                     </AuthGuard>
                   }
                 />
-                <Route
-                  path="/notifications"
-                  element={
-                    <AuthGuard>
-                      <Layout>
-                        <Notifications />
-                      </Layout>
-                    </AuthGuard>
-                  }
-                />
-
                 {/* Card Routes */}
                 <Route
                   path="/cards"

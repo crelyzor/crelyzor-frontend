@@ -1,4 +1,4 @@
-import { Home, CalendarDays, Settings, Bell, CreditCard } from 'lucide-react';
+import { Home, CalendarDays, Settings, CreditCard } from 'lucide-react';
 import type { ToolbarItem, ToolbarItemGroup } from '@/types';
 
 export const TOOLBAR_STORAGE_KEY = 'toolbar-pinned-items';
@@ -7,7 +7,6 @@ export const DEFAULT_PINNED_IDS = [
   'home',
   'meetings',
   'cards',
-  'notifications',
   'settings',
 ] as const;
 
@@ -41,17 +40,6 @@ export const TOOLBAR_ITEMS: ToolbarItem[] = [
     description: 'Digital business cards',
   },
 
-  // Tools
-  {
-    id: 'notifications',
-    label: 'Notifications',
-    icon: Bell,
-    action: 'navigate',
-    path: '/notifications',
-    group: 'tools',
-    description: 'Notification center',
-  },
-
   // Settings
   {
     id: 'settings',
@@ -73,6 +61,5 @@ export const TOOLBAR_GROUP_LABELS: Record<ToolbarItemGroup, string> = {
 
 export const TOOLBAR_GROUP_ORDER: ToolbarItemGroup[] = [
   'navigation',
-  'tools',
   'settings',
 ];

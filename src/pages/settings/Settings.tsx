@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   User,
-  Bell,
   Palette,
   Shield,
   Globe,
@@ -31,7 +30,6 @@ import {
 // ── Settings sections ──
 const SETTINGS_SECTIONS = [
   { id: 'profile', label: 'Profile', icon: User },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'integrations', label: 'Integrations', icon: Plug },
   { id: 'appearance', label: 'Appearance', icon: Palette },
   { id: 'security', label: 'Security', icon: Shield },
@@ -107,7 +105,6 @@ export default function Settings() {
         {/* ── Content ── */}
         <div className="flex-1 min-w-0">
           {activeSection === 'profile' && <ProfileSection />}
-          {activeSection === 'notifications' && <NotificationsSection />}
           {activeSection === 'integrations' && <IntegrationsSection />}
           {activeSection === 'appearance' && (
             <AppearanceSection theme={theme} setTheme={setTheme} />
@@ -226,76 +223,6 @@ function ProfileSection() {
               {updateProfile.isPending ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// ── Notifications ──
-function NotificationsSection() {
-  return (
-    <div className="space-y-6">
-      <SectionHeader
-        title="Notifications"
-        description="Control how and when you receive notifications"
-      />
-
-      <Card className="border-neutral-200 dark:border-neutral-800">
-        <CardContent className="p-6 space-y-4">
-          {[
-            {
-              label: 'Meeting scheduled',
-              description: 'When a new meeting is scheduled with you',
-              email: true,
-              inApp: true,
-            },
-            {
-              label: 'Meeting cancelled',
-              description: "When a meeting you're part of is cancelled",
-              email: true,
-              inApp: true,
-            },
-            {
-              label: 'Meeting reminders',
-              description: 'Reminder before upcoming meetings',
-              email: false,
-              inApp: true,
-            },
-            {
-              label: 'Transcription complete',
-              description: 'When a recording transcription finishes',
-              email: false,
-              inApp: true,
-            },
-            {
-              label: 'Action items generated',
-              description: 'When AI generates action items from a meeting',
-              email: true,
-              inApp: true,
-            },
-            {
-              label: 'New team member',
-              description: 'When someone joins your organization',
-              email: true,
-              inApp: true,
-            },
-          ].map((item, i) => (
-            <div key={i} className="flex items-center gap-4 py-2">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                  {item.label}
-                </p>
-                <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                  {item.description}
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <ToggleChip label="Email" active={item.email} />
-                <ToggleChip label="In-app" active={item.inApp} />
-              </div>
-            </div>
-          ))}
         </CardContent>
       </Card>
     </div>
@@ -649,17 +576,3 @@ function FieldGroup({
   );
 }
 
-function ToggleChip({ label, active }: { label: string; active: boolean }) {
-  return (
-    <button
-      className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors
-        ${
-          active
-            ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
-            : 'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500'
-        }`}
-    >
-      {label}
-    </button>
-  );
-}

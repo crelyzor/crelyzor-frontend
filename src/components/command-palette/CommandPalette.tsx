@@ -13,7 +13,6 @@ import {
   CalendarDays,
   Settings,
   LogOut,
-  Bell,
   Home,
   CreditCard,
   Mic,
@@ -78,12 +77,6 @@ export function CommandPalette() {
           <CommandItem onSelect={() => runCommand(() => navigate('/cards'))}>
             <CreditCard className="mr-3 h-4 w-4" />
             <span>Cards</span>
-          </CommandItem>
-          <CommandItem
-            onSelect={() => runCommand(() => navigate('/notifications'))}
-          >
-            <Bell className="mr-3 h-4 w-4" />
-            <span>Notifications</span>
           </CommandItem>
         </CommandGroup>
 

@@ -5,7 +5,6 @@ const Home = lazy(() => import('@/pages/home'));
 const Meetings = lazy(() => import('@/pages/meetings'));
 const MeetingDetail = lazy(() => import('@/pages/meeting-detail'));
 const Settings = lazy(() => import('@/pages/settings'));
-const Notifications = lazy(() => import('@/pages/notifications'));
 const SignIn = lazy(() => import('@/pages/sign-in'));
 const AuthCallback = lazy(() => import('@/pages/auth-callback'));
 const Setup = lazy(() => import('@/pages/setup'));
@@ -25,7 +24,6 @@ export const routes = {
   Meetings,
   MeetingDetail,
   Settings,
-  Notifications,
   SignIn,
   AuthCallback,
   Setup,
