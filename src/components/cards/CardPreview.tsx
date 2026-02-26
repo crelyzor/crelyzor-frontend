@@ -54,7 +54,7 @@ export function CardPreview({
   if (html) {
     return (
       <div
-        className="rounded-2xl overflow-hidden select-none"
+        className="rounded-2xl overflow-hidden select-none pointer-events-none"
         style={{
           aspectRatio: '1.586 / 1',
           boxShadow:
@@ -79,7 +79,7 @@ export function CardPreview({
   if (face === 'back') {
     return (
       <div
-        className="relative rounded-2xl overflow-hidden select-none"
+        className="relative rounded-2xl overflow-hidden select-none pointer-events-none"
         style={cardBase}
       >
         {/* Diagonal texture */}
@@ -187,7 +187,7 @@ export function CardPreview({
   // ── FRONT FACE ──
   return (
     <div
-      className="relative rounded-2xl overflow-hidden select-none"
+      className="relative rounded-2xl overflow-hidden select-none pointer-events-none"
       style={cardBase}
     >
       {/* Subtle diagonal texture */}

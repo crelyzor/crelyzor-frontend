@@ -13,6 +13,8 @@ import {
   CreditCard,
   QrCode,
   FileSignature,
+  X,
+  ArrowUpRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +25,7 @@ import {
   useUpdateCard,
 } from '@/hooks/queries/useCardQueries';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Card as CardType } from '@/types';
 import { CardPreview } from '@/components/cards/CardPreview';
 import { QRCodeDialog } from '@/components/cards/QRCodeDialog';
@@ -42,6 +44,29 @@ export default function Cards() {
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [qrDialogCard, setQrDialogCard] = useState<CardType | null>(null);
   const [sigCard, setSigCard] = useState<CardType | null>(null);
+  const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
+  const [closing, setClosing] = useState(false);
+
+  const openCard = (card: CardType) => {
+    setClosing(false);
+    setSelectedCard(card);
+  };
+
+  const closeCard = () => {
+    setClosing(true);
+    setTimeout(() => {
+      setSelectedCard(null);
+      setClosing(false);
+    }, 180);
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedCard) closeCard();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [selectedCard]);
 
   const handleToggleActive = (card: CardType) => {
     updateCard.mutate(
@@ -141,12 +166,12 @@ export default function Cards() {
               >
                 {/* Card preview */}
                 <div
-                  className="cursor-pointer transition-transform duration-200 hover:scale-[1.02] rounded-2xl overflow-hidden"
+                  className="cursor-pointer rounded-2xl overflow-hidden active:scale-[0.97] transition-transform duration-150 ease-out"
                   style={{
                     boxShadow:
                       '0 4px 24px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.06)',
                   }}
-                  onClick={() => navigate(`/cards/${card.id}`)}
+                  onClick={() => openCard(card)}
                 >
                   <CardPreview
                     displayName={card.displayName}
@@ -224,7 +249,7 @@ export default function Cards() {
                               icon: ExternalLink,
                               label: 'Edit card',
                               action: () => {
-                                navigate(`/cards/${card.id}`);
+                                openCard(card);
                                 setMenuOpen(null);
                               },
                             },
@@ -374,6 +399,137 @@ export default function Cards() {
           />
         )}
       </div>
+
+      {/* ── Card detail modal — springs open like CommandPalette ── */}
+      {selectedCard && (
+        <>
+          {/* Backdrop */}
+          <div
+            className={`fixed inset-0 z-50 bg-black/50 backdrop-blur-[3px] ${closing ? 'animate-out fade-out-0 duration-180' : 'animate-in fade-in-0 duration-200'}`}
+            onClick={closeCard}
+          />
+
+          {/* Panel */}
+          <div
+            className={`fixed z-50 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 top-[10%] sm:top-[8%] sm:w-[480px]
+              bg-white dark:bg-neutral-900
+              ring-1 ring-neutral-200/80 dark:ring-neutral-700/60
+              shadow-2xl shadow-neutral-900/30 dark:shadow-neutral-950/80
+              rounded-2xl overflow-hidden
+              ${closing ? 'card-spring-out' : 'card-spring-in'}`}
+          >
+            {/* Card preview at top */}
+            <div className="p-4 bg-neutral-950">
+              <CardPreview
+                displayName={selectedCard.displayName}
+                title={selectedCard.title ?? undefined}
+                bio={selectedCard.bio ?? undefined}
+                avatarUrl={selectedCard.avatarUrl}
+                coverUrl={selectedCard.coverUrl}
+                links={selectedCard.links}
+                contactFields={selectedCard.contactFields}
+                theme={selectedCard.theme}
+                htmlContent={selectedCard.htmlContent}
+                htmlBackContent={selectedCard.htmlBackContent}
+              />
+            </div>
+
+            {/* Card info + actions */}
+            <div className="px-5 py-4">
+              <div className="flex items-start justify-between gap-3 mb-4">
+                <div className="min-w-0">
+                  <h2 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 truncate">
+                    {selectedCard.displayName}
+                  </h2>
+                  {selectedCard.title && (
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
+                      {selectedCard.title}
+                    </p>
+                  )}
+                  <p className="text-[11px] text-neutral-400 dark:text-neutral-600 mt-1 font-mono">
+                    /{selectedCard.slug}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {selectedCard.isDefault && (
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800"
+                    >
+                      Default
+                    </Badge>
+                  )}
+                  {!selectedCard.isActive && (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] px-2 py-0.5 text-neutral-400"
+                    >
+                      Paused
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="flex items-center gap-4 mb-5">
+                <div className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>{selectedCard._count?.views ?? 0} views</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                  <Users className="w-3.5 h-3.5" />
+                  <span>{selectedCard._count?.contacts ?? 0} contacts</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  className="flex-1 h-9 rounded-xl text-xs font-medium bg-neutral-950 dark:bg-neutral-50 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 gap-1.5"
+                  onClick={() => {
+                    closeCard();
+                    setTimeout(() => navigate(`/cards/${selectedCard.id}`), 200);
+                  }}
+                >
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  Edit card
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-9 w-9 rounded-xl p-0 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200"
+                  onClick={() => {
+                    navigator.clipboard.writeText(getCardUrl(selectedCard));
+                    toast.success('Link copied');
+                  }}
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-9 w-9 rounded-xl p-0 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200"
+                  onClick={() => {
+                    closeCard();
+                    setTimeout(() => setQrDialogCard(selectedCard), 200);
+                  }}
+                >
+                  <QrCode className="w-3.5 h-3.5" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-9 w-9 rounded-xl p-0 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200"
+                  onClick={closeCard}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </PageMotion>
   );
 }
