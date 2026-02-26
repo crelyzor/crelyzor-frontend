@@ -489,7 +489,10 @@ export default function Cards() {
                   className="flex-1 h-9 rounded-xl text-xs font-medium bg-neutral-950 dark:bg-neutral-50 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 gap-1.5"
                   onClick={() => {
                     closeCard();
-                    setTimeout(() => navigate(`/cards/${selectedCard.id}`), 200);
+                    setTimeout(
+                      () => navigate(`/cards/${selectedCard.id}`),
+                      200
+                    );
                   }}
                 >
                   <ArrowUpRight className="w-3.5 h-3.5" />
