@@ -31,26 +31,11 @@ Invoke it when: creating new pages, new components, redesigning sections.
 
 ```css
 /* Light Mode */
---background: #ffffff
---foreground: #0a0a0a
---card: #ffffff
---primary: #171717
---secondary: #f5f5f5
---muted: #f5f5f5
---muted-foreground: #737373
---border: #e5e5e5
---ring: #171717
-
-/* Dark Mode */
---background: #0a0a0a
---foreground: #fafafa
---card: #171717
---primary: #fafafa
---secondary: #262626
---muted: #262626
---muted-foreground: #a3a3a3
---border: #262626
---ring: #d4d4d4
+--background: #ffffff --foreground: #0a0a0a --card: #ffffff --primary: #171717
+  --secondary: #f5f5f5 --muted: #f5f5f5 --muted-foreground: #737373
+  --border: #e5e5e5 --ring: #171717 /* Dark Mode */ --background: #0a0a0a
+  --foreground: #fafafa --card: #171717 --primary: #fafafa --secondary: #262626
+  --muted: #262626 --muted-foreground: #a3a3a3 --border: #262626 --ring: #d4d4d4;
 ```
 
 Never hardcode hex values. Always use CSS variables via Tailwind classes.
@@ -73,15 +58,19 @@ Never hardcode hex values. Always use CSS variables via Tailwind classes.
 ## Animation Rules
 
 **Page entrance — always:**
+
 ```tsx
 // Wrap every page in PageMotion
-import PageMotion from "@/components/PageMotion";
-<PageMotion><YourPage /></PageMotion>
+import PageMotion from '@/components/PageMotion';
+<PageMotion>
+  <YourPage />
+</PageMotion>;
 
 // PageMotion does: opacity 0→1, y 8→0, 220ms, ease [0.25, 0.1, 0.25, 1]
 ```
 
 **Spring physics for modals/dropdowns:**
+
 ```tsx
 // Standard spring config
 { type: "spring", damping: 25, stiffness: 350 }
@@ -93,12 +82,14 @@ exit={{ opacity: 0, scale: 0.94, y: -6 }}
 ```
 
 **Scroll-coupled (home page pattern):**
+
 ```tsx
 const scrollY = useScroll();
 const opacity = useTransform(scrollY, [0, 80], [1, 0]);
 ```
 
 **Stagger children:**
+
 ```tsx
 // Parent
 transition={{ staggerChildren: 0.05 }}
@@ -112,13 +103,13 @@ animate={{ opacity: 1, y: 0 }}
 
 ## Border Radius Scale
 
-| Usage | Class |
-|-------|-------|
-| Badges, small pills | `rounded-full` |
-| Buttons, inputs, small cards | `rounded-lg` |
-| Cards, panels | `rounded-xl` |
-| Dialogs, large panels | `rounded-2xl` |
-| Special (FAB menu items) | `rounded-[20px]` or `rounded-[28px]` |
+| Usage                        | Class                                |
+| ---------------------------- | ------------------------------------ |
+| Badges, small pills          | `rounded-full`                       |
+| Buttons, inputs, small cards | `rounded-lg`                         |
+| Cards, panels                | `rounded-xl`                         |
+| Dialogs, large panels        | `rounded-2xl`                        |
+| Special (FAB menu items)     | `rounded-[20px]` or `rounded-[28px]` |
 
 ---
 
@@ -128,13 +119,15 @@ Use on: headers, dropdowns, command palette, floating panels.
 
 ```tsx
 // Header
-className="bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-800/50"
+className =
+  'bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-800/50';
 
 // Dropdown/menu (dark preferred even in light mode)
-className="bg-[#1C1C1E] border border-white/5 rounded-[24px] shadow-2xl shadow-black/40"
+className =
+  'bg-[#1C1C1E] border border-white/5 rounded-[24px] shadow-2xl shadow-black/40';
 
 // Overlay backdrop
-className="bg-black/40 backdrop-blur-[3px]"
+className = 'bg-black/40 backdrop-blur-[3px]';
 ```
 
 ---
@@ -151,7 +144,7 @@ Button, Badge, Card, Dialog, DropdownMenu, Input, Label, Select, Switch, Tabs, A
 
 ```tsx
 // Always import from @/components/ui/button
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 
 // Never use plain <button> for actions
 ```
@@ -162,8 +155,8 @@ import { Button } from "@/components/ui/button";
 
 ```tsx
 // Data from API — always React Query
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/queryKeys";
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 
 const { data, isLoading } = useQuery({
   queryKey: queryKeys.meetings.byId(id),
@@ -171,13 +164,13 @@ const { data, isLoading } = useQuery({
 });
 
 // App state — Zustand stores
-import { useAuthStore } from "@/stores/authStore";
-import { useUIStore } from "@/stores/uiStore";
+import { useAuthStore } from '@/stores/authStore';
+import { useUIStore } from '@/stores/uiStore';
 
 // Toasts — always Sonner
-import { toast } from "sonner";
-toast.success("Meeting created");
-toast.error("Failed to save");
+import { toast } from 'sonner';
+toast.success('Meeting created');
+toast.error('Failed to save');
 ```
 
 ---
@@ -188,18 +181,18 @@ Every component must support dark mode. Pattern:
 
 ```tsx
 // Backgrounds
-className="bg-white dark:bg-neutral-900"
-className="bg-neutral-50 dark:bg-neutral-800"
+className = 'bg-white dark:bg-neutral-900';
+className = 'bg-neutral-50 dark:bg-neutral-800';
 
 // Text
-className="text-neutral-900 dark:text-neutral-100"
-className="text-neutral-500 dark:text-neutral-400"
+className = 'text-neutral-900 dark:text-neutral-100';
+className = 'text-neutral-500 dark:text-neutral-400';
 
 // Borders
-className="border-neutral-200 dark:border-neutral-700"
+className = 'border-neutral-200 dark:border-neutral-700';
 
 // Use CSS vars when possible — they auto-switch
-className="bg-background text-foreground border-border"
+className = 'bg-background text-foreground border-border';
 ```
 
 ---
@@ -232,6 +225,7 @@ src/
 ## Patterns
 
 **New page:**
+
 ```tsx
 // Always wrap in PageMotion
 // Always handle loading state (skeleton, not spinner where possible)
@@ -240,6 +234,7 @@ src/
 ```
 
 **Loading skeleton pattern:**
+
 ```tsx
 <div className="animate-pulse">
   <div className="h-4 bg-neutral-200 dark:bg-neutral-800 rounded-lg w-3/4" />
@@ -247,12 +242,17 @@ src/
 ```
 
 **Empty state pattern:**
+
 ```tsx
 <div className="flex flex-col items-center justify-center py-16 text-center">
   <Icon className="h-10 w-10 text-muted-foreground mb-3" />
   <p className="text-sm font-medium">No meetings yet</p>
-  <p className="text-xs text-muted-foreground mt-1">Create one to get started</p>
-  <Button size="sm" className="mt-4">Create meeting</Button>
+  <p className="text-xs text-muted-foreground mt-1">
+    Create one to get started
+  </p>
+  <Button size="sm" className="mt-4">
+    Create meeting
+  </Button>
 </div>
 ```
 
