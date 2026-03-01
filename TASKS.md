@@ -18,6 +18,7 @@ _Nothing in progress right now._
 These all have existing code in the codebase but are **not working**. Fix before building new things.
 
 ### MeetingDetail Page — Mock Data Everywhere
+
 The page exists at `src/pages/meeting-detail/MeetingDetail.tsx` but shows hardcoded fake data.
 
 - [~] Transcript tab — has mock speaker segments, needs real `TranscriptSegment[]` from API
@@ -29,6 +30,7 @@ The page exists at `src/pages/meeting-detail/MeetingDetail.tsx` but shows hardco
 **What to do:** Add React Query hooks, connect to real `/sma/meetings/:id/*` endpoints.
 
 ### Recording Upload — Not Connected
+
 Upload UI exists but the file never reaches the backend.
 
 - [~] File picker / drag-drop — exists in UI, not wired to API call
@@ -44,6 +46,7 @@ Upload UI exists but the file never reaches the backend.
 ## Phase 1 — Not Built Yet
 
 ### Ask AI Chat Interface (Highest Impact)
+
 - [ ] Chat panel inside MeetingDetail (new tab or side panel)
 - [ ] Input: "Ask anything about this meeting..."
 - [ ] Stream AI response
@@ -52,20 +55,24 @@ Upload UI exists but the file never reaches the backend.
 - [ ] Requires Ask AI backend endpoint first
 
 ### Action Items (Beyond Display)
+
 - [ ] Mark action item complete / incomplete (toggle)
 - [ ] Create action item manually (inline form)
 - [ ] Delete action item
 
 ### Meeting Notes UI
+
 - [ ] Create note (textarea + submit)
 - [ ] Delete note
 - [ ] Show notes with author and timestamp
 
 ### Edit Meeting Modal
+
 - [ ] Edit title, description, time, location
 - [ ] Add / remove participants
 
 ### Home Dashboard Polish
+
 - [ ] Today's meetings widget (filtered to today, not just recent)
 - [ ] Pending action items widget across all meetings
 - [ ] Meeting SMA status on home cards
