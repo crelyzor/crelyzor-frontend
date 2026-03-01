@@ -142,10 +142,10 @@ export function formatMeetingDuration(meeting: Meeting): string {
 
 export function getParticipantNames(meeting: Meeting): string[] {
   const names: string[] = [];
-  for (const p of meeting.participants) {
+  for (const p of meeting.participants ?? []) {
     names.push(p.user?.name ?? 'Unknown');
   }
-  for (const g of meeting.guests) {
+  for (const g of meeting.guests ?? []) {
     names.push(g.name ?? g.email);
   }
   return names;
