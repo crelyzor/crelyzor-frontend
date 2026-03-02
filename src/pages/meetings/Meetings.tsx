@@ -17,6 +17,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   ExternalLink,
+  Video,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -248,8 +249,12 @@ export default function Meetings() {
 
   const { data: meetingsData } = useMeetingsAll();
 
+  // Exclude VOICE_NOTE from the meetings list — they live in /voice-notes
   const scopedMeetings = useMemo(
-    () => (meetingsData ?? []).map(toDisplayMeeting),
+    () =>
+      (meetingsData ?? [])
+        .filter((m) => m.type !== 'VOICE_NOTE')
+        .map(toDisplayMeeting),
     [meetingsData]
   );
 
@@ -393,15 +398,16 @@ export default function Meetings() {
                       <div className="px-4 py-3.5">
                         {/* Top row */}
                         <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-0 flex items-center gap-2">
+                            {meeting.meetingType === 'RECORDED' && (
+                              <span className="shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
+                                <Video className="w-2.5 h-2.5" />
+                                REC
+                              </span>
+                            )}
                             <h3 className="text-sm font-medium text-neutral-950 dark:text-neutral-50 truncate">
                               {meeting.title}
                             </h3>
-                            {meeting.description && (
-                              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5 line-clamp-1">
-                                {meeting.description}
-                              </p>
-                            )}
                           </div>
                           <span
                             className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(meeting.status)}`}
@@ -409,6 +415,11 @@ export default function Meetings() {
                             {getStatusLabel(meeting.status)}
                           </span>
                         </div>
+                        {meeting.description && (
+                          <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5 line-clamp-1">
+                            {meeting.description}
+                          </p>
+                        )}
 
                         {/* Meta row */}
                         <div className="flex items-center gap-3 mt-2.5 flex-wrap">

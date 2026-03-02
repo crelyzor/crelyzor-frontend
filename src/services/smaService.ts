@@ -33,6 +33,16 @@ export type SMARecording = {
   signedUrl?: string;
 };
 
+export type SMASpeaker = {
+  id: string;
+  meetingId: string;
+  speakerLabel: string;
+  displayName: string | null;
+  role: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 // SMA controllers return { success, data } without statusCode,
 // so apiClient won't auto-unwrap. Unwrap manually.
 function unwrap<T>(result: unknown): T {
@@ -63,6 +73,23 @@ export const smaApi = {
   getRecordings: async (meetingId: string): Promise<SMARecording[]> => {
     const result = await apiClient.get(`/sma/meetings/${meetingId}/recordings`);
     return unwrap<SMARecording[]>(result);
+  },
+
+  getSpeakers: async (meetingId: string): Promise<SMASpeaker[]> => {
+    const result = await apiClient.get(`/sma/meetings/${meetingId}/speakers`);
+    return unwrap<SMASpeaker[]>(result);
+  },
+
+  renameSpeaker: async (
+    meetingId: string,
+    speakerId: string,
+    data: { displayName?: string; role?: string }
+  ): Promise<SMASpeaker> => {
+    const result = await apiClient.patch(
+      `/sma/meetings/${meetingId}/speakers/${speakerId}`,
+      data
+    );
+    return unwrap<SMASpeaker>(result);
   },
 
   triggerAI: async (meetingId: string): Promise<void> => {

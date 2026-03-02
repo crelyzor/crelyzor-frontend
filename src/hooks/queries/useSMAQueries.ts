@@ -51,6 +51,30 @@ export function useTriggerAI(meetingId: string) {
   });
 }
 
+export function useSpeakers(meetingId: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.sma.speakers(meetingId),
+    queryFn: () => smaApi.getSpeakers(meetingId),
+    enabled: !!meetingId && enabled,
+  });
+}
+
+export function useRenameSpeaker(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      speakerId,
+      displayName,
+      role,
+    }: { speakerId: string; displayName?: string; role?: string }) =>
+      smaApi.renameSpeaker(meetingId, speakerId, { displayName, role }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.sma.speakers(meetingId) });
+    },
+    onError: () => toast.error('Failed to rename speaker'),
+  });
+}
+
 export function useUploadRecording(meetingId: string) {
   const qc = useQueryClient();
   return useMutation({

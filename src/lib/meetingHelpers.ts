@@ -20,6 +20,7 @@ export type DisplayMeeting = {
   duration: string; // "45 min"
   participants: string[];
   status: Meeting['status'];
+  meetingType: Meeting['type'];
   location?: string;
   category?: string;
   organizer?: string;
@@ -42,6 +43,7 @@ export function toDisplayMeeting(m: Meeting): DisplayMeeting {
     duration: formatMeetingDuration(m),
     participants: getParticipantNames(m),
     status: m.status,
+    meetingType: m.type,
     location: m.location,
     category: undefined,
     organizer: m.createdBy?.name,

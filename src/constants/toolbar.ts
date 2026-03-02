@@ -1,4 +1,4 @@
-import { Home, CalendarDays, Settings, CreditCard } from 'lucide-react';
+import { Home, CalendarDays, Settings, CreditCard, Mic } from 'lucide-react';
 import type { ToolbarItem, ToolbarItemGroup } from '@/types';
 
 export const TOOLBAR_STORAGE_KEY = 'toolbar-pinned-items';
@@ -29,6 +29,15 @@ export const TOOLBAR_ITEMS: ToolbarItem[] = [
     path: '/meetings',
     group: 'navigation',
     description: 'All your meetings',
+  },
+  {
+    id: 'voice-notes',
+    label: 'Voice Notes',
+    icon: Mic,
+    action: 'navigate',
+    path: '/voice-notes',
+    group: 'navigation',
+    description: 'Quick audio recordings',
   },
   {
     id: 'cards',

@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-03
+Last updated: 2026-03-03 (MeetingDetail 3 layouts done)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -10,40 +10,46 @@ Last updated: 2026-03-03
 ## P0 — Build Next (in order)
 
 ### 1. MeetingDetail — 3 distinct layouts by type
+
 The current MeetingDetail page shows the same UI for all meeting types.
 Each type needs its own layout, chrome, and actions.
 
 **VOICE_NOTE layout**
-- [ ] Minimal header: title (AI-generated), "recorded on" date, duration
-- [ ] No status badge, no participants, no accept/decline/complete
-- [ ] Flat scroll layout (no tabs): recording player → transcript → summary → key points
-- [ ] Only action: Delete
+
+- [x] Minimal header: title (AI-generated), "recorded on" date, duration
+- [x] No status badge, no participants, no accept/decline/complete
+- [x] Flat scroll layout (no tabs): recording player → transcript → summary → key points
+- [x] Only action: Delete
 
 **RECORDED layout**
-- [ ] Compact header: title, date, duration
-- [ ] Speakers section (from `MeetingSpeaker[]`) — show speakerLabel or displayName
-- [ ] Inline rename: click speaker → edit displayName inline
-- [ ] Tabs: Recording | Transcript | Summary | Action Items
-- [ ] Actions: Complete, Delete
+
+- [x] Compact header: title, date, duration
+- [x] Speakers section (from `MeetingSpeaker[]`) — show speakerLabel or displayName
+- [x] Inline rename: click speaker → edit displayName inline
+- [x] Tabs: Recording | Transcript | Summary | Action Items
+- [x] Actions: Complete, Delete
 
 **SCHEDULED layout** (keep current — clean it up)
-- [ ] Full header: title, status badge, date/time, location
-- [ ] Participants section with user avatars
-- [ ] Quick actions: Accept / Decline / Complete / Cancel (context-aware)
-- [ ] Tabs: Overview | Transcript | Summary | Action Items | Recording
+
+- [x] Full header: title, status badge, date/time, location
+- [x] Participants section with user avatars
+- [x] Quick actions: Accept / Decline / Complete / Cancel (context-aware)
+- [x] Tabs: Overview | Transcript | Summary | Action Items | Recording
 
 ### 2. Voice Notes — separate section
-- [ ] Add "Voice Notes" nav item in sidebar (below Meetings)
-- [ ] `/voice-notes` route → new VoiceNotes page
-- [ ] Lists all meetings with `type=VOICE_NOTE`, sorted by createdAt desc
-- [ ] Meetings list page filters out VOICE_NOTE (they only appear in Voice Notes section)
-- [ ] Voice Note cards: minimal — title, date, duration, transcript status
+
+- [x] Add "Voice Notes" nav item in toolbar (Control Center + pinnable)
+- [x] `/voice-notes` route → new VoiceNotes page
+- [x] Lists all meetings with `type=VOICE_NOTE`, sorted by date desc
+- [x] Meetings list page filters out VOICE_NOTE (they only appear in Voice Notes section)
+- [x] Voice Note cards: minimal — title, date, duration, transcript status
 
 ---
 
 ## Not Built Yet
 
 ### Ask AI Chat Interface
+
 - [ ] Chat panel inside MeetingDetail (available for RECORDED + VOICE_NOTE when transcript exists)
 - [ ] Input: "Ask anything about this meeting..."
 - [ ] Stream AI response
@@ -52,19 +58,23 @@ Each type needs its own layout, chrome, and actions.
 - [ ] Requires Ask AI backend endpoint first
 
 ### Action Items (Beyond Display)
+
 - [ ] Mark action item complete / incomplete (toggle)
 - [ ] Create action item manually (inline form)
 - [ ] Delete action item
 
 ### Meeting Notes UI
+
 - [ ] Create note (textarea + submit)
 - [ ] Delete note
 - [ ] Show notes with author and timestamp
 
 ### Edit Meeting Modal
+
 - [ ] Edit title, description, time, location (SCHEDULED only)
 
 ### Home Dashboard Polish
+
 - [ ] Today's meetings widget (filtered to today, not just recent)
 - [ ] Pending action items widget across all meetings
 - [ ] Recent Voice Notes widget
