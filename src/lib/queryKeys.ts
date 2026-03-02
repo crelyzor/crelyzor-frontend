@@ -57,6 +57,19 @@ export const queryKeys = {
     status: () => [...queryKeys.sync.all, 'status'] as const,
   },
 
+  // SMA (Smart Meeting Assistant)
+  sma: {
+    all: ['sma'] as const,
+    transcript: (meetingId: string) =>
+      [...queryKeys.sma.all, 'transcript', meetingId] as const,
+    summary: (meetingId: string) =>
+      [...queryKeys.sma.all, 'summary', meetingId] as const,
+    actionItems: (meetingId: string) =>
+      [...queryKeys.sma.all, 'actionItems', meetingId] as const,
+    recordings: (meetingId: string) =>
+      [...queryKeys.sma.all, 'recordings', meetingId] as const,
+  },
+
   // Cards
   cards: {
     all: ['cards'] as const,

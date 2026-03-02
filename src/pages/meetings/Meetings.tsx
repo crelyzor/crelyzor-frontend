@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { PageMotion } from '@/components/PageMotion';
 import {
   Search,
-  Plus,
   MapPin,
   Clock,
   Mic,
@@ -16,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'motion/react';
+import { StartMeetingFab } from '@/components/home/StartMeetingFab';
 import { useMeetingsAll } from '@/hooks/queries/useMeetingQueries';
 import { toDisplayMeeting, type DisplayMeeting } from '@/lib/meetingHelpers';
 import { getStatusStyle, getStatusLabel } from '@/types';
@@ -368,29 +368,7 @@ export default function Meetings() {
         </div>
 
         {/* ── Floating CTA ── */}
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40">
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{
-              duration: 0.4,
-              delay: 0.25,
-              ease: [0.25, 0.1, 0.25, 1],
-            }}
-          >
-            <Button
-              onClick={() => navigate('/meetings/create')}
-              className="h-11 px-5 rounded-full bg-neutral-950 hover:bg-neutral-800
-                       dark:bg-neutral-50 dark:hover:bg-neutral-200
-                       text-white dark:text-neutral-900
-                       shadow-lg shadow-neutral-900/20 dark:shadow-neutral-100/10
-                       text-sm font-medium gap-2 transition-all duration-200"
-            >
-              <Plus className="w-4 h-4" />
-              New Meeting
-            </Button>
-          </motion.div>
-        </div>
+        <StartMeetingFab />
       </div>
     </PageMotion>
   );

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { PageMotion } from '@/components/PageMotion';
 import {
   ArrowLeft,
@@ -12,18 +13,31 @@ import {
   ClipboardList,
   Upload,
   Play,
+  Pause,
   MoreHorizontal,
   Edit3,
   RefreshCcw,
   CheckCircle2,
   XCircle,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useMeeting } from '@/hooks/queries/useMeetingQueries';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { queryKeys } from '@/lib/queryKeys';
+import { meetingsApi } from '@/services/meetingsService';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { getStatusStyle, getStatusLabel } from '@/types';
+import type { TranscriptionStatus, ActionItem } from '@/types';
 import { PageLoader } from '@/components/PageLoader';
+import {
+  useTranscript,
+  useSummary,
+  useActionItems,
+  useRecordings,
+  useUploadRecording,
+} from '@/hooks/queries/useSMAQueries';
+import type { SMATranscriptSegment, SMARecording } from '@/services/smaService';
 
 // ── SMA Tab config ──
 const SMA_TABS = [
@@ -36,76 +50,54 @@ const SMA_TABS = [
 
 type SMATab = (typeof SMA_TABS)[number]['id'];
 
-// ── Mock transcript segments ──
-const mockTranscript = [
-  {
-    speaker: 'Sarah Chen',
-    time: '0:00',
-    text: "Alright, let's kick off. I've shared the updated roadmap doc — have you all had a chance to look through it?",
-  },
-  {
-    speaker: 'Mike Ross',
-    time: '0:42',
-    text: 'Yes, I went through it. I think the Q2 timeline for the analytics dashboard is tight. Can we discuss dependencies?',
-  },
-  {
-    speaker: 'You',
-    time: '1:15',
-    text: 'Agreed. I think we should front-load the data pipeline work. That would unblock the visualization layer early.',
-  },
-  {
-    speaker: 'Alex Kim',
-    time: '2:03',
-    text: 'I can take on the pipeline POC this sprint if we prioritize it. Should be doable in a week.',
-  },
-  {
-    speaker: 'Sarah Chen',
-    time: '2:38',
-    text: "Perfect. Let's also talk about the client demo — we need a working prototype by the 20th.",
-  },
-];
+// ── Helpers ──
+function formatTimestamp(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
 
-// ── Mock action items ──
-const mockActionItems = [
-  {
-    id: '1',
-    title: 'Set up analytics data pipeline POC',
-    assignedTo: 'Alex Kim',
-    dueDate: 'Feb 17',
-    status: 'pending' as const,
-    category: 'PARTICIPANT_TASK',
-  },
-  {
-    id: '2',
-    title: 'Prepare client demo prototype',
-    assignedTo: 'Sarah Chen',
-    dueDate: 'Feb 20',
-    status: 'pending' as const,
-    category: 'UPCOMING_EVENT',
-  },
-  {
-    id: '3',
-    title: 'Review Q2 timeline dependencies',
-    assignedTo: 'Mike Ross',
-    dueDate: 'Feb 14',
-    status: 'completed' as const,
-    category: 'SHARED_TASK',
-  },
-  {
-    id: '4',
-    title: 'Share updated roadmap doc with stakeholders',
-    assignedTo: 'You',
-    dueDate: 'Feb 12',
-    status: 'pending' as const,
-    category: 'DOCUMENT_REQUIRED',
-  },
-];
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function formatDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+// ── Loading Skeleton ──
+function SkeletonLines({ count = 3 }: { count?: number }) {
+  return (
+    <div className="animate-pulse space-y-3">
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className="h-4 bg-neutral-200 dark:bg-neutral-800 rounded-lg"
+          style={{ width: `${75 + (i % 3) * 10}%` }}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function MeetingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<SMATab>('overview');
-  const { data: rawMeeting, isLoading } = useMeeting(id ?? '');
+
+  // Poll the meeting while transcription is in progress
+  const { data: rawMeeting, isLoading } = useQuery({
+    queryKey: queryKeys.meetings.detail(id ?? ''),
+    queryFn: () => meetingsApi.getById(id ?? ''),
+    enabled: !!id,
+    refetchInterval: (query) => {
+      const status = query.state.data?.transcriptionStatus;
+      return status === 'UPLOADED' || status === 'PROCESSING' ? 3000 : false;
+    },
+  });
 
   if (isLoading) return <PageLoader />;
 
@@ -126,14 +118,10 @@ export default function MeetingDetail() {
   }
 
   const meeting = toDisplayMeeting(rawMeeting);
+  const transcriptionStatus = rawMeeting.transcriptionStatus;
   const statusClasses = getStatusStyle(meeting.status);
   const statusText = getStatusLabel(meeting.status);
-  const hasSMA = !!(
-    meeting.hasRecording ||
-    meeting.hasTranscript ||
-    meeting.hasSummary ||
-    meeting.hasActionItems
-  );
+  const hasSMA = transcriptionStatus !== 'NONE';
 
   return (
     <PageMotion>
@@ -189,14 +177,11 @@ export default function MeetingDetail() {
                     Date
                   </p>
                   <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
-                    {new Date(meeting._raw.startTime).toLocaleDateString(
-                      'en-US',
-                      {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      }
-                    )}
+                    {new Date(meeting._raw.startTime).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
                   </p>
                 </div>
               </div>
@@ -284,11 +269,7 @@ export default function MeetingDetail() {
                 Edit
               </Button>
               <div className="flex-1" />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs gap-1.5 h-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
-              >
+              <Button variant="destructive" size="sm" className="text-xs gap-1.5 h-8">
                 <XCircle className="w-3.5 h-3.5" />
                 Cancel
               </Button>
@@ -299,47 +280,58 @@ export default function MeetingDetail() {
         {/* ── SMA Section ── */}
         <Card className="border-neutral-200 dark:border-neutral-800">
           <CardContent className="p-0">
-            {/* Tab bar */}
-            <div className="flex border-b border-neutral-200 dark:border-neutral-800 overflow-x-auto">
-              {SMA_TABS.map((tab) => {
-                const isActive = activeTab === tab.id;
-                const Icon = 'icon' in tab ? tab.icon : null;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-1.5 px-4 py-3 text-xs font-medium whitespace-nowrap border-b-2 transition-colors
-                    ${
-                      isActive
-                        ? 'border-neutral-900 dark:border-neutral-100 text-neutral-900 dark:text-neutral-100'
-                        : 'border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
-                    }`}
-                  >
-                    {Icon && <Icon className="w-3.5 h-3.5" />}
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </div>
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as SMATab)}>
+              <TabsList
+                variant="line"
+                className="w-full h-auto justify-start gap-0 rounded-none border-b border-neutral-200 dark:border-neutral-800 bg-transparent p-0 overflow-x-auto"
+              >
+                {SMA_TABS.map((tab) => {
+                  const Icon = 'icon' in tab ? tab.icon : null;
+                  return (
+                    <TabsTrigger
+                      key={tab.id}
+                      value={tab.id}
+                      className="flex items-center gap-1.5 px-4 py-3 text-xs font-medium whitespace-nowrap rounded-none h-auto border-b-2 border-transparent data-[state=active]:border-neutral-900 dark:data-[state=active]:border-neutral-100 data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-neutral-900 dark:data-[state=active]:text-neutral-100 text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"
+                    >
+                      {Icon && <Icon className="w-3.5 h-3.5" />}
+                      {tab.label}
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
 
-            {/* Tab content */}
-            <div className="p-6">
-              {activeTab === 'overview' && (
-                <OverviewTab meeting={meeting} hasSMA={hasSMA} />
-              )}
-              {activeTab === 'recording' && (
-                <RecordingTab hasRecording={meeting.hasRecording} />
-              )}
-              {activeTab === 'transcript' && (
-                <TranscriptTab hasTranscript={meeting.hasTranscript} />
-              )}
-              {activeTab === 'summary' && (
-                <SummaryTab hasSummary={meeting.hasSummary} />
-              )}
-              {activeTab === 'actions' && (
-                <ActionsTab hasActionItems={meeting.hasActionItems} />
-              )}
-            </div>
+              <TabsContent value="overview" className="p-6 mt-0">
+                <OverviewTab
+                  transcriptionStatus={transcriptionStatus}
+                  hasSMA={hasSMA}
+                  onUploadClick={() => setActiveTab('recording')}
+                />
+              </TabsContent>
+              <TabsContent value="recording" className="p-6 mt-0">
+                <RecordingTab
+                  meetingId={rawMeeting.id}
+                  transcriptionStatus={transcriptionStatus}
+                />
+              </TabsContent>
+              <TabsContent value="transcript" className="p-6 mt-0">
+                <TranscriptTab
+                  meetingId={rawMeeting.id}
+                  transcriptionStatus={transcriptionStatus}
+                />
+              </TabsContent>
+              <TabsContent value="summary" className="p-6 mt-0">
+                <SummaryTab
+                  meetingId={rawMeeting.id}
+                  transcriptionStatus={transcriptionStatus}
+                />
+              </TabsContent>
+              <TabsContent value="actions" className="p-6 mt-0">
+                <ActionsTab
+                  meetingId={rawMeeting.id}
+                  transcriptionStatus={transcriptionStatus}
+                />
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>
@@ -349,45 +341,63 @@ export default function MeetingDetail() {
 
 // ── Tab: Overview ──
 function OverviewTab({
-  meeting,
+  transcriptionStatus,
   hasSMA,
+  onUploadClick,
 }: {
-  meeting: ReturnType<typeof toDisplayMeeting>;
+  transcriptionStatus: TranscriptionStatus;
   hasSMA: boolean;
+  onUploadClick: () => void;
 }) {
+  const isProcessing =
+    transcriptionStatus === 'UPLOADED' || transcriptionStatus === 'PROCESSING';
+  const isCompleted = transcriptionStatus === 'COMPLETED';
+  const isFailed = transcriptionStatus === 'FAILED';
+
+  const smaItems = [
+    {
+      label: 'Recording',
+      icon: Mic,
+      ready: hasSMA,
+      processing: isProcessing,
+    },
+    {
+      label: 'Transcript',
+      icon: FileText,
+      ready: isCompleted,
+      processing: transcriptionStatus === 'PROCESSING',
+    },
+    {
+      label: 'AI Summary',
+      icon: FileText,
+      ready: isCompleted,
+      processing: false,
+    },
+    {
+      label: 'Action Items',
+      icon: ClipboardList,
+      ready: isCompleted,
+      processing: false,
+    },
+  ];
+
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
         Smart Meeting Assistant
       </h3>
+
+      {isFailed && (
+        <div className="p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+          <p className="text-xs text-neutral-600 dark:text-neutral-400 font-medium">
+            Transcription failed. Try uploading the recording again.
+          </p>
+        </div>
+      )}
+
       {hasSMA ? (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            {
-              label: 'Recording',
-              icon: Mic,
-              ready: meeting.hasRecording,
-              color: 'text-neutral-500',
-            },
-            {
-              label: 'Transcript',
-              icon: FileText,
-              ready: meeting.hasTranscript,
-              color: 'text-neutral-500',
-            },
-            {
-              label: 'AI Summary',
-              icon: FileText,
-              ready: meeting.hasSummary,
-              color: 'text-neutral-500',
-            },
-            {
-              label: 'Action Items',
-              icon: ClipboardList,
-              ready: meeting.hasActionItems,
-              color: 'text-neutral-500',
-            },
-          ].map((item) => (
+          {smaItems.map((item) => (
             <div
               key={item.label}
               className={`flex flex-col items-center gap-2 p-4 rounded-lg border transition-colors
@@ -397,18 +407,28 @@ function OverviewTab({
                     : 'border-dashed border-neutral-200 dark:border-neutral-700'
                 }`}
             >
-              <item.icon
-                className={`w-5 h-5 ${item.ready ? item.color : 'text-neutral-300 dark:text-neutral-600'}`}
-              />
+              {item.processing ? (
+                <Loader2 className="w-5 h-5 text-neutral-400 animate-spin" />
+              ) : (
+                <item.icon
+                  className={`w-5 h-5 ${item.ready ? 'text-neutral-500' : 'text-neutral-300 dark:text-neutral-600'}`}
+                />
+              )}
               <span
                 className={`text-[11px] font-medium ${item.ready ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-400 dark:text-neutral-500'}`}
               >
                 {item.label}
               </span>
               <span
-                className={`text-[10px] ${item.ready ? 'text-emerald-500' : 'text-neutral-400'}`}
+                className={`text-[10px] ${
+                  item.processing
+                    ? 'text-neutral-500 dark:text-neutral-400'
+                    : item.ready
+                      ? 'text-neutral-600 dark:text-neutral-400 font-medium'
+                      : 'text-neutral-400 dark:text-neutral-500'
+                }`}
               >
-                {item.ready ? 'Available' : 'Not available'}
+                {item.processing ? 'Processing…' : item.ready ? 'Available' : 'Not available'}
               </span>
             </div>
           ))}
@@ -422,10 +442,9 @@ function OverviewTab({
             No voice note uploaded
           </p>
           <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs mb-4">
-            Upload a recording to unlock transcript, AI summary, and
-            auto-generated action items.
+            Upload a recording to unlock transcript, AI summary, and auto-generated action items.
           </p>
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+          <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={onUploadClick}>
             <Upload className="w-3.5 h-3.5" />
             Upload Recording
           </Button>
@@ -436,10 +455,67 @@ function OverviewTab({
 }
 
 // ── Tab: Recording ──
-function RecordingTab({ hasRecording }: { hasRecording?: boolean }) {
+function RecordingTab({
+  meetingId,
+  transcriptionStatus,
+}: {
+  meetingId: string;
+  transcriptionStatus: TranscriptionStatus;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+
+  const { data: recordings, isLoading } = useRecordings(meetingId);
+  const { mutate: upload, isPending: isUploading } = useUploadRecording(meetingId);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      upload(file);
+      e.target.value = '';
+    }
+  };
+
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      audio.play();
+    }
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    const audio = audioRef.current;
+    if (!audio || !audioDuration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    audio.currentTime = pct * audioDuration;
+  };
+
+  const recording: SMARecording | undefined = recordings?.[0];
+  const hasRecording = !!recording || transcriptionStatus !== 'NONE';
+  const isProcessing =
+    transcriptionStatus === 'UPLOADED' || transcriptionStatus === 'PROCESSING';
+
+  if (isLoading) {
+    return <SkeletonLines count={2} />;
+  }
+
   if (!hasRecording) {
     return (
       <div className="flex flex-col items-center py-10 text-center">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="audio/*,video/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
         <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
           <Mic className="w-6 h-6 text-neutral-400" />
         </div>
@@ -447,52 +523,149 @@ function RecordingTab({ hasRecording }: { hasRecording?: boolean }) {
           No voice note yet
         </p>
         <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs mb-4">
-          Upload an audio recording of this meeting to get started.
+          Upload an audio or video recording to get a transcript, AI summary, and action items.
         </p>
-        <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-          <Upload className="w-3.5 h-3.5" />
-          Upload Recording
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5 text-xs"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+        >
+          {isUploading ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Upload className="w-3.5 h-3.5" />
+          )}
+          {isUploading ? 'Uploading…' : 'Upload Recording'}
         </Button>
       </div>
     );
   }
 
+  const displayDuration = audioDuration || recording?.duration || 0;
+  const progress = displayDuration > 0 ? (currentTime / displayDuration) * 100 : 0;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
-          Recording
-        </h3>
-        <span className="text-[10px] text-neutral-400">
-          meeting-recording.webm &middot; 12.4 MB
-        </span>
+        <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">Recording</h3>
+        {recording && (
+          <span className="text-[10px] text-neutral-400">
+            {recording.fileName} &middot; {formatFileSize(recording.fileSize)}
+          </span>
+        )}
       </div>
-      {/* Audio player placeholder */}
-      <div className="flex items-center gap-3 p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-10 w-10 rounded-full bg-neutral-900 dark:bg-neutral-100 hover:bg-neutral-800 dark:hover:bg-neutral-200"
-        >
-          <Play className="w-4 h-4 text-white dark:text-neutral-900 ml-0.5" />
-        </Button>
-        <div className="flex-1">
-          <div className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden">
-            <div className="h-full w-1/3 rounded-full bg-neutral-900 dark:bg-neutral-100" />
-          </div>
-          <div className="flex justify-between mt-1">
-            <span className="text-[10px] text-neutral-400">14:32</span>
-            <span className="text-[10px] text-neutral-400">45:00</span>
+
+      {/* Processing indicator */}
+      {isProcessing && (
+        <div className="flex items-center gap-3 p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+          <Loader2 className="w-4 h-4 animate-spin text-neutral-500 shrink-0" />
+          <div>
+            <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+              {transcriptionStatus === 'UPLOADED' ? 'Queued for transcription…' : 'Transcribing…'}
+            </p>
+            <p className="text-[10px] text-neutral-400 mt-0.5">
+              This usually takes 1–3 minutes. The page will update automatically.
+            </p>
           </div>
         </div>
+      )}
+
+      {/* Audio player */}
+      {recording?.signedUrl ? (
+        <div className="flex items-center gap-3 p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+          <audio
+            ref={audioRef}
+            src={recording.signedUrl}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onEnded={() => { setIsPlaying(false); setCurrentTime(0); }}
+            onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
+            onLoadedMetadata={() => setAudioDuration(audioRef.current?.duration ?? 0)}
+            preload="metadata"
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 rounded-full bg-neutral-900 dark:bg-neutral-100 hover:bg-neutral-800 dark:hover:bg-neutral-200 shrink-0"
+            onClick={togglePlay}
+          >
+            {isPlaying ? (
+              <Pause className="w-4 h-4 text-white dark:text-neutral-900" />
+            ) : (
+              <Play className="w-4 h-4 text-white dark:text-neutral-900 ml-0.5" />
+            )}
+          </Button>
+          <div className="flex-1">
+            <div
+              className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden cursor-pointer"
+              onClick={handleSeek}
+            >
+              <div
+                className="h-full rounded-full bg-neutral-900 dark:bg-neutral-100 transition-all duration-100"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <div className="flex justify-between mt-1">
+              <span className="text-[10px] text-neutral-400 font-mono">{formatTimestamp(currentTime)}</span>
+              <span className="text-[10px] text-neutral-400 font-mono">{formatDuration(displayDuration)}</span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        !isProcessing && (
+          <div className="p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              Recording unavailable — the playback link may have expired.
+            </p>
+          </div>
+        )
+      )}
+
+      {/* Replace recording */}
+      <div className="flex justify-end">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="audio/*,video/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5 text-xs text-neutral-500"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading || isProcessing}
+        >
+          {isUploading ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Upload className="w-3.5 h-3.5" />
+          )}
+          {isUploading ? 'Uploading…' : 'Replace Recording'}
+        </Button>
       </div>
     </div>
   );
 }
 
 // ── Tab: Transcript ──
-function TranscriptTab({ hasTranscript }: { hasTranscript?: boolean }) {
-  if (!hasTranscript) {
+function TranscriptTab({
+  meetingId,
+  transcriptionStatus,
+}: {
+  meetingId: string;
+  transcriptionStatus: TranscriptionStatus;
+}) {
+  const isCompleted = transcriptionStatus === 'COMPLETED';
+  const isProcessing =
+    transcriptionStatus === 'UPLOADED' || transcriptionStatus === 'PROCESSING';
+
+  const { data: transcript, isLoading } = useTranscript(meetingId, isCompleted);
+
+  if (transcriptionStatus === 'NONE') {
     return (
       <div className="flex flex-col items-center py-10 text-center">
         <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
@@ -502,8 +675,57 @@ function TranscriptTab({ hasTranscript }: { hasTranscript?: boolean }) {
           No transcript available
         </p>
         <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs">
-          Upload a voice note first. The transcript will be generated
-          automatically.
+          Upload a voice note first. The transcript will be generated automatically.
+        </p>
+      </div>
+    );
+  }
+
+  if (isProcessing) {
+    return (
+      <div className="flex flex-col items-center py-10 text-center">
+        <Loader2 className="w-8 h-8 text-neutral-400 animate-spin mb-3" />
+        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+          Transcribing your recording…
+        </p>
+        <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs">
+          This usually takes 1–3 minutes. Hang tight.
+        </p>
+      </div>
+    );
+  }
+
+  if (transcriptionStatus === 'FAILED') {
+    return (
+      <div className="flex flex-col items-center py-10 text-center">
+        <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
+          <FileText className="w-6 h-6 text-neutral-400" />
+        </div>
+        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+          Transcription failed
+        </p>
+        <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs">
+          Something went wrong. Try uploading the recording again.
+        </p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return <SkeletonLines count={6} />;
+  }
+
+  if (!transcript || transcript.segments.length === 0) {
+    return (
+      <div className="flex flex-col items-center py-10 text-center">
+        <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
+          <FileText className="w-6 h-6 text-neutral-400" />
+        </div>
+        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+          No transcript segments
+        </p>
+        <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs">
+          The transcript may still be processing. Refresh the page in a moment.
         </p>
       </div>
     );
@@ -514,13 +736,13 @@ function TranscriptTab({ hasTranscript }: { hasTranscript?: boolean }) {
       <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-4">
         Transcript
       </h3>
-      {mockTranscript.map((seg, i) => (
+      {transcript.segments.map((seg: SMATranscriptSegment) => (
         <div
-          key={i}
-          className="flex gap-3 py-2.5 group hover:bg-neutral-50 dark:hover:bg-neutral-800/30 -mx-2 px-2 rounded-md transition-colors"
+          key={seg.id}
+          className="flex gap-3 py-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 -mx-2 px-2 rounded-md transition-colors"
         >
-          <span className="text-[10px] text-neutral-400 dark:text-neutral-500 w-8 shrink-0 pt-0.5 font-mono">
-            {seg.time}
+          <span className="text-[10px] text-neutral-400 dark:text-neutral-500 w-10 shrink-0 pt-0.5 font-mono">
+            {formatTimestamp(seg.startTime)}
           </span>
           <div className="flex-1 min-w-0">
             <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
@@ -537,8 +759,21 @@ function TranscriptTab({ hasTranscript }: { hasTranscript?: boolean }) {
 }
 
 // ── Tab: AI Summary ──
-function SummaryTab({ hasSummary }: { hasSummary?: boolean }) {
-  if (!hasSummary) {
+function SummaryTab({
+  meetingId,
+  transcriptionStatus,
+}: {
+  meetingId: string;
+  transcriptionStatus: TranscriptionStatus;
+}) {
+  const isCompleted = transcriptionStatus === 'COMPLETED';
+  const { data: summary, isLoading, isError } = useSummary(meetingId, isCompleted);
+
+  if (isLoading) {
+    return <SkeletonLines count={5} />;
+  }
+
+  if (isError || !summary) {
     return (
       <div className="flex flex-col items-center py-10 text-center">
         <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
@@ -562,42 +797,48 @@ function SummaryTab({ hasSummary }: { hasSummary?: boolean }) {
           AI Summary
         </h3>
         <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-          The team discussed the Q1 roadmap and agreed to prioritize the
-          analytics data pipeline. Alex will lead a POC this sprint. A client
-          demo prototype is needed by Feb 20th, and Sarah will coordinate. The
-          Q2 timeline for the analytics dashboard was flagged as tight, and Mike
-          will review dependencies. The updated roadmap should be shared with
-          stakeholders.
+          {summary.summary}
         </p>
       </div>
-      <div>
-        <h4 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-2">
-          Key Points
-        </h4>
-        <ul className="space-y-1.5">
-          {[
-            'Analytics data pipeline POC approved — Alex leading',
-            'Client demo prototype deadline: Feb 20',
-            'Q2 timeline dependencies need review',
-            'Roadmap doc to be shared with stakeholders',
-          ].map((point, i) => (
-            <li
-              key={i}
-              className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-400"
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-violet-400 mt-1.5 shrink-0" />
-              {point}
-            </li>
-          ))}
-        </ul>
-      </div>
+
+      {summary.keyPoints.length > 0 && (
+        <div>
+          <h4 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-2">
+            Key Points
+          </h4>
+          <ul className="space-y-1.5">
+            {summary.keyPoints.map((point: string, i: number) => (
+              <li
+                key={i}
+                className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-400"
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-neutral-400 mt-1.5 shrink-0" />
+                {point}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
 
 // ── Tab: Action Items ──
-function ActionsTab({ hasActionItems }: { hasActionItems?: boolean }) {
-  if (!hasActionItems) {
+function ActionsTab({
+  meetingId,
+  transcriptionStatus,
+}: {
+  meetingId: string;
+  transcriptionStatus: TranscriptionStatus;
+}) {
+  const isCompleted = transcriptionStatus === 'COMPLETED';
+  const { data: actionItems, isLoading } = useActionItems(meetingId, isCompleted);
+
+  if (isLoading) {
+    return <SkeletonLines count={3} />;
+  }
+
+  if (!actionItems || actionItems.length === 0) {
     return (
       <div className="flex flex-col items-center py-10 text-center">
         <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
@@ -607,8 +848,7 @@ function ActionsTab({ hasActionItems }: { hasActionItems?: boolean }) {
           No action items
         </p>
         <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs">
-          Action items will be auto-generated from the AI summary once
-          available.
+          Action items will be auto-generated from the AI summary once available.
         </p>
       </div>
     );
@@ -616,50 +856,41 @@ function ActionsTab({ hasActionItems }: { hasActionItems?: boolean }) {
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
-        Action Items
-      </h3>
-      {mockActionItems.map((item) => (
+      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">Action Items</h3>
+      {actionItems.map((item: ActionItem) => (
         <div
           key={item.id}
-          className={`flex items-start gap-3 p-3 rounded-lg border transition-colors
-            ${
-              item.status === 'completed'
-                ? 'border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/20'
-                : 'border-neutral-200 dark:border-neutral-700'
-            }`}
+          className="flex items-start gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 transition-colors"
         >
-          <div
-            className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0
-            ${
-              item.status === 'completed'
-                ? 'bg-emerald-100 dark:bg-emerald-900/30'
-                : 'border-2 border-neutral-300 dark:border-neutral-600'
-            }`}
-          >
-            {item.status === 'completed' && (
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-            )}
-          </div>
+          <div className="mt-0.5 w-5 h-5 rounded-full border-2 border-neutral-300 dark:border-neutral-600 shrink-0" />
           <div className="flex-1 min-w-0">
-            <p
-              className={`text-sm font-medium ${item.status === 'completed' ? 'text-neutral-400 line-through' : 'text-neutral-900 dark:text-neutral-100'}`}
-            >
+            <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
               {item.title}
             </p>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                {item.assignedTo}
-              </span>
-              {item.dueDate && (
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              {item.assignedTo && (
                 <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                  &middot; Due {item.dueDate}
+                  {item.assignedTo}
+                </span>
+              )}
+              {item.suggestedStartDate && (
+                <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                  &middot; Due{' '}
+                  {new Date(item.suggestedStartDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                  })}
                 </span>
               )}
               <span className="px-1.5 py-0.5 rounded text-[9px] font-medium uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
-                {item.category.replace('_', ' ')}
+                {item.category.replace(/_/g, ' ')}
               </span>
             </div>
+            {item.description && (
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                {item.description}
+              </p>
+            )}
           </div>
         </div>
       ))}

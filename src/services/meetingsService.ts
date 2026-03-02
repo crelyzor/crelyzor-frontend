@@ -1,4 +1,5 @@
 import { apiClient } from '@/lib/apiClient';
+import { useAuthStore } from '@/stores';
 import type { Meeting, MeetingStatus, MeetingMode } from '@/types';
 
 export type MeetingsListParams = {
@@ -94,13 +95,31 @@ export const meetingsApi = {
     apiClient.post<void>('/meetings/public-booking/disable'),
 
   /** POST /sma/meetings/:id/recordings — upload audio blob */
-  uploadRecording: (meetingId: string, blob: Blob, duration: number) => {
+  uploadRecording: async (meetingId: string, blob: Blob, duration: number): Promise<{ id: string }> => {
+    const token = useAuthStore.getState().accessToken;
     const form = new FormData();
-    form.append('recording', blob, 'recording.webm');
+    // Backend multer expects field name "file"
+    const filename = `recording.${blob.type.includes('mp4') ? 'mp4' : 'webm'}`;
+    form.append('file', blob, filename);
     form.append('duration', String(Math.round(duration)));
-    return apiClient.post<{ id: string }>(
-      `/sma/meetings/${meetingId}/recordings`,
-      form
-    );
+
+    const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
+    const base = API_BASE.startsWith('http')
+      ? API_BASE
+      : `${window.location.origin}${API_BASE}`;
+
+    const res = await fetch(`${base}/sma/meetings/${meetingId}/recordings`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.message ?? `Upload failed: ${res.statusText}`);
+    }
+
+    const json = await res.json();
+    return json.data ?? json;
   },
 };
