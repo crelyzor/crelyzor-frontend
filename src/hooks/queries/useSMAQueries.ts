@@ -37,6 +37,20 @@ export function useRecordings(meetingId: string) {
   });
 }
 
+export function useTriggerAI(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => smaApi.triggerAI(meetingId),
+    onSuccess: () => {
+      toast.success('AI processing started…');
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.detail(meetingId) });
+      qc.invalidateQueries({ queryKey: queryKeys.sma.summary(meetingId) });
+      qc.invalidateQueries({ queryKey: queryKeys.sma.actionItems(meetingId) });
+    },
+    onError: () => toast.error('Failed to start AI processing'),
+  });
+}
+
 export function useUploadRecording(meetingId: string) {
   const qc = useQueryClient();
   return useMutation({
@@ -47,7 +61,11 @@ export function useUploadRecording(meetingId: string) {
       qc.invalidateQueries({ queryKey: queryKeys.sma.recordings(meetingId) });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Upload failed. Please try again.');
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Upload failed. Please try again.'
+      );
     },
   });
 }

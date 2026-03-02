@@ -1,9 +1,10 @@
 import { apiClient } from '@/lib/apiClient';
 import { useAuthStore } from '@/stores';
-import type { Meeting, MeetingStatus, MeetingMode } from '@/types';
+import type { Meeting, MeetingStatus, MeetingKind } from '@/types';
 
 export type MeetingsListParams = {
   status?: MeetingStatus;
+  type?: MeetingKind;
   startDate?: string;
   endDate?: string;
   limit?: number;
@@ -11,15 +12,14 @@ export type MeetingsListParams = {
 };
 
 export type CreateMeetingPayload = {
-  title: string;
+  title?: string;
   description?: string;
-  startTime: string;
-  endTime: string;
+  type?: MeetingKind;
+  startTime?: string;
+  endTime?: string;
   timezone?: string;
-  mode: MeetingMode;
   location?: string;
-  participantMemberIds?: string[];
-  guestEmails?: string[];
+  participantUserIds?: string[];
   notes?: string;
 };
 
@@ -28,13 +28,15 @@ export type UpdateMeetingPayload = Partial<CreateMeetingPayload>;
 export const meetingsApi = {
   /** GET /meetings — paginated list with filters */
   list: (params?: MeetingsListParams) =>
-    apiClient.get<{ meetings: Meeting[]; total: number }>('/meetings', {
-      params: params as Record<string, string>,
-    }),
+    apiClient.get<{ meetings: Meeting[]; pagination: { count: number } }>(
+      '/meetings',
+      { params: params as Record<string, string> }
+    ),
 
   /** GET /meetings/without-pagination — all meetings (calendar view, max 1000) */
   listAll: (params?: {
     status?: MeetingStatus;
+    type?: MeetingKind;
     startDate?: string;
     endDate?: string;
   }) =>
@@ -95,7 +97,11 @@ export const meetingsApi = {
     apiClient.post<void>('/meetings/public-booking/disable'),
 
   /** POST /sma/meetings/:id/recordings — upload audio blob */
-  uploadRecording: async (meetingId: string, blob: Blob, duration: number): Promise<{ id: string }> => {
+  uploadRecording: async (
+    meetingId: string,
+    blob: Blob,
+    duration: number
+  ): Promise<{ id: string }> => {
     const token = useAuthStore.getState().accessToken;
     const form = new FormData();
     // Backend multer expects field name "file"
@@ -103,7 +109,8 @@ export const meetingsApi = {
     form.append('file', blob, filename);
     form.append('duration', String(Math.round(duration)));
 
-    const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
+    const API_BASE =
+      (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
     const base = API_BASE.startsWith('http')
       ? API_BASE
       : `${window.location.origin}${API_BASE}`;

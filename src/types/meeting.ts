@@ -1,4 +1,8 @@
-export type MeetingType = 'upcoming' | 'past' | 'live';
+/** Local display grouping — not a backend field */
+export type MeetingView = 'upcoming' | 'past' | 'live';
+
+/** Backend MeetingType enum */
+export type MeetingKind = 'SCHEDULED' | 'RECORDED' | 'VOICE_NOTE';
 
 // Backend status values
 export type MeetingStatus =
@@ -62,10 +66,10 @@ export type Meeting = {
   id: string;
   title: string;
   description?: string;
+  type: MeetingKind;
   startTime: string;
   endTime: string;
   timezone: string;
-  mode: MeetingMode;
   status: MeetingStatus;
   location?: string;
   meetingLink?: string;

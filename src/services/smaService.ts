@@ -54,7 +54,9 @@ export const smaApi = {
   },
 
   getActionItems: async (meetingId: string): Promise<ActionItem[]> => {
-    const result = await apiClient.get(`/sma/meetings/${meetingId}/action-items`);
+    const result = await apiClient.get(
+      `/sma/meetings/${meetingId}/action-items`
+    );
     return unwrap<ActionItem[]>(result);
   },
 
@@ -63,14 +65,22 @@ export const smaApi = {
     return unwrap<SMARecording[]>(result);
   },
 
+  triggerAI: async (meetingId: string): Promise<void> => {
+    await apiClient.post(`/sma/meetings/${meetingId}/process-ai`);
+  },
+
   // Multipart upload — cannot go through apiClient (it JSON.stringifies the body)
-  uploadRecording: async (meetingId: string, file: File): Promise<{ id: string }> => {
+  uploadRecording: async (
+    meetingId: string,
+    file: File
+  ): Promise<{ id: string }> => {
     const token = useAuthStore.getState().accessToken;
     const form = new FormData();
     // Backend multer expects field name "file"
     form.append('file', file, file.name);
 
-    const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
+    const API_BASE =
+      (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
     const base = API_BASE.startsWith('http')
       ? API_BASE
       : `${window.location.origin}${API_BASE}`;

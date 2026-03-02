@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { PageMotion } from '@/components/PageMotion';
 import {
   ArrowLeft,
@@ -19,11 +20,14 @@ import {
   RefreshCcw,
   CheckCircle2,
   XCircle,
+  ThumbsUp,
+  ThumbsDown,
   Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { queryKeys } from '@/lib/queryKeys';
 import { meetingsApi } from '@/services/meetingsService';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
@@ -31,11 +35,18 @@ import { getStatusStyle, getStatusLabel } from '@/types';
 import type { TranscriptionStatus, ActionItem } from '@/types';
 import { PageLoader } from '@/components/PageLoader';
 import {
+  useAcceptMeeting,
+  useDeclineMeeting,
+  useCancelMeeting,
+  useCompleteMeeting,
+} from '@/hooks/queries/useMeetingQueries';
+import {
   useTranscript,
   useSummary,
   useActionItems,
   useRecordings,
   useUploadRecording,
+  useTriggerAI,
 } from '@/hooks/queries/useSMAQueries';
 import type { SMATranscriptSegment, SMARecording } from '@/services/smaService';
 
@@ -87,15 +98,30 @@ export default function MeetingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<SMATab>('overview');
+  const [moreOpen, setMoreOpen] = useState(false);
+  const completedAtRef = useRef<number | null>(null);
 
-  // Poll the meeting while transcription is in progress
+  const accept = useAcceptMeeting();
+  const decline = useDeclineMeeting();
+  const cancel = useCancelMeeting();
+  const complete = useCompleteMeeting();
+
+  // Poll while transcription runs, then for 30s after COMPLETED to catch AI title update
   const { data: rawMeeting, isLoading } = useQuery({
     queryKey: queryKeys.meetings.detail(id ?? ''),
     queryFn: () => meetingsApi.getById(id ?? ''),
     enabled: !!id,
     refetchInterval: (query) => {
       const status = query.state.data?.transcriptionStatus;
-      return status === 'UPLOADED' || status === 'PROCESSING' ? 3000 : false;
+      if (status === 'UPLOADED' || status === 'PROCESSING') {
+        completedAtRef.current = null;
+        return 3000;
+      }
+      if (status === 'COMPLETED') {
+        if (!completedAtRef.current) completedAtRef.current = Date.now();
+        if (Date.now() - completedAtRef.current < 30_000) return 4000;
+      }
+      return false;
     },
   });
 
@@ -161,9 +187,42 @@ export default function MeetingDetail() {
                   </p>
                 )}
               </div>
-              <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
-                <MoreHorizontal className="w-4 h-4 text-neutral-500" />
-              </Button>
+              <Popover open={moreOpen} onOpenChange={setMoreOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
+                    <MoreHorizontal className="w-4 h-4 text-neutral-500" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-44 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
+                  align="end"
+                >
+                  {(meeting.status === 'ACCEPTED' || meeting.status === 'CREATED') && (
+                    <button
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                      onClick={() => { complete.mutate(rawMeeting.id, { onSuccess: () => toast.success('Marked as complete'), onError: () => toast.error('Failed') }); setMoreOpen(false); }}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Mark complete
+                    </button>
+                  )}
+                  {(meeting.status === 'PENDING_ACCEPTANCE' || meeting.status === 'RESCHEDULING_REQUESTED') && (
+                    <button
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                      onClick={() => { accept.mutate(rawMeeting.id, { onSuccess: () => toast.success('Accepted'), onError: () => toast.error('Failed') }); setMoreOpen(false); }}
+                    >
+                      <ThumbsUp className="w-3.5 h-3.5" /> Accept
+                    </button>
+                  )}
+                  {(meeting.status !== 'CANCELLED' && meeting.status !== 'DECLINED' && meeting.status !== 'COMPLETED') && (
+                    <button
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                      onClick={() => { cancel.mutate({ id: rawMeeting.id }, { onSuccess: () => { toast.success('Cancelled'); navigate('/meetings'); }, onError: () => toast.error('Failed') }); setMoreOpen(false); }}
+                    >
+                      <XCircle className="w-3.5 h-3.5" /> Cancel meeting
+                    </button>
+                  )}
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Meta grid */}
@@ -177,11 +236,14 @@ export default function MeetingDetail() {
                     Date
                   </p>
                   <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
-                    {new Date(meeting._raw.startTime).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
+                    {new Date(meeting._raw.startTime).toLocaleDateString(
+                      'en-US',
+                      {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      }
+                    )}
                   </p>
                 </div>
               </div>
@@ -241,38 +303,94 @@ export default function MeetingDetail() {
             </div>
 
             {/* Quick Actions */}
-            <div className="flex gap-2 mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800">
-              {meeting.status === 'ACCEPTED' && (
+            <div className="flex gap-2 mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800 flex-wrap">
+              {/* Pending: Accept + Decline */}
+              {(meeting.status === 'PENDING_ACCEPTANCE' || meeting.status === 'RESCHEDULING_REQUESTED') && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
+                    disabled={accept.isPending}
+                    onClick={() => accept.mutate(rawMeeting.id, {
+                      onSuccess: () => toast.success('Meeting accepted'),
+                      onError: () => toast.error('Failed to accept'),
+                    })}
+                  >
+                    {accept.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ThumbsUp className="w-3.5 h-3.5" />}
+                    Accept
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+                    disabled={decline.isPending}
+                    onClick={() => decline.mutate({ id: rawMeeting.id }, {
+                      onSuccess: () => { toast.success('Meeting declined'); navigate('/meetings'); },
+                      onError: () => toast.error('Failed to decline'),
+                    })}
+                  >
+                    {decline.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ThumbsDown className="w-3.5 h-3.5" />}
+                    Decline
+                  </Button>
+                </>
+              )}
+
+              {/* Active: Mark Complete + Reschedule + Edit */}
+              {(meeting.status === 'ACCEPTED' || meeting.status === 'CREATED') && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
+                    disabled={complete.isPending}
+                    onClick={() => complete.mutate(rawMeeting.id, {
+                      onSuccess: () => toast.success('Marked as complete'),
+                      onError: () => toast.error('Failed to update'),
+                    })}
+                  >
+                    {complete.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                    Mark Complete
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
+                    onClick={() => toast.info('Reschedule coming soon')}
+                  >
+                    <RefreshCcw className="w-3.5 h-3.5" />
+                    Reschedule
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
+                    onClick={() => toast.info('Edit coming soon')}
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    Edit
+                  </Button>
+                </>
+              )}
+
+              <div className="flex-1" />
+
+              {/* Cancel — only for active meetings */}
+              {(meeting.status === 'ACCEPTED' || meeting.status === 'CREATED' || meeting.status === 'PENDING_ACCEPTANCE') && (
                 <Button
-                  variant="outline"
+                  variant="destructive"
                   size="sm"
-                  className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
+                  className="text-xs gap-1.5 h-8"
+                  disabled={cancel.isPending}
+                  onClick={() => cancel.mutate({ id: rawMeeting.id }, {
+                    onSuccess: () => { toast.success('Meeting cancelled'); navigate('/meetings'); },
+                    onError: () => toast.error('Failed to cancel'),
+                  })}
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Mark Completed
+                  {cancel.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
+                  Cancel
                 </Button>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
-              >
-                <RefreshCcw className="w-3.5 h-3.5" />
-                Reschedule
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-                Edit
-              </Button>
-              <div className="flex-1" />
-              <Button variant="destructive" size="sm" className="text-xs gap-1.5 h-8">
-                <XCircle className="w-3.5 h-3.5" />
-                Cancel
-              </Button>
             </div>
           </CardContent>
         </Card>
@@ -280,7 +398,10 @@ export default function MeetingDetail() {
         {/* ── SMA Section ── */}
         <Card className="border-neutral-200 dark:border-neutral-800">
           <CardContent className="p-0">
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as SMATab)}>
+            <Tabs
+              value={activeTab}
+              onValueChange={(v) => setActiveTab(v as SMATab)}
+            >
               <TabsList
                 variant="line"
                 className="w-full h-auto justify-start gap-0 rounded-none border-b border-neutral-200 dark:border-neutral-800 bg-transparent p-0 overflow-x-auto"
@@ -302,6 +423,7 @@ export default function MeetingDetail() {
 
               <TabsContent value="overview" className="p-6 mt-0">
                 <OverviewTab
+                  meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}
                   hasSMA={hasSMA}
                   onUploadClick={() => setActiveTab('recording')}
@@ -341,10 +463,12 @@ export default function MeetingDetail() {
 
 // ── Tab: Overview ──
 function OverviewTab({
+  meetingId,
   transcriptionStatus,
   hasSMA,
   onUploadClick,
 }: {
+  meetingId: string;
   transcriptionStatus: TranscriptionStatus;
   hasSMA: boolean;
   onUploadClick: () => void;
@@ -353,6 +477,11 @@ function OverviewTab({
     transcriptionStatus === 'UPLOADED' || transcriptionStatus === 'PROCESSING';
   const isCompleted = transcriptionStatus === 'COMPLETED';
   const isFailed = transcriptionStatus === 'FAILED';
+
+  const { data: summary } = useSummary(meetingId, isCompleted);
+  const { mutate: triggerAI, isPending: isRetrying } = useTriggerAI(meetingId);
+  // Show retry if transcription succeeded but AI has no summary (previous AI job failed)
+  const aiMissing = isCompleted && !summary;
 
   const smaItems = [
     {
@@ -395,6 +524,24 @@ function OverviewTab({
         </div>
       )}
 
+      {aiMissing && (
+        <div className="flex items-center justify-between p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+          <p className="text-xs text-neutral-600 dark:text-neutral-400">
+            AI processing didn't complete. Generate summary and action items now.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs gap-1.5 ml-3 shrink-0 h-7"
+            onClick={() => triggerAI()}
+            disabled={isRetrying}
+          >
+            {isRetrying ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCcw className="w-3 h-3" />}
+            {isRetrying ? 'Running…' : 'Retry AI'}
+          </Button>
+        </div>
+      )}
+
       {hasSMA ? (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {smaItems.map((item) => (
@@ -428,7 +575,11 @@ function OverviewTab({
                       : 'text-neutral-400 dark:text-neutral-500'
                 }`}
               >
-                {item.processing ? 'Processing…' : item.ready ? 'Available' : 'Not available'}
+                {item.processing
+                  ? 'Processing…'
+                  : item.ready
+                    ? 'Available'
+                    : 'Not available'}
               </span>
             </div>
           ))}
@@ -442,9 +593,15 @@ function OverviewTab({
             No voice note uploaded
           </p>
           <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs mb-4">
-            Upload a recording to unlock transcript, AI summary, and auto-generated action items.
+            Upload a recording to unlock transcript, AI summary, and
+            auto-generated action items.
           </p>
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={onUploadClick}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-xs"
+            onClick={onUploadClick}
+          >
             <Upload className="w-3.5 h-3.5" />
             Upload Recording
           </Button>
@@ -469,7 +626,8 @@ function RecordingTab({
   const [audioDuration, setAudioDuration] = useState(0);
 
   const { data: recordings, isLoading } = useRecordings(meetingId);
-  const { mutate: upload, isPending: isUploading } = useUploadRecording(meetingId);
+  const { mutate: upload, isPending: isUploading } =
+    useUploadRecording(meetingId);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -523,7 +681,8 @@ function RecordingTab({
           No voice note yet
         </p>
         <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs mb-4">
-          Upload an audio or video recording to get a transcript, AI summary, and action items.
+          Upload an audio or video recording to get a transcript, AI summary,
+          and action items.
         </p>
         <Button
           variant="outline"
@@ -544,12 +703,15 @@ function RecordingTab({
   }
 
   const displayDuration = audioDuration || recording?.duration || 0;
-  const progress = displayDuration > 0 ? (currentTime / displayDuration) * 100 : 0;
+  const progress =
+    displayDuration > 0 ? (currentTime / displayDuration) * 100 : 0;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">Recording</h3>
+        <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+          Recording
+        </h3>
         {recording && (
           <span className="text-[10px] text-neutral-400">
             {recording.fileName} &middot; {formatFileSize(recording.fileSize)}
@@ -563,10 +725,13 @@ function RecordingTab({
           <Loader2 className="w-4 h-4 animate-spin text-neutral-500 shrink-0" />
           <div>
             <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-              {transcriptionStatus === 'UPLOADED' ? 'Queued for transcription…' : 'Transcribing…'}
+              {transcriptionStatus === 'UPLOADED'
+                ? 'Queued for transcription…'
+                : 'Transcribing…'}
             </p>
             <p className="text-[10px] text-neutral-400 mt-0.5">
-              This usually takes 1–3 minutes. The page will update automatically.
+              This usually takes 1–3 minutes. The page will update
+              automatically.
             </p>
           </div>
         </div>
@@ -580,9 +745,16 @@ function RecordingTab({
             src={recording.signedUrl}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
-            onEnded={() => { setIsPlaying(false); setCurrentTime(0); }}
-            onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
-            onLoadedMetadata={() => setAudioDuration(audioRef.current?.duration ?? 0)}
+            onEnded={() => {
+              setIsPlaying(false);
+              setCurrentTime(0);
+            }}
+            onTimeUpdate={() =>
+              setCurrentTime(audioRef.current?.currentTime ?? 0)
+            }
+            onLoadedMetadata={() =>
+              setAudioDuration(audioRef.current?.duration ?? 0)
+            }
             preload="metadata"
           />
           <Button
@@ -608,8 +780,12 @@ function RecordingTab({
               />
             </div>
             <div className="flex justify-between mt-1">
-              <span className="text-[10px] text-neutral-400 font-mono">{formatTimestamp(currentTime)}</span>
-              <span className="text-[10px] text-neutral-400 font-mono">{formatDuration(displayDuration)}</span>
+              <span className="text-[10px] text-neutral-400 font-mono">
+                {formatTimestamp(currentTime)}
+              </span>
+              <span className="text-[10px] text-neutral-400 font-mono">
+                {formatDuration(displayDuration)}
+              </span>
             </div>
           </div>
         </div>
@@ -675,7 +851,8 @@ function TranscriptTab({
           No transcript available
         </p>
         <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs">
-          Upload a voice note first. The transcript will be generated automatically.
+          Upload a voice note first. The transcript will be generated
+          automatically.
         </p>
       </div>
     );
@@ -767,7 +944,11 @@ function SummaryTab({
   transcriptionStatus: TranscriptionStatus;
 }) {
   const isCompleted = transcriptionStatus === 'COMPLETED';
-  const { data: summary, isLoading, isError } = useSummary(meetingId, isCompleted);
+  const {
+    data: summary,
+    isLoading,
+    isError,
+  } = useSummary(meetingId, isCompleted);
 
   if (isLoading) {
     return <SkeletonLines count={5} />;
@@ -832,7 +1013,10 @@ function ActionsTab({
   transcriptionStatus: TranscriptionStatus;
 }) {
   const isCompleted = transcriptionStatus === 'COMPLETED';
-  const { data: actionItems, isLoading } = useActionItems(meetingId, isCompleted);
+  const { data: actionItems, isLoading } = useActionItems(
+    meetingId,
+    isCompleted
+  );
 
   if (isLoading) {
     return <SkeletonLines count={3} />;
@@ -848,7 +1032,8 @@ function ActionsTab({
           No action items
         </p>
         <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs">
-          Action items will be auto-generated from the AI summary once available.
+          Action items will be auto-generated from the AI summary once
+          available.
         </p>
       </div>
     );
@@ -856,7 +1041,9 @@ function ActionsTab({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">Action Items</h3>
+      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+        Action Items
+      </h3>
       {actionItems.map((item: ActionItem) => (
         <div
           key={item.id}
@@ -876,10 +1063,13 @@ function ActionsTab({
               {item.suggestedStartDate && (
                 <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
                   &middot; Due{' '}
-                  {new Date(item.suggestedStartDate).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                  })}
+                  {new Date(item.suggestedStartDate).toLocaleDateString(
+                    'en-US',
+                    {
+                      month: 'short',
+                      day: 'numeric',
+                    }
+                  )}
                 </span>
               )}
               <span className="px-1.5 py-0.5 rounded text-[9px] font-medium uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">

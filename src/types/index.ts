@@ -1,6 +1,7 @@
 export type {
   Meeting,
-  MeetingType,
+  MeetingView,
+  MeetingKind,
   MeetingStatus,
   MeetingMode,
   MeetingProvider,

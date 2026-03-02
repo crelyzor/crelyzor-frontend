@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Mic, Square, Trash2, Save, Video } from 'lucide-react';
+import { Plus, Mic, Square, Trash2, Save, CalendarPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { meetingsApi } from '@/services/meetingsService';
+import type { MeetingKind } from '@/types';
 
-type FabState = 'idle' | 'menu' | 'recording' | 'review' | 'saving';
+type FabState = 'idle' | 'menu' | 'meeting-submenu' | 'recording' | 'review' | 'saving';
 
 interface RecordingResult {
   blob: Blob;
@@ -14,12 +15,8 @@ interface RecordingResult {
 }
 
 function formatDuration(seconds: number) {
-  const m = Math.floor(seconds / 60)
-    .toString()
-    .padStart(2, '0');
-  const s = Math.floor(seconds % 60)
-    .toString()
-    .padStart(2, '0');
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const s = Math.floor(seconds % 60).toString().padStart(2, '0');
   return `${m}:${s}`;
 }
 
@@ -28,17 +25,9 @@ function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function getTimestampTitle() {
-  return new Date().toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 export function StartMeetingFab() {
   const [state, setState] = useState<FabState>('idle');
+  const [recordingType, setRecordingType] = useState<MeetingKind>('RECORDED');
   const [elapsed, setElapsed] = useState(0);
   const [recording, setRecording] = useState<RecordingResult | null>(null);
   const navigate = useNavigate();
@@ -55,8 +44,9 @@ export function StartMeetingFab() {
     };
   }, []);
 
-  const startRecording = useCallback(async () => {
-    // Request mic
+  const startRecording = useCallback(async (type: MeetingKind) => {
+    setRecordingType(type);
+
     let stream: MediaStream;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -91,8 +81,6 @@ export function StartMeetingFab() {
     };
 
     recorder.start(500);
-
-    // Start timer
     setElapsed(0);
     timerRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
   }, []);
@@ -120,18 +108,14 @@ export function StartMeetingFab() {
     setState('saving');
 
     const now = new Date();
-    const title = `Recording · ${getTimestampTitle()}`;
-    const endTime = new Date(now.getTime() + recording.durationSeconds * 1000);
+    const startTime = new Date(now.getTime() - recording.durationSeconds * 1000);
+    const endTime = now;
 
-    // Create meeting + upload recording
     try {
       const meeting = await meetingsApi.create({
-        title,
-        startTime: new Date(
-          now.getTime() - recording.durationSeconds * 1000
-        ).toISOString(),
+        type: recordingType,
+        startTime: startTime.toISOString(),
         endTime: endTime.toISOString(),
-        mode: 'IN_PERSON',
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
 
@@ -154,11 +138,15 @@ export function StartMeetingFab() {
       toast.error('Failed to save meeting');
       setState('review');
     }
-  }, [recording, navigate]);
+  }, [recording, recordingType, navigate]);
+
+  const dismiss = () => setState('idle');
+
+  const recordingTypeLabel = recordingType === 'VOICE_NOTE' ? 'Voice note' : 'Meeting';
 
   return (
     <>
-      {/* ── Menu ── */}
+      {/* ── Top-level menu: Voice Note / Meeting ── */}
       <AnimatePresence>
         {state === 'menu' && (
           <>
@@ -166,7 +154,7 @@ export function StartMeetingFab() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setState('idle')}
+              onClick={dismiss}
               className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-50"
             />
             <motion.div
@@ -177,46 +165,106 @@ export function StartMeetingFab() {
               className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-[320px] px-4"
             >
               <div className="bg-[#1C1C1E] border border-white/5 rounded-[28px] p-2 shadow-2xl flex flex-col gap-2">
-                {/* Start Recording */}
+                {/* Voice Note */}
                 <Button
                   variant="default"
                   onClick={() => {
                     setState('idle');
-                    startRecording();
+                    startRecording('VOICE_NOTE');
                   }}
-                  className="h-14 w-full bg-white text-black hover:bg-neutral-100 rounded-[20px] text-[15px] font-medium shadow-none active:scale-[0.98] transition-all"
+                  className="h-14 w-full bg-white text-black hover:bg-neutral-100 rounded-[20px] text-[15px] font-medium shadow-none active:scale-[0.98] transition-all justify-start px-5"
                 >
-                  <Mic className="w-5 h-5 mr-2.5" />
-                  Start recording
+                  <Mic className="w-5 h-5 mr-3 shrink-0" />
+                  <div className="flex flex-col items-start leading-tight">
+                    <span>Voice Note</span>
+                    <span className="text-[11px] font-normal text-neutral-500">Quick audio capture + AI summary</span>
+                  </div>
                 </Button>
 
-                {/* Join as Bot — coming soon */}
+                {/* Meeting */}
                 <Button
                   variant="ghost"
-                  disabled
-                  className="h-14 w-full bg-[#2C2C2E] text-neutral-500 rounded-[20px] text-[15px] font-medium justify-between px-6 opacity-50 cursor-not-allowed"
+                  onClick={() => setState('meeting-submenu')}
+                  className="h-14 w-full bg-[#2C2C2E] text-neutral-200 hover:bg-[#3A3A3C] rounded-[20px] text-[15px] font-medium active:scale-[0.98] transition-all justify-start px-5"
                 >
-                  <span>Join as a bot</span>
-                  <div className="flex -space-x-1.5">
-                    <div className="w-5 h-5 rounded-full bg-[#2D8CFF] flex items-center justify-center border border-[#2C2C2E]">
-                      <Video className="w-2.5 h-2.5 text-white" />
-                    </div>
-                    <div className="w-5 h-5 rounded-full bg-[#00AC47] flex items-center justify-center border border-[#2C2C2E]">
-                      <Video className="w-2.5 h-2.5 text-white" />
-                    </div>
-                    <div className="w-5 h-5 rounded-full bg-[#7B83EB] flex items-center justify-center border border-[#2C2C2E]">
-                      <Video className="w-2.5 h-2.5 text-white" />
-                    </div>
+                  <CalendarPlus className="w-5 h-5 mr-3 shrink-0" />
+                  <div className="flex flex-col items-start leading-tight">
+                    <span>Meeting</span>
+                    <span className="text-[11px] font-normal text-neutral-500">Record or schedule a meeting</span>
                   </div>
                 </Button>
 
                 {/* Cancel */}
                 <Button
                   variant="ghost"
-                  onClick={() => setState('idle')}
-                  className="h-14 w-full bg-[#2C2C2E] text-neutral-400 hover:bg-[#3A3A3C] hover:text-neutral-300 rounded-[20px] text-[15px] font-medium active:scale-[0.98] transition-all"
+                  onClick={dismiss}
+                  className="h-11 w-full bg-transparent text-neutral-500 hover:text-neutral-300 rounded-[20px] text-[14px] font-medium active:scale-[0.98] transition-all"
                 >
                   Cancel
+                </Button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ── Meeting sub-menu: Start Recording / Schedule ── */}
+      <AnimatePresence>
+        {state === 'meeting-submenu' && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={dismiss}
+              className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-[320px] px-4"
+            >
+              <div className="bg-[#1C1C1E] border border-white/5 rounded-[28px] p-2 shadow-2xl flex flex-col gap-2">
+                {/* Back label */}
+                <div className="px-4 pt-2 pb-1">
+                  <p className="text-[11px] text-neutral-500 uppercase tracking-wider font-medium">Meeting</p>
+                </div>
+
+                {/* Start Recording */}
+                <Button
+                  variant="default"
+                  onClick={() => {
+                    setState('idle');
+                    startRecording('RECORDED');
+                  }}
+                  className="h-14 w-full bg-white text-black hover:bg-neutral-100 rounded-[20px] text-[15px] font-medium shadow-none active:scale-[0.98] transition-all justify-start px-5"
+                >
+                  <Mic className="w-5 h-5 mr-3 shrink-0" />
+                  Start Recording
+                </Button>
+
+                {/* Schedule — coming soon */}
+                <Button
+                  variant="ghost"
+                  disabled
+                  className="h-14 w-full bg-[#2C2C2E] text-neutral-600 rounded-[20px] text-[15px] font-medium justify-between px-5 cursor-not-allowed opacity-40"
+                >
+                  <div className="flex items-center gap-3">
+                    <CalendarPlus className="w-5 h-5" />
+                    Schedule
+                  </div>
+                  <span className="text-[10px] uppercase tracking-wider text-neutral-600">Soon</span>
+                </Button>
+
+                {/* Back */}
+                <Button
+                  variant="ghost"
+                  onClick={() => setState('menu')}
+                  className="h-11 w-full bg-transparent text-neutral-500 hover:text-neutral-300 rounded-[20px] text-[14px] font-medium active:scale-[0.98] transition-all"
+                >
+                  ← Back
                 </Button>
               </div>
             </motion.div>
@@ -234,16 +282,14 @@ export function StartMeetingFab() {
             className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40"
           >
             <div className="flex items-center gap-3 h-12 pl-4 pr-2 rounded-full bg-[#1C1C1E] border border-white/5 shadow-xl shadow-black/40">
-              {/* Pulsing red dot */}
               <span className="relative flex h-2.5 w-2.5 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
               </span>
-              {/* Timer */}
+              <span className="text-xs text-neutral-400">{recordingTypeLabel}</span>
               <span className="text-sm font-mono text-white tabular-nums min-w-[40px]">
                 {formatDuration(elapsed)}
               </span>
-              {/* Stop */}
               <button
                 onClick={stopRecording}
                 className="h-8 w-8 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center transition-colors active:scale-95 ml-1"
@@ -255,7 +301,7 @@ export function StartMeetingFab() {
         )}
       </AnimatePresence>
 
-      {/* ── Review panel — save or discard ── */}
+      {/* ── Review panel ── */}
       <AnimatePresence>
         {state === 'review' && recording && (
           <>
@@ -273,14 +319,13 @@ export function StartMeetingFab() {
               className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-[320px] px-4"
             >
               <div className="bg-[#1C1C1E] border border-white/5 rounded-[28px] p-2 shadow-2xl flex flex-col gap-2">
-                {/* Recording info */}
                 <div className="px-4 pt-3 pb-2 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-[#2C2C2E] flex items-center justify-center shrink-0">
                     <Mic className="w-4 h-4 text-neutral-400" />
                   </div>
                   <div>
                     <p className="text-[13px] font-semibold text-white">
-                      Recording complete
+                      {recordingTypeLabel} recorded
                     </p>
                     <p className="text-[11px] text-neutral-500 mt-0.5">
                       {formatDuration(recording.durationSeconds)} &middot;{' '}
@@ -291,16 +336,14 @@ export function StartMeetingFab() {
 
                 <div className="h-px bg-white/5 mx-2" />
 
-                {/* Save */}
                 <Button
                   onClick={handleSave}
                   className="h-14 w-full bg-white text-black hover:bg-neutral-100 rounded-[20px] text-[15px] font-medium shadow-none active:scale-[0.98] transition-all"
                 >
                   <Save className="w-5 h-5 mr-2.5" />
-                  Save recording
+                  Save &amp; process
                 </Button>
 
-                {/* Discard */}
                 <Button
                   variant="ghost"
                   onClick={handleDiscard}
@@ -347,7 +390,7 @@ export function StartMeetingFab() {
               className="h-12 px-6 rounded-full bg-neutral-900 text-white shadow-xl shadow-neutral-900/20 dark:shadow-black/40 hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 transition-all active:scale-95"
             >
               <Plus className="w-4 h-4 mr-2" />
-              New Meeting
+              Create
             </Button>
           </motion.div>
         )}

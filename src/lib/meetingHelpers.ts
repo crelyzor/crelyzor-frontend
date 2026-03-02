@@ -42,7 +42,7 @@ export function toDisplayMeeting(m: Meeting): DisplayMeeting {
     duration: formatMeetingDuration(m),
     participants: getParticipantNames(m),
     status: m.status,
-    location: m.mode === 'IN_PERSON' ? m.location : m.meetingLink,
+    location: m.location,
     category: undefined,
     organizer: m.createdBy?.name,
     hasRecording: !!m.recording,

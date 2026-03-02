@@ -12,11 +12,24 @@ import {
   MoreHorizontal,
   Calendar,
   ArrowUpRight,
+  CheckCircle2,
+  XCircle,
+  ThumbsUp,
+  ThumbsDown,
+  ExternalLink,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { motion, AnimatePresence } from 'motion/react';
+import { toast } from 'sonner';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
-import { useMeetingsAll } from '@/hooks/queries/useMeetingQueries';
+import {
+  useMeetingsAll,
+  useAcceptMeeting,
+  useDeclineMeeting,
+  useCancelMeeting,
+  useCompleteMeeting,
+} from '@/hooks/queries/useMeetingQueries';
 import { toDisplayMeeting, type DisplayMeeting } from '@/lib/meetingHelpers';
 import { getStatusStyle, getStatusLabel } from '@/types';
 import type { MeetingStatus } from '@/types';
@@ -72,6 +85,121 @@ function groupByDate(meetings: DisplayMeeting[]) {
         });
       return { label, date, meetings: items };
     });
+}
+
+// ── Meeting context menu ──
+function MeetingContextMenu({
+  meeting,
+}: {
+  meeting: DisplayMeeting;
+}) {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+
+  const accept = useAcceptMeeting();
+  const decline = useDeclineMeeting();
+  const cancel = useCancelMeeting();
+  const complete = useCompleteMeeting();
+
+  const close = () => setOpen(false);
+
+  const canAccept =
+    meeting.status === 'PENDING_ACCEPTANCE' ||
+    meeting.status === 'RESCHEDULING_REQUESTED';
+  const canDecline = canAccept;
+  const canComplete =
+    meeting.status === 'ACCEPTED' || meeting.status === 'CREATED';
+  const canCancel = canComplete;
+
+  const menuItems: {
+    label: string;
+    icon: React.ElementType;
+    action: () => void;
+    danger?: boolean;
+  }[] = [
+    {
+      label: 'Open',
+      icon: ExternalLink,
+      action: () => { navigate(`/meetings/${meeting.id}`); close(); },
+    },
+    ...(canAccept ? [{
+      label: 'Accept',
+      icon: ThumbsUp,
+      action: () => {
+        accept.mutate(meeting.id, {
+          onSuccess: () => { toast.success('Meeting accepted'); close(); },
+          onError: () => toast.error('Failed to accept'),
+        });
+      },
+    }] : []),
+    ...(canDecline ? [{
+      label: 'Decline',
+      icon: ThumbsDown,
+      action: () => {
+        decline.mutate({ id: meeting.id }, {
+          onSuccess: () => { toast.success('Meeting declined'); close(); },
+          onError: () => toast.error('Failed to decline'),
+        });
+      },
+      danger: true,
+    }] : []),
+    ...(canComplete ? [{
+      label: 'Mark complete',
+      icon: CheckCircle2,
+      action: () => {
+        complete.mutate(meeting.id, {
+          onSuccess: () => { toast.success('Marked as complete'); close(); },
+          onError: () => toast.error('Failed to update'),
+        });
+      },
+    }] : []),
+    ...(canCancel ? [{
+      label: 'Cancel meeting',
+      icon: XCircle,
+      action: () => {
+        cancel.mutate({ id: meeting.id }, {
+          onSuccess: () => { toast.success('Meeting cancelled'); close(); },
+          onError: () => toast.error('Failed to cancel'),
+        });
+      },
+      danger: true,
+    }] : []),
+  ];
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <MoreHorizontal className="w-4 h-4 text-neutral-400" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-44 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
+        align="end"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {menuItems.map((item) => (
+          <button
+            key={item.label}
+            onClick={item.action}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors
+              ${item.danger
+                ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30'
+                : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+              }`}
+          >
+            <item.icon className="w-3.5 h-3.5 shrink-0" />
+            {item.label}
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 export default function Meetings() {
@@ -345,14 +473,7 @@ export default function Meetings() {
                                     Open
                                     <ArrowUpRight className="w-3 h-3" />
                                   </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <MoreHorizontal className="w-4 h-4 text-neutral-400" />
-                                  </Button>
+                                  <MeetingContextMenu meeting={meeting} />
                                 </div>
                               </div>
                             </motion.div>
