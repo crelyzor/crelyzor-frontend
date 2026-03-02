@@ -7,7 +7,13 @@ import { toast } from 'sonner';
 import { meetingsApi } from '@/services/meetingsService';
 import type { MeetingKind } from '@/types';
 
-type FabState = 'idle' | 'menu' | 'meeting-submenu' | 'recording' | 'review' | 'saving';
+type FabState =
+  | 'idle'
+  | 'menu'
+  | 'meeting-submenu'
+  | 'recording'
+  | 'review'
+  | 'saving';
 
 interface RecordingResult {
   blob: Blob;
@@ -15,8 +21,12 @@ interface RecordingResult {
 }
 
 function formatDuration(seconds: number) {
-  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-  const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+  const m = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, '0');
+  const s = Math.floor(seconds % 60)
+    .toString()
+    .padStart(2, '0');
   return `${m}:${s}`;
 }
 
@@ -108,7 +118,9 @@ export function StartMeetingFab() {
     setState('saving');
 
     const now = new Date();
-    const startTime = new Date(now.getTime() - recording.durationSeconds * 1000);
+    const startTime = new Date(
+      now.getTime() - recording.durationSeconds * 1000
+    );
     const endTime = now;
 
     try {
@@ -142,7 +154,8 @@ export function StartMeetingFab() {
 
   const dismiss = () => setState('idle');
 
-  const recordingTypeLabel = recordingType === 'VOICE_NOTE' ? 'Voice note' : 'Meeting';
+  const recordingTypeLabel =
+    recordingType === 'VOICE_NOTE' ? 'Voice note' : 'Meeting';
 
   return (
     <>
@@ -177,7 +190,9 @@ export function StartMeetingFab() {
                   <Mic className="w-5 h-5 mr-3 shrink-0" />
                   <div className="flex flex-col items-start leading-tight">
                     <span>Voice Note</span>
-                    <span className="text-[11px] font-normal text-neutral-500">Quick audio capture + AI summary</span>
+                    <span className="text-[11px] font-normal text-neutral-500">
+                      Quick audio capture + AI summary
+                    </span>
                   </div>
                 </Button>
 
@@ -190,7 +205,9 @@ export function StartMeetingFab() {
                   <CalendarPlus className="w-5 h-5 mr-3 shrink-0" />
                   <div className="flex flex-col items-start leading-tight">
                     <span>Meeting</span>
-                    <span className="text-[11px] font-normal text-neutral-500">Record or schedule a meeting</span>
+                    <span className="text-[11px] font-normal text-neutral-500">
+                      Record or schedule a meeting
+                    </span>
                   </div>
                 </Button>
 
@@ -229,7 +246,9 @@ export function StartMeetingFab() {
               <div className="bg-[#1C1C1E] border border-white/5 rounded-[28px] p-2 shadow-2xl flex flex-col gap-2">
                 {/* Back label */}
                 <div className="px-4 pt-2 pb-1">
-                  <p className="text-[11px] text-neutral-500 uppercase tracking-wider font-medium">Meeting</p>
+                  <p className="text-[11px] text-neutral-500 uppercase tracking-wider font-medium">
+                    Meeting
+                  </p>
                 </div>
 
                 {/* Start Recording */}
@@ -255,7 +274,9 @@ export function StartMeetingFab() {
                     <CalendarPlus className="w-5 h-5" />
                     Schedule
                   </div>
-                  <span className="text-[10px] uppercase tracking-wider text-neutral-600">Soon</span>
+                  <span className="text-[10px] uppercase tracking-wider text-neutral-600">
+                    Soon
+                  </span>
                 </Button>
 
                 {/* Back */}
@@ -286,7 +307,9 @@ export function StartMeetingFab() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
               </span>
-              <span className="text-xs text-neutral-400">{recordingTypeLabel}</span>
+              <span className="text-xs text-neutral-400">
+                {recordingTypeLabel}
+              </span>
               <span className="text-sm font-mono text-white tabular-nums min-w-[40px]">
                 {formatDuration(elapsed)}
               </span>

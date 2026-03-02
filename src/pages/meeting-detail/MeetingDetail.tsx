@@ -27,7 +27,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { queryKeys } from '@/lib/queryKeys';
 import { meetingsApi } from '@/services/meetingsService';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
@@ -189,7 +193,11 @@ export default function MeetingDetail() {
               </div>
               <Popover open={moreOpen} onOpenChange={setMoreOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 h-8 w-8"
+                  >
                     <MoreHorizontal className="w-4 h-4 text-neutral-500" />
                   </Button>
                 </PopoverTrigger>
@@ -197,30 +205,58 @@ export default function MeetingDetail() {
                   className="w-44 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
                   align="end"
                 >
-                  {(meeting.status === 'ACCEPTED' || meeting.status === 'CREATED') && (
+                  {(meeting.status === 'ACCEPTED' ||
+                    meeting.status === 'CREATED') && (
                     <button
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                      onClick={() => { complete.mutate(rawMeeting.id, { onSuccess: () => toast.success('Marked as complete'), onError: () => toast.error('Failed') }); setMoreOpen(false); }}
+                      onClick={() => {
+                        complete.mutate(rawMeeting.id, {
+                          onSuccess: () => toast.success('Marked as complete'),
+                          onError: () => toast.error('Failed'),
+                        });
+                        setMoreOpen(false);
+                      }}
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" /> Mark complete
                     </button>
                   )}
-                  {(meeting.status === 'PENDING_ACCEPTANCE' || meeting.status === 'RESCHEDULING_REQUESTED') && (
+                  {(meeting.status === 'PENDING_ACCEPTANCE' ||
+                    meeting.status === 'RESCHEDULING_REQUESTED') && (
                     <button
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                      onClick={() => { accept.mutate(rawMeeting.id, { onSuccess: () => toast.success('Accepted'), onError: () => toast.error('Failed') }); setMoreOpen(false); }}
+                      onClick={() => {
+                        accept.mutate(rawMeeting.id, {
+                          onSuccess: () => toast.success('Accepted'),
+                          onError: () => toast.error('Failed'),
+                        });
+                        setMoreOpen(false);
+                      }}
                     >
                       <ThumbsUp className="w-3.5 h-3.5" /> Accept
                     </button>
                   )}
-                  {(meeting.status !== 'CANCELLED' && meeting.status !== 'DECLINED' && meeting.status !== 'COMPLETED') && (
-                    <button
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                      onClick={() => { cancel.mutate({ id: rawMeeting.id }, { onSuccess: () => { toast.success('Cancelled'); navigate('/meetings'); }, onError: () => toast.error('Failed') }); setMoreOpen(false); }}
-                    >
-                      <XCircle className="w-3.5 h-3.5" /> Cancel meeting
-                    </button>
-                  )}
+                  {meeting.status !== 'CANCELLED' &&
+                    meeting.status !== 'DECLINED' &&
+                    meeting.status !== 'COMPLETED' && (
+                      <button
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                        onClick={() => {
+                          cancel.mutate(
+                            { id: rawMeeting.id },
+                            {
+                              onSuccess: () => {
+                                toast.success('Cancelled');
+                                navigate('/meetings');
+                              },
+                              onError: () => toast.error('Failed'),
+                            }
+                          );
+                          setMoreOpen(false);
+                        }}
+                      >
+                        <XCircle className="w-3.5 h-3.5" /> Cancel meeting
+                      </button>
+                    )}
                 </PopoverContent>
               </Popover>
             </div>
@@ -305,19 +341,26 @@ export default function MeetingDetail() {
             {/* Quick Actions */}
             <div className="flex gap-2 mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800 flex-wrap">
               {/* Pending: Accept + Decline */}
-              {(meeting.status === 'PENDING_ACCEPTANCE' || meeting.status === 'RESCHEDULING_REQUESTED') && (
+              {(meeting.status === 'PENDING_ACCEPTANCE' ||
+                meeting.status === 'RESCHEDULING_REQUESTED') && (
                 <>
                   <Button
                     variant="outline"
                     size="sm"
                     className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
                     disabled={accept.isPending}
-                    onClick={() => accept.mutate(rawMeeting.id, {
-                      onSuccess: () => toast.success('Meeting accepted'),
-                      onError: () => toast.error('Failed to accept'),
-                    })}
+                    onClick={() =>
+                      accept.mutate(rawMeeting.id, {
+                        onSuccess: () => toast.success('Meeting accepted'),
+                        onError: () => toast.error('Failed to accept'),
+                      })
+                    }
                   >
-                    {accept.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ThumbsUp className="w-3.5 h-3.5" />}
+                    {accept.isPending ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <ThumbsUp className="w-3.5 h-3.5" />
+                    )}
                     Accept
                   </Button>
                   <Button
@@ -325,31 +368,50 @@ export default function MeetingDetail() {
                     size="sm"
                     className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
                     disabled={decline.isPending}
-                    onClick={() => decline.mutate({ id: rawMeeting.id }, {
-                      onSuccess: () => { toast.success('Meeting declined'); navigate('/meetings'); },
-                      onError: () => toast.error('Failed to decline'),
-                    })}
+                    onClick={() =>
+                      decline.mutate(
+                        { id: rawMeeting.id },
+                        {
+                          onSuccess: () => {
+                            toast.success('Meeting declined');
+                            navigate('/meetings');
+                          },
+                          onError: () => toast.error('Failed to decline'),
+                        }
+                      )
+                    }
                   >
-                    {decline.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ThumbsDown className="w-3.5 h-3.5" />}
+                    {decline.isPending ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <ThumbsDown className="w-3.5 h-3.5" />
+                    )}
                     Decline
                   </Button>
                 </>
               )}
 
               {/* Active: Mark Complete + Reschedule + Edit */}
-              {(meeting.status === 'ACCEPTED' || meeting.status === 'CREATED') && (
+              {(meeting.status === 'ACCEPTED' ||
+                meeting.status === 'CREATED') && (
                 <>
                   <Button
                     variant="outline"
                     size="sm"
                     className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
                     disabled={complete.isPending}
-                    onClick={() => complete.mutate(rawMeeting.id, {
-                      onSuccess: () => toast.success('Marked as complete'),
-                      onError: () => toast.error('Failed to update'),
-                    })}
+                    onClick={() =>
+                      complete.mutate(rawMeeting.id, {
+                        onSuccess: () => toast.success('Marked as complete'),
+                        onError: () => toast.error('Failed to update'),
+                      })
+                    }
                   >
-                    {complete.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                    {complete.isPending ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    )}
                     Mark Complete
                   </Button>
                   <Button
@@ -376,18 +438,32 @@ export default function MeetingDetail() {
               <div className="flex-1" />
 
               {/* Cancel — only for active meetings */}
-              {(meeting.status === 'ACCEPTED' || meeting.status === 'CREATED' || meeting.status === 'PENDING_ACCEPTANCE') && (
+              {(meeting.status === 'ACCEPTED' ||
+                meeting.status === 'CREATED' ||
+                meeting.status === 'PENDING_ACCEPTANCE') && (
                 <Button
                   variant="destructive"
                   size="sm"
                   className="text-xs gap-1.5 h-8"
                   disabled={cancel.isPending}
-                  onClick={() => cancel.mutate({ id: rawMeeting.id }, {
-                    onSuccess: () => { toast.success('Meeting cancelled'); navigate('/meetings'); },
-                    onError: () => toast.error('Failed to cancel'),
-                  })}
+                  onClick={() =>
+                    cancel.mutate(
+                      { id: rawMeeting.id },
+                      {
+                        onSuccess: () => {
+                          toast.success('Meeting cancelled');
+                          navigate('/meetings');
+                        },
+                        onError: () => toast.error('Failed to cancel'),
+                      }
+                    )
+                  }
                 >
-                  {cancel.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
+                  {cancel.isPending ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <XCircle className="w-3.5 h-3.5" />
+                  )}
                   Cancel
                 </Button>
               )}
@@ -527,7 +603,8 @@ function OverviewTab({
       {aiMissing && (
         <div className="flex items-center justify-between p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
           <p className="text-xs text-neutral-600 dark:text-neutral-400">
-            AI processing didn't complete. Generate summary and action items now.
+            AI processing didn't complete. Generate summary and action items
+            now.
           </p>
           <Button
             variant="outline"
@@ -536,7 +613,11 @@ function OverviewTab({
             onClick={() => triggerAI()}
             disabled={isRetrying}
           >
-            {isRetrying ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCcw className="w-3 h-3" />}
+            {isRetrying ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <RefreshCcw className="w-3 h-3" />
+            )}
             {isRetrying ? 'Running…' : 'Retry AI'}
           </Button>
         </div>

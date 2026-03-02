@@ -19,7 +19,11 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
@@ -88,11 +92,7 @@ function groupByDate(meetings: DisplayMeeting[]) {
 }
 
 // ── Meeting context menu ──
-function MeetingContextMenu({
-  meeting,
-}: {
-  meeting: DisplayMeeting;
-}) {
+function MeetingContextMenu({ meeting }: { meeting: DisplayMeeting }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
@@ -120,50 +120,87 @@ function MeetingContextMenu({
     {
       label: 'Open',
       icon: ExternalLink,
-      action: () => { navigate(`/meetings/${meeting.id}`); close(); },
+      action: () => {
+        navigate(`/meetings/${meeting.id}`);
+        close();
+      },
     },
-    ...(canAccept ? [{
-      label: 'Accept',
-      icon: ThumbsUp,
-      action: () => {
-        accept.mutate(meeting.id, {
-          onSuccess: () => { toast.success('Meeting accepted'); close(); },
-          onError: () => toast.error('Failed to accept'),
-        });
-      },
-    }] : []),
-    ...(canDecline ? [{
-      label: 'Decline',
-      icon: ThumbsDown,
-      action: () => {
-        decline.mutate({ id: meeting.id }, {
-          onSuccess: () => { toast.success('Meeting declined'); close(); },
-          onError: () => toast.error('Failed to decline'),
-        });
-      },
-      danger: true,
-    }] : []),
-    ...(canComplete ? [{
-      label: 'Mark complete',
-      icon: CheckCircle2,
-      action: () => {
-        complete.mutate(meeting.id, {
-          onSuccess: () => { toast.success('Marked as complete'); close(); },
-          onError: () => toast.error('Failed to update'),
-        });
-      },
-    }] : []),
-    ...(canCancel ? [{
-      label: 'Cancel meeting',
-      icon: XCircle,
-      action: () => {
-        cancel.mutate({ id: meeting.id }, {
-          onSuccess: () => { toast.success('Meeting cancelled'); close(); },
-          onError: () => toast.error('Failed to cancel'),
-        });
-      },
-      danger: true,
-    }] : []),
+    ...(canAccept
+      ? [
+          {
+            label: 'Accept',
+            icon: ThumbsUp,
+            action: () => {
+              accept.mutate(meeting.id, {
+                onSuccess: () => {
+                  toast.success('Meeting accepted');
+                  close();
+                },
+                onError: () => toast.error('Failed to accept'),
+              });
+            },
+          },
+        ]
+      : []),
+    ...(canDecline
+      ? [
+          {
+            label: 'Decline',
+            icon: ThumbsDown,
+            action: () => {
+              decline.mutate(
+                { id: meeting.id },
+                {
+                  onSuccess: () => {
+                    toast.success('Meeting declined');
+                    close();
+                  },
+                  onError: () => toast.error('Failed to decline'),
+                }
+              );
+            },
+            danger: true,
+          },
+        ]
+      : []),
+    ...(canComplete
+      ? [
+          {
+            label: 'Mark complete',
+            icon: CheckCircle2,
+            action: () => {
+              complete.mutate(meeting.id, {
+                onSuccess: () => {
+                  toast.success('Marked as complete');
+                  close();
+                },
+                onError: () => toast.error('Failed to update'),
+              });
+            },
+          },
+        ]
+      : []),
+    ...(canCancel
+      ? [
+          {
+            label: 'Cancel meeting',
+            icon: XCircle,
+            action: () => {
+              cancel.mutate(
+                { id: meeting.id },
+                {
+                  onSuccess: () => {
+                    toast.success('Meeting cancelled');
+                    close();
+                  },
+                  onError: () => toast.error('Failed to cancel'),
+                }
+              );
+            },
+            danger: true,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -188,9 +225,10 @@ function MeetingContextMenu({
             key={item.label}
             onClick={item.action}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors
-              ${item.danger
-                ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30'
-                : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+              ${
+                item.danger
+                  ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30'
+                  : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
               }`}
           >
             <item.icon className="w-3.5 h-3.5 shrink-0" />

@@ -1,53 +1,50 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-02
+Last updated: 2026-03-03
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
 
 ---
 
-## In Progress
+## P0 — Build Next (in order)
 
-_Nothing in progress right now._
+### 1. MeetingDetail — 3 distinct layouts by type
+The current MeetingDetail page shows the same UI for all meeting types.
+Each type needs its own layout, chrome, and actions.
 
----
+**VOICE_NOTE layout**
+- [ ] Minimal header: title (AI-generated), "recorded on" date, duration
+- [ ] No status badge, no participants, no accept/decline/complete
+- [ ] Flat scroll layout (no tabs): recording player → transcript → summary → key points
+- [ ] Only action: Delete
 
-## Phase 1 — Broken / Needs Fix (Priority)
+**RECORDED layout**
+- [ ] Compact header: title, date, duration
+- [ ] Speakers section (from `MeetingSpeaker[]`) — show speakerLabel or displayName
+- [ ] Inline rename: click speaker → edit displayName inline
+- [ ] Tabs: Recording | Transcript | Summary | Action Items
+- [ ] Actions: Complete, Delete
 
-These all have existing code in the codebase but are **not working**. Fix before building new things.
+**SCHEDULED layout** (keep current — clean it up)
+- [ ] Full header: title, status badge, date/time, location
+- [ ] Participants section with user avatars
+- [ ] Quick actions: Accept / Decline / Complete / Cancel (context-aware)
+- [ ] Tabs: Overview | Transcript | Summary | Action Items | Recording
 
-### MeetingDetail Page — Mock Data Everywhere
-
-The page exists at `src/pages/meeting-detail/MeetingDetail.tsx` but shows hardcoded fake data.
-
-- [~] Transcript tab — has mock speaker segments, needs real `TranscriptSegment[]` from API
-- [~] Summary tab — has mock text, needs real `MeetingAISummary` from API
-- [~] Action items tab — has mock items, needs real `MeetingActionItem[]` from API
-- [~] Recording tab — shows placeholder, needs real recording info from API
-- [~] Overview tab — SMA status indicators not reflecting real `transcriptionStatus`
-
-**What to do:** Add React Query hooks, connect to real `/sma/meetings/:id/*` endpoints.
-
-### Recording Upload — Not Connected
-
-Upload UI exists but the file never reaches the backend.
-
-- [~] File picker / drag-drop — exists in UI, not wired to API call
-- [~] Upload progress bar — not functional
-- [~] Post-upload: trigger transcription status polling
-- [~] Show processing state while Deepgram is running (pulsing indicator)
-- [~] On completion: auto-refresh transcript + summary tabs
-
-**What to do:** Connect upload to `POST /sma/meetings/:id/recordings`, poll `transcriptionStatus`.
+### 2. Voice Notes — separate section
+- [ ] Add "Voice Notes" nav item in sidebar (below Meetings)
+- [ ] `/voice-notes` route → new VoiceNotes page
+- [ ] Lists all meetings with `type=VOICE_NOTE`, sorted by createdAt desc
+- [ ] Meetings list page filters out VOICE_NOTE (they only appear in Voice Notes section)
+- [ ] Voice Note cards: minimal — title, date, duration, transcript status
 
 ---
 
-## Phase 1 — Not Built Yet
+## Not Built Yet
 
-### Ask AI Chat Interface (Highest Impact)
-
-- [ ] Chat panel inside MeetingDetail (new tab or side panel)
+### Ask AI Chat Interface
+- [ ] Chat panel inside MeetingDetail (available for RECORDED + VOICE_NOTE when transcript exists)
 - [ ] Input: "Ask anything about this meeting..."
 - [ ] Stream AI response
 - [ ] Pre-loaded suggestions: "Summarize decisions", "List action items", "What were the blockers?"
@@ -55,37 +52,40 @@ Upload UI exists but the file never reaches the backend.
 - [ ] Requires Ask AI backend endpoint first
 
 ### Action Items (Beyond Display)
-
 - [ ] Mark action item complete / incomplete (toggle)
 - [ ] Create action item manually (inline form)
 - [ ] Delete action item
 
 ### Meeting Notes UI
-
 - [ ] Create note (textarea + submit)
 - [ ] Delete note
 - [ ] Show notes with author and timestamp
 
 ### Edit Meeting Modal
-
-- [ ] Edit title, description, time, location
-- [ ] Add / remove participants
+- [ ] Edit title, description, time, location (SCHEDULED only)
 
 ### Home Dashboard Polish
-
 - [ ] Today's meetings widget (filtered to today, not just recent)
 - [ ] Pending action items widget across all meetings
-- [ ] Meeting SMA status on home cards
+- [ ] Recent Voice Notes widget
 
 ---
 
 ## Phase 1 — Done ✅
 
 - [x] Meeting list page with search, filter, group by date
-- [x] Meeting cards with SMA indicators
+- [x] Meeting context menu (accept/decline/complete/cancel)
+- [x] MeetingDetail — wired to real API (transcript, summary, action items, recording player)
+- [x] MeetingDetail — all action buttons wired (accept/decline/complete/cancel + ⋯ menu)
+- [x] MeetingDetail — real audio player with play/pause/seek
+- [x] MeetingDetail — transcription status polling (NONE → PROCESSING → COMPLETED)
+- [x] MeetingDetail — 30s post-COMPLETED polling to catch AI title update
+- [x] MeetingDetail — Retry AI button when processing failed
+- [x] Create FAB — renamed to "Create", two-level menu (Voice Note / Meeting)
+- [x] Live recording via browser microphone — Voice Note + Meeting recording flows
+- [x] MeetingKind type (SCHEDULED | RECORDED | VOICE_NOTE) — passed to API on create
 - [x] Home page layout and widgets
 - [x] Default card widget (3D flip)
-- [x] Start Meeting FAB
 - [x] Command palette (Cmd+K)
 - [x] Google OAuth sign-in
 - [x] Theme system (light/dark/system)
