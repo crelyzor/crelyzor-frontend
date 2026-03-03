@@ -74,6 +74,9 @@ export const meetingsApi = {
   complete: (id: string) =>
     apiClient.patch<Meeting>(`/meetings/${id}/complete`),
 
+  /** DELETE /meetings/:id — soft delete */
+  deleteMeeting: (id: string) => apiClient.delete<void>(`/meetings/${id}`),
+
   /** POST /meetings/:id/reschedule */
   reschedule: (
     id: string,

@@ -39,6 +39,51 @@ function buildUrl(
   return url.toString();
 }
 
+// ── Refresh token coordination ──────────────────────────────────────────────
+// Ensures only one refresh request is in-flight at a time.
+// Any other 401s that arrive while a refresh is in progress are queued and
+// retried once the refresh resolves.
+
+let isRefreshing = false;
+let pendingCallbacks: Array<{
+  resolve: () => void;
+  reject: (err: unknown) => void;
+}> = [];
+
+async function attemptTokenRefresh(): Promise<boolean> {
+  const storedRefreshToken = localStorage.getItem('calendar-refresh-token');
+  if (!storedRefreshToken) return false;
+
+  try {
+    const res = await fetch(buildUrl('/auth/refresh-token'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: storedRefreshToken }),
+    });
+
+    if (!res.ok) return false;
+
+    const json = await res.json();
+    // Response shape: { status, statusCode, message, data: { accessToken, refreshToken, expiresIn } }
+    const data = json.data ?? json;
+    if (!data?.accessToken || !data?.refreshToken) return false;
+
+    useAuthStore.getState().setAccessToken(data.accessToken);
+    localStorage.setItem('calendar-refresh-token', data.refreshToken);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function clearAuthAndRedirect() {
+  useAuthStore.getState().logout();
+  localStorage.removeItem('calendar-refresh-token');
+  window.location.replace('/signin');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 async function request<T>(
   path: string,
   options: RequestOptions = {}
@@ -61,8 +106,38 @@ async function request<T>(
   });
 
   if (res.status === 401) {
-    useAuthStore.getState().logout();
-    throw new ApiError(res.status, res.statusText, null);
+    // Never try to refresh the refresh-token endpoint itself (avoid infinite loop)
+    if (path === '/auth/refresh-token') {
+      clearAuthAndRedirect();
+      throw new ApiError(res.status, res.statusText, null);
+    }
+
+    if (!isRefreshing) {
+      isRefreshing = true;
+      const refreshed = await attemptTokenRefresh();
+      isRefreshing = false;
+
+      if (refreshed) {
+        // Unblock any queued requests so they can retry
+        pendingCallbacks.forEach(({ resolve }) => resolve());
+        pendingCallbacks = [];
+        // Retry the original request — request() will pick up the new token from the store
+        return request<T>(path, options);
+      } else {
+        const err = new ApiError(res.status, res.statusText, null);
+        pendingCallbacks.forEach(({ reject }) => reject(err));
+        pendingCallbacks = [];
+        clearAuthAndRedirect();
+        throw err;
+      }
+    }
+
+    // A refresh is already in flight — queue this request and wait
+    await new Promise<void>((resolve, reject) => {
+      pendingCallbacks.push({ resolve, reject });
+    });
+    // Refresh succeeded (if it had failed, the promise would have been rejected above)
+    return request<T>(path, options);
   }
 
   if (!res.ok) {

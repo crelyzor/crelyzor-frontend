@@ -21,11 +21,82 @@ export function useSummary(meetingId: string, enabled = true) {
   });
 }
 
-export function useActionItems(meetingId: string, enabled = true) {
+export function useTasks(meetingId: string, enabled = true) {
   return useQuery({
-    queryKey: queryKeys.sma.actionItems(meetingId),
-    queryFn: () => smaApi.getActionItems(meetingId),
+    queryKey: queryKeys.sma.tasks(meetingId),
+    queryFn: () => smaApi.getTasks(meetingId),
     enabled: !!meetingId && enabled,
+  });
+}
+
+export function useCreateTask(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { title: string; description?: string; dueDate?: string; priority?: 'LOW' | 'MEDIUM' | 'HIGH' }) =>
+      smaApi.createTask(meetingId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
+    },
+    onError: () => toast.error('Failed to create task'),
+  });
+}
+
+export function useUpdateTask(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      taskId,
+      data,
+    }: {
+      taskId: string;
+      data: { title?: string; description?: string | null; isCompleted?: boolean; dueDate?: string | null; priority?: 'LOW' | 'MEDIUM' | 'HIGH' | null };
+    }) => smaApi.updateTask(taskId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
+    },
+    onError: () => toast.error('Failed to update task'),
+  });
+}
+
+export function useDeleteTask(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (taskId: string) => smaApi.deleteTask(taskId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
+    },
+    onError: () => toast.error('Failed to delete task'),
+  });
+}
+
+export function useNotes(meetingId: string) {
+  return useQuery({
+    queryKey: queryKeys.sma.notes(meetingId),
+    queryFn: () => smaApi.getNotes(meetingId),
+    enabled: !!meetingId,
+  });
+}
+
+export function useCreateNote(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { content: string; timestamp?: number }) =>
+      smaApi.createNote(meetingId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.sma.notes(meetingId) });
+    },
+    onError: () => toast.error('Failed to add note'),
+  });
+}
+
+export function useDeleteNote(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (noteId: string) => smaApi.deleteNote(noteId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.sma.notes(meetingId) });
+    },
+    onError: () => toast.error('Failed to delete note'),
   });
 }
 
@@ -45,7 +116,7 @@ export function useTriggerAI(meetingId: string) {
       toast.success('AI processing started…');
       qc.invalidateQueries({ queryKey: queryKeys.meetings.detail(meetingId) });
       qc.invalidateQueries({ queryKey: queryKeys.sma.summary(meetingId) });
-      qc.invalidateQueries({ queryKey: queryKeys.sma.actionItems(meetingId) });
+      qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
     },
     onError: () => toast.error('Failed to start AI processing'),
   });

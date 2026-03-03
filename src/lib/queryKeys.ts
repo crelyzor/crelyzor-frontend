@@ -64,8 +64,10 @@ export const queryKeys = {
       [...queryKeys.sma.all, 'transcript', meetingId] as const,
     summary: (meetingId: string) =>
       [...queryKeys.sma.all, 'summary', meetingId] as const,
-    actionItems: (meetingId: string) =>
-      [...queryKeys.sma.all, 'actionItems', meetingId] as const,
+    tasks: (meetingId: string) =>
+      [...queryKeys.sma.all, 'tasks', meetingId] as const,
+    notes: (meetingId: string) =>
+      [...queryKeys.sma.all, 'notes', meetingId] as const,
     recordings: (meetingId: string) =>
       [...queryKeys.sma.all, 'recordings', meetingId] as const,
     speakers: (meetingId: string) =>

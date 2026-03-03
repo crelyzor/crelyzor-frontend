@@ -96,6 +96,16 @@ export function useCompleteMeeting() {
   });
 }
 
+export function useDeleteMeeting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => meetingsApi.deleteMeeting(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
+    },
+  });
+}
+
 export function useVoiceNotes() {
   return useQuery({
     queryKey: queryKeys.meetings.list({

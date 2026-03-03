@@ -38,14 +38,17 @@ import {
   TranscriptTab,
   SummaryTab,
   ActionsTab,
+  NotesTab,
   OverviewTab,
 } from './SharedTabs';
+import { EditMeetingModal } from './EditMeetingModal';
 
 const SCHEDULED_TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'transcript', label: 'Transcript' },
   { id: 'summary', label: 'AI Summary' },
-  { id: 'actions', label: 'Action Items' },
+  { id: 'actions', label: 'Tasks' },
+  { id: 'notes', label: 'Notes' },
   { id: 'recording', label: 'Recording' },
 ] as const;
 
@@ -61,6 +64,7 @@ export function ScheduledDetail({
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<ScheduledTab>('overview');
   const [moreOpen, setMoreOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   const accept = useAcceptMeeting();
   const decline = useDeclineMeeting();
@@ -346,7 +350,7 @@ export function ScheduledDetail({
                   variant="outline"
                   size="sm"
                   className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
-                  onClick={() => toast.info('Edit coming soon')}
+                  onClick={() => setEditOpen(true)}
                 >
                   <Edit3 className="w-3.5 h-3.5" />
                   Edit
@@ -435,6 +439,9 @@ export function ScheduledDetail({
                 transcriptionStatus={transcriptionStatus}
               />
             </TabsContent>
+            <TabsContent value="notes" className="p-6 mt-0">
+              <NotesTab meetingId={rawMeeting.id} />
+            </TabsContent>
             <TabsContent value="recording" className="p-6 mt-0">
               <RecordingTab
                 meetingId={rawMeeting.id}
@@ -444,6 +451,12 @@ export function ScheduledDetail({
           </Tabs>
         </CardContent>
       </Card>
+
+      <EditMeetingModal
+        meeting={rawMeeting}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
     </div>
   );
 }

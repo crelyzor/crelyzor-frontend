@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 import {
   ArrowLeft,
   Clock,
@@ -19,7 +18,8 @@ import {
 import type { Meeting, TranscriptionStatus } from '@/types';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { useSummary, useTriggerAI } from '@/hooks/queries/useSMAQueries';
-import { RecordingTab, TranscriptTab, SummaryTab } from './SharedTabs';
+import { RecordingTab, TranscriptTab, SummaryTab, NotesTab } from './SharedTabs';
+import { DeleteMeetingModal } from './DeleteMeetingModal';
 import { SkeletonLines } from './meetingDetailHelpers';
 
 export function VoiceNoteDetail({
@@ -31,6 +31,7 @@ export function VoiceNoteDetail({
 }) {
   const navigate = useNavigate();
   const [moreOpen, setMoreOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const meeting = toDisplayMeeting(rawMeeting);
   const isCompleted = transcriptionStatus === 'COMPLETED';
@@ -99,7 +100,7 @@ export function VoiceNoteDetail({
                 <button
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                   onClick={() => {
-                    toast.info('Delete coming soon');
+                    setDeleteOpen(true);
                     setMoreOpen(false);
                   }}
                 >
@@ -179,7 +180,21 @@ export function VoiceNoteDetail({
             )}
           </CardContent>
         </Card>
+
+        {/* Notes */}
+        <Card className="border-neutral-200 dark:border-neutral-800">
+          <CardContent className="p-5">
+            <NotesTab meetingId={rawMeeting.id} />
+          </CardContent>
+        </Card>
       </div>
+
+      <DeleteMeetingModal
+        meetingId={rawMeeting.id}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onDeleted={() => navigate('/voice-notes')}
+      />
     </div>
   );
 }

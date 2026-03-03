@@ -9,7 +9,7 @@ export type {
   MeetingParticipant,
   MeetingGuest,
   ScheduledMeeting,
-  ActionItem,
+  Task,
   TranscriptionStatus,
 } from './meeting';
 

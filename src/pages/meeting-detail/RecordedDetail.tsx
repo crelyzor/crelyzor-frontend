@@ -36,13 +36,16 @@ import {
   TranscriptTab,
   SummaryTab,
   ActionsTab,
+  NotesTab,
 } from './SharedTabs';
+import { DeleteMeetingModal } from './DeleteMeetingModal';
 
 const RECORDED_TABS = [
   { id: 'recording', label: 'Recording' },
   { id: 'transcript', label: 'Transcript' },
   { id: 'summary', label: 'AI Summary' },
-  { id: 'actions', label: 'Action Items' },
+  { id: 'actions', label: 'Tasks' },
+  { id: 'notes', label: 'Notes' },
 ] as const;
 
 type RecordedTab = (typeof RECORDED_TABS)[number]['id'];
@@ -129,6 +132,7 @@ export function RecordedDetail({
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<RecordedTab>('recording');
   const [moreOpen, setMoreOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const meeting = toDisplayMeeting(rawMeeting);
   const isCompleted = transcriptionStatus === 'COMPLETED';
@@ -224,7 +228,7 @@ export function RecordedDetail({
                 <button
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                   onClick={() => {
-                    toast.info('Delete coming soon');
+                    setDeleteOpen(true);
                     setMoreOpen(false);
                   }}
                 >
@@ -331,9 +335,19 @@ export function RecordedDetail({
                 transcriptionStatus={transcriptionStatus}
               />
             </TabsContent>
+            <TabsContent value="notes" className="p-6 mt-0">
+              <NotesTab meetingId={rawMeeting.id} />
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
+
+      <DeleteMeetingModal
+        meetingId={rawMeeting.id}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onDeleted={() => navigate('/meetings')}
+      />
     </div>
   );
 }

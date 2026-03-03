@@ -1,6 +1,6 @@
 import { apiClient } from '@/lib/apiClient';
 import { useAuthStore } from '@/stores';
-import type { ActionItem } from '@/types';
+import type { Task } from '@/types';
 
 export type SMATranscriptSegment = {
   id: string;
@@ -43,6 +43,16 @@ export type SMASpeaker = {
   updatedAt: string;
 };
 
+export type MeetingNote = {
+  id: string;
+  meetingId: string;
+  content: string;
+  author: string; // userId
+  timestamp: number | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 // SMA controllers return { success, data } without statusCode,
 // so apiClient won't auto-unwrap. Unwrap manually.
 function unwrap<T>(result: unknown): T {
@@ -63,11 +73,57 @@ export const smaApi = {
     return unwrap<SMAAISummary>(result);
   },
 
-  getActionItems: async (meetingId: string): Promise<ActionItem[]> => {
-    const result = await apiClient.get(
-      `/sma/meetings/${meetingId}/action-items`
+  getTasks: async (meetingId: string): Promise<Task[]> => {
+    const result = await apiClient.get<{ tasks: Task[] }>(
+      `/sma/meetings/${meetingId}/tasks`
     );
-    return unwrap<ActionItem[]>(result);
+    return result.tasks;
+  },
+
+  createTask: async (
+    meetingId: string,
+    data: { title: string; description?: string; dueDate?: string; priority?: 'LOW' | 'MEDIUM' | 'HIGH' }
+  ): Promise<Task> => {
+    const result = await apiClient.post<{ task: Task }>(
+      `/sma/meetings/${meetingId}/tasks`,
+      data
+    );
+    return result.task;
+  },
+
+  updateTask: async (
+    taskId: string,
+    data: { title?: string; description?: string | null; isCompleted?: boolean; dueDate?: string | null; priority?: 'LOW' | 'MEDIUM' | 'HIGH' | null }
+  ): Promise<Task> => {
+    const result = await apiClient.patch<{ task: Task }>(
+      `/sma/tasks/${taskId}`,
+      data
+    );
+    return result.task;
+  },
+
+  deleteTask: async (taskId: string): Promise<void> => {
+    await apiClient.delete(`/sma/tasks/${taskId}`);
+  },
+
+  getNotes: async (meetingId: string): Promise<MeetingNote[]> => {
+    const result = await apiClient.get(`/sma/meetings/${meetingId}/notes`);
+    return unwrap<MeetingNote[]>(result);
+  },
+
+  createNote: async (
+    meetingId: string,
+    data: { content: string; timestamp?: number }
+  ): Promise<MeetingNote> => {
+    const result = await apiClient.post(
+      `/sma/meetings/${meetingId}/notes`,
+      data
+    );
+    return unwrap<MeetingNote>(result);
+  },
+
+  deleteNote: async (noteId: string): Promise<void> => {
+    await apiClient.delete(`/sma/notes/${noteId}`);
   },
 
   getRecordings: async (meetingId: string): Promise<SMARecording[]> => {

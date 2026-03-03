@@ -116,7 +116,7 @@ export function RecentMeetings({ meetings, isLoading }: RecentMeetingsProps) {
                     {meeting.hasTranscript && (
                       <FileText className="w-2.5 h-2.5 text-neutral-400 dark:text-neutral-500" />
                     )}
-                    {meeting.hasActionItems && (
+                    {meeting.hasTasks && (
                       <ClipboardList className="w-2.5 h-2.5 text-neutral-400 dark:text-neutral-500" />
                     )}
                   </div>

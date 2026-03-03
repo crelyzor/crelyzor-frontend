@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-03
+Last updated: 2026-03-04
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -13,46 +13,46 @@ Last updated: 2026-03-03
 
 ### 1. Auth — Refresh Token
 
-- [ ] Axios interceptor — on 401, auto-call `POST /auth/refresh`, retry original request
-- [ ] On refresh failure, clear auth state and redirect to `/signin`
-- [ ] No more "login again" on access token expiry
+- [x] Axios interceptor — on 401, auto-call `POST /auth/refresh`, retry original request
+- [x] On refresh failure, clear auth state and redirect to `/signin`
+- [x] No more "login again" on access token expiry
 
 ### 2. Meeting Notes UI
 
 Backend already done. Just needs frontend.
 
-- [ ] Notes tab / section in all 3 MeetingDetail layouts
-- [ ] Create note (textarea + submit)
-- [ ] Delete note (with confirm)
-- [ ] Show notes with author avatar, name, and timestamp
-- [ ] React Query hook: `useNotes(meetingId)`
-- [ ] Service: `notesService.ts` (getAll, create, delete)
-- [ ] Query keys: `queryKeys.sma.notes(meetingId)`
+- [x] Notes tab / section in all 3 MeetingDetail layouts
+- [x] Create note (textarea + submit)
+- [x] Delete note (with confirm)
+- [x] Show notes with timestamp
+- [x] React Query hook: `useNotes(meetingId)`
+- [x] Service: notes methods in `smaService.ts` (getAll, create, delete)
+- [x] Query keys: `queryKeys.sma.notes(meetingId)`
 
 ### 3. Tasks UI
 
 Requires backend `Task` model + CRUD API to be built first.
 
-- [ ] Rename all "Action Items" labels to "Tasks" everywhere in the UI
-- [ ] Mark task complete / incomplete (toggle checkbox, optimistic update)
-- [ ] Create task manually (inline form — just title, press Enter)
-- [ ] Delete task (icon button, no confirm needed)
-- [ ] Service: `tasksService.ts` (getAll, create, update, delete) — calls `/meetings/:id/tasks` endpoints
-- [ ] Query keys: `queryKeys.tasks.byMeeting(meetingId)`
+- [x] Rename all "Action Items" labels to "Tasks" everywhere in the UI
+- [x] Mark task complete / incomplete (toggle checkbox, optimistic update)
+- [x] Create task manually (inline form — just title, press Enter)
+- [x] Delete task (icon button, no confirm needed)
+- [x] Service: task methods in `smaService.ts` (getAll, create, update, delete)
+- [x] Query keys: `queryKeys.sma.tasks(meetingId)`
 
 ### 4. Edit Meeting Modal
 
-- [ ] SCHEDULED only — edit title, description, startTime, endTime, location
-- [ ] Open from ScheduledDetail header ⋯ menu
-- [ ] Validates time conflicts on save
-- [ ] Invalidates meeting cache on success
+- [x] SCHEDULED only — edit title, description, startTime, endTime, location
+- [x] Open from ScheduledDetail Edit button (quick actions area)
+- [x] Validates time conflicts on save (client-side + ApiError 409 from backend)
+- [x] Invalidates meeting cache on success
 
 ### 5. Delete Meeting
 
-- [ ] Confirm dialog before delete ("Delete this meeting? This can't be undone.")
-- [ ] Wire Delete in VoiceNoteDetail ⋯ menu
-- [ ] Wire Delete in RecordedDetail ⋯ menu
-- [ ] Navigate to `/meetings` (or `/voice-notes`) after delete
+- [x] Confirm dialog before delete ("Delete this meeting? This can't be undone.")
+- [x] Wire Delete in VoiceNoteDetail ⋯ menu
+- [x] Wire Delete in RecordedDetail ⋯ menu
+- [x] Navigate to `/meetings` (or `/voice-notes`) after delete
 
 ---
 

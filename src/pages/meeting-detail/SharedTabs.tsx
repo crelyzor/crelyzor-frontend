@@ -1,25 +1,37 @@
 import { useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/lib/queryKeys';
 import {
   Mic,
   FileText,
   ClipboardList,
+  StickyNote,
   Upload,
   Play,
   Pause,
   RefreshCcw,
   Loader2,
+  Plus,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { TranscriptionStatus, ActionItem } from '@/types';
-import type { SMATranscriptSegment, SMARecording } from '@/services/smaService';
+import type { TranscriptionStatus, Task } from '@/types';
+import type { SMATranscriptSegment, SMARecording, MeetingNote } from '@/services/smaService';
 import {
   useTranscript,
   useSummary,
-  useActionItems,
+  useTasks,
+  useCreateTask,
+  useUpdateTask,
+  useDeleteTask,
+  useNotes,
+  useCreateNote,
+  useDeleteNote,
   useRecordings,
   useUploadRecording,
   useTriggerAI,
 } from '@/hooks/queries/useSMAQueries';
+import { toast } from 'sonner';
 import {
   formatTimestamp,
   formatFileSize,
@@ -398,77 +410,161 @@ export function SummaryTab({
   );
 }
 
-// ── Action Items Tab ──
+// ── Tasks Tab ──
 export function ActionsTab({
   meetingId,
-  transcriptionStatus,
 }: {
   meetingId: string;
-  transcriptionStatus: TranscriptionStatus;
+  transcriptionStatus?: TranscriptionStatus; // kept for caller compatibility, unused
 }) {
-  const isCompleted = transcriptionStatus === 'COMPLETED';
-  const { data: actionItems, isLoading } = useActionItems(
-    meetingId,
-    isCompleted
-  );
+  const [newTitle, setNewTitle] = useState('');
+  const qc = useQueryClient();
+
+  const { data: tasks, isLoading } = useTasks(meetingId);
+  const { mutate: createTask, isPending: isCreating } = useCreateTask(meetingId);
+  const { mutate: updateTask } = useUpdateTask(meetingId);
+  const { mutate: deleteTask } = useDeleteTask(meetingId);
+
+  const handleToggle = (task: Task) => {
+    const newCompleted = !task.isCompleted;
+    // Optimistic update
+    qc.setQueryData(
+      queryKeys.sma.tasks(meetingId),
+      (old: Task[] | undefined) =>
+        old?.map((t) => (t.id === task.id ? { ...t, isCompleted: newCompleted } : t))
+    );
+    updateTask(
+      { taskId: task.id, data: { isCompleted: newCompleted } },
+      {
+        onError: () => {
+          // Roll back on failure
+          qc.setQueryData(
+            queryKeys.sma.tasks(meetingId),
+            (old: Task[] | undefined) =>
+              old?.map((t) =>
+                t.id === task.id ? { ...t, isCompleted: task.isCompleted } : t
+              )
+          );
+        },
+      }
+    );
+  };
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) return;
+    createTask({ title: newTitle.trim() }, { onSuccess: () => setNewTitle('') });
+  };
 
   if (isLoading) return <SkeletonLines count={3} />;
-
-  if (!actionItems || actionItems.length === 0) {
-    return (
-      <EmptyState
-        icon={ClipboardList}
-        title="No action items"
-        body="Action items will be auto-generated from the AI summary once available."
-      />
-    );
-  }
 
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
-        Action Items
+        Tasks
       </h3>
-      {actionItems.map((item: ActionItem) => (
-        <div
-          key={item.id}
-          className="flex items-start gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700"
+
+      {/* Inline create form */}
+      <form onSubmit={handleCreate} className="flex items-center gap-2">
+        <input
+          type="text"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          placeholder="Add a task…"
+          className="flex-1 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-600 focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+          disabled={isCreating}
+        />
+        <Button
+          type="submit"
+          size="icon"
+          variant="outline"
+          className="h-9 w-9 shrink-0"
+          disabled={!newTitle.trim() || isCreating}
         >
-          <div className="mt-0.5 w-5 h-5 rounded-full border-2 border-neutral-300 dark:border-neutral-600 shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-              {item.title}
-            </p>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              {item.assignedTo && (
-                <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                  {item.assignedTo}
-                </span>
-              )}
-              {item.suggestedStartDate && (
-                <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                  · Due{' '}
-                  {new Date(item.suggestedStartDate).toLocaleDateString(
-                    'en-US',
-                    {
-                      month: 'short',
-                      day: 'numeric',
-                    }
+          {isCreating ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Plus className="w-3.5 h-3.5" />
+          )}
+        </Button>
+      </form>
+
+      {/* Task list */}
+      {!tasks || tasks.length === 0 ? (
+        <EmptyState
+          icon={ClipboardList}
+          title="No tasks yet"
+          body="Add tasks above or they'll be auto-generated from the AI summary."
+        />
+      ) : (
+        <div className="space-y-2">
+          {tasks.map((task: Task) => (
+            <div
+              key={task.id}
+              className="flex items-start gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 group"
+            >
+              {/* Toggle checkbox */}
+              <button
+                type="button"
+                onClick={() => handleToggle(task)}
+                className={`mt-0.5 w-5 h-5 rounded-full border-2 shrink-0 transition-colors cursor-pointer ${
+                  task.isCompleted
+                    ? 'border-neutral-900 bg-neutral-900 dark:border-neutral-100 dark:bg-neutral-100'
+                    : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-500 dark:hover:border-neutral-400'
+                }`}
+              />
+
+              <div className="flex-1 min-w-0">
+                <p
+                  className={`text-sm font-medium transition-colors ${
+                    task.isCompleted
+                      ? 'line-through text-neutral-400 dark:text-neutral-500'
+                      : 'text-neutral-900 dark:text-neutral-100'
+                  }`}
+                >
+                  {task.title}
+                </p>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  {task.dueDate && (
+                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                      Due{' '}
+                      {new Date(task.dueDate).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </span>
                   )}
-                </span>
-              )}
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-medium uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
-                {item.category.replace(/_/g, ' ')}
-              </span>
+                  {task.priority && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-medium uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
+                      {task.priority}
+                    </span>
+                  )}
+                  {task.source === 'AI_EXTRACTED' && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-medium uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500">
+                      AI
+                    </span>
+                  )}
+                </div>
+                {task.description && (
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                    {task.description}
+                  </p>
+                )}
+              </div>
+
+              {/* Delete button — visible on row hover */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 h-6 w-6 text-neutral-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => deleteTask(task.id)}
+              >
+                <Trash2 className="w-3 h-3" />
+              </Button>
             </div>
-            {item.description && (
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                {item.description}
-              </p>
-            )}
-          </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }
@@ -508,7 +604,7 @@ export function OverviewTab({
       processing: false,
     },
     {
-      label: 'Action Items',
+      label: 'Tasks',
       icon: ClipboardList,
       ready: isCompleted,
       processing: false,
@@ -614,6 +710,139 @@ export function OverviewTab({
             <Upload className="w-3.5 h-3.5" />
             Upload Recording
           </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Notes Tab ──
+export function NotesTab({ meetingId }: { meetingId: string }) {
+  const [content, setContent] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const { data: notes, isLoading } = useNotes(meetingId);
+  const { mutate: createNote, isPending: isCreating } = useCreateNote(meetingId);
+  const { mutate: deleteNote, isPending: isDeleting } = useDeleteNote(meetingId);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!content.trim()) return;
+    createNote(
+      { content: content.trim() },
+      { onSuccess: () => { setContent(''); toast.success('Note added'); } }
+    );
+  };
+
+  if (isLoading) return <SkeletonLines count={3} />;
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+        Notes
+      </h3>
+
+      {/* Create form */}
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Add a note…"
+          rows={2}
+          className="w-full text-sm resize-none rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-3 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-600 focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSubmit(e as unknown as React.FormEvent);
+          }}
+        />
+        <div className="flex justify-end">
+          <Button
+            type="submit"
+            size="sm"
+            variant="outline"
+            className="text-xs gap-1.5 h-7"
+            disabled={!content.trim() || isCreating}
+          >
+            {isCreating ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <Plus className="w-3 h-3" />
+            )}
+            {isCreating ? 'Adding…' : 'Add Note'}
+          </Button>
+        </div>
+      </form>
+
+      {/* Notes list */}
+      {!notes || notes.length === 0 ? (
+        <EmptyState
+          icon={StickyNote}
+          title="No notes yet"
+          body="Add notes to capture key moments and follow-ups from this meeting."
+        />
+      ) : (
+        <div className="space-y-2">
+          {notes.map((note: MeetingNote) => (
+            <div
+              key={note.id}
+              className="flex items-start gap-3 p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
+                  {note.content}
+                </p>
+                <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1.5">
+                  {new Date(note.createdAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                  {' · '}
+                  {new Date(note.createdAt).toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </p>
+              </div>
+
+              {deletingId === note.id ? (
+                <div className="flex items-center gap-1 shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-[10px] h-6 px-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+                    disabled={isDeleting}
+                    onClick={() =>
+                      deleteNote(note.id, {
+                        onSuccess: () => setDeletingId(null),
+                      })
+                    }
+                  >
+                    {isDeleting ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      'Delete'
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-[10px] h-6 px-2 text-neutral-500"
+                    onClick={() => setDeletingId(null)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 h-6 w-6 text-neutral-400 hover:text-red-500 dark:hover:text-red-400"
+                  onClick={() => setDeletingId(note.id)}
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>

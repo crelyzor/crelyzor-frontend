@@ -95,7 +95,7 @@ export type Meeting = {
     fileName: string;
   };
   aiSummary?: { id: string; summary: string; keyPoints: string[] };
-  actionItems?: ActionItem[];
+  tasks?: Task[];
   createdBy?: {
     id: string;
     name: string;
@@ -107,18 +107,20 @@ export type Meeting = {
 // Simplified meeting for list views (same shape, just aliased)
 export type ScheduledMeeting = Meeting;
 
-export type ActionItem = {
+export type Task = {
   id: string;
+  userId: string;
+  meetingId: string | null;
   title: string;
-  description?: string;
-  owner: string;
-  category: string;
-  suggestedStartDate?: string;
-  suggestedEndDate?: string;
-  assignedTo?: string;
-  meetingId: string;
+  description?: string | null;
+  isCompleted: boolean;
+  completedAt?: string | null;
+  dueDate?: string | null;
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | null;
+  source: 'AI_EXTRACTED' | 'MANUAL';
   createdAt: string;
   updatedAt: string;
+  isDeleted: boolean;
 };
 
 // Helper: derive display-friendly values from backend meeting

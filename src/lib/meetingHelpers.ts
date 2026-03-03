@@ -27,7 +27,7 @@ export type DisplayMeeting = {
   hasRecording: boolean;
   hasTranscript: boolean;
   hasSummary: boolean;
-  hasActionItems: boolean;
+  hasTasks: boolean;
   meetingProvider?: Meeting['meetingProvider'];
   // Keep original for detailed views
   _raw: Meeting;
@@ -50,7 +50,7 @@ export function toDisplayMeeting(m: Meeting): DisplayMeeting {
     hasRecording: !!m.recording,
     hasTranscript: m.transcriptionStatus === 'COMPLETED',
     hasSummary: !!m.aiSummary,
-    hasActionItems: (m.actionItems?.length ?? 0) > 0,
+    hasTasks: (m.tasks?.length ?? 0) > 0,
     meetingProvider: m.meetingProvider,
     _raw: m,
   };
