@@ -10,7 +10,7 @@ import {
   Monitor,
   LogOut,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
 import { useUpdateProfile } from '@/hooks/queries/useUserQueries';
 import { useSessions } from '@/hooks/queries/useIntegrationQueries';
+import { useThemeStore } from '@/stores';
+import type { Theme } from '@/types';
 
 // ── Settings sections ──
 const SETTINGS_SECTIONS = [
@@ -31,16 +33,19 @@ type SettingsSection = (typeof SETTINGS_SECTIONS)[number]['id'];
 
 export default function Settings() {
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] =
-    useState<SettingsSection>('profile');
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Tab state is driven by ?tab= search param
+  const activeSection = (searchParams.get('tab') ?? 'profile') as SettingsSection;
+  const setActiveSection = (section: SettingsSection) => {
+    setSearchParams({ tab: section }, { replace: true });
+  };
+
   const logoutMutation = useLogout();
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
       onSettled: () => {
-        // Always redirect to signin, even if API call fails
-        // (local state is cleared in useLogout hook)
         navigate('/signin', { replace: true });
       },
     });
@@ -98,9 +103,7 @@ export default function Settings() {
           {/* ── Content ── */}
           <div className="flex-1 min-w-0">
             {activeSection === 'profile' && <ProfileSection />}
-            {activeSection === 'appearance' && (
-              <AppearanceSection theme={theme} setTheme={setTheme} />
-            )}
+            {activeSection === 'appearance' && <AppearanceSection />}
             {activeSection === 'security' && <SecuritySection />}
           </div>
         </div>
@@ -118,7 +121,6 @@ function ProfileSection() {
   const [phone, setPhone] = useState('');
   const [nameInit, setNameInit] = useState(false);
 
-  // Initialize form fields from profile data
   if (profile && !nameInit) {
     setName(profile.name ?? '');
     setPhone(profile.phoneNumber ?? '');
@@ -169,7 +171,12 @@ function ProfileSection() {
               <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
                 {profile?.name ?? 'Loading...'}
               </h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              {profile?.username && (
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 font-mono mt-0.5">
+                  @{profile.username}
+                </p>
+              )}
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                 {profile?.email ?? ''}
               </p>
             </div>
@@ -190,18 +197,19 @@ function ProfileSection() {
                 className="border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50"
               />
             </FieldGroup>
+            <FieldGroup label="Username">
+              <Input
+                value={profile?.username ?? ''}
+                disabled
+                placeholder="No username set"
+                className="border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 font-mono text-xs"
+              />
+            </FieldGroup>
             <FieldGroup label="Phone">
               <Input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Add phone number"
-                className="border-neutral-200 dark:border-neutral-700"
-              />
-            </FieldGroup>
-            <FieldGroup label="Country">
-              <Input
-                defaultValue={profile?.country ?? ''}
-                placeholder="Country"
                 className="border-neutral-200 dark:border-neutral-700"
               />
             </FieldGroup>
@@ -222,18 +230,14 @@ function ProfileSection() {
   );
 }
 
-// ── Appearance ──
-function AppearanceSection({
-  theme,
-  setTheme,
-}: {
-  theme: string;
-  setTheme: (t: 'light' | 'dark' | 'system') => void;
-}) {
-  const themes = [
-    { id: 'light' as const, label: 'Light', icon: Sun },
-    { id: 'dark' as const, label: 'Dark', icon: Moon },
-    { id: 'system' as const, label: 'System', icon: Monitor },
+// ── Appearance — wired to global themeStore ──
+function AppearanceSection() {
+  const { theme, setTheme } = useThemeStore();
+
+  const themes: { id: Theme; label: string; icon: typeof Sun }[] = [
+    { id: 'light', label: 'Light', icon: Sun },
+    { id: 'dark', label: 'Dark', icon: Moon },
+    { id: 'system', label: 'System', icon: Monitor },
   ];
 
   return (
@@ -348,9 +352,7 @@ function SecuritySection() {
                           {session.isCurrent
                             ? 'Current session'
                             : `Since ${new Date(session.createdAt).toLocaleDateString()}`}
-                          {session.ipAddress
-                            ? ` \u00B7 ${session.ipAddress}`
-                            : ''}
+                          {session.ipAddress ? ` · ${session.ipAddress}` : ''}
                         </p>
                       </div>
                       {session.isCurrent && (

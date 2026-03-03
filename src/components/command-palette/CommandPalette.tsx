@@ -44,7 +44,10 @@ export function CommandPalette() {
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen} className="cmd-spring">
-      <CommandInput placeholder="Search anything..." />
+      <CommandInput
+        placeholder="Search anything..."
+        className="focus-visible:ring-0 focus:ring-0 focus:outline-none"
+      />
       <CommandList className="max-h-[360px] py-2">
         <CommandEmpty>
           <div className="flex flex-col items-center gap-2 py-8 text-neutral-400 dark:text-neutral-500">
@@ -54,7 +57,7 @@ export function CommandPalette() {
 
         <CommandGroup heading="Quick Actions">
           <CommandItem
-            onSelect={() => runCommand(() => navigate('/meetings/create'))}
+            onSelect={() => runCommand(() => navigate('/meetings'))}
           >
             <Plus className="text-neutral-500 dark:text-neutral-400" />
             <span>New Meeting</span>

@@ -63,25 +63,11 @@ export function UserMenu() {
 
                 <div className="h-px bg-white/5 mx-2" />
 
-                {/* Settings */}
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    navigate('/settings');
-                  }}
-                  className="flex items-center gap-3 px-3 py-3 rounded-[16px] text-[14px] text-neutral-300 hover:bg-white/5 hover:text-white transition-all active:scale-[0.98]"
-                >
-                  <div className="w-8 h-8 rounded-full bg-[#2C2C2E] flex items-center justify-center shrink-0">
-                    <Settings className="w-4 h-4 text-neutral-400" />
-                  </div>
-                  Settings
-                </button>
-
                 {/* Profile */}
                 <button
                   onClick={() => {
                     setOpen(false);
-                    navigate('/settings');
+                    navigate('/settings?tab=profile');
                   }}
                   className="flex items-center gap-3 px-3 py-3 rounded-[16px] text-[14px] text-neutral-300 hover:bg-white/5 hover:text-white transition-all active:scale-[0.98]"
                 >
@@ -89,6 +75,20 @@ export function UserMenu() {
                     <User className="w-4 h-4 text-neutral-400" />
                   </div>
                   Profile
+                </button>
+
+                {/* Settings */}
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    navigate('/settings?tab=appearance');
+                  }}
+                  className="flex items-center gap-3 px-3 py-3 rounded-[16px] text-[14px] text-neutral-300 hover:bg-white/5 hover:text-white transition-all active:scale-[0.98]"
+                >
+                  <div className="w-8 h-8 rounded-full bg-[#2C2C2E] flex items-center justify-center shrink-0">
+                    <Settings className="w-4 h-4 text-neutral-400" />
+                  </div>
+                  Settings
                 </button>
 
                 <div className="h-px bg-white/5 mx-2" />

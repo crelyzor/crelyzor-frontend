@@ -116,12 +116,23 @@ export default function Cards() {
 
         {/* Cards grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
             {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-80 rounded-2xl bg-neutral-100 dark:bg-neutral-800 animate-pulse"
-              />
+              <div key={i}>
+                {/* Card preview shape — matches 1.586:1 credit card ratio */}
+                <div
+                  className="rounded-2xl bg-neutral-100 dark:bg-neutral-800 w-full"
+                  style={{ aspectRatio: '1.586 / 1' }}
+                />
+                {/* Stats bar */}
+                <div className="flex items-center justify-between px-1 mt-2.5">
+                  <div className="flex items-center gap-3">
+                    <div className="h-3 w-8 bg-neutral-100 dark:bg-neutral-800 rounded" />
+                    <div className="h-3 w-8 bg-neutral-100 dark:bg-neutral-800 rounded" />
+                  </div>
+                  <div className="h-3 w-12 bg-neutral-100 dark:bg-neutral-800 rounded" />
+                </div>
+              </div>
             ))}
           </div>
         ) : !cards?.length ? (
