@@ -62,16 +62,25 @@ export function RecordingTab({
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     const audio = audioRef.current;
-    if (!audio || !audioDuration) return;
+    if (!audio || !effectiveDuration) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const pct = (e.clientX - rect.left) / rect.width;
-    audio.currentTime = pct * audioDuration;
+    audio.currentTime = pct * effectiveDuration;
   };
 
   const recording: SMARecording | undefined = recordings?.[0];
   const hasRecording = !!recording || transcriptionStatus !== 'NONE';
   const isProcessing =
     transcriptionStatus === 'UPLOADED' || transcriptionStatus === 'PROCESSING';
+
+  // audio.duration can return Infinity when GCS doesn't support range requests.
+  // Fall back to the DB-stored duration in that case.
+  const effectiveDuration =
+    isFinite(audioDuration) && audioDuration > 0
+      ? audioDuration
+      : (recording?.duration ?? 0);
+  const progress =
+    effectiveDuration > 0 ? (currentTime / effectiveDuration) * 100 : 0;
 
   if (isLoading) return <SkeletonLines count={2} />;
 
@@ -112,10 +121,6 @@ export function RecordingTab({
       </div>
     );
   }
-
-  const displayDuration = audioDuration || recording?.duration || 0;
-  const progress =
-    displayDuration > 0 ? (currentTime / displayDuration) * 100 : 0;
 
   return (
     <div className="space-y-4">
@@ -192,7 +197,7 @@ export function RecordingTab({
                 {formatTimestamp(currentTime)}
               </span>
               <span className="text-[10px] text-neutral-400 font-mono">
-                {formatDuration(displayDuration)}
+                {formatDuration(effectiveDuration)}
               </span>
             </div>
           </div>
