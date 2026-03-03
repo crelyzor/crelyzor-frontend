@@ -19,7 +19,7 @@ Last updated: 2026-03-03 (theme fix + refresh token added to P0)
 
 ### Ask AI Chat Interface
 
-- [ ] Chat panel inside MeetingDetail (available for RECORDED + VOICE_NOTE when transcript exists)
+- [ ] Chat panel inside MeetingDetail (available for RECORDED + VOICE_NOTE when transcript exists and SCHEDULED when meeting is live)
 - [ ] Input: "Ask anything about this meeting..."
 - [ ] Stream AI response
 - [ ] Pre-loaded suggestions: "Summarize decisions", "List action items", "What were the blockers?"
