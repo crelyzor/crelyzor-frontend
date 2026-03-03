@@ -30,7 +30,9 @@ Backend already done. Just needs frontend.
 - [ ] Query keys: `queryKeys.sma.notes(meetingId)`
 
 ### 3. Tasks UI
+
 Requires backend `Task` model + CRUD API to be built first.
+
 - [ ] Rename all "Action Items" labels to "Tasks" everywhere in the UI
 - [ ] Mark task complete / incomplete (toggle checkbox, optimistic update)
 - [ ] Create task manually (inline form — just title, press Enter)
