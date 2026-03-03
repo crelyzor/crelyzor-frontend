@@ -15,7 +15,9 @@ function getStoredTheme(): Theme {
     const stored = localStorage.getItem(THEME_KEY) as Theme | null;
     if (stored === 'light' || stored === 'dark' || stored === 'system')
       return stored;
-  } catch { /* localStorage unavailable (SSR/private browsing) */ }
+  } catch {
+    /* localStorage unavailable (SSR/private browsing) */
+  }
   return 'system';
 }
 
@@ -39,7 +41,9 @@ export const useThemeStore = create<ThemeStore>()((set, get) => ({
   setTheme: (theme) => {
     try {
       localStorage.setItem(THEME_KEY, theme);
-    } catch { /* localStorage unavailable */ }
+    } catch {
+      /* localStorage unavailable */
+    }
     set({ theme });
   },
   setSystemTheme: (systemTheme) => set({ systemTheme }),

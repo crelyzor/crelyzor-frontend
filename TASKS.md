@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-03 (dashboard polish + global fixes done)
+Last updated: 2026-03-03 (theme fix + refresh token added to P0)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -8,6 +8,14 @@ Last updated: 2026-03-03 (dashboard polish + global fixes done)
 ---
 
 ## P0 — Build Next (in order)
+
+### Auth — Refresh Token
+
+- [ ] Backend: `POST /auth/refresh` endpoint — exchange refresh token for new access token
+- [ ] Backend: Issue refresh token on login (httpOnly cookie or response body), store hashed in DB
+- [ ] Frontend: Axios interceptor — on 401, auto-call `/auth/refresh`, retry original request
+- [ ] Frontend: On refresh failure (token expired/invalid), clear auth state and redirect to `/signin`
+- [ ] No more "login again" on access token expiry
 
 ### Ask AI Chat Interface
 
