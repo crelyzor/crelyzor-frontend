@@ -98,7 +98,10 @@ export function useCompleteMeeting() {
 
 export function useVoiceNotes() {
   return useQuery({
-    queryKey: queryKeys.meetings.list({ type: 'VOICE_NOTE', noPagination: true }),
+    queryKey: queryKeys.meetings.list({
+      type: 'VOICE_NOTE',
+      noPagination: true,
+    }),
     queryFn: () => meetingsApi.listAll({ type: 'VOICE_NOTE' }),
   });
 }

@@ -42,7 +42,8 @@ export function RecordingTab({
   const [audioDuration, setAudioDuration] = useState(0);
 
   const { data: recordings, isLoading } = useRecordings(meetingId);
-  const { mutate: upload, isPending: isUploading } = useUploadRecording(meetingId);
+  const { mutate: upload, isPending: isUploading } =
+    useUploadRecording(meetingId);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -113,7 +114,8 @@ export function RecordingTab({
   }
 
   const displayDuration = audioDuration || recording?.duration || 0;
-  const progress = displayDuration > 0 ? (currentTime / displayDuration) * 100 : 0;
+  const progress =
+    displayDuration > 0 ? (currentTime / displayDuration) * 100 : 0;
 
   return (
     <div className="space-y-4">
@@ -151,9 +153,16 @@ export function RecordingTab({
             src={recording.signedUrl}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
-            onEnded={() => { setIsPlaying(false); setCurrentTime(0); }}
-            onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
-            onLoadedMetadata={() => setAudioDuration(audioRef.current?.duration ?? 0)}
+            onEnded={() => {
+              setIsPlaying(false);
+              setCurrentTime(0);
+            }}
+            onTimeUpdate={() =>
+              setCurrentTime(audioRef.current?.currentTime ?? 0)
+            }
+            onLoadedMetadata={() =>
+              setAudioDuration(audioRef.current?.duration ?? 0)
+            }
             preload="metadata"
           />
           <Button
@@ -323,7 +332,11 @@ export function SummaryTab({
   transcriptionStatus: TranscriptionStatus;
 }) {
   const isCompleted = transcriptionStatus === 'COMPLETED';
-  const { data: summary, isLoading, isError } = useSummary(meetingId, isCompleted);
+  const {
+    data: summary,
+    isLoading,
+    isError,
+  } = useSummary(meetingId, isCompleted);
 
   if (!isCompleted) {
     return (
@@ -389,7 +402,10 @@ export function ActionsTab({
   transcriptionStatus: TranscriptionStatus;
 }) {
   const isCompleted = transcriptionStatus === 'COMPLETED';
-  const { data: actionItems, isLoading } = useActionItems(meetingId, isCompleted);
+  const { data: actionItems, isLoading } = useActionItems(
+    meetingId,
+    isCompleted
+  );
 
   if (isLoading) return <SkeletonLines count={3} />;
 
@@ -427,10 +443,13 @@ export function ActionsTab({
               {item.suggestedStartDate && (
                 <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
                   · Due{' '}
-                  {new Date(item.suggestedStartDate).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                  })}
+                  {new Date(item.suggestedStartDate).toLocaleDateString(
+                    'en-US',
+                    {
+                      month: 'short',
+                      day: 'numeric',
+                    }
+                  )}
                 </span>
               )}
               <span className="px-1.5 py-0.5 rounded text-[9px] font-medium uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
@@ -471,9 +490,24 @@ export function OverviewTab({
 
   const smaItems = [
     { label: 'Recording', icon: Mic, ready: hasSMA, processing: isProcessing },
-    { label: 'Transcript', icon: FileText, ready: isCompleted, processing: isProcessing },
-    { label: 'AI Summary', icon: FileText, ready: isCompleted && !!summary, processing: false },
-    { label: 'Action Items', icon: ClipboardList, ready: isCompleted, processing: false },
+    {
+      label: 'Transcript',
+      icon: FileText,
+      ready: isCompleted,
+      processing: isProcessing,
+    },
+    {
+      label: 'AI Summary',
+      icon: FileText,
+      ready: isCompleted && !!summary,
+      processing: false,
+    },
+    {
+      label: 'Action Items',
+      icon: ClipboardList,
+      ready: isCompleted,
+      processing: false,
+    },
   ];
 
   return (
@@ -493,7 +527,8 @@ export function OverviewTab({
       {aiMissing && (
         <div className="flex items-center justify-between p-3 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
           <p className="text-xs text-neutral-600 dark:text-neutral-400">
-            AI processing didn't complete. Generate summary and action items now.
+            AI processing didn't complete. Generate summary and action items
+            now.
           </p>
           <Button
             variant="outline"
@@ -544,7 +579,11 @@ export function OverviewTab({
                       : 'text-neutral-400 dark:text-neutral-500'
                 }`}
               >
-                {item.processing ? 'Processing…' : item.ready ? 'Available' : 'Not available'}
+                {item.processing
+                  ? 'Processing…'
+                  : item.ready
+                    ? 'Available'
+                    : 'Not available'}
               </span>
             </div>
           ))}
@@ -558,7 +597,8 @@ export function OverviewTab({
             No recording uploaded
           </p>
           <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs mb-4">
-            Upload a recording to unlock transcript, AI summary, and auto-generated action items.
+            Upload a recording to unlock transcript, AI summary, and
+            auto-generated action items.
           </p>
           <Button
             variant="outline"
@@ -593,7 +633,9 @@ function EmptyState({
       <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
         {title}
       </p>
-      <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs">{body}</p>
+      <p className="text-xs text-neutral-400 dark:text-neutral-500 max-w-xs">
+        {body}
+      </p>
     </div>
   );
 }

@@ -123,7 +123,11 @@ export function ScheduledDetail({
             {/* ⋯ menu */}
             <Popover open={moreOpen} onOpenChange={setMoreOpen}>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 h-8 w-8"
+                >
                   <MoreHorizontal className="w-4 h-4 text-neutral-500" />
                 </Button>
               </PopoverTrigger>
@@ -190,7 +194,9 @@ export function ScheduledDetail({
                 <Calendar className="w-4 h-4 text-neutral-500" />
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Date</p>
+                <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                  Date
+                </p>
                 <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
                   {new Date(rawMeeting.startTime).toLocaleDateString('en-US', {
                     month: 'short',
@@ -205,7 +211,9 @@ export function ScheduledDetail({
                 <Clock className="w-4 h-4 text-neutral-500" />
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Time</p>
+                <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                  Time
+                </p>
                 <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
                   {meeting.time} · {meeting.duration}
                 </p>
@@ -217,7 +225,9 @@ export function ScheduledDetail({
                   <MapPin className="w-4 h-4 text-neutral-500" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">Location</p>
+                  <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                    Location
+                  </p>
                   <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
                     {meeting.location}
                   </p>

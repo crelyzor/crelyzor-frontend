@@ -23,9 +23,7 @@ import {
 } from '@/components/ui/popover';
 import type { Meeting, TranscriptionStatus } from '@/types';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
-import {
-  useCompleteMeeting,
-} from '@/hooks/queries/useMeetingQueries';
+import { useCompleteMeeting } from '@/hooks/queries/useMeetingQueries';
 import {
   useSpeakers,
   useRenameSpeaker,
@@ -33,7 +31,12 @@ import {
   useTriggerAI,
 } from '@/hooks/queries/useSMAQueries';
 import type { SMASpeaker } from '@/services/smaService';
-import { RecordingTab, TranscriptTab, SummaryTab, ActionsTab } from './SharedTabs';
+import {
+  RecordingTab,
+  TranscriptTab,
+  SummaryTab,
+  ActionsTab,
+} from './SharedTabs';
 
 const RECORDED_TABS = [
   { id: 'recording', label: 'Recording' },
@@ -53,7 +56,9 @@ function SpeakerChip({
   meetingId: string;
 }) {
   const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(speaker.displayName ?? speaker.speakerLabel);
+  const [value, setValue] = useState(
+    speaker.displayName ?? speaker.speakerLabel
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const { mutate: rename, isPending } = useRenameSpeaker(meetingId);
 
@@ -95,7 +100,9 @@ function SpeakerChip({
           }}
           className="px-2 py-0.5 rounded-md text-xs font-medium border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 outline-none focus:border-neutral-500 dark:focus:border-neutral-400 w-28"
         />
-        {isPending && <Loader2 className="w-3 h-3 animate-spin text-neutral-400 shrink-0" />}
+        {isPending && (
+          <Loader2 className="w-3 h-3 animate-spin text-neutral-400 shrink-0" />
+        )}
       </div>
     );
   }
@@ -129,7 +136,9 @@ export function RecordedDetail({
   const complete = useCompleteMeeting();
   const { data: speakers } = useSpeakers(rawMeeting.id, isCompleted);
   const { data: summary } = useSummary(rawMeeting.id, isCompleted);
-  const { mutate: triggerAI, isPending: isRetrying } = useTriggerAI(rawMeeting.id);
+  const { mutate: triggerAI, isPending: isRetrying } = useTriggerAI(
+    rawMeeting.id
+  );
   const aiMissing = isCompleted && !summary;
 
   // Build a speakerLabel → displayName map for use in TranscriptTab
@@ -138,11 +147,14 @@ export function RecordedDetail({
     if (s.displayName) speakerNames[s.speakerLabel] = s.displayName;
   }
 
-  const recordedOn = new Date(rawMeeting.startTime).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const recordedOn = new Date(rawMeeting.startTime).toLocaleDateString(
+    'en-US',
+    {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }
+  );
 
   const canComplete =
     rawMeeting.status === 'ACCEPTED' || rawMeeting.status === 'CREATED';
@@ -181,7 +193,11 @@ export function RecordedDetail({
             {/* ⋯ menu */}
             <Popover open={moreOpen} onOpenChange={setMoreOpen}>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 h-8 w-8"
+                >
                   <MoreHorizontal className="w-4 h-4 text-neutral-500" />
                 </Button>
               </PopoverTrigger>
@@ -230,7 +246,11 @@ export function RecordedDetail({
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {speakers.map((s) => (
-                  <SpeakerChip key={s.id} speaker={s} meetingId={rawMeeting.id} />
+                  <SpeakerChip
+                    key={s.id}
+                    speaker={s}
+                    meetingId={rawMeeting.id}
+                  />
                 ))}
               </div>
               <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-2">

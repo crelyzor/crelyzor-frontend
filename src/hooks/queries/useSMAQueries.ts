@@ -66,8 +66,11 @@ export function useRenameSpeaker(meetingId: string) {
       speakerId,
       displayName,
       role,
-    }: { speakerId: string; displayName?: string; role?: string }) =>
-      smaApi.renameSpeaker(meetingId, speakerId, { displayName, role }),
+    }: {
+      speakerId: string;
+      displayName?: string;
+      role?: string;
+    }) => smaApi.renameSpeaker(meetingId, speakerId, { displayName, role }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.sma.speakers(meetingId) });
     },

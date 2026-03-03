@@ -36,15 +36,20 @@ export function VoiceNoteDetail({
   const isCompleted = transcriptionStatus === 'COMPLETED';
 
   const { data: summary } = useSummary(rawMeeting.id, isCompleted);
-  const { mutate: triggerAI, isPending: isRetrying } = useTriggerAI(rawMeeting.id);
+  const { mutate: triggerAI, isPending: isRetrying } = useTriggerAI(
+    rawMeeting.id
+  );
   const aiMissing = isCompleted && !summary;
 
-  const recordedOn = new Date(rawMeeting.startTime).toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const recordedOn = new Date(rawMeeting.startTime).toLocaleDateString(
+    'en-US',
+    {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    }
+  );
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -79,7 +84,11 @@ export function VoiceNoteDetail({
             {/* ⋯ menu */}
             <Popover open={moreOpen} onOpenChange={setMoreOpen}>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 h-8 w-8"
+                >
                   <MoreHorizontal className="w-4 h-4 text-neutral-500" />
                 </Button>
               </PopoverTrigger>

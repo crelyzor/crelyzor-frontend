@@ -33,9 +33,7 @@ function TranscriptBadge({ status }: { status: TranscriptionStatus }) {
   return null;
 }
 
-function groupByDate(
-  notes: ReturnType<typeof toDisplayMeeting>[]
-) {
+function groupByDate(notes: ReturnType<typeof toDisplayMeeting>[]) {
   const groups: Record<string, typeof notes> = {};
   for (const n of notes) {
     if (!groups[n.date]) groups[n.date] = [];
@@ -87,7 +85,9 @@ export default function VoiceNotes() {
               Voice Notes
             </h1>
             <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">
-              {isLoading ? '—' : `${notes.length} recording${notes.length !== 1 ? 's' : ''}`}
+              {isLoading
+                ? '—'
+                : `${notes.length} recording${notes.length !== 1 ? 's' : ''}`}
             </p>
           </div>
         </div>
