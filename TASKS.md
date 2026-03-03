@@ -12,12 +12,15 @@ Last updated: 2026-03-03
 ## P0 — Build Next (in order)
 
 ### 1. Auth — Refresh Token
+
 - [ ] Axios interceptor — on 401, auto-call `POST /auth/refresh`, retry original request
 - [ ] On refresh failure, clear auth state and redirect to `/signin`
 - [ ] No more "login again" on access token expiry
 
 ### 2. Meeting Notes UI
+
 Backend already done. Just needs frontend.
+
 - [ ] Notes tab / section in all 3 MeetingDetail layouts
 - [ ] Create note (textarea + submit)
 - [ ] Delete note (with confirm)
@@ -26,22 +29,24 @@ Backend already done. Just needs frontend.
 - [ ] Service: `notesService.ts` (getAll, create, delete)
 - [ ] Query keys: `queryKeys.sma.notes(meetingId)`
 
-### 3. Tasks UI (replaces "Action Items")
-- [ ] Rename all "Action Items" labels/headings to "Tasks" in the UI
-- [ ] Mark task complete / incomplete (toggle checkbox)
-- [ ] Create task manually (inline form — just title, then Enter)
+### 3. Tasks UI
+Requires backend `Task` model + CRUD API to be built first.
+- [ ] Rename all "Action Items" labels to "Tasks" everywhere in the UI
+- [ ] Mark task complete / incomplete (toggle checkbox, optimistic update)
+- [ ] Create task manually (inline form — just title, press Enter)
 - [ ] Delete task (icon button, no confirm needed)
-- [ ] Optimistic updates on toggle
-- [ ] Service: update `smaService.ts` with create/update/delete task calls
-- [ ] Query keys: `queryKeys.sma.tasks(meetingId)`
+- [ ] Service: `tasksService.ts` (getAll, create, update, delete) — calls `/meetings/:id/tasks` endpoints
+- [ ] Query keys: `queryKeys.tasks.byMeeting(meetingId)`
 
 ### 4. Edit Meeting Modal
+
 - [ ] SCHEDULED only — edit title, description, startTime, endTime, location
 - [ ] Open from ScheduledDetail header ⋯ menu
 - [ ] Validates time conflicts on save
 - [ ] Invalidates meeting cache on success
 
 ### 5. Delete Meeting
+
 - [ ] Confirm dialog before delete ("Delete this meeting? This can't be undone.")
 - [ ] Wire Delete in VoiceNoteDetail ⋯ menu
 - [ ] Wire Delete in RecordedDetail ⋯ menu
@@ -52,7 +57,9 @@ Backend already done. Just needs frontend.
 ## P1 — Next Sprint
 
 ### 6. Ask AI — chat panel
+
 Requires Ask AI backend endpoint first.
+
 - [ ] Chat panel in all 3 MeetingDetail layouts (available when transcript exists)
 - [ ] Input: "Ask anything about this meeting..."
 - [ ] Stream AI response token by token
@@ -61,6 +68,7 @@ Requires Ask AI backend endpoint first.
 - [ ] Service: `askAI(meetingId, question)` — streaming via EventSource or fetch ReadableStream
 
 ### 7. Share Sheet
+
 - [ ] Share button in all 3 MeetingDetail layouts (header area)
 - [ ] Bottom sheet / popover with options:
   - Copy transcript (to clipboard)
@@ -70,7 +78,9 @@ Requires Ask AI backend endpoint first.
   - _(Public link — P2, needs backend)_
 
 ### 8. AI Content Generation
+
 Requires backend `POST /sma/meetings/:id/generate`.
+
 - [ ] "Generate" section in MeetingDetail (separate from Summary tab)
 - [ ] Options: Meeting report / Main points / To-do list / Tweet / Blog post / Email
 - [ ] Each shows a loading state while generating, then displays result
@@ -78,6 +88,7 @@ Requires backend `POST /sma/meetings/:id/generate`.
 - [ ] Results cached per session (don't re-fetch on re-render)
 
 ### 9. Regenerate Actions
+
 - [ ] Regenerate title button (in meeting header, ⋯ menu)
 - [ ] Regenerate summary button (in Summary section)
 - [ ] Both show spinner while running, update on complete
@@ -88,12 +99,15 @@ Requires backend `POST /sma/meetings/:id/generate`.
 ## P2 — Deeper Features
 
 ### 10. Public Meeting Links
+
 Requires backend `MeetingShare` model.
+
 - [ ] Share sheet: "Copy public link" option (creates share if not exists)
 - [ ] "Disable public link" toggle
 - [ ] Shows the short URL when enabled
 
 ### 11. Export
+
 - [ ] Export options in Share sheet:
   - Export Transcript as PDF
   - Export Summary as PDF
@@ -102,30 +116,37 @@ Requires backend `MeetingShare` model.
 - [ ] Triggers file download from backend export endpoint
 
 ### 12. Tags
+
 Requires backend Tags API.
+
 - [ ] Tag pill display on meeting cards + detail header
 - [ ] Tag editor — add/remove tags on a meeting
 - [ ] Tag management page (or settings section) — create, rename, color, delete
 - [ ] Tag filter on Meetings list
 
 ### 13. Attachments
+
 - [ ] Attachments section in MeetingDetail
 - [ ] Attach a link (paste URL + name)
 - [ ] Attach a file (upload — image, PDF, doc)
 - [ ] Display with icon by type, clickable, deletable
 
 ### 14. Edit Transcript / Summary
+
 - [ ] Click-to-edit on transcript segments (inline)
 - [ ] Click-to-edit on summary (textarea modal or inline)
 - [ ] Save on blur or explicit Save button
 
 ### 15. Regenerate Transcript + Change Language
+
 - [ ] Regenerate transcript option in ⋯ menu (only when recording exists)
 - [ ] Change language option — opens language picker, re-runs Deepgram
 - [ ] Both show progress (polls transcription status)
 
 ### 16. UI Revamp
+
 All the new P1/P2 features add significant surface area. Plan a layout pass:
+
 - [ ] MeetingDetail — rethink sidebar vs tab layout to fit: notes, tasks, ask AI, generate, attachments, tags
 - [ ] Share sheet — polished bottom sheet with all export/share options
 - [ ] Consider splitting into panels: left = content (transcript/summary), right = tools (ask AI, generate, notes, tasks)
@@ -224,5 +245,6 @@ All the new P1/P2 features add significant surface area. Plan a layout pass:
 
 ## Phase 3 — Future
 
-- [ ] Standalone Tasks page (Todoist-style — filter, priority, due dates)
-- [ ] Tags on Tasks
+- [ ] Standalone Tasks page (Todoist-style — `GET /tasks`, all tasks not scoped to a meeting)
+- [ ] Task filters: by status, priority, due date, meeting source
+- [ ] Tags on Tasks (extends universal Tag system built in P2)
