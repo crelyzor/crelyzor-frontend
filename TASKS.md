@@ -5,58 +5,130 @@ Last updated: 2026-03-03
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
 
+> **Naming:** "Action Items" is now **"Tasks"** everywhere in the UI.
+
 ---
 
 ## P0 — Build Next (in order)
 
-### Auth — Refresh Token
-
-- [ ] Backend: `POST /auth/refresh` endpoint — exchange refresh token for new access token
-- [ ] Backend: Issue refresh token on login (httpOnly cookie or response body), store hashed in DB
-- [ ] Frontend: Axios interceptor — on 401, auto-call `/auth/refresh`, retry original request
-- [ ] Frontend: On refresh failure (token expired/invalid), clear auth state and redirect to `/signin`
+### 1. Auth — Refresh Token
+- [ ] Axios interceptor — on 401, auto-call `POST /auth/refresh`, retry original request
+- [ ] On refresh failure, clear auth state and redirect to `/signin`
 - [ ] No more "login again" on access token expiry
 
-### Ask AI Chat Interface
-
-- [ ] Chat panel inside MeetingDetail (available for RECORDED + VOICE_NOTE when transcript exists and SCHEDULED when meeting is live)
-- [ ] Input: "Ask anything about this meeting..."
-- [ ] Stream AI response
-- [ ] Pre-loaded suggestions: "Summarize decisions", "List action items", "What were the blockers?"
-- [ ] Conversation history within session
-- [ ] Requires Ask AI backend endpoint first (`POST /sma/meetings/:id/ask`)
-
-### Action Items (Beyond Display)
-
-- [ ] Mark action item complete / incomplete (toggle)
-- [ ] Create action item manually (inline form)
-- [ ] Delete action item
-
-### Meeting Notes UI
-
+### 2. Meeting Notes UI
+Backend already done. Just needs frontend.
+- [ ] Notes tab / section in all 3 MeetingDetail layouts
 - [ ] Create note (textarea + submit)
-- [ ] Delete note
-- [ ] Show notes with author and timestamp
+- [ ] Delete note (with confirm)
+- [ ] Show notes with author avatar, name, and timestamp
+- [ ] React Query hook: `useNotes(meetingId)`
+- [ ] Service: `notesService.ts` (getAll, create, delete)
+- [ ] Query keys: `queryKeys.sma.notes(meetingId)`
 
-### Edit Meeting Modal
+### 3. Tasks UI (replaces "Action Items")
+- [ ] Rename all "Action Items" labels/headings to "Tasks" in the UI
+- [ ] Mark task complete / incomplete (toggle checkbox)
+- [ ] Create task manually (inline form — just title, then Enter)
+- [ ] Delete task (icon button, no confirm needed)
+- [ ] Optimistic updates on toggle
+- [ ] Service: update `smaService.ts` with create/update/delete task calls
+- [ ] Query keys: `queryKeys.sma.tasks(meetingId)`
 
-- [ ] Edit title, description, time, location (SCHEDULED only)
+### 4. Edit Meeting Modal
+- [ ] SCHEDULED only — edit title, description, startTime, endTime, location
+- [ ] Open from ScheduledDetail header ⋯ menu
+- [ ] Validates time conflicts on save
+- [ ] Invalidates meeting cache on success
+
+### 5. Delete Meeting
+- [ ] Confirm dialog before delete ("Delete this meeting? This can't be undone.")
+- [ ] Wire Delete in VoiceNoteDetail ⋯ menu
+- [ ] Wire Delete in RecordedDetail ⋯ menu
+- [ ] Navigate to `/meetings` (or `/voice-notes`) after delete
 
 ---
 
-## Not Built Yet
+## P1 — Next Sprint
 
-### Delete Meeting
+### 6. Ask AI — chat panel
+Requires Ask AI backend endpoint first.
+- [ ] Chat panel in all 3 MeetingDetail layouts (available when transcript exists)
+- [ ] Input: "Ask anything about this meeting..."
+- [ ] Stream AI response token by token
+- [ ] Pre-loaded suggestion chips: "Summarize decisions", "List tasks", "What were the blockers?"
+- [ ] Conversation history within session (not persisted)
+- [ ] Service: `askAI(meetingId, question)` — streaming via EventSource or fetch ReadableStream
 
-- [ ] Wire Delete button in VoiceNoteDetail (currently `toast.info('Delete coming soon')`)
-- [ ] Wire Delete button in RecordedDetail (same)
-- [ ] Confirm dialog before delete
-- [ ] Navigate back to list after delete
+### 7. Share Sheet
+- [ ] Share button in all 3 MeetingDetail layouts (header area)
+- [ ] Bottom sheet / popover with options:
+  - Copy transcript (to clipboard)
+  - Copy summary (to clipboard)
+  - Download Audio (only when recording exists)
+  - Share via email (opens mailto: with summary pre-filled)
+  - _(Public link — P2, needs backend)_
 
-### Home Dashboard
+### 8. AI Content Generation
+Requires backend `POST /sma/meetings/:id/generate`.
+- [ ] "Generate" section in MeetingDetail (separate from Summary tab)
+- [ ] Options: Meeting report / Main points / To-do list / Tweet / Blog post / Email
+- [ ] Each shows a loading state while generating, then displays result
+- [ ] Copy to clipboard button on each result
+- [ ] Results cached per session (don't re-fetch on re-render)
 
-- [ ] Today's meetings widget (filtered to today, not just recent)
-- [ ] Pending action items widget across all meetings
+### 9. Regenerate Actions
+- [ ] Regenerate title button (in meeting header, ⋯ menu)
+- [ ] Regenerate summary button (in Summary section)
+- [ ] Both show spinner while running, update on complete
+- [ ] Service calls: `POST /sma/meetings/:id/regenerate`
+
+---
+
+## P2 — Deeper Features
+
+### 10. Public Meeting Links
+Requires backend `MeetingShare` model.
+- [ ] Share sheet: "Copy public link" option (creates share if not exists)
+- [ ] "Disable public link" toggle
+- [ ] Shows the short URL when enabled
+
+### 11. Export
+- [ ] Export options in Share sheet:
+  - Export Transcript as PDF
+  - Export Summary as PDF
+  - Export Transcript as .txt
+  - Export Summary as .txt
+- [ ] Triggers file download from backend export endpoint
+
+### 12. Tags
+Requires backend Tags API.
+- [ ] Tag pill display on meeting cards + detail header
+- [ ] Tag editor — add/remove tags on a meeting
+- [ ] Tag management page (or settings section) — create, rename, color, delete
+- [ ] Tag filter on Meetings list
+
+### 13. Attachments
+- [ ] Attachments section in MeetingDetail
+- [ ] Attach a link (paste URL + name)
+- [ ] Attach a file (upload — image, PDF, doc)
+- [ ] Display with icon by type, clickable, deletable
+
+### 14. Edit Transcript / Summary
+- [ ] Click-to-edit on transcript segments (inline)
+- [ ] Click-to-edit on summary (textarea modal or inline)
+- [ ] Save on blur or explicit Save button
+
+### 15. Regenerate Transcript + Change Language
+- [ ] Regenerate transcript option in ⋯ menu (only when recording exists)
+- [ ] Change language option — opens language picker, re-runs Deepgram
+- [ ] Both show progress (polls transcription status)
+
+### 16. UI Revamp
+All the new P1/P2 features add significant surface area. Plan a layout pass:
+- [ ] MeetingDetail — rethink sidebar vs tab layout to fit: notes, tasks, ask AI, generate, attachments, tags
+- [ ] Share sheet — polished bottom sheet with all export/share options
+- [ ] Consider splitting into panels: left = content (transcript/summary), right = tools (ask AI, generate, notes, tasks)
 
 ---
 
@@ -65,88 +137,73 @@ Last updated: 2026-03-03
 ### MeetingDetail — 3 distinct layouts by type
 
 - [x] VoiceNoteDetail: minimal header, flat scroll (player → transcript → summary), Delete only
-- [x] RecordedDetail: compact header, speakers section with inline rename, tabs (Recording | Transcript | Summary | Action Items)
-- [x] ScheduledDetail: full header with status badge, participants, quick actions, tabs (Overview | Transcript | Summary | Action Items | Recording)
+- [x] RecordedDetail: compact header, speakers section with inline rename, tabs (Recording | Transcript | Summary | Tasks | Ask AI placeholder)
+- [x] ScheduledDetail: full header with status badge, participants, quick actions, tabs (Overview | Transcript | Summary | Tasks | Recording)
 - [x] MeetingDetail shell: thin router to 3 layout components, polling preserved
 
 ### Voice Notes — separate section
 
-- [x] Add "Voice Notes" nav item in toolbar (Control Center + pinnable)
+- [x] "Voice Notes" nav item in toolbar
 - [x] `/voice-notes` route → VoiceNotes page
 - [x] Lists all VOICE_NOTE meetings, sorted by date desc
-- [x] Meetings list page (`/meetings`) filters out VOICE_NOTE
-- [x] Voice Note cards: minimal — title, date, duration, transcript status badge
+- [x] Meetings list (`/meetings`) filters out VOICE_NOTE
 - [x] Voice Notes quick-action bubble on home dashboard
-- [x] Recent Voice Notes widget on home dashboard (right column, last 3, click → detail)
+- [x] Recent Voice Notes widget on home dashboard
 
 ### Meetings List — type segregation + UX
 
-- [x] Type toggle: All | Live | Recordings (filters SCHEDULED vs RECORDED)
-- [x] RECORDED badge: Video icon only (no "REC" text)
-- [x] Online SCHEDULED badge: Globe icon (detected by URL in location or meetingProvider)
-- [x] Skeleton loading state while data fetches
+- [x] Type toggle: All | Live | Recordings
+- [x] RECORDED badge, Online SCHEDULED badge
+- [x] Skeleton loading state
 
 ### Home Dashboard
 
-- [x] Recent Meetings filters out VOICE_NOTE
-- [x] Recent Meetings skeleton loading (5 shimmer rows)
-- [x] Cache shared with /meetings page (same useMeetingsAll query key — no duplicate fetch)
-- [x] Recent Voice Notes widget added to right column
+- [x] Recent Meetings (no VOICE_NOTE), skeleton loading, shared cache
+- [x] Recent Voice Notes widget
 
 ### Settings — fixed and wired
 
-- [x] Appearance theme change actually works (connected to useThemeStore, was using local useState)
-- [x] Profile shows @username below email
-- [x] Username read-only field in profile form
-- [x] URL-based tabs: `/settings?tab=profile`, `?tab=appearance`, `?tab=security` (bookmarkable, deep-linkable)
-- [x] UserMenu: Profile above Settings
-- [x] UserMenu: Profile button → `/settings?tab=profile`, Settings button → `/settings?tab=appearance`
+- [x] Appearance theme change works
+- [x] Profile shows @username below email, read-only username field
+- [x] URL-based tabs (`?tab=profile`, `?tab=appearance`, `?tab=security`)
+- [x] UserMenu: Profile + Settings buttons wired
 
-### Cmd+K (Command Palette) — fixed
+### Cmd+K
 
-- [x] Navigate section sourced from TOOLBAR_ITEMS (single source of truth) — Voice Notes auto-included
-- [x] Input focus ring removed (`[cmdk-input]:focus-visible { outline: none }` in CSS)
-- [x] "New Meeting" goes to `/meetings` (not `/meetings/create` which doesn't exist)
+- [x] Navigate section sourced from TOOLBAR_ITEMS (single source of truth)
+- [x] Input focus ring removed
+- [x] "New Meeting" goes to `/meetings`
 
 ### Skeleton loading states — all pages
 
-- [x] Home — RecentMeetings skeleton (5 rows)
-- [x] Meetings page — 6 card skeletons matching card layout
-- [x] CardEditor — 2-column skeleton (header + template grid + field rows + preview panel)
-- [x] Cards list — correct 1.586:1 aspect ratio shape + stats bar per card
+- [x] Home RecentMeetings, Meetings page, CardEditor, Cards list
 
 ### Global fixes
 
-- [x] Light mode background softened: `#ffffff` → `#f5f5f5` (cards stay `#ffffff` for depth)
-- [x] Theme flash on hard refresh eliminated: blocking inline script in `<head>` reads localStorage before first paint
-- [x] MeetingProvider field added to DisplayMeeting for online meeting detection
+- [x] Light mode background softened
+- [x] Theme flash on hard refresh eliminated
+- [x] MeetingProvider field added to DisplayMeeting
 
 ### Previously done
 
-- [x] Meeting list page with search, filter, group by date
-- [x] Meeting context menu (accept/decline/complete/cancel)
-- [x] MeetingDetail — wired to real API (transcript, summary, action items, recording player)
-- [x] MeetingDetail — all action buttons wired (accept/decline/complete/cancel + ⋯ menu)
-- [x] MeetingDetail — real audio player with play/pause/seek
-- [x] MeetingDetail — transcription status polling (NONE → PROCESSING → COMPLETED)
-- [x] MeetingDetail — 30s post-COMPLETED polling to catch AI title update
-- [x] MeetingDetail — Retry AI button when processing failed
-- [x] Create FAB — renamed to "Create", two-level menu (Voice Note / Meeting)
-- [x] Live recording via browser microphone — Voice Note + Meeting recording flows
-- [x] MeetingKind type (SCHEDULED | RECORDED | VOICE_NOTE) — passed to API on create
-- [x] Home page layout and widgets
+- [x] Meeting list page — search, filter, group by date
+- [x] Meeting context menu — accept/decline/complete/cancel
+- [x] MeetingDetail — wired to real API
+- [x] MeetingDetail — all action buttons wired
+- [x] MeetingDetail — real audio player
+- [x] MeetingDetail — transcription status polling
+- [x] MeetingDetail — 30s post-COMPLETED polling for AI title
+- [x] MeetingDetail — Retry AI button
+- [x] Create FAB — two-level menu (Voice Note / Meeting)
+- [x] Live recording via browser microphone
+- [x] Home page layout + widgets
 - [x] Default card widget (3D flip)
 - [x] Command palette (Cmd+K)
-- [x] Google OAuth sign-in
-- [x] Theme system (light/dark/system)
+- [x] Google OAuth
+- [x] Theme system
 - [x] Toolbar with pins
-- [x] Card editor page
-- [x] Card analytics page
-- [x] Card contacts page
-- [x] Cards list page
-- [x] Auth guard
-- [x] Page transitions (PageMotion)
-- [x] React Query + Zustand setup
+- [x] Card editor, analytics, contacts, list pages
+- [x] Auth guard, PageMotion, React Query + Zustand setup
 
 ---
 
@@ -161,10 +218,11 @@ Last updated: 2026-03-03
 
 ## Phase 2 — Future
 
-- [ ] Big Brain chat interface
+- [ ] Global Ask AI / Big Brain chat interface
 
 ---
 
 ## Phase 3 — Future
 
-- [ ] Tasks page (Todoist-style)
+- [ ] Standalone Tasks page (Todoist-style — filter, priority, due dates)
+- [ ] Tags on Tasks
