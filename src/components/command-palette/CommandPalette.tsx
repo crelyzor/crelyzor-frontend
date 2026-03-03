@@ -56,9 +56,7 @@ export function CommandPalette() {
         </CommandEmpty>
 
         <CommandGroup heading="Quick Actions">
-          <CommandItem
-            onSelect={() => runCommand(() => navigate('/meetings'))}
-          >
+          <CommandItem onSelect={() => runCommand(() => navigate('/meetings'))}>
             <Plus className="text-neutral-500 dark:text-neutral-400" />
             <span>New Meeting</span>
             <CommandShortcut>

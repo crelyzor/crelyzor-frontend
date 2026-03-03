@@ -36,7 +36,8 @@ export default function Settings() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Tab state is driven by ?tab= search param
-  const activeSection = (searchParams.get('tab') ?? 'profile') as SettingsSection;
+  const activeSection = (searchParams.get('tab') ??
+    'profile') as SettingsSection;
   const setActiveSection = (section: SettingsSection) => {
     setSearchParams({ tab: section }, { replace: true });
   };

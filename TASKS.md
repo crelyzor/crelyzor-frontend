@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-03 (MeetingDetail 3 layouts done)
+Last updated: 2026-03-03 (dashboard polish + global fixes done)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -9,45 +9,6 @@ Last updated: 2026-03-03 (MeetingDetail 3 layouts done)
 
 ## P0 — Build Next (in order)
 
-### 1. MeetingDetail — 3 distinct layouts by type
-
-The current MeetingDetail page shows the same UI for all meeting types.
-Each type needs its own layout, chrome, and actions.
-
-**VOICE_NOTE layout**
-
-- [x] Minimal header: title (AI-generated), "recorded on" date, duration
-- [x] No status badge, no participants, no accept/decline/complete
-- [x] Flat scroll layout (no tabs): recording player → transcript → summary → key points
-- [x] Only action: Delete
-
-**RECORDED layout**
-
-- [x] Compact header: title, date, duration
-- [x] Speakers section (from `MeetingSpeaker[]`) — show speakerLabel or displayName
-- [x] Inline rename: click speaker → edit displayName inline
-- [x] Tabs: Recording | Transcript | Summary | Action Items
-- [x] Actions: Complete, Delete
-
-**SCHEDULED layout** (keep current — clean it up)
-
-- [x] Full header: title, status badge, date/time, location
-- [x] Participants section with user avatars
-- [x] Quick actions: Accept / Decline / Complete / Cancel (context-aware)
-- [x] Tabs: Overview | Transcript | Summary | Action Items | Recording
-
-### 2. Voice Notes — separate section
-
-- [x] Add "Voice Notes" nav item in toolbar (Control Center + pinnable)
-- [x] `/voice-notes` route → new VoiceNotes page
-- [x] Lists all meetings with `type=VOICE_NOTE`, sorted by date desc
-- [x] Meetings list page filters out VOICE_NOTE (they only appear in Voice Notes section)
-- [x] Voice Note cards: minimal — title, date, duration, transcript status
-
----
-
-## Not Built Yet
-
 ### Ask AI Chat Interface
 
 - [ ] Chat panel inside MeetingDetail (available for RECORDED + VOICE_NOTE when transcript exists)
@@ -55,7 +16,7 @@ Each type needs its own layout, chrome, and actions.
 - [ ] Stream AI response
 - [ ] Pre-loaded suggestions: "Summarize decisions", "List action items", "What were the blockers?"
 - [ ] Conversation history within session
-- [ ] Requires Ask AI backend endpoint first
+- [ ] Requires Ask AI backend endpoint first (`POST /sma/meetings/:id/ask`)
 
 ### Action Items (Beyond Display)
 
@@ -73,15 +34,86 @@ Each type needs its own layout, chrome, and actions.
 
 - [ ] Edit title, description, time, location (SCHEDULED only)
 
-### Home Dashboard Polish
+---
+
+## Not Built Yet
+
+### Delete Meeting
+
+- [ ] Wire Delete button in VoiceNoteDetail (currently `toast.info('Delete coming soon')`)
+- [ ] Wire Delete button in RecordedDetail (same)
+- [ ] Confirm dialog before delete
+- [ ] Navigate back to list after delete
+
+### Home Dashboard
 
 - [ ] Today's meetings widget (filtered to today, not just recent)
 - [ ] Pending action items widget across all meetings
-- [ ] Recent Voice Notes widget
 
 ---
 
 ## Phase 1 — Done ✅
+
+### MeetingDetail — 3 distinct layouts by type
+
+- [x] VoiceNoteDetail: minimal header, flat scroll (player → transcript → summary), Delete only
+- [x] RecordedDetail: compact header, speakers section with inline rename, tabs (Recording | Transcript | Summary | Action Items)
+- [x] ScheduledDetail: full header with status badge, participants, quick actions, tabs (Overview | Transcript | Summary | Action Items | Recording)
+- [x] MeetingDetail shell: thin router to 3 layout components, polling preserved
+
+### Voice Notes — separate section
+
+- [x] Add "Voice Notes" nav item in toolbar (Control Center + pinnable)
+- [x] `/voice-notes` route → VoiceNotes page
+- [x] Lists all VOICE_NOTE meetings, sorted by date desc
+- [x] Meetings list page (`/meetings`) filters out VOICE_NOTE
+- [x] Voice Note cards: minimal — title, date, duration, transcript status badge
+- [x] Voice Notes quick-action bubble on home dashboard
+- [x] Recent Voice Notes widget on home dashboard (right column, last 3, click → detail)
+
+### Meetings List — type segregation + UX
+
+- [x] Type toggle: All | Live | Recordings (filters SCHEDULED vs RECORDED)
+- [x] RECORDED badge: Video icon only (no "REC" text)
+- [x] Online SCHEDULED badge: Globe icon (detected by URL in location or meetingProvider)
+- [x] Skeleton loading state while data fetches
+
+### Home Dashboard
+
+- [x] Recent Meetings filters out VOICE_NOTE
+- [x] Recent Meetings skeleton loading (5 shimmer rows)
+- [x] Cache shared with /meetings page (same useMeetingsAll query key — no duplicate fetch)
+- [x] Recent Voice Notes widget added to right column
+
+### Settings — fixed and wired
+
+- [x] Appearance theme change actually works (connected to useThemeStore, was using local useState)
+- [x] Profile shows @username below email
+- [x] Username read-only field in profile form
+- [x] URL-based tabs: `/settings?tab=profile`, `?tab=appearance`, `?tab=security` (bookmarkable, deep-linkable)
+- [x] UserMenu: Profile above Settings
+- [x] UserMenu: Profile button → `/settings?tab=profile`, Settings button → `/settings?tab=appearance`
+
+### Cmd+K (Command Palette) — fixed
+
+- [x] Navigate section sourced from TOOLBAR_ITEMS (single source of truth) — Voice Notes auto-included
+- [x] Input focus ring removed (`[cmdk-input]:focus-visible { outline: none }` in CSS)
+- [x] "New Meeting" goes to `/meetings` (not `/meetings/create` which doesn't exist)
+
+### Skeleton loading states — all pages
+
+- [x] Home — RecentMeetings skeleton (5 rows)
+- [x] Meetings page — 6 card skeletons matching card layout
+- [x] CardEditor — 2-column skeleton (header + template grid + field rows + preview panel)
+- [x] Cards list — correct 1.586:1 aspect ratio shape + stats bar per card
+
+### Global fixes
+
+- [x] Light mode background softened: `#ffffff` → `#f5f5f5` (cards stay `#ffffff` for depth)
+- [x] Theme flash on hard refresh eliminated: blocking inline script in `<head>` reads localStorage before first paint
+- [x] MeetingProvider field added to DisplayMeeting for online meeting detection
+
+### Previously done
 
 - [x] Meeting list page with search, filter, group by date
 - [x] Meeting context menu (accept/decline/complete/cancel)

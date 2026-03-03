@@ -5,13 +5,12 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Calendar App</title>
-    <!-- Blocking theme script: reads persisted theme from localStorage and
+    <!-- Blocking theme script: reads theme from localStorage and
          applies .dark to <html> BEFORE first paint to prevent flash -->
     <script>
       (function () {
         try {
-          var stored = JSON.parse(localStorage.getItem('calendar-theme') || '{}');
-          var theme = (stored.state && stored.state.theme) || 'system';
+          var theme = localStorage.getItem('theme') || 'system';
           var isDark =
             theme === 'dark' ||
             (theme === 'system' &&
