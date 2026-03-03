@@ -32,8 +32,12 @@ export function useTasks(meetingId: string, enabled = true) {
 export function useCreateTask(meetingId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { title: string; description?: string; dueDate?: string; priority?: 'LOW' | 'MEDIUM' | 'HIGH' }) =>
-      smaApi.createTask(meetingId, data),
+    mutationFn: (data: {
+      title: string;
+      description?: string;
+      dueDate?: string;
+      priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+    }) => smaApi.createTask(meetingId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
     },
@@ -49,7 +53,13 @@ export function useUpdateTask(meetingId: string) {
       data,
     }: {
       taskId: string;
-      data: { title?: string; description?: string | null; isCompleted?: boolean; dueDate?: string | null; priority?: 'LOW' | 'MEDIUM' | 'HIGH' | null };
+      data: {
+        title?: string;
+        description?: string | null;
+        isCompleted?: boolean;
+        dueDate?: string | null;
+        priority?: 'LOW' | 'MEDIUM' | 'HIGH' | null;
+      };
     }) => smaApi.updateTask(taskId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });

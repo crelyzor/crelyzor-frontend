@@ -18,7 +18,12 @@ import {
 import type { Meeting, TranscriptionStatus } from '@/types';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { useSummary, useTriggerAI } from '@/hooks/queries/useSMAQueries';
-import { RecordingTab, TranscriptTab, SummaryTab, NotesTab } from './SharedTabs';
+import {
+  RecordingTab,
+  TranscriptTab,
+  SummaryTab,
+  NotesTab,
+} from './SharedTabs';
 import { DeleteMeetingModal } from './DeleteMeetingModal';
 import { SkeletonLines } from './meetingDetailHelpers';
 

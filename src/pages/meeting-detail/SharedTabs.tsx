@@ -16,7 +16,11 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { TranscriptionStatus, Task } from '@/types';
-import type { SMATranscriptSegment, SMARecording, MeetingNote } from '@/services/smaService';
+import type {
+  SMATranscriptSegment,
+  SMARecording,
+  MeetingNote,
+} from '@/services/smaService';
 import {
   useTranscript,
   useSummary,
@@ -421,17 +425,18 @@ export function ActionsTab({
   const qc = useQueryClient();
 
   const { data: tasks, isLoading } = useTasks(meetingId);
-  const { mutate: createTask, isPending: isCreating } = useCreateTask(meetingId);
+  const { mutate: createTask, isPending: isCreating } =
+    useCreateTask(meetingId);
   const { mutate: updateTask } = useUpdateTask(meetingId);
   const { mutate: deleteTask } = useDeleteTask(meetingId);
 
   const handleToggle = (task: Task) => {
     const newCompleted = !task.isCompleted;
     // Optimistic update
-    qc.setQueryData(
-      queryKeys.sma.tasks(meetingId),
-      (old: Task[] | undefined) =>
-        old?.map((t) => (t.id === task.id ? { ...t, isCompleted: newCompleted } : t))
+    qc.setQueryData(queryKeys.sma.tasks(meetingId), (old: Task[] | undefined) =>
+      old?.map((t) =>
+        t.id === task.id ? { ...t, isCompleted: newCompleted } : t
+      )
     );
     updateTask(
       { taskId: task.id, data: { isCompleted: newCompleted } },
@@ -453,7 +458,10 @@ export function ActionsTab({
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
-    createTask({ title: newTitle.trim() }, { onSuccess: () => setNewTitle('') });
+    createTask(
+      { title: newTitle.trim() },
+      { onSuccess: () => setNewTitle('') }
+    );
   };
 
   if (isLoading) return <SkeletonLines count={3} />;
@@ -722,15 +730,22 @@ export function NotesTab({ meetingId }: { meetingId: string }) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const { data: notes, isLoading } = useNotes(meetingId);
-  const { mutate: createNote, isPending: isCreating } = useCreateNote(meetingId);
-  const { mutate: deleteNote, isPending: isDeleting } = useDeleteNote(meetingId);
+  const { mutate: createNote, isPending: isCreating } =
+    useCreateNote(meetingId);
+  const { mutate: deleteNote, isPending: isDeleting } =
+    useDeleteNote(meetingId);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
     createNote(
       { content: content.trim() },
-      { onSuccess: () => { setContent(''); toast.success('Note added'); } }
+      {
+        onSuccess: () => {
+          setContent('');
+          toast.success('Note added');
+        },
+      }
     );
   };
 
@@ -751,7 +766,8 @@ export function NotesTab({ meetingId }: { meetingId: string }) {
           rows={2}
           className="w-full text-sm resize-none rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-3 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-600 focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-600"
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSubmit(e as unknown as React.FormEvent);
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey))
+              handleSubmit(e as unknown as React.FormEvent);
           }}
         />
         <div className="flex justify-end">

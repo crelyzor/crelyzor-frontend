@@ -97,7 +97,10 @@ export function EditMeetingModal({ meeting, open, onOpenChange }: Props) {
         <form onSubmit={handleSubmit} className="space-y-4 mt-1">
           {/* Title */}
           <div className="space-y-1.5">
-            <Label htmlFor="edit-title" className="text-xs text-neutral-500 dark:text-neutral-400">
+            <Label
+              htmlFor="edit-title"
+              className="text-xs text-neutral-500 dark:text-neutral-400"
+            >
               Title
             </Label>
             <Input
@@ -112,9 +115,14 @@ export function EditMeetingModal({ meeting, open, onOpenChange }: Props) {
 
           {/* Description */}
           <div className="space-y-1.5">
-            <Label htmlFor="edit-description" className="text-xs text-neutral-500 dark:text-neutral-400">
+            <Label
+              htmlFor="edit-description"
+              className="text-xs text-neutral-500 dark:text-neutral-400"
+            >
               Description
-              <span className="text-neutral-400 dark:text-neutral-500 font-normal ml-1">(optional)</span>
+              <span className="text-neutral-400 dark:text-neutral-500 font-normal ml-1">
+                (optional)
+              </span>
             </Label>
             <Textarea
               id="edit-description"
@@ -129,7 +137,10 @@ export function EditMeetingModal({ meeting, open, onOpenChange }: Props) {
           {/* Start / End */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="edit-start" className="text-xs text-neutral-500 dark:text-neutral-400">
+              <Label
+                htmlFor="edit-start"
+                className="text-xs text-neutral-500 dark:text-neutral-400"
+              >
                 Start
               </Label>
               <Input
@@ -142,7 +153,10 @@ export function EditMeetingModal({ meeting, open, onOpenChange }: Props) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-end" className="text-xs text-neutral-500 dark:text-neutral-400">
+              <Label
+                htmlFor="edit-end"
+                className="text-xs text-neutral-500 dark:text-neutral-400"
+              >
                 End
               </Label>
               <Input
@@ -158,9 +172,14 @@ export function EditMeetingModal({ meeting, open, onOpenChange }: Props) {
 
           {/* Location */}
           <div className="space-y-1.5">
-            <Label htmlFor="edit-location" className="text-xs text-neutral-500 dark:text-neutral-400">
+            <Label
+              htmlFor="edit-location"
+              className="text-xs text-neutral-500 dark:text-neutral-400"
+            >
               Location
-              <span className="text-neutral-400 dark:text-neutral-500 font-normal ml-1">(optional)</span>
+              <span className="text-neutral-400 dark:text-neutral-500 font-normal ml-1">
+                (optional)
+              </span>
             </Label>
             <Input
               id="edit-location"

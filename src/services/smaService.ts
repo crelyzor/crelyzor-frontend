@@ -82,7 +82,12 @@ export const smaApi = {
 
   createTask: async (
     meetingId: string,
-    data: { title: string; description?: string; dueDate?: string; priority?: 'LOW' | 'MEDIUM' | 'HIGH' }
+    data: {
+      title: string;
+      description?: string;
+      dueDate?: string;
+      priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+    }
   ): Promise<Task> => {
     const result = await apiClient.post<{ task: Task }>(
       `/sma/meetings/${meetingId}/tasks`,
@@ -93,7 +98,13 @@ export const smaApi = {
 
   updateTask: async (
     taskId: string,
-    data: { title?: string; description?: string | null; isCompleted?: boolean; dueDate?: string | null; priority?: 'LOW' | 'MEDIUM' | 'HIGH' | null }
+    data: {
+      title?: string;
+      description?: string | null;
+      isCompleted?: boolean;
+      dueDate?: string | null;
+      priority?: 'LOW' | 'MEDIUM' | 'HIGH' | null;
+    }
   ): Promise<Task> => {
     const result = await apiClient.patch<{ task: Task }>(
       `/sma/tasks/${taskId}`,
