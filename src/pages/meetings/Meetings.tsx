@@ -18,6 +18,7 @@ import {
   ThumbsDown,
   ExternalLink,
   Video,
+  Globe,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,6 +40,14 @@ import { toDisplayMeeting, type DisplayMeeting } from '@/lib/meetingHelpers';
 import { getStatusStyle, getStatusLabel } from '@/types';
 import type { MeetingStatus } from '@/types';
 
+const TYPE_TABS = [
+  { id: 'all', label: 'All' },
+  { id: 'scheduled', label: 'Live' },
+  { id: 'recorded', label: 'Recordings' },
+] as const;
+
+type TypeTab = (typeof TYPE_TABS)[number]['id'];
+
 const FILTER_TABS = [
   { id: 'all', label: 'All' },
   { id: 'upcoming', label: 'Upcoming' },
@@ -48,6 +57,15 @@ const FILTER_TABS = [
 ] as const;
 
 type FilterTab = (typeof FILTER_TABS)[number]['id'];
+
+function isOnlineMeeting(
+  location?: string | null,
+  meetingProvider?: string | null
+): boolean {
+  if (meetingProvider) return true;
+  if (!location) return false;
+  return location.startsWith('http');
+}
 
 function matchesFilter(status: MeetingStatus, filter: FilterTab): boolean {
   if (filter === 'all') return true;
@@ -243,19 +261,25 @@ function MeetingContextMenu({ meeting }: { meeting: DisplayMeeting }) {
 
 export default function Meetings() {
   const navigate = useNavigate();
+  const [typeTab, setTypeTab] = useState<TypeTab>('all');
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const { data: meetingsData } = useMeetingsAll();
+  const { data: meetingsData, isLoading: meetingsLoading } = useMeetingsAll();
 
-  // Exclude VOICE_NOTE from the meetings list — they live in /voice-notes
+  // Exclude VOICE_NOTE — they live in /voice-notes. Also apply type toggle.
   const scopedMeetings = useMemo(
     () =>
       (meetingsData ?? [])
-        .filter((m) => m.type !== 'VOICE_NOTE')
+        .filter((m) => {
+          if (m.type === 'VOICE_NOTE') return false;
+          if (typeTab === 'scheduled') return m.type === 'SCHEDULED';
+          if (typeTab === 'recorded') return m.type === 'RECORDED';
+          return true;
+        })
         .map(toDisplayMeeting),
-    [meetingsData]
+    [meetingsData, typeTab]
   );
 
   const filtered = useMemo(() => {
@@ -293,6 +317,24 @@ export default function Meetings() {
           </div>
         </div>
 
+        {/* ── Type toggle: Live / Recordings ── */}
+        <div className="flex items-center gap-1 mb-5 p-1 bg-neutral-100 dark:bg-neutral-800/60 rounded-xl w-fit">
+          {TYPE_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setTypeTab(tab.id)}
+              className={`relative px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200
+              ${
+                typeTab === tab.id
+                  ? 'bg-white dark:bg-neutral-900 text-neutral-950 dark:text-neutral-50 shadow-sm'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
         {/* ── Search + Filters ── */}
         <div className="space-y-3 mb-6">
           <div className="relative">
@@ -312,7 +354,7 @@ export default function Meetings() {
             />
           </div>
 
-          {/* Animated filter tabs */}
+          {/* Animated status filter tabs */}
           <div className="flex items-center gap-1">
             {FILTER_TABS.map((tab) => (
               <button
@@ -340,7 +382,30 @@ export default function Meetings() {
 
         {/* ── Meeting List ── */}
         <div className="space-y-7 pb-24">
-          {grouped.length === 0 && (
+          {/* Skeleton */}
+          {meetingsLoading && (
+            <div className="space-y-2 animate-pulse">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div
+                  key={i}
+                  className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 px-4 py-3.5"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3.5 bg-neutral-100 dark:bg-neutral-800 rounded w-1/2" />
+                      <div className="h-2.5 bg-neutral-100 dark:bg-neutral-800 rounded w-1/3" />
+                    </div>
+                    <div className="h-5 w-16 bg-neutral-100 dark:bg-neutral-800 rounded-full shrink-0" />
+                  </div>
+                  <div className="flex items-center gap-3 mt-2.5">
+                    <div className="h-2.5 bg-neutral-100 dark:bg-neutral-800 rounded w-20" />
+                    <div className="h-2.5 bg-neutral-100 dark:bg-neutral-800 rounded w-16" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {!meetingsLoading && grouped.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -353,7 +418,7 @@ export default function Meetings() {
             </motion.div>
           )}
 
-          {grouped.map((group) => (
+          {!meetingsLoading && grouped.map((group) => (
             <div key={group.date}>
               {/* Date header */}
               <div className="flex items-center gap-3 mb-3">
@@ -400,11 +465,25 @@ export default function Meetings() {
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0 flex items-center gap-2">
                             {meeting.meetingType === 'RECORDED' && (
-                              <span className="shrink-0 flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
-                                <Video className="w-2.5 h-2.5" />
-                                REC
-                              </span>
+                              <div
+                                title="Recording"
+                                className="shrink-0 w-5 h-5 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
+                              >
+                                <Video className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
+                              </div>
                             )}
+                            {meeting.meetingType === 'SCHEDULED' &&
+                              isOnlineMeeting(
+                                meeting.location,
+                                meeting.meetingProvider
+                              ) && (
+                                <div
+                                  title="Online meeting"
+                                  className="shrink-0 w-5 h-5 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
+                                >
+                                  <Globe className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
+                                </div>
+                              )}
                             <h3 className="text-sm font-medium text-neutral-950 dark:text-neutral-50 truncate">
                               {meeting.title}
                             </h3>

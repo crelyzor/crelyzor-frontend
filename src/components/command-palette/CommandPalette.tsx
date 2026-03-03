@@ -10,17 +10,12 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from '@/components/ui/command';
-import {
-  CalendarDays,
-  Settings,
-  LogOut,
-  Home,
-  CreditCard,
-  Mic,
-  Plus,
-  ArrowRight,
-} from 'lucide-react';
+import { LogOut, Plus, ArrowRight } from 'lucide-react';
 import { useUIStore } from '@/stores';
+import { TOOLBAR_ITEMS } from '@/constants/toolbar';
+
+// Navigation items are derived from TOOLBAR_ITEMS — single source of truth
+const NAV_ITEMS = TOOLBAR_ITEMS.filter((item) => item.action === 'navigate');
 
 export function CommandPalette() {
   const open = useUIStore((s) => s.commandPaletteOpen);
@@ -61,7 +56,7 @@ export function CommandPalette() {
           <CommandItem
             onSelect={() => runCommand(() => navigate('/meetings/create'))}
           >
-            <Mic className="text-neutral-500 dark:text-neutral-400" />
+            <Plus className="text-neutral-500 dark:text-neutral-400" />
             <span>New Meeting</span>
             <CommandShortcut>
               <ArrowRight className="w-3 h-3" />
@@ -81,22 +76,20 @@ export function CommandPalette() {
         <CommandSeparator className="my-1" />
 
         <CommandGroup heading="Navigate">
-          <CommandItem onSelect={() => runCommand(() => navigate('/'))}>
-            <Home className="text-neutral-500 dark:text-neutral-400" />
-            <span>Home</span>
-          </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate('/meetings'))}>
-            <CalendarDays className="text-neutral-500 dark:text-neutral-400" />
-            <span>Meetings</span>
-          </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate('/cards'))}>
-            <CreditCard className="text-neutral-500 dark:text-neutral-400" />
-            <span>Cards</span>
-          </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate('/settings'))}>
-            <Settings className="text-neutral-500 dark:text-neutral-400" />
-            <span>Settings</span>
-          </CommandItem>
+          {NAV_ITEMS.map((item) => (
+            <CommandItem
+              key={item.id}
+              onSelect={() => runCommand(() => navigate(item.path!))}
+            >
+              <item.icon className="text-neutral-500 dark:text-neutral-400" />
+              <span>{item.label}</span>
+              {item.description && (
+                <span className="ml-auto text-[10px] text-neutral-400 dark:text-neutral-500 hidden sm:block">
+                  {item.description}
+                </span>
+              )}
+            </CommandItem>
+          ))}
         </CommandGroup>
 
         <CommandSeparator className="my-1" />

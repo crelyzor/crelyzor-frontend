@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
 import { useScroll, useTransform, motion } from 'motion/react';
 import { useGreeting } from '@/hooks';
-import { useMeetings } from '@/hooks/queries/useMeetingQueries';
+import { useMeetingsAll } from '@/hooks/queries/useMeetingQueries';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { CompactStickyBar } from './CompactStickyBar';
 import { HeroSection } from './HeroSection';
 import { RecentMeetings } from './RecentMeetings';
 import { DefaultCardWidget } from './DefaultCardWidget';
+import { RecentVoiceNotes } from './RecentVoiceNotes';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
 
 export default function Home() {
@@ -15,11 +16,16 @@ export default function Home() {
   const { greeting, dayName, monthDay, tip } = useGreeting();
   const { data: currentUser } = useCurrentUser();
 
-  const { data: recentData } = useMeetings({ limit: 8 });
+  // Use same query key as /meetings page → shared cache, no duplicate fetch
+  const { data: allMeetingsData, isLoading: meetingsLoading } = useMeetingsAll();
 
   const recentMeetings = useMemo(
-    () => (recentData?.meetings ?? []).map(toDisplayMeeting),
-    [recentData]
+    () =>
+      (allMeetingsData ?? [])
+        .filter((m) => m.type !== 'VOICE_NOTE')
+        .slice(0, 8)
+        .map(toDisplayMeeting),
+    [allMeetingsData]
   );
 
   // Greeting dissolves
@@ -88,12 +94,13 @@ export default function Home() {
       >
         {/* Left — recent meetings (2/3) */}
         <div className="lg:col-span-2">
-          <RecentMeetings meetings={recentMeetings} />
+          <RecentMeetings meetings={recentMeetings} isLoading={meetingsLoading} />
         </div>
 
-        {/* Right — default card widget (1/3) */}
-        <div className="lg:col-span-1">
+        {/* Right — card widget + voice notes (1/3) */}
+        <div className="lg:col-span-1 space-y-6">
           <DefaultCardWidget />
+          <RecentVoiceNotes />
         </div>
       </motion.div>
 
