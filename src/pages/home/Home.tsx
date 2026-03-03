@@ -17,7 +17,8 @@ export default function Home() {
   const { data: currentUser } = useCurrentUser();
 
   // Use same query key as /meetings page → shared cache, no duplicate fetch
-  const { data: allMeetingsData, isLoading: meetingsLoading } = useMeetingsAll();
+  const { data: allMeetingsData, isLoading: meetingsLoading } =
+    useMeetingsAll();
 
   const recentMeetings = useMemo(
     () =>
@@ -94,7 +95,10 @@ export default function Home() {
       >
         {/* Left — recent meetings (2/3) */}
         <div className="lg:col-span-2">
-          <RecentMeetings meetings={recentMeetings} isLoading={meetingsLoading} />
+          <RecentMeetings
+            meetings={recentMeetings}
+            isLoading={meetingsLoading}
+          />
         </div>
 
         {/* Right — card widget + voice notes (1/3) */}

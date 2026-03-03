@@ -418,202 +418,203 @@ export default function Meetings() {
             </motion.div>
           )}
 
-          {!meetingsLoading && grouped.map((group) => (
-            <div key={group.date}>
-              {/* Date header */}
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.12em]">
-                  {group.label}
-                </span>
-                <div className="flex-1 h-px bg-neutral-100 dark:bg-neutral-800" />
-              </div>
+          {!meetingsLoading &&
+            grouped.map((group) => (
+              <div key={group.date}>
+                {/* Date header */}
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.12em]">
+                    {group.label}
+                  </span>
+                  <div className="flex-1 h-px bg-neutral-100 dark:bg-neutral-800" />
+                </div>
 
-              {/* Meeting cards */}
-              <div className="space-y-2">
-                {group.meetings.map((meeting) => {
-                  const idx = globalIndex++;
-                  const isExpanded = expandedId === meeting.id;
-                  const hasSMA =
-                    meeting.hasRecording ||
-                    meeting.hasTranscript ||
-                    meeting.hasSummary ||
-                    meeting.hasActionItems;
+                {/* Meeting cards */}
+                <div className="space-y-2">
+                  {group.meetings.map((meeting) => {
+                    const idx = globalIndex++;
+                    const isExpanded = expandedId === meeting.id;
+                    const hasSMA =
+                      meeting.hasRecording ||
+                      meeting.hasTranscript ||
+                      meeting.hasSummary ||
+                      meeting.hasActionItems;
 
-                  return (
-                    <motion.div
-                      key={meeting.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        duration: 0.28,
-                        delay: idx * 0.04,
-                        ease: [0.25, 0.1, 0.25, 1],
-                      }}
-                      onClick={() =>
-                        setExpandedId(isExpanded ? null : meeting.id)
-                      }
-                      className={`group bg-white dark:bg-neutral-900 rounded-xl border cursor-pointer
+                    return (
+                      <motion.div
+                        key={meeting.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: 0.28,
+                          delay: idx * 0.04,
+                          ease: [0.25, 0.1, 0.25, 1],
+                        }}
+                        onClick={() =>
+                          setExpandedId(isExpanded ? null : meeting.id)
+                        }
+                        className={`group bg-white dark:bg-neutral-900 rounded-xl border cursor-pointer
                                 transition-all duration-200 overflow-hidden
                                 ${
                                   isExpanded
                                     ? 'border-neutral-300 dark:border-neutral-600 shadow-md'
                                     : 'border-neutral-100 dark:border-neutral-800 hover:border-neutral-200 dark:hover:border-neutral-700 hover:shadow-sm'
                                 }`}
-                    >
-                      <div className="px-4 py-3.5">
-                        {/* Top row */}
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0 flex items-center gap-2">
-                            {meeting.meetingType === 'RECORDED' && (
-                              <div
-                                title="Recording"
-                                className="shrink-0 w-5 h-5 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
-                              >
-                                <Video className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
-                              </div>
-                            )}
-                            {meeting.meetingType === 'SCHEDULED' &&
-                              isOnlineMeeting(
-                                meeting.location,
-                                meeting.meetingProvider
-                              ) && (
+                      >
+                        <div className="px-4 py-3.5">
+                          {/* Top row */}
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0 flex items-center gap-2">
+                              {meeting.meetingType === 'RECORDED' && (
                                 <div
-                                  title="Online meeting"
+                                  title="Recording"
                                   className="shrink-0 w-5 h-5 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
                                 >
-                                  <Globe className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
+                                  <Video className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
                                 </div>
                               )}
-                            <h3 className="text-sm font-medium text-neutral-950 dark:text-neutral-50 truncate">
-                              {meeting.title}
-                            </h3>
-                          </div>
-                          <span
-                            className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(meeting.status)}`}
-                          >
-                            {getStatusLabel(meeting.status)}
-                          </span>
-                        </div>
-                        {meeting.description && (
-                          <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5 line-clamp-1">
-                            {meeting.description}
-                          </p>
-                        )}
-
-                        {/* Meta row */}
-                        <div className="flex items-center gap-3 mt-2.5 flex-wrap">
-                          <div className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
-                            <Clock className="w-3 h-3" />
-                            <span>
-                              {meeting.time} · {meeting.duration}
-                            </span>
-                          </div>
-
-                          {meeting.location && (
-                            <div className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
-                              <MapPin className="w-3 h-3" />
-                              <span>{meeting.location}</span>
-                            </div>
-                          )}
-
-                          <div className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
-                            <Users className="w-3 h-3" />
-                            <span>
-                              {meeting.participants.length > 2
-                                ? `${meeting.participants[0]} +${meeting.participants.length - 1}`
-                                : meeting.participants.join(', ')}
-                            </span>
-                          </div>
-
-                          <div className="flex-1" />
-
-                          {hasSMA && (
-                            <div className="flex items-center gap-1">
-                              {meeting.hasRecording && (
-                                <div
-                                  className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
-                                  title="Recording"
-                                >
-                                  <Mic className="w-2.5 h-2.5 text-neutral-500 dark:text-neutral-400" />
-                                </div>
-                              )}
-                              {meeting.hasTranscript && (
-                                <div
-                                  className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
-                                  title="Transcript"
-                                >
-                                  <FileText className="w-2.5 h-2.5 text-neutral-500 dark:text-neutral-400" />
-                                </div>
-                              )}
-                              {meeting.hasSummary && (
-                                <div
-                                  className="w-5 h-5 rounded-full bg-violet-50 dark:bg-violet-950/40 flex items-center justify-center"
-                                  title="AI Summary"
-                                />
-                              )}
-                              {meeting.hasActionItems && (
-                                <div
-                                  className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
-                                  title="Action items"
-                                >
-                                  <ClipboardList className="w-2.5 h-2.5 text-neutral-500 dark:text-neutral-400" />
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Expanded — animated */}
-                        <AnimatePresence>
-                          {isExpanded && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              transition={{
-                                duration: 0.2,
-                                ease: [0.25, 0.1, 0.25, 1],
-                              }}
-                              className="overflow-hidden"
-                            >
-                              <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  {meeting.category && (
-                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-medium uppercase tracking-wide bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-                                      {meeting.category}
-                                    </span>
-                                  )}
-                                  {meeting.organizer && (
-                                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                                      by {meeting.organizer}
-                                    </span>
-                                  )}
-                                  <div className="flex-1" />
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 text-xs text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 gap-1"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      navigate(`/meetings/${meeting.id}`);
-                                    }}
+                              {meeting.meetingType === 'SCHEDULED' &&
+                                isOnlineMeeting(
+                                  meeting.location,
+                                  meeting.meetingProvider
+                                ) && (
+                                  <div
+                                    title="Online meeting"
+                                    className="shrink-0 w-5 h-5 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
                                   >
-                                    Open
-                                    <ArrowUpRight className="w-3 h-3" />
-                                  </Button>
-                                  <MeetingContextMenu meeting={meeting} />
-                                </div>
-                              </div>
-                            </motion.div>
+                                    <Globe className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
+                                  </div>
+                                )}
+                              <h3 className="text-sm font-medium text-neutral-950 dark:text-neutral-50 truncate">
+                                {meeting.title}
+                              </h3>
+                            </div>
+                            <span
+                              className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(meeting.status)}`}
+                            >
+                              {getStatusLabel(meeting.status)}
+                            </span>
+                          </div>
+                          {meeting.description && (
+                            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5 line-clamp-1">
+                              {meeting.description}
+                            </p>
                           )}
-                        </AnimatePresence>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+
+                          {/* Meta row */}
+                          <div className="flex items-center gap-3 mt-2.5 flex-wrap">
+                            <div className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
+                              <Clock className="w-3 h-3" />
+                              <span>
+                                {meeting.time} · {meeting.duration}
+                              </span>
+                            </div>
+
+                            {meeting.location && (
+                              <div className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
+                                <MapPin className="w-3 h-3" />
+                                <span>{meeting.location}</span>
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
+                              <Users className="w-3 h-3" />
+                              <span>
+                                {meeting.participants.length > 2
+                                  ? `${meeting.participants[0]} +${meeting.participants.length - 1}`
+                                  : meeting.participants.join(', ')}
+                              </span>
+                            </div>
+
+                            <div className="flex-1" />
+
+                            {hasSMA && (
+                              <div className="flex items-center gap-1">
+                                {meeting.hasRecording && (
+                                  <div
+                                    className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
+                                    title="Recording"
+                                  >
+                                    <Mic className="w-2.5 h-2.5 text-neutral-500 dark:text-neutral-400" />
+                                  </div>
+                                )}
+                                {meeting.hasTranscript && (
+                                  <div
+                                    className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
+                                    title="Transcript"
+                                  >
+                                    <FileText className="w-2.5 h-2.5 text-neutral-500 dark:text-neutral-400" />
+                                  </div>
+                                )}
+                                {meeting.hasSummary && (
+                                  <div
+                                    className="w-5 h-5 rounded-full bg-violet-50 dark:bg-violet-950/40 flex items-center justify-center"
+                                    title="AI Summary"
+                                  />
+                                )}
+                                {meeting.hasActionItems && (
+                                  <div
+                                    className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
+                                    title="Action items"
+                                  >
+                                    <ClipboardList className="w-2.5 h-2.5 text-neutral-500 dark:text-neutral-400" />
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Expanded — animated */}
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{
+                                  duration: 0.2,
+                                  ease: [0.25, 0.1, 0.25, 1],
+                                }}
+                                className="overflow-hidden"
+                              >
+                                <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    {meeting.category && (
+                                      <span className="px-2 py-0.5 rounded-md text-[10px] font-medium uppercase tracking-wide bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                                        {meeting.category}
+                                      </span>
+                                    )}
+                                    {meeting.organizer && (
+                                      <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                                        by {meeting.organizer}
+                                      </span>
+                                    )}
+                                    <div className="flex-1" />
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 text-xs text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 gap-1"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/meetings/${meeting.id}`);
+                                      }}
+                                    >
+                                      Open
+                                      <ArrowUpRight className="w-3 h-3" />
+                                    </Button>
+                                    <MeetingContextMenu meeting={meeting} />
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
 
         {/* ── Floating CTA ── */}
