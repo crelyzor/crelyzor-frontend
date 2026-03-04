@@ -134,70 +134,70 @@ export function ScheduledDetail({
                 meetingTitle={meeting.title}
                 transcriptionStatus={transcriptionStatus}
               />
-            <Popover open={moreOpen} onOpenChange={setMoreOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0 h-8 w-8"
+              <Popover open={moreOpen} onOpenChange={setMoreOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 h-8 w-8"
+                  >
+                    <MoreHorizontal className="w-4 h-4 text-neutral-500" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-44 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
+                  align="end"
                 >
-                  <MoreHorizontal className="w-4 h-4 text-neutral-500" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="w-44 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
-                align="end"
-              >
-                {canComplete && (
-                  <button
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                    onClick={() => {
-                      complete.mutate(rawMeeting.id, {
-                        onSuccess: () => toast.success('Marked as complete'),
-                        onError: () => toast.error('Failed'),
-                      });
-                      setMoreOpen(false);
-                    }}
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Mark complete
-                  </button>
-                )}
-                {canAccept && (
-                  <button
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                    onClick={() => {
-                      accept.mutate(rawMeeting.id, {
-                        onSuccess: () => toast.success('Accepted'),
-                        onError: () => toast.error('Failed'),
-                      });
-                      setMoreOpen(false);
-                    }}
-                  >
-                    <ThumbsUp className="w-3.5 h-3.5" /> Accept
-                  </button>
-                )}
-                {canCancel && (
-                  <button
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                    onClick={() => {
-                      cancel.mutate(
-                        { id: rawMeeting.id },
-                        {
-                          onSuccess: () => {
-                            toast.success('Cancelled');
-                            navigate('/meetings');
-                          },
+                  {canComplete && (
+                    <button
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                      onClick={() => {
+                        complete.mutate(rawMeeting.id, {
+                          onSuccess: () => toast.success('Marked as complete'),
                           onError: () => toast.error('Failed'),
-                        }
-                      );
-                      setMoreOpen(false);
-                    }}
-                  >
-                    <XCircle className="w-3.5 h-3.5" /> Cancel meeting
-                  </button>
-                )}
-              </PopoverContent>
-            </Popover>
+                        });
+                        setMoreOpen(false);
+                      }}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Mark complete
+                    </button>
+                  )}
+                  {canAccept && (
+                    <button
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                      onClick={() => {
+                        accept.mutate(rawMeeting.id, {
+                          onSuccess: () => toast.success('Accepted'),
+                          onError: () => toast.error('Failed'),
+                        });
+                        setMoreOpen(false);
+                      }}
+                    >
+                      <ThumbsUp className="w-3.5 h-3.5" /> Accept
+                    </button>
+                  )}
+                  {canCancel && (
+                    <button
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                      onClick={() => {
+                        cancel.mutate(
+                          { id: rawMeeting.id },
+                          {
+                            onSuccess: () => {
+                              toast.success('Cancelled');
+                              navigate('/meetings');
+                            },
+                            onError: () => toast.error('Failed'),
+                          }
+                        );
+                        setMoreOpen(false);
+                      }}
+                    >
+                      <XCircle className="w-3.5 h-3.5" /> Cancel meeting
+                    </button>
+                  )}
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 

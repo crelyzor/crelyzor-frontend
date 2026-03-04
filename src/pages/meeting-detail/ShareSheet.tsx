@@ -35,7 +35,8 @@ export function ShareSheet({
   const { data: recordings } = useRecordings(meetingId);
 
   const recording = recordings?.[0];
-  const hasTranscript = isCompleted && !!transcript && transcript.segments.length > 0;
+  const hasTranscript =
+    isCompleted && !!transcript && transcript.segments.length > 0;
   const hasSummary = isCompleted && !!summary;
   const hasAudio = !!recording?.signedUrl;
 
@@ -55,7 +56,10 @@ export function ShareSheet({
   const handleCopyTranscript = async () => {
     if (!transcript) return;
     const text = transcript.segments
-      .map((seg) => `[${formatTimestamp(seg.startTime)}] ${seg.speaker}: ${seg.text}`)
+      .map(
+        (seg) =>
+          `[${formatTimestamp(seg.startTime)}] ${seg.speaker}: ${seg.text}`
+      )
       .join('\n');
     await copyWithFeedback(text, 'transcript');
     setOpen(false);

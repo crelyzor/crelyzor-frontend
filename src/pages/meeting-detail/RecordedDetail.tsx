@@ -204,48 +204,48 @@ export function RecordedDetail({
                 meetingTitle={meeting.title}
                 transcriptionStatus={transcriptionStatus}
               />
-            <Popover open={moreOpen} onOpenChange={setMoreOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0 h-8 w-8"
+              <Popover open={moreOpen} onOpenChange={setMoreOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 h-8 w-8"
+                  >
+                    <MoreHorizontal className="w-4 h-4 text-neutral-500" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-44 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
+                  align="end"
                 >
-                  <MoreHorizontal className="w-4 h-4 text-neutral-500" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="w-44 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
-                align="end"
-              >
-                {canComplete && (
+                  {canComplete && (
+                    <button
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                      disabled={complete.isPending}
+                      onClick={() => {
+                        complete.mutate(rawMeeting.id, {
+                          onSuccess: () => toast.success('Marked as complete'),
+                          onError: () => toast.error('Failed'),
+                        });
+                        setMoreOpen(false);
+                      }}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Mark complete
+                    </button>
+                  )}
                   <button
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                    disabled={complete.isPending}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                     onClick={() => {
-                      complete.mutate(rawMeeting.id, {
-                        onSuccess: () => toast.success('Marked as complete'),
-                        onError: () => toast.error('Failed'),
-                      });
+                      setDeleteOpen(true);
                       setMoreOpen(false);
                     }}
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Mark complete
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete
                   </button>
-                )}
-                <button
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                  onClick={() => {
-                    setDeleteOpen(true);
-                    setMoreOpen(false);
-                  }}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  Delete
-                </button>
-              </PopoverContent>
-            </Popover>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
