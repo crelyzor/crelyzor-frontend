@@ -43,6 +43,7 @@ import {
   AskAITab,
 } from './SharedTabs';
 import { EditMeetingModal } from './EditMeetingModal';
+import { ShareSheet } from './ShareSheet';
 
 const SCHEDULED_TABS = [
   { id: 'overview', label: 'Overview' },
@@ -126,7 +127,13 @@ export function ScheduledDetail({
               )}
             </div>
 
-            {/* ⋯ menu */}
+            {/* Share + ⋯ menu */}
+            <div className="flex items-center gap-1 shrink-0">
+              <ShareSheet
+                meetingId={rawMeeting.id}
+                meetingTitle={meeting.title}
+                transcriptionStatus={transcriptionStatus}
+              />
             <Popover open={moreOpen} onOpenChange={setMoreOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -191,6 +198,7 @@ export function ScheduledDetail({
                 )}
               </PopoverContent>
             </Popover>
+            </div>
           </div>
 
           {/* Meta grid */}

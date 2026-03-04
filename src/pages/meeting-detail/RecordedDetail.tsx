@@ -40,6 +40,7 @@ import {
   AskAITab,
 } from './SharedTabs';
 import { DeleteMeetingModal } from './DeleteMeetingModal';
+import { ShareSheet } from './ShareSheet';
 
 const RECORDED_TABS = [
   { id: 'recording', label: 'Recording' },
@@ -196,7 +197,13 @@ export function RecordedDetail({
               </div>
             </div>
 
-            {/* ⋯ menu */}
+            {/* Share + ⋯ menu */}
+            <div className="flex items-center gap-1 shrink-0">
+              <ShareSheet
+                meetingId={rawMeeting.id}
+                meetingTitle={meeting.title}
+                transcriptionStatus={transcriptionStatus}
+              />
             <Popover open={moreOpen} onOpenChange={setMoreOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -239,6 +246,7 @@ export function RecordedDetail({
                 </button>
               </PopoverContent>
             </Popover>
+            </div>
           </div>
 
           {/* Speakers section */}

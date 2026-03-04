@@ -69,8 +69,8 @@ Requires backend `Task` model + CRUD API to be built first.
 
 ### 7. Share Sheet
 
-- [ ] Share button in all 3 MeetingDetail layouts (header area)
-- [ ] Bottom sheet / popover with options:
+- [x] Share button in all 3 MeetingDetail layouts (header area)
+- [x] Bottom sheet / popover with options:
   - Copy transcript (to clipboard)
   - Copy summary (to clipboard)
   - Download Audio (only when recording exists)

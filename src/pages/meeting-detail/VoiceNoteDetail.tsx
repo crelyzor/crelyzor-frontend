@@ -26,6 +26,7 @@ import {
   AskAITab,
 } from './SharedTabs';
 import { DeleteMeetingModal } from './DeleteMeetingModal';
+import { ShareSheet } from './ShareSheet';
 import { SkeletonLines } from './meetingDetailHelpers';
 
 export function VoiceNoteDetail({
@@ -88,7 +89,13 @@ export function VoiceNoteDetail({
               </div>
             </div>
 
-            {/* ⋯ menu */}
+            {/* Share + ⋯ menu */}
+            <div className="flex items-center gap-1 shrink-0">
+              <ShareSheet
+                meetingId={rawMeeting.id}
+                meetingTitle={meeting.title}
+                transcriptionStatus={transcriptionStatus}
+              />
             <Popover open={moreOpen} onOpenChange={setMoreOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -115,6 +122,7 @@ export function VoiceNoteDetail({
                 </button>
               </PopoverContent>
             </Popover>
+            </div>
           </div>
 
           {/* AI missing banner */}
