@@ -37,6 +37,8 @@ Requires backend `Task` model + CRUD API to be built first.
 - [x] Mark task complete / incomplete (toggle checkbox, optimistic update)
 - [x] Create task manually (inline form — just title, press Enter)
 - [x] Delete task (icon button, no confirm needed)
+- [x] ⋯ menu with "Copy tasks" — copies all tasks as a formatted checklist to clipboard
+- [x] Tasks section present in all 3 layouts (VoiceNoteDetail, RecordedDetail, ScheduledDetail)
 - [x] Service: task methods in `smaService.ts` (getAll, create, update, delete)
 - [x] Query keys: `queryKeys.sma.tasks(meetingId)`
 
@@ -81,11 +83,12 @@ Requires backend `Task` model + CRUD API to be built first.
 
 Requires backend `POST /sma/meetings/:id/generate`.
 
-- [x] "Generate" section in MeetingDetail (separate from Summary tab)
-- [x] Options: Meeting report / Main points / To-do list / Tweet / Blog post / Email
-- [x] Each shows a loading state while generating, then displays result
-- [x] Copy to clipboard button on each result
-- [x] Results cached per session (don't re-fetch on re-render)
+- [x] "Generate" tab/section in all 3 MeetingDetail layouts
+- [x] 4 types: Meeting Report / Tweet / Blog Post / Follow-up Email
+- [x] Each shows loading state while generating, then displays result
+- [x] Copy to clipboard + Redo buttons on generated content
+- [x] Results cached in DB (persist across sessions) + React Query session cache
+- [x] Dropped Main Points (redundant with Summary key points) and To-Do List (redundant with Tasks)
 
 ### 9. Regenerate Actions
 
@@ -157,9 +160,9 @@ All the new P1/P2 features add significant surface area. Plan a layout pass:
 
 ### MeetingDetail — 3 distinct layouts by type
 
-- [x] VoiceNoteDetail: minimal header, flat scroll (player → transcript → summary), Delete only
-- [x] RecordedDetail: compact header, speakers section with inline rename, tabs (Recording | Transcript | Summary | Tasks | Ask AI placeholder)
-- [x] ScheduledDetail: full header with status badge, participants, quick actions, tabs (Overview | Transcript | Summary | Tasks | Recording)
+- [x] VoiceNoteDetail: minimal header, flat scroll (player → transcript → summary → tasks → notes → ask AI → generate)
+- [x] RecordedDetail: compact header, speakers section, tabs (Recording | Transcript | AI Summary | Tasks | Notes | Ask AI | Generate)
+- [x] ScheduledDetail: full header with status badge, participants, quick actions, tabs (Overview | Transcript | AI Summary | Tasks | Notes | Recording | Ask AI | Generate)
 - [x] MeetingDetail shell: thin router to 3 layout components, polling preserved
 
 ### Voice Notes — separate section

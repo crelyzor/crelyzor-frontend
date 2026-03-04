@@ -17,14 +17,18 @@ import {
   SendHorizonal,
   Copy,
   Check,
-  List,
-  CheckSquare,
   MessageSquare,
   BookOpen,
   Mail,
   Wand2,
+  MoreHorizontal,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import type { TranscriptionStatus, Task } from '@/types';
 import type {
   SMATranscriptSegment,
@@ -455,6 +459,7 @@ export function ActionsTab({
   transcriptionStatus?: TranscriptionStatus; // kept for caller compatibility, unused
 }) {
   const [newTitle, setNewTitle] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
   const qc = useQueryClient();
 
   const { data: tasks, isLoading } = useTasks(meetingId);
@@ -462,6 +467,20 @@ export function ActionsTab({
     useCreateTask(meetingId);
   const { mutate: updateTask } = useUpdateTask(meetingId);
   const { mutate: deleteTask } = useDeleteTask(meetingId);
+
+  const handleCopyTasks = async () => {
+    if (!tasks || tasks.length === 0) return;
+    const text = tasks
+      .map((t) => `${t.isCompleted ? '✓' : '☐'} ${t.title}`)
+      .join('\n');
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Tasks copied to clipboard');
+    } catch {
+      toast.error('Failed to copy');
+    }
+    setMenuOpen(false);
+  };
 
   const handleToggle = (task: Task) => {
     const newCompleted = !task.isCompleted;
@@ -501,9 +520,32 @@ export function ActionsTab({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
-        Tasks
-      </h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+          Tasks
+        </h3>
+        {tasks && tasks.length > 0 && (
+          <Popover open={menuOpen} onOpenChange={setMenuOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-6 w-6">
+                <MoreHorizontal className="w-3.5 h-3.5 text-neutral-400" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-40 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
+              align="end"
+            >
+              <button
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                onClick={handleCopyTasks}
+              >
+                <Copy className="w-3.5 h-3.5" />
+                Copy tasks
+              </button>
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
 
       {/* Inline create form */}
       <form onSubmit={handleCreate} className="flex items-center gap-2">
@@ -1103,18 +1145,6 @@ const CONTENT_TYPE_META: {
     desc: 'Formal meeting minutes',
   },
   {
-    type: 'MAIN_POINTS',
-    label: 'Main Points',
-    icon: List,
-    desc: 'Key bullet points',
-  },
-  {
-    type: 'TODO_LIST',
-    label: 'To-Do List',
-    icon: CheckSquare,
-    desc: 'Action items list',
-  },
-  {
     type: 'TWEET',
     label: 'Tweet',
     icon: MessageSquare,
@@ -1126,7 +1156,7 @@ const CONTENT_TYPE_META: {
     icon: BookOpen,
     desc: 'Detailed write-up',
   },
-  { type: 'EMAIL', label: 'Email', icon: Mail, desc: 'Follow-up email' },
+  { type: 'EMAIL', label: 'Follow-up Email', icon: Mail, desc: 'Send to participants' },
 ];
 
 export function GenerateTab({

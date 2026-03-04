@@ -45,8 +45,6 @@ export type SMASpeaker = {
 
 export type AIContentType =
   | 'MEETING_REPORT'
-  | 'MAIN_POINTS'
-  | 'TODO_LIST'
   | 'TWEET'
   | 'BLOG_POST'
   | 'EMAIL';

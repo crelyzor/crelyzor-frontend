@@ -26,6 +26,7 @@ import {
   RecordingTab,
   TranscriptTab,
   SummaryTab,
+  ActionsTab,
   NotesTab,
   AskAITab,
   GenerateTab,
@@ -216,6 +217,13 @@ export function VoiceNoteDetail({
                 transcriptionStatus={transcriptionStatus}
               />
             )}
+          </CardContent>
+        </Card>
+
+        {/* Tasks */}
+        <Card className="border-neutral-200 dark:border-neutral-800">
+          <CardContent className="p-5">
+            <ActionsTab meetingId={rawMeeting.id} />
           </CardContent>
         </Card>
 
