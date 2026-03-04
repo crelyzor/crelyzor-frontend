@@ -169,7 +169,9 @@ export const smaApi = {
     return unwrap<SMASpeaker>(result);
   },
 
-  getGeneratedContents: async (meetingId: string): Promise<GeneratedContent[]> => {
+  getGeneratedContents: async (
+    meetingId: string
+  ): Promise<GeneratedContent[]> => {
     const result = await apiClient.get(`/sma/meetings/${meetingId}/generated`);
     return unwrap<{ contents: GeneratedContent[] }>(result).contents;
   },
@@ -178,7 +180,9 @@ export const smaApi = {
     meetingId: string,
     type: AIContentType
   ): Promise<GeneratedContent> => {
-    const result = await apiClient.post(`/sma/meetings/${meetingId}/generate`, { type });
+    const result = await apiClient.post(`/sma/meetings/${meetingId}/generate`, {
+      type,
+    });
     return unwrap<GeneratedContent>(result);
   },
 

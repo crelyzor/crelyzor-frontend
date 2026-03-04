@@ -131,7 +131,8 @@ export function useGeneratedContents(meetingId: string, enabled = true) {
 export function useGenerateContent(meetingId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (type: AIContentType) => smaApi.generateContent(meetingId, type),
+    mutationFn: (type: AIContentType) =>
+      smaApi.generateContent(meetingId, type),
     onSuccess: (result) => {
       qc.setQueryData(
         queryKeys.sma.generatedContents(meetingId),

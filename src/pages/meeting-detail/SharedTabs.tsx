@@ -1136,7 +1136,8 @@ export function GenerateTab({
   meetingId: string;
   transcriptionStatus: TranscriptionStatus;
 }) {
-  const [selectedType, setSelectedType] = useState<AIContentType>('MEETING_REPORT');
+  const [selectedType, setSelectedType] =
+    useState<AIContentType>('MEETING_REPORT');
   const [copied, setCopied] = useState(false);
 
   const isAvailable = transcriptionStatus === 'COMPLETED';
@@ -1265,8 +1266,10 @@ export function GenerateTab({
                 <Loader2 className="w-6 h-6 text-neutral-400 animate-spin mb-2" />
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   Generating{' '}
-                  {CONTENT_TYPE_META.find((m) => m.type === selectedType)
-                    ?.label}
+                  {
+                    CONTENT_TYPE_META.find((m) => m.type === selectedType)
+                      ?.label
+                  }
                   …
                 </p>
               </>
