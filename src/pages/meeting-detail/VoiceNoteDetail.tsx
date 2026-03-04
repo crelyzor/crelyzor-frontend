@@ -17,7 +17,11 @@ import {
 } from '@/components/ui/popover';
 import type { Meeting, TranscriptionStatus } from '@/types';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
-import { useSummary, useTriggerAI } from '@/hooks/queries/useSMAQueries';
+import {
+  useSummary,
+  useTriggerAI,
+  useRegenerateTitle,
+} from '@/hooks/queries/useSMAQueries';
 import {
   RecordingTab,
   TranscriptTab,
@@ -47,6 +51,8 @@ export function VoiceNoteDetail({
   const { mutate: triggerAI, isPending: isRetrying } = useTriggerAI(
     rawMeeting.id
   );
+  const { mutate: regenerateTitle, isPending: isRegeneratingTitle } =
+    useRegenerateTitle(rawMeeting.id);
   const aiMissing = isCompleted && !summary;
 
   const recordedOn = new Date(rawMeeting.startTime).toLocaleDateString(
@@ -107,9 +113,26 @@ export function VoiceNoteDetail({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                  className="w-40 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
+                  className="w-44 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
                   align="end"
                 >
+                  {isCompleted && (
+                    <button
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                      disabled={isRegeneratingTitle}
+                      onClick={() => {
+                        regenerateTitle();
+                        setMoreOpen(false);
+                      }}
+                    >
+                      {isRegeneratingTitle ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <RefreshCcw className="w-3.5 h-3.5" />
+                      )}
+                      Regenerate Title
+                    </button>
+                  )}
                   <button
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                     onClick={() => {

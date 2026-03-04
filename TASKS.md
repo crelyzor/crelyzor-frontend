@@ -89,10 +89,10 @@ Requires backend `POST /sma/meetings/:id/generate`.
 
 ### 9. Regenerate Actions
 
-- [ ] Regenerate title button (in meeting header, ⋯ menu)
-- [ ] Regenerate summary button (in Summary section)
-- [ ] Both show spinner while running, update on complete
-- [ ] Service calls: `POST /sma/meetings/:id/regenerate`
+- [x] Regenerate title button (in meeting header, ⋯ menu)
+- [x] Regenerate summary button (in Summary section)
+- [x] Both show spinner while running, update on complete
+- [x] Service calls: `POST /sma/meetings/:id/summary/regenerate` + `POST /sma/meetings/:id/title/regenerate`
 
 ---
 

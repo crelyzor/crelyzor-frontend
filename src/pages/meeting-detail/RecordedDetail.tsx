@@ -29,6 +29,7 @@ import {
   useRenameSpeaker,
   useSummary,
   useTriggerAI,
+  useRegenerateTitle,
 } from '@/hooks/queries/useSMAQueries';
 import type { SMASpeaker } from '@/services/smaService';
 import {
@@ -146,6 +147,8 @@ export function RecordedDetail({
   const { mutate: triggerAI, isPending: isRetrying } = useTriggerAI(
     rawMeeting.id
   );
+  const { mutate: regenerateTitle, isPending: isRegeneratingTitle } =
+    useRegenerateTitle(rawMeeting.id);
   const aiMissing = isCompleted && !summary;
 
   // Build a speakerLabel → displayName map for use in TranscriptTab
@@ -218,6 +221,23 @@ export function RecordedDetail({
                   className="w-44 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
                   align="end"
                 >
+                  {isCompleted && (
+                    <button
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                      disabled={isRegeneratingTitle}
+                      onClick={() => {
+                        regenerateTitle();
+                        setMoreOpen(false);
+                      }}
+                    >
+                      {isRegeneratingTitle ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <RefreshCcw className="w-3.5 h-3.5" />
+                      )}
+                      Regenerate Title
+                    </button>
+                  )}
                   {canComplete && (
                     <button
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"

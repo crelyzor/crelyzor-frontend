@@ -159,6 +159,20 @@ export const smaApi = {
     return unwrap<SMASpeaker>(result);
   },
 
+  regenerateSummary: async (meetingId: string): Promise<SMAAISummary> => {
+    const result = await apiClient.post(
+      `/sma/meetings/${meetingId}/summary/regenerate`
+    );
+    return unwrap<SMAAISummary>(result);
+  },
+
+  regenerateTitle: async (meetingId: string): Promise<{ title: string }> => {
+    const result = await apiClient.post(
+      `/sma/meetings/${meetingId}/title/regenerate`
+    );
+    return unwrap<{ title: string }>(result);
+  },
+
   triggerAI: async (meetingId: string): Promise<void> => {
     await apiClient.post(`/sma/meetings/${meetingId}/process-ai`);
   },

@@ -44,6 +44,7 @@ import {
 } from './SharedTabs';
 import { EditMeetingModal } from './EditMeetingModal';
 import { ShareSheet } from './ShareSheet';
+import { useRegenerateTitle } from '@/hooks/queries/useSMAQueries';
 
 const SCHEDULED_TABS = [
   { id: 'overview', label: 'Overview' },
@@ -78,6 +79,10 @@ export function ScheduledDetail({
   const statusClasses = getStatusStyle(meeting.status);
   const statusText = getStatusLabel(meeting.status);
   const hasSMA = transcriptionStatus !== 'NONE';
+  const isCompleted = transcriptionStatus === 'COMPLETED';
+
+  const { mutate: regenerateTitle, isPending: isRegeneratingTitle } =
+    useRegenerateTitle(rawMeeting.id);
 
   const canAccept =
     rawMeeting.status === 'PENDING_ACCEPTANCE' ||
@@ -148,6 +153,23 @@ export function ScheduledDetail({
                   className="w-44 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
                   align="end"
                 >
+                  {isCompleted && (
+                    <button
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                      disabled={isRegeneratingTitle}
+                      onClick={() => {
+                        regenerateTitle();
+                        setMoreOpen(false);
+                      }}
+                    >
+                      {isRegeneratingTitle ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <RefreshCcw className="w-3.5 h-3.5" />
+                      )}
+                      Regenerate Title
+                    </button>
+                  )}
                   {canComplete && (
                     <button
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"

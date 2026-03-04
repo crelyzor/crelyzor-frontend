@@ -36,6 +36,7 @@ import {
   useRecordings,
   useUploadRecording,
   useTriggerAI,
+  useRegenerateSummary,
 } from '@/hooks/queries/useSMAQueries';
 import { smaApi } from '@/services/smaService';
 import { toast } from 'sonner';
@@ -361,6 +362,8 @@ export function SummaryTab({
     isLoading,
     isError,
   } = useSummary(meetingId, isCompleted);
+  const { mutate: regenerate, isPending: isRegenerating } =
+    useRegenerateSummary(meetingId);
 
   if (!isCompleted) {
     return (
@@ -387,10 +390,26 @@ export function SummaryTab({
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-2 flex items-center gap-1.5">
-          <FileText className="w-4 h-4 text-neutral-500" />
-          AI Summary
-        </h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 flex items-center gap-1.5">
+            <FileText className="w-4 h-4 text-neutral-500" />
+            AI Summary
+          </h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs text-neutral-500 gap-1"
+            onClick={() => regenerate()}
+            disabled={isRegenerating}
+          >
+            {isRegenerating ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <RefreshCcw className="w-3 h-3" />
+            )}
+            {isRegenerating ? 'Regenerating…' : 'Regenerate'}
+          </Button>
+        </div>
         <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
           {summary.summary}
         </p>

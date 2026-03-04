@@ -118,6 +118,31 @@ export function useRecordings(meetingId: string) {
   });
 }
 
+export function useRegenerateSummary(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => smaApi.regenerateSummary(meetingId),
+    onSuccess: () => {
+      toast.success('Summary regenerated');
+      qc.invalidateQueries({ queryKey: queryKeys.sma.summary(meetingId) });
+    },
+    onError: () => toast.error('Failed to regenerate summary'),
+  });
+}
+
+export function useRegenerateTitle(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => smaApi.regenerateTitle(meetingId),
+    onSuccess: () => {
+      toast.success('Title regenerated');
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.detail(meetingId) });
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
+    },
+    onError: () => toast.error('Failed to regenerate title'),
+  });
+}
+
 export function useTriggerAI(meetingId: string) {
   const qc = useQueryClient();
   return useMutation({
