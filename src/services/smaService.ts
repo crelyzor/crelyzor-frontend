@@ -43,11 +43,7 @@ export type SMASpeaker = {
   updatedAt: string;
 };
 
-export type AIContentType =
-  | 'MEETING_REPORT'
-  | 'TWEET'
-  | 'BLOG_POST'
-  | 'EMAIL';
+export type AIContentType = 'MEETING_REPORT' | 'TWEET' | 'BLOG_POST' | 'EMAIL';
 
 export type GeneratedContent = { type: AIContentType; content: string };
 

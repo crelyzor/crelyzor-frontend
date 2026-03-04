@@ -1156,7 +1156,12 @@ const CONTENT_TYPE_META: {
     icon: BookOpen,
     desc: 'Detailed write-up',
   },
-  { type: 'EMAIL', label: 'Follow-up Email', icon: Mail, desc: 'Send to participants' },
+  {
+    type: 'EMAIL',
+    label: 'Follow-up Email',
+    icon: Mail,
+    desc: 'Send to participants',
+  },
 ];
 
 export function GenerateTab({
