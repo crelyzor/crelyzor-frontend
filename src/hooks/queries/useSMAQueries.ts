@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import { smaApi } from '@/services/smaService';
+import type { AIContentType, GeneratedContent } from '@/services/smaService';
 
 export function useTranscript(meetingId: string, enabled = true) {
   return useQuery({
@@ -115,6 +116,32 @@ export function useRecordings(meetingId: string) {
     queryKey: queryKeys.sma.recordings(meetingId),
     queryFn: () => smaApi.getRecordings(meetingId),
     enabled: !!meetingId,
+  });
+}
+
+export function useGeneratedContents(meetingId: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.sma.generatedContents(meetingId),
+    queryFn: () => smaApi.getGeneratedContents(meetingId),
+    enabled: !!meetingId && enabled,
+    staleTime: Infinity, // session cache — never auto-refetch
+  });
+}
+
+export function useGenerateContent(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (type: AIContentType) => smaApi.generateContent(meetingId, type),
+    onSuccess: (result) => {
+      qc.setQueryData(
+        queryKeys.sma.generatedContents(meetingId),
+        (old: GeneratedContent[] | undefined) => {
+          const filtered = (old ?? []).filter((c) => c.type !== result.type);
+          return [...filtered, result];
+        }
+      );
+    },
+    onError: () => toast.error('Failed to generate content'),
   });
 }
 

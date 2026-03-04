@@ -28,6 +28,7 @@ import {
   SummaryTab,
   NotesTab,
   AskAITab,
+  GenerateTab,
 } from './SharedTabs';
 import { DeleteMeetingModal } from './DeleteMeetingModal';
 import { ShareSheet } from './ShareSheet';
@@ -229,6 +230,16 @@ export function VoiceNoteDetail({
         <Card className="border-neutral-200 dark:border-neutral-800">
           <CardContent className="p-5">
             <AskAITab
+              meetingId={rawMeeting.id}
+              transcriptionStatus={transcriptionStatus}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Generate */}
+        <Card className="border-neutral-200 dark:border-neutral-800">
+          <CardContent className="p-5">
+            <GenerateTab
               meetingId={rawMeeting.id}
               transcriptionStatus={transcriptionStatus}
             />

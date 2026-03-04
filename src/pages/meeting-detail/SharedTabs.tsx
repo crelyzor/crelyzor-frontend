@@ -15,6 +15,14 @@ import {
   Trash2,
   Sparkles,
   SendHorizonal,
+  Copy,
+  Check,
+  List,
+  CheckSquare,
+  MessageSquare,
+  BookOpen,
+  Mail,
+  Wand2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { TranscriptionStatus, Task } from '@/types';
@@ -37,7 +45,10 @@ import {
   useUploadRecording,
   useTriggerAI,
   useRegenerateSummary,
+  useGeneratedContents,
+  useGenerateContent,
 } from '@/hooks/queries/useSMAQueries';
+import type { AIContentType, GeneratedContent } from '@/services/smaService';
 import { smaApi } from '@/services/smaService';
 import { toast } from 'sonner';
 import {
@@ -1074,6 +1085,214 @@ export function AskAITab({
           )}
         </Button>
       </form>
+    </div>
+  );
+}
+
+// ── Generate Tab ──
+const CONTENT_TYPE_META: {
+  type: AIContentType;
+  label: string;
+  icon: React.ElementType;
+  desc: string;
+}[] = [
+  {
+    type: 'MEETING_REPORT',
+    label: 'Meeting Report',
+    icon: FileText,
+    desc: 'Formal meeting minutes',
+  },
+  {
+    type: 'MAIN_POINTS',
+    label: 'Main Points',
+    icon: List,
+    desc: 'Key bullet points',
+  },
+  {
+    type: 'TODO_LIST',
+    label: 'To-Do List',
+    icon: CheckSquare,
+    desc: 'Action items list',
+  },
+  {
+    type: 'TWEET',
+    label: 'Tweet',
+    icon: MessageSquare,
+    desc: 'Share on social',
+  },
+  {
+    type: 'BLOG_POST',
+    label: 'Blog Post',
+    icon: BookOpen,
+    desc: 'Detailed write-up',
+  },
+  { type: 'EMAIL', label: 'Email', icon: Mail, desc: 'Follow-up email' },
+];
+
+export function GenerateTab({
+  meetingId,
+  transcriptionStatus,
+}: {
+  meetingId: string;
+  transcriptionStatus: TranscriptionStatus;
+}) {
+  const [selectedType, setSelectedType] = useState<AIContentType>('MEETING_REPORT');
+  const [copied, setCopied] = useState(false);
+
+  const isAvailable = transcriptionStatus === 'COMPLETED';
+  const { data: existingContents, isLoading: isLoadingExisting } =
+    useGeneratedContents(meetingId, isAvailable);
+  const { mutate: generate, isPending: isGenerating } =
+    useGenerateContent(meetingId);
+
+  const contentMap = new Map<AIContentType, string>(
+    (existingContents ?? []).map((c: GeneratedContent) => [c.type, c.content])
+  );
+  const selectedContent = contentMap.get(selectedType);
+
+  const handleCopy = async () => {
+    if (!selectedContent) return;
+    try {
+      await navigator.clipboard.writeText(selectedContent);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Failed to copy');
+    }
+  };
+
+  if (!isAvailable) {
+    return (
+      <EmptyState
+        icon={Wand2}
+        title="Generate not available"
+        body="A completed transcript is required to generate content."
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 flex items-center gap-1.5">
+        <Wand2 className="w-4 h-4 text-neutral-500" />
+        Generate
+      </h3>
+
+      {/* Type selector grid */}
+      <div className="grid grid-cols-3 gap-2">
+        {CONTENT_TYPE_META.map(({ type, label, icon: Icon, desc }) => {
+          const hasContent = contentMap.has(type);
+          const isSelected = selectedType === type;
+          return (
+            <button
+              key={type}
+              onClick={() => setSelectedType(type)}
+              className={`flex flex-col items-start gap-1 p-3 rounded-xl border text-left transition-all ${
+                isSelected
+                  ? 'border-neutral-900 dark:border-neutral-100 bg-neutral-50 dark:bg-neutral-800'
+                  : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500'
+              }`}
+            >
+              <div className="flex items-center justify-between w-full">
+                <Icon
+                  className={`w-3.5 h-3.5 ${isSelected ? 'text-neutral-900 dark:text-neutral-100' : 'text-neutral-400'}`}
+                />
+                {hasContent && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" />
+                )}
+              </div>
+              <span
+                className={`text-[11px] font-semibold leading-tight ${isSelected ? 'text-neutral-900 dark:text-neutral-100' : 'text-neutral-600 dark:text-neutral-400'}`}
+              >
+                {label}
+              </span>
+              <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                {desc}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Content area */}
+      <div className="min-h-[160px] rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 p-4">
+        {isLoadingExisting ? (
+          <SkeletonLines count={4} />
+        ) : selectedContent ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                {CONTENT_TYPE_META.find((m) => m.type === selectedType)?.label}
+              </span>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs text-neutral-500 gap-1"
+                  onClick={handleCopy}
+                >
+                  {copied ? (
+                    <Check className="w-3 h-3 text-green-500" />
+                  ) : (
+                    <Copy className="w-3 h-3" />
+                  )}
+                  {copied ? 'Copied' : 'Copy'}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs text-neutral-500 gap-1"
+                  disabled={isGenerating}
+                  onClick={() => generate(selectedType)}
+                >
+                  {isGenerating ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <RefreshCcw className="w-3 h-3" />
+                  )}
+                  Redo
+                </Button>
+              </div>
+            </div>
+            <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
+              {selectedContent}
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full py-6 text-center">
+            {isGenerating ? (
+              <>
+                <Loader2 className="w-6 h-6 text-neutral-400 animate-spin mb-2" />
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  Generating{' '}
+                  {CONTENT_TYPE_META.find((m) => m.type === selectedType)
+                    ?.label}
+                  …
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
+                  No{' '}
+                  {CONTENT_TYPE_META.find(
+                    (m) => m.type === selectedType
+                  )?.label.toLowerCase()}{' '}
+                  generated yet.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs gap-1.5 h-7"
+                  onClick={() => generate(selectedType)}
+                >
+                  <Wand2 className="w-3 h-3" />
+                  Generate
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

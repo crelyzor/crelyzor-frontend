@@ -43,6 +43,16 @@ export type SMASpeaker = {
   updatedAt: string;
 };
 
+export type AIContentType =
+  | 'MEETING_REPORT'
+  | 'MAIN_POINTS'
+  | 'TODO_LIST'
+  | 'TWEET'
+  | 'BLOG_POST'
+  | 'EMAIL';
+
+export type GeneratedContent = { type: AIContentType; content: string };
+
 export type MeetingNote = {
   id: string;
   meetingId: string;
@@ -157,6 +167,19 @@ export const smaApi = {
       data
     );
     return unwrap<SMASpeaker>(result);
+  },
+
+  getGeneratedContents: async (meetingId: string): Promise<GeneratedContent[]> => {
+    const result = await apiClient.get(`/sma/meetings/${meetingId}/generated`);
+    return unwrap<{ contents: GeneratedContent[] }>(result).contents;
+  },
+
+  generateContent: async (
+    meetingId: string,
+    type: AIContentType
+  ): Promise<GeneratedContent> => {
+    const result = await apiClient.post(`/sma/meetings/${meetingId}/generate`, { type });
+    return unwrap<GeneratedContent>(result);
   },
 
   regenerateSummary: async (meetingId: string): Promise<SMAAISummary> => {

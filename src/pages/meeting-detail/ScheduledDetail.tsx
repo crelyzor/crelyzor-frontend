@@ -41,6 +41,7 @@ import {
   NotesTab,
   OverviewTab,
   AskAITab,
+  GenerateTab,
 } from './SharedTabs';
 import { EditMeetingModal } from './EditMeetingModal';
 import { ShareSheet } from './ShareSheet';
@@ -54,6 +55,7 @@ const SCHEDULED_TABS = [
   { id: 'notes', label: 'Notes' },
   { id: 'recording', label: 'Recording' },
   { id: 'ask', label: 'Ask AI' },
+  { id: 'generate', label: 'Generate' },
 ] as const;
 
 type ScheduledTab = (typeof SCHEDULED_TABS)[number]['id'];
@@ -482,6 +484,12 @@ export function ScheduledDetail({
             </TabsContent>
             <TabsContent value="ask" className="p-6 mt-0">
               <AskAITab
+                meetingId={rawMeeting.id}
+                transcriptionStatus={transcriptionStatus}
+              />
+            </TabsContent>
+            <TabsContent value="generate" className="p-6 mt-0">
+              <GenerateTab
                 meetingId={rawMeeting.id}
                 transcriptionStatus={transcriptionStatus}
               />

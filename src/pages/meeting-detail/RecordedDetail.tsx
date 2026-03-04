@@ -39,6 +39,7 @@ import {
   ActionsTab,
   NotesTab,
   AskAITab,
+  GenerateTab,
 } from './SharedTabs';
 import { DeleteMeetingModal } from './DeleteMeetingModal';
 import { ShareSheet } from './ShareSheet';
@@ -50,6 +51,7 @@ const RECORDED_TABS = [
   { id: 'actions', label: 'Tasks' },
   { id: 'notes', label: 'Notes' },
   { id: 'ask', label: 'Ask AI' },
+  { id: 'generate', label: 'Generate' },
 ] as const;
 
 type RecordedTab = (typeof RECORDED_TABS)[number]['id'];
@@ -370,6 +372,12 @@ export function RecordedDetail({
             </TabsContent>
             <TabsContent value="ask" className="p-6 mt-0">
               <AskAITab
+                meetingId={rawMeeting.id}
+                transcriptionStatus={transcriptionStatus}
+              />
+            </TabsContent>
+            <TabsContent value="generate" className="p-6 mt-0">
+              <GenerateTab
                 meetingId={rawMeeting.id}
                 transcriptionStatus={transcriptionStatus}
               />

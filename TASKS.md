@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-04
+Last updated: 2026-03-05
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -81,11 +81,11 @@ Requires backend `Task` model + CRUD API to be built first.
 
 Requires backend `POST /sma/meetings/:id/generate`.
 
-- [ ] "Generate" section in MeetingDetail (separate from Summary tab)
-- [ ] Options: Meeting report / Main points / To-do list / Tweet / Blog post / Email
-- [ ] Each shows a loading state while generating, then displays result
-- [ ] Copy to clipboard button on each result
-- [ ] Results cached per session (don't re-fetch on re-render)
+- [x] "Generate" section in MeetingDetail (separate from Summary tab)
+- [x] Options: Meeting report / Main points / To-do list / Tweet / Blog post / Email
+- [x] Each shows a loading state while generating, then displays result
+- [x] Copy to clipboard button on each result
+- [x] Results cached per session (don't re-fetch on re-render)
 
 ### 9. Regenerate Actions
 
