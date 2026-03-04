@@ -60,14 +60,12 @@ Requires backend `Task` model + CRUD API to be built first.
 
 ### 6. Ask AI — chat panel
 
-Requires Ask AI backend endpoint first.
-
-- [ ] Chat panel in all 3 MeetingDetail layouts (available when transcript exists)
-- [ ] Input: "Ask anything about this meeting..."
-- [ ] Stream AI response token by token
-- [ ] Pre-loaded suggestion chips: "Summarize decisions", "List tasks", "What were the blockers?"
-- [ ] Conversation history within session (not persisted)
-- [ ] Service: `askAI(meetingId, question)` — streaming via EventSource or fetch ReadableStream
+- [x] Chat panel in all 3 MeetingDetail layouts (available when transcript exists)
+- [x] Input: "Ask anything about this meeting..."
+- [x] Stream AI response token by token
+- [x] Pre-loaded suggestion chips: "Summarize decisions", "List tasks", "What were the blockers?"
+- [x] Conversation history within session (not persisted)
+- [x] Service: `askAI(meetingId, question)` — streaming via fetch ReadableStream
 
 ### 7. Share Sheet
 
