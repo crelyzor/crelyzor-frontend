@@ -163,6 +163,91 @@ export const smaApi = {
     await apiClient.post(`/sma/meetings/${meetingId}/process-ai`);
   },
 
+  // Ask AI — streaming SSE (cannot use apiClient; need raw Response stream)
+  askAI: async (
+    meetingId: string,
+    question: string,
+    onToken: (token: string) => void,
+    onDone: () => void,
+    onError: (err: string) => void,
+    signal?: AbortSignal
+  ): Promise<void> => {
+    const token = useAuthStore.getState().accessToken;
+    const API_BASE =
+      (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
+    const base = API_BASE.startsWith('http')
+      ? API_BASE
+      : `${window.location.origin}${API_BASE}`;
+
+    let res: Response;
+    try {
+      res = await fetch(`${base}/sma/meetings/${meetingId}/ask`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ question }),
+        signal,
+      });
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') return;
+      onError('Network error — could not reach AI');
+      return;
+    }
+
+    if (!res.ok) {
+      onError('Failed to get AI response');
+      return;
+    }
+
+    const reader = res.body?.getReader();
+    if (!reader) {
+      onError('Streaming not supported');
+      return;
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const raw = line.slice(6).trim();
+          if (!raw) continue;
+          try {
+            const parsed = JSON.parse(raw) as {
+              token?: string;
+              done?: boolean;
+              error?: string;
+            };
+            if (parsed.done) {
+              onDone();
+            } else if (parsed.token) {
+              onToken(parsed.token);
+            } else if (parsed.error) {
+              onError(parsed.error);
+            }
+          } catch {
+            // ignore malformed SSE lines
+          }
+        }
+      }
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        onError('Stream interrupted');
+      }
+    }
+  },
+
   // Multipart upload — cannot go through apiClient (it JSON.stringifies the body)
   uploadRecording: async (
     meetingId: string,

@@ -40,6 +40,7 @@ import {
   ActionsTab,
   NotesTab,
   OverviewTab,
+  AskAITab,
 } from './SharedTabs';
 import { EditMeetingModal } from './EditMeetingModal';
 
@@ -50,6 +51,7 @@ const SCHEDULED_TABS = [
   { id: 'actions', label: 'Tasks' },
   { id: 'notes', label: 'Notes' },
   { id: 'recording', label: 'Recording' },
+  { id: 'ask', label: 'Ask AI' },
 ] as const;
 
 type ScheduledTab = (typeof SCHEDULED_TABS)[number]['id'];
@@ -444,6 +446,12 @@ export function ScheduledDetail({
             </TabsContent>
             <TabsContent value="recording" className="p-6 mt-0">
               <RecordingTab
+                meetingId={rawMeeting.id}
+                transcriptionStatus={transcriptionStatus}
+              />
+            </TabsContent>
+            <TabsContent value="ask" className="p-6 mt-0">
+              <AskAITab
                 meetingId={rawMeeting.id}
                 transcriptionStatus={transcriptionStatus}
               />

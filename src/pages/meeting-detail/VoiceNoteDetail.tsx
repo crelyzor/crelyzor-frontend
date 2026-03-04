@@ -23,6 +23,7 @@ import {
   TranscriptTab,
   SummaryTab,
   NotesTab,
+  AskAITab,
 } from './SharedTabs';
 import { DeleteMeetingModal } from './DeleteMeetingModal';
 import { SkeletonLines } from './meetingDetailHelpers';
@@ -190,6 +191,16 @@ export function VoiceNoteDetail({
         <Card className="border-neutral-200 dark:border-neutral-800">
           <CardContent className="p-5">
             <NotesTab meetingId={rawMeeting.id} />
+          </CardContent>
+        </Card>
+
+        {/* Ask AI */}
+        <Card className="border-neutral-200 dark:border-neutral-800">
+          <CardContent className="p-5">
+            <AskAITab
+              meetingId={rawMeeting.id}
+              transcriptionStatus={transcriptionStatus}
+            />
           </CardContent>
         </Card>
       </div>

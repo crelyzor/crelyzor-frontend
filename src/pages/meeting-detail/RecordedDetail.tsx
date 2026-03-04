@@ -37,6 +37,7 @@ import {
   SummaryTab,
   ActionsTab,
   NotesTab,
+  AskAITab,
 } from './SharedTabs';
 import { DeleteMeetingModal } from './DeleteMeetingModal';
 
@@ -46,6 +47,7 @@ const RECORDED_TABS = [
   { id: 'summary', label: 'AI Summary' },
   { id: 'actions', label: 'Tasks' },
   { id: 'notes', label: 'Notes' },
+  { id: 'ask', label: 'Ask AI' },
 ] as const;
 
 type RecordedTab = (typeof RECORDED_TABS)[number]['id'];
@@ -337,6 +339,12 @@ export function RecordedDetail({
             </TabsContent>
             <TabsContent value="notes" className="p-6 mt-0">
               <NotesTab meetingId={rawMeeting.id} />
+            </TabsContent>
+            <TabsContent value="ask" className="p-6 mt-0">
+              <AskAITab
+                meetingId={rawMeeting.id}
+                transcriptionStatus={transcriptionStatus}
+              />
             </TabsContent>
           </Tabs>
         </CardContent>

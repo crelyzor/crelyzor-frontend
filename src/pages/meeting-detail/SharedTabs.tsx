@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import {
@@ -13,6 +13,8 @@ import {
   Loader2,
   Plus,
   Trash2,
+  Sparkles,
+  SendHorizonal,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { TranscriptionStatus, Task } from '@/types';
@@ -35,6 +37,7 @@ import {
   useUploadRecording,
   useTriggerAI,
 } from '@/hooks/queries/useSMAQueries';
+import { smaApi } from '@/services/smaService';
 import { toast } from 'sonner';
 import {
   formatTimestamp,
@@ -861,6 +864,197 @@ export function NotesTab({ meetingId }: { meetingId: string }) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Ask AI Tab ──
+type AIChatMessage = { role: 'user' | 'assistant'; content: string };
+
+const SUGGESTION_CHIPS = [
+  'Summarize decisions made',
+  'List all tasks mentioned',
+  'What were the blockers?',
+  'Who said what?',
+];
+
+export function AskAITab({
+  meetingId,
+  transcriptionStatus,
+}: {
+  meetingId: string;
+  transcriptionStatus: TranscriptionStatus;
+}) {
+  const [messages, setMessages] = useState<AIChatMessage[]>([]);
+  const [input, setInput] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const isAvailable = transcriptionStatus === 'COMPLETED';
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const ask = (question: string) => {
+    if (!question.trim() || isStreaming) return;
+
+    setMessages((prev) => [
+      ...prev,
+      { role: 'user', content: question },
+      { role: 'assistant', content: '' },
+    ]);
+    setInput('');
+    setIsStreaming(true);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    smaApi.askAI(
+      meetingId,
+      question,
+      (token) => {
+        setMessages((prev) => {
+          const updated = [...prev];
+          const last = updated[updated.length - 1];
+          if (last?.role === 'assistant') {
+            updated[updated.length - 1] = {
+              ...last,
+              content: last.content + token,
+            };
+          }
+          return updated;
+        });
+      },
+      () => {
+        setIsStreaming(false);
+        abortRef.current = null;
+      },
+      (err) => {
+        toast.error(err ?? 'AI response failed');
+        setIsStreaming(false);
+        setMessages((prev) => {
+          const updated = [...prev];
+          const last = updated[updated.length - 1];
+          if (last?.role === 'assistant' && !last.content) {
+            updated[updated.length - 1] = {
+              ...last,
+              content: 'Something went wrong. Please try again.',
+            };
+          }
+          return updated;
+        });
+        abortRef.current = null;
+      },
+      controller.signal
+    );
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    ask(input.trim());
+  };
+
+  if (!isAvailable) {
+    return (
+      <EmptyState
+        icon={Sparkles}
+        title="Ask AI not available"
+        body="A completed transcript is required before you can ask questions about this meeting."
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 flex items-center gap-1.5">
+        <Sparkles className="w-4 h-4 text-neutral-500" />
+        Ask AI
+      </h3>
+
+      {/* Suggestion chips — shown only when conversation is empty */}
+      {messages.length === 0 && (
+        <div className="flex flex-wrap gap-2">
+          {SUGGESTION_CHIPS.map((chip) => (
+            <button
+              key={chip}
+              type="button"
+              onClick={() => ask(chip)}
+              disabled={isStreaming}
+              className="px-3 py-1.5 rounded-full text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50"
+            >
+              {chip}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Messages */}
+      {messages.length > 0 && (
+        <div className="flex flex-col gap-3 max-h-96 overflow-y-auto pr-1">
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`max-w-[85%] rounded-xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
+                  msg.role === 'user'
+                    ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
+                }`}
+              >
+                {msg.role === 'assistant' &&
+                !msg.content &&
+                isStreaming &&
+                i === messages.length - 1 ? (
+                  <span className="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Thinking…
+                  </span>
+                ) : (
+                  <>
+                    {msg.content}
+                    {msg.role === 'assistant' &&
+                      isStreaming &&
+                      i === messages.length - 1 &&
+                      msg.content && (
+                        <span className="inline-block w-0.5 h-3.5 bg-neutral-400 dark:bg-neutral-500 ml-0.5 animate-pulse align-middle" />
+                      )}
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+          <div ref={bottomRef} />
+        </div>
+      )}
+
+      {/* Input */}
+      <form onSubmit={handleSubmit} className="flex items-center gap-2">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Ask anything about this meeting…"
+          disabled={isStreaming}
+          className="flex-1 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-3 py-2 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-600 focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-600 disabled:opacity-50"
+        />
+        <Button
+          type="submit"
+          size="icon"
+          variant="outline"
+          className="h-9 w-9 shrink-0"
+          disabled={!input.trim() || isStreaming}
+        >
+          {isStreaming ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <SendHorizonal className="w-3.5 h-3.5" />
+          )}
+        </Button>
+      </form>
     </div>
   );
 }
