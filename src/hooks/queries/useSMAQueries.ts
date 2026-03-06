@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import { smaApi } from '@/services/smaService';
-import type { AIContentType, GeneratedContent } from '@/services/smaService';
+import type { AIContentType, GeneratedContent, MeetingShare } from '@/services/smaService';
 
 export function useTranscript(meetingId: string, enabled = true) {
   return useQuery({
@@ -143,6 +143,27 @@ export function useGenerateContent(meetingId: string) {
       );
     },
     onError: () => toast.error('Failed to generate content'),
+  });
+}
+
+export function useShare(meetingId: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.sma.share(meetingId),
+    queryFn: () => smaApi.getShare(meetingId),
+    enabled: !!meetingId && enabled,
+    staleTime: 30_000,
+  });
+}
+
+export function useUpdateShare(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<Omit<MeetingShare, 'shortId'>>) =>
+      smaApi.updateShare(meetingId, data),
+    onSuccess: (updated) => {
+      qc.setQueryData(queryKeys.sma.share(meetingId), updated);
+    },
+    onError: () => toast.error('Failed to update share settings'),
   });
 }
 

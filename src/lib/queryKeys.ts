@@ -74,6 +74,8 @@ export const queryKeys = {
       [...queryKeys.sma.all, 'speakers', meetingId] as const,
     generatedContents: (meetingId: string) =>
       [...queryKeys.sma.all, 'generated', meetingId] as const,
+    share: (meetingId: string) =>
+      [...queryKeys.sma.all, 'share', meetingId] as const,
   },
 
   // Cards

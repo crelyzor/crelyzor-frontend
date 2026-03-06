@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Share2, Copy, Download, Mail, Check } from 'lucide-react';
+import {
+  Share2,
+  Copy,
+  Download,
+  Mail,
+  Check,
+  Link,
+  Link2Off,
+  Loader2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -12,6 +21,8 @@ import {
   useTranscript,
   useSummary,
   useRecordings,
+  useShare,
+  useUpdateShare,
 } from '@/hooks/queries/useSMAQueries';
 import { formatTimestamp } from './meetingDetailHelpers';
 
@@ -20,6 +31,10 @@ interface ShareSheetProps {
   meetingTitle: string;
   transcriptionStatus: TranscriptionStatus;
 }
+
+const CARDS_BASE =
+  (import.meta.env.VITE_CARDS_BASE_URL as string | undefined) ??
+  'http://localhost:5174';
 
 export function ShareSheet({
   meetingId,
@@ -33,6 +48,8 @@ export function ShareSheet({
   const { data: transcript } = useTranscript(meetingId, isCompleted);
   const { data: summary } = useSummary(meetingId, isCompleted);
   const { data: recordings } = useRecordings(meetingId);
+  const { data: share, isLoading: shareLoading } = useShare(meetingId, open);
+  const updateShare = useUpdateShare(meetingId);
 
   const recording = recordings?.[0];
   const hasTranscript =
@@ -99,6 +116,23 @@ export function ShareSheet({
     setOpen(false);
   };
 
+  const publicUrl = share ? `${CARDS_BASE}/m/${share.shortId}` : null;
+
+  const handleCopyPublicLink = async () => {
+    if (!share) return;
+    if (!share.isPublic) {
+      await updateShare.mutateAsync({ isPublic: true });
+    }
+    const url = `${CARDS_BASE}/m/${share.shortId}`;
+    await copyWithFeedback(url, 'link');
+  };
+
+  const handleDisableLink = async () => {
+    if (!share?.isPublic) return;
+    await updateShare.mutateAsync({ isPublic: false });
+    toast.success('Public link disabled');
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -107,55 +141,108 @@ export function ShareSheet({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-48 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
+        className="w-64 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
         align="end"
       >
         <p className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
           Share
         </p>
         {hasTranscript && (
-          <button
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2.5 px-3 py-2 h-auto rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300"
             onClick={handleCopyTranscript}
           >
             {copied === 'transcript' ? (
-              <Check className="w-3.5 h-3.5 text-green-500" />
+              <Check className="w-3.5 h-3.5 text-neutral-500" />
             ) : (
               <Copy className="w-3.5 h-3.5" />
             )}
             Copy Transcript
-          </button>
+          </Button>
         )}
         {hasSummary && (
-          <button
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2.5 px-3 py-2 h-auto rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300"
             onClick={handleCopySummary}
           >
             {copied === 'summary' ? (
-              <Check className="w-3.5 h-3.5 text-green-500" />
+              <Check className="w-3.5 h-3.5 text-neutral-500" />
             ) : (
               <Copy className="w-3.5 h-3.5" />
             )}
             Copy Summary
-          </button>
+          </Button>
         )}
         {hasAudio && (
-          <button
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2.5 px-3 py-2 h-auto rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300"
             onClick={handleDownloadAudio}
           >
             <Download className="w-3.5 h-3.5" />
             Download Audio
-          </button>
+          </Button>
         )}
         {hasSummary && (
-          <button
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-2.5 px-3 py-2 h-auto rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300"
             onClick={handleShareEmail}
           >
             <Mail className="w-3.5 h-3.5" />
             Share via Email
-          </button>
+          </Button>
+        )}
+
+        {/* Public Link Section */}
+        <div className="my-1 border-t border-neutral-100 dark:border-neutral-800" />
+        <p className="px-3 pt-1 pb-1 text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+          Public Link
+        </p>
+
+        {shareLoading ? (
+          <div className="flex items-center gap-2 px-3 py-2">
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-400" />
+            <span className="text-xs text-neutral-400">Loading...</span>
+          </div>
+        ) : (
+          <>
+            {share?.isPublic && publicUrl && (
+              <div className="px-3 py-1.5">
+                <p className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate">
+                  {publicUrl}
+                </p>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2.5 px-3 py-2 h-auto rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300"
+              onClick={handleCopyPublicLink}
+              disabled={updateShare.isPending}
+            >
+              {updateShare.isPending ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : copied === 'link' ? (
+                <Check className="w-3.5 h-3.5 text-neutral-500" />
+              ) : (
+                <Link className="w-3.5 h-3.5" />
+              )}
+              {share?.isPublic ? 'Copy public link' : 'Make public & copy link'}
+            </Button>
+            {share?.isPublic && (
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2.5 px-3 py-2 h-auto rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300"
+                onClick={handleDisableLink}
+                disabled={updateShare.isPending}
+              >
+                <Link2Off className="w-3.5 h-3.5" />
+                Disable public link
+              </Button>
+            )}
+          </>
         )}
       </PopoverContent>
     </Popover>

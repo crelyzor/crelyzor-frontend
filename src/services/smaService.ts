@@ -57,6 +57,14 @@ export type MeetingNote = {
   updatedAt: string;
 };
 
+export type MeetingShare = {
+  shortId: string;
+  isPublic: boolean;
+  showTranscript: boolean;
+  showSummary: boolean;
+  showTasks: boolean;
+};
+
 // SMA controllers return { success, data } without statusCode,
 // so apiClient won't auto-unwrap. Unwrap manually.
 function unwrap<T>(result: unknown): T {
@@ -192,6 +200,24 @@ export const smaApi = {
       `/sma/meetings/${meetingId}/title/regenerate`
     );
     return unwrap<{ title: string }>(result);
+  },
+
+  getShare: async (meetingId: string): Promise<MeetingShare> => {
+    const result = await apiClient.post<{ share: MeetingShare }>(
+      `/sma/meetings/${meetingId}/share`
+    );
+    return result.share;
+  },
+
+  updateShare: async (
+    meetingId: string,
+    data: Partial<Omit<MeetingShare, 'shortId'>>
+  ): Promise<MeetingShare> => {
+    const result = await apiClient.patch<{ share: MeetingShare }>(
+      `/sma/meetings/${meetingId}/share`,
+      data
+    );
+    return result.share;
   },
 
   triggerAI: async (meetingId: string): Promise<void> => {
