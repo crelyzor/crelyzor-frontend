@@ -2,7 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import { smaApi } from '@/services/smaService';
-import type { AIContentType, GeneratedContent, MeetingShare } from '@/services/smaService';
+import type {
+  AIContentType,
+  GeneratedContent,
+  MeetingShare,
+} from '@/services/smaService';
 
 export function useTranscript(meetingId: string, enabled = true) {
   return useQuery({
