@@ -105,9 +105,9 @@ Requires backend `POST /sma/meetings/:id/generate`.
 
 Requires backend `MeetingShare` model.
 
-- [ ] Share sheet: "Copy public link" option (creates share if not exists)
-- [ ] "Disable public link" toggle
-- [ ] Shows the short URL when enabled
+- [x] Share sheet: "Copy public link" option (creates share if not exists)
+- [x] "Disable public link" toggle
+- [x] Shows the short URL when enabled
 
 ### 11. Export
 
