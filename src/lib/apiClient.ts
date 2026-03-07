@@ -105,6 +105,7 @@ async function request<T>(
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
 
+
   if (res.status === 401) {
     // Never try to refresh the refresh-token endpoint itself (avoid infinite loop)
     if (path === '/auth/refresh-token') {
@@ -164,6 +165,31 @@ async function request<T>(
   return json as T;
 }
 
+// ── FormData upload (bypasses JSON serialization, no Content-Type override) ──
+async function requestForm<T>(path: string, formData: FormData): Promise<T> {
+  const token = useAuthStore.getState().accessToken;
+
+  const res = await fetch(buildUrl(path), {
+    method: 'POST',
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      // Do NOT set Content-Type — browser sets it with multipart boundary
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new ApiError(res.status, res.statusText, data);
+  }
+
+  const json = await res.json();
+  if (json && typeof json === 'object' && 'data' in json && 'statusCode' in json) {
+    return json.data as T;
+  }
+  return json as T;
+}
+
 export const apiClient = {
   get: <T>(path: string, options?: Omit<RequestOptions, 'method' | 'body'>) =>
     request<T>(path, { ...options, method: 'GET' }),
@@ -190,6 +216,9 @@ export const apiClient = {
     path: string,
     options?: Omit<RequestOptions, 'method' | 'body'>
   ) => request<T>(path, { ...options, method: 'DELETE' }),
+
+  postForm: <T>(path: string, formData: FormData) =>
+    requestForm<T>(path, formData),
 };
 
 export { ApiError };

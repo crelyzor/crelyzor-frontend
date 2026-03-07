@@ -44,6 +44,7 @@ import {
 import { DeleteMeetingModal } from './DeleteMeetingModal';
 import { ShareSheet } from './ShareSheet';
 import { TagsSection } from './TagsSection';
+import { AttachmentsSection } from './AttachmentsSection';
 
 const RECORDED_TABS = [
   { id: 'recording', label: 'Recording' },
@@ -203,6 +204,9 @@ export function RecordedDetail({
               </div>
               <div className="mt-2.5">
                 <TagsSection meetingId={rawMeeting.id} />
+              </div>
+              <div className="mt-2">
+                <AttachmentsSection meetingId={rawMeeting.id} />
               </div>
             </div>
 

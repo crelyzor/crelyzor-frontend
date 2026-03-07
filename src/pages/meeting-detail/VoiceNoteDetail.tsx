@@ -35,6 +35,7 @@ import { DeleteMeetingModal } from './DeleteMeetingModal';
 import { ShareSheet } from './ShareSheet';
 import { SkeletonLines } from './meetingDetailHelpers';
 import { TagsSection } from './TagsSection';
+import { AttachmentsSection } from './AttachmentsSection';
 
 export function VoiceNoteDetail({
   meeting: rawMeeting,
@@ -98,6 +99,9 @@ export function VoiceNoteDetail({
               </div>
               <div className="mt-2.5">
                 <TagsSection meetingId={rawMeeting.id} />
+              </div>
+              <div className="mt-2">
+                <AttachmentsSection meetingId={rawMeeting.id} />
               </div>
             </div>
 

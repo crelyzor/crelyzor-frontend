@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-05
+Last updated: 2026-03-07
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -130,10 +130,10 @@ Requires backend Tags API.
 
 ### 13. Attachments
 
-- [ ] Attachments section in MeetingDetail
-- [ ] Attach a link (paste URL + name)
-- [ ] Attach a file (upload — image, PDF, doc)
-- [ ] Display with icon by type, clickable, deletable
+- [x] Attachments section in MeetingDetail (all 3 layouts)
+- [x] Attach a link (paste URL + name)
+- [x] Attach a file (upload — image, PDF, doc — drag-and-drop + click to browse)
+- [x] Display with icon by type, clickable (opens signed URL), deletable (two-click confirm)
 
 ### 14. Edit Transcript / Summary
 

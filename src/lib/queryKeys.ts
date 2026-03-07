@@ -88,6 +88,13 @@ export const queryKeys = {
       [...queryKeys.tags.all, 'card', cardId] as const,
   },
 
+  // Attachments
+  attachments: {
+    all: ['attachments'] as const,
+    byMeeting: (meetingId: string) =>
+      [...queryKeys.attachments.all, 'meeting', meetingId] as const,
+  },
+
   // Cards
   cards: {
     all: ['cards'] as const,

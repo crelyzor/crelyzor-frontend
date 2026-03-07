@@ -116,6 +116,21 @@ export type Tag = {
   attachedAt?: string;
 };
 
+export type AttachmentType = 'FILE' | 'LINK' | 'PHOTO';
+
+export type Attachment = {
+  id: string;
+  meetingId: string;
+  type: AttachmentType;
+  name: string;
+  url?: string | null;       // LINK type: raw URL
+  signedUrl?: string | null; // FILE/PHOTO type: signed GCS URL (60min TTL)
+  mimeType?: string | null;
+  size?: number | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Task = {
   id: string;
   userId: string;
