@@ -66,8 +66,7 @@ export function useDeleteTag() {
 export function useAttachTagToMeeting(meetingId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (tagId: string) =>
-      tagsApi.attachTagToMeeting(meetingId, tagId),
+    mutationFn: (tagId: string) => tagsApi.attachTagToMeeting(meetingId, tagId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.tags.byMeeting(meetingId) });
     },

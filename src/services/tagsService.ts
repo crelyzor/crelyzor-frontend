@@ -35,18 +35,26 @@ export const tagsApi = {
     return result.tags;
   },
 
-  attachTagToMeeting: async (meetingId: string, tagId: string): Promise<void> => {
+  attachTagToMeeting: async (
+    meetingId: string,
+    tagId: string
+  ): Promise<void> => {
     await apiClient.post(`/meetings/${meetingId}/tags/${tagId}`);
   },
 
-  detachTagFromMeeting: async (meetingId: string, tagId: string): Promise<void> => {
+  detachTagFromMeeting: async (
+    meetingId: string,
+    tagId: string
+  ): Promise<void> => {
     await apiClient.delete(`/meetings/${meetingId}/tags/${tagId}`);
   },
 
   // ── Card tags ─────────────────────────────────────────────
 
   getCardTags: async (cardId: string): Promise<Tag[]> => {
-    const result = await apiClient.get<{ tags: Tag[] }>(`/cards/${cardId}/tags`);
+    const result = await apiClient.get<{ tags: Tag[] }>(
+      `/cards/${cardId}/tags`
+    );
     return result.tags;
   },
 

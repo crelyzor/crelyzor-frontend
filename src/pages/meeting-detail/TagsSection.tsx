@@ -21,13 +21,7 @@ import type { Tag as TagType } from '@/types/meeting';
 const DEFAULT_TAG_COLOR = '#6b7280';
 
 // ── Tag Pill ──────────────────────────────────────────────────────────────────
-function TagPill({
-  tag,
-  onRemove,
-}: {
-  tag: TagType;
-  onRemove?: () => void;
-}) {
+function TagPill({ tag, onRemove }: { tag: TagType; onRemove?: () => void }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 px-2.5 py-0.5 text-xs text-neutral-700 dark:text-neutral-300">
       <span
@@ -135,11 +129,7 @@ export function TagsSection({ meetingId }: { meetingId: string }) {
         <SkeletonPills />
       ) : meetingTags.length === 0 ? null : (
         meetingTags.map((tag) => (
-          <TagPill
-            key={tag.id}
-            tag={tag}
-            onRemove={() => detach(tag.id)}
-          />
+          <TagPill key={tag.id} tag={tag} onRemove={() => detach(tag.id)} />
         ))
       )}
 
