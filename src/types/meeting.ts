@@ -123,7 +123,7 @@ export type Attachment = {
   meetingId: string;
   type: AttachmentType;
   name: string;
-  url?: string | null;       // LINK type: raw URL
+  url?: string | null; // LINK type: raw URL
   signedUrl?: string | null; // FILE/PHOTO type: signed GCS URL (60min TTL)
   mimeType?: string | null;
   size?: number | null;

@@ -105,7 +105,6 @@ async function request<T>(
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
 
-
   if (res.status === 401) {
     // Never try to refresh the refresh-token endpoint itself (avoid infinite loop)
     if (path === '/auth/refresh-token') {
@@ -184,7 +183,12 @@ async function requestForm<T>(path: string, formData: FormData): Promise<T> {
   }
 
   const json = await res.json();
-  if (json && typeof json === 'object' && 'data' in json && 'statusCode' in json) {
+  if (
+    json &&
+    typeof json === 'object' &&
+    'data' in json &&
+    'statusCode' in json
+  ) {
     return json.data as T;
   }
   return json as T;

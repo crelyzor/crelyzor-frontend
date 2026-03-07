@@ -35,8 +35,10 @@ function getAttachmentHref(attachment: Attachment): string {
 }
 
 function AttachmentIcon({ type }: { type: AttachmentType }) {
-  if (type === 'LINK') return <Link2 className="w-4 h-4 text-muted-foreground shrink-0" />;
-  if (type === 'PHOTO') return <Image className="w-4 h-4 text-muted-foreground shrink-0" />;
+  if (type === 'LINK')
+    return <Link2 className="w-4 h-4 text-muted-foreground shrink-0" />;
+  if (type === 'PHOTO')
+    return <Image className="w-4 h-4 text-muted-foreground shrink-0" />;
   return <FileText className="w-4 h-4 text-muted-foreground shrink-0" />;
 }
 
@@ -167,14 +169,18 @@ function LinkTab({
       <input
         value={url}
         onChange={(e) => setUrl(e.target.value)}
-        onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleAdd();
+        }}
         placeholder="https://…"
         className="w-full px-2.5 py-1.5 text-sm rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-transparent focus:border-neutral-300 dark:focus:border-neutral-700 outline-none placeholder:text-muted-foreground text-foreground"
       />
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleAdd();
+        }}
         placeholder="Label (optional)"
         className="w-full px-2.5 py-1.5 text-sm rounded-lg bg-neutral-50 dark:bg-neutral-800 border border-transparent focus:border-neutral-300 dark:focus:border-neutral-700 outline-none placeholder:text-muted-foreground text-foreground"
       />
@@ -234,8 +240,13 @@ function FileTab({
         role="button"
         tabIndex={0}
         onClick={() => inputRef.current?.click()}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click(); }}
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click();
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${
@@ -262,7 +273,9 @@ function FileTab({
           </p>
         ) : (
           <>
-            <p className="text-xs text-muted-foreground">Drop a file or click to browse</p>
+            <p className="text-xs text-muted-foreground">
+              Drop a file or click to browse
+            </p>
             <p className="text-[10px] text-muted-foreground mt-0.5">
               JPG, PNG, GIF, WebP, PDF, DOC · max 50 MB
             </p>
@@ -294,9 +307,13 @@ export function AttachmentsSection({ meetingId }: { meetingId: string }) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<'link' | 'file'>('link');
 
-  const { data: attachments = [], isLoading } = useMeetingAttachments(meetingId);
-  const { mutate: deleteAttachment, isPending: isDeleting, variables: deletingId } =
-    useDeleteAttachment(meetingId);
+  const { data: attachments = [], isLoading } =
+    useMeetingAttachments(meetingId);
+  const {
+    mutate: deleteAttachment,
+    isPending: isDeleting,
+    variables: deletingId,
+  } = useDeleteAttachment(meetingId);
 
   // Reset tab on close
   function handleOpenChange(next: boolean) {
