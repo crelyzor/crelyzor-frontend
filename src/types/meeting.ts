@@ -107,6 +107,15 @@ export type Meeting = {
 // Simplified meeting for list views (same shape, just aliased)
 export type ScheduledMeeting = Meeting;
 
+export type Tag = {
+  id: string;
+  name: string;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
+  attachedAt?: string;
+};
+
 export type Task = {
   id: string;
   userId: string;

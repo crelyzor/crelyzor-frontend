@@ -34,6 +34,7 @@ import {
 import { DeleteMeetingModal } from './DeleteMeetingModal';
 import { ShareSheet } from './ShareSheet';
 import { SkeletonLines } from './meetingDetailHelpers';
+import { TagsSection } from './TagsSection';
 
 export function VoiceNoteDetail({
   meeting: rawMeeting,
@@ -94,6 +95,9 @@ export function VoiceNoteDetail({
                   <Clock className="w-3 h-3" />
                   {meeting.duration}
                 </div>
+              </div>
+              <div className="mt-2.5">
+                <TagsSection meetingId={rawMeeting.id} />
               </div>
             </div>
 

@@ -43,6 +43,7 @@ import {
 } from './SharedTabs';
 import { DeleteMeetingModal } from './DeleteMeetingModal';
 import { ShareSheet } from './ShareSheet';
+import { TagsSection } from './TagsSection';
 
 const RECORDED_TABS = [
   { id: 'recording', label: 'Recording' },
@@ -199,6 +200,9 @@ export function RecordedDetail({
                   <Clock className="w-3 h-3" />
                   {meeting.duration}
                 </span>
+              </div>
+              <div className="mt-2.5">
+                <TagsSection meetingId={rawMeeting.id} />
               </div>
             </div>
 

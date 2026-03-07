@@ -46,6 +46,7 @@ import {
 import { EditMeetingModal } from './EditMeetingModal';
 import { ShareSheet } from './ShareSheet';
 import { useRegenerateTitle } from '@/hooks/queries/useSMAQueries';
+import { TagsSection } from './TagsSection';
 
 const SCHEDULED_TABS = [
   { id: 'overview', label: 'Overview' },
@@ -297,6 +298,16 @@ export function ScheduledDetail({
                 </span>
               ))}
             </div>
+          </div>
+
+          {/* Tags */}
+          <div className="mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-center gap-1.5 mb-2">
+              <span className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                Tags
+              </span>
+            </div>
+            <TagsSection meetingId={rawMeeting.id} />
           </div>
 
           {/* Quick actions */}

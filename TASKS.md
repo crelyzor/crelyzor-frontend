@@ -111,20 +111,21 @@ Requires backend `MeetingShare` model.
 
 ### 11. Export
 
-- [ ] Export options in Share sheet:
+- [x] Export options in Share sheet:
   - Export Transcript as PDF
   - Export Summary as PDF
   - Export Transcript as .txt
   - Export Summary as .txt
-- [ ] Triggers file download from backend export endpoint
+- [x] Triggers file download from backend export endpoint
 
 ### 12. Tags
 
 Requires backend Tags API.
 
-- [ ] Tag pill display on meeting cards + detail header
-- [ ] Tag editor — add/remove tags on a meeting
-- [ ] Tag management page (or settings section) — create, rename, color, delete
+- [x] Tag pill display in MeetingDetail header (all 3 layouts)
+- [x] Tag editor — add/remove tags on a meeting (inline popover in MeetingDetail)
+- [x] Create new tag inline (name + color picker) from within the tag editor
+- [ ] Tag management page (or settings section) — rename, delete standalone
 - [ ] Tag filter on Meetings list
 
 ### 13. Attachments

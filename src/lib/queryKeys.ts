@@ -78,6 +78,16 @@ export const queryKeys = {
       [...queryKeys.sma.all, 'share', meetingId] as const,
   },
 
+  // Tags
+  tags: {
+    all: ['tags'] as const,
+    userTags: () => [...queryKeys.tags.all, 'list'] as const,
+    byMeeting: (meetingId: string) =>
+      [...queryKeys.tags.all, 'meeting', meetingId] as const,
+    byCard: (cardId: string) =>
+      [...queryKeys.tags.all, 'card', cardId] as const,
+  },
+
   // Cards
   cards: {
     all: ['cards'] as const,
