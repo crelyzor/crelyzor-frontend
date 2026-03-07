@@ -309,6 +309,45 @@ export const smaApi = {
     }
   },
 
+  // Export transcript or summary as PDF/TXT — triggers file download
+  exportMeeting: async (
+    meetingId: string,
+    format: 'pdf' | 'txt',
+    content: 'transcript' | 'summary'
+  ): Promise<void> => {
+    const token = useAuthStore.getState().accessToken;
+    const API_BASE =
+      (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
+    const base = API_BASE.startsWith('http')
+      ? API_BASE
+      : `${window.location.origin}${API_BASE}`;
+
+    const res = await fetch(
+      `${base}/sma/meetings/${meetingId}/export?format=${format}&content=${content}`,
+      {
+        method: 'GET',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      }
+    );
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.message ?? `Export failed: ${res.statusText}`);
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const disposition = res.headers.get('Content-Disposition') ?? '';
+    const match = disposition.match(/filename="?([^"]+)"?/);
+    const filename = match?.[1] ?? `export.${format}`;
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
+
   // Multipart upload — cannot go through apiClient (it JSON.stringifies the body)
   uploadRecording: async (
     meetingId: string,

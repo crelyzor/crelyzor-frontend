@@ -9,6 +9,7 @@ import {
   Link,
   Link2Off,
   Loader2,
+  FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +25,7 @@ import {
   useShare,
   useUpdateShare,
 } from '@/hooks/queries/useSMAQueries';
+import { smaApi } from '@/services/smaService';
 import { formatTimestamp } from './meetingDetailHelpers';
 
 interface ShareSheetProps {
@@ -43,6 +45,7 @@ export function ShareSheet({
 }: ShareSheetProps) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [exporting, setExporting] = useState<string | null>(null);
 
   const isCompleted = transcriptionStatus === 'COMPLETED';
   const { data: transcript } = useTranscript(meetingId, isCompleted);
@@ -113,6 +116,23 @@ export function ShareSheet({
       );
     }
     window.location.href = `mailto:?subject=${subject}&body=${encodeURIComponent(bodyLines.join(''))}`;
+    setOpen(false);
+  };
+
+  const handleExport = async (
+    format: 'pdf' | 'txt',
+    content: 'transcript' | 'summary'
+  ) => {
+    const key = `${content}-${format}`;
+    setExporting(key);
+    try {
+      await smaApi.exportMeeting(meetingId, format, content);
+      toast.success('Download started');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Export failed');
+    } finally {
+      setExporting(null);
+    }
     setOpen(false);
   };
 
@@ -194,6 +214,76 @@ export function ShareSheet({
             <Mail className="w-3.5 h-3.5" />
             Share via Email
           </Button>
+        )}
+
+        {/* Export Section */}
+        {(hasTranscript || hasSummary) && (
+          <>
+            <div className="my-1 border-t border-neutral-100 dark:border-neutral-800" />
+            <p className="px-3 pt-1 pb-1 text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+              Export
+            </p>
+            {hasTranscript && (
+              <>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2.5 px-3 py-2 h-auto rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300"
+                  onClick={() => handleExport('pdf', 'transcript')}
+                  disabled={!!exporting}
+                >
+                  {exporting === 'transcript-pdf' ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-500" />
+                  ) : (
+                    <FileText className="w-3.5 h-3.5 text-neutral-500" />
+                  )}
+                  Transcript as PDF
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2.5 px-3 py-2 h-auto rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300"
+                  onClick={() => handleExport('txt', 'transcript')}
+                  disabled={!!exporting}
+                >
+                  {exporting === 'transcript-txt' ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-500" />
+                  ) : (
+                    <FileText className="w-3.5 h-3.5 text-neutral-500" />
+                  )}
+                  Transcript as .txt
+                </Button>
+              </>
+            )}
+            {hasSummary && (
+              <>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2.5 px-3 py-2 h-auto rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300"
+                  onClick={() => handleExport('pdf', 'summary')}
+                  disabled={!!exporting}
+                >
+                  {exporting === 'summary-pdf' ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-500" />
+                  ) : (
+                    <FileText className="w-3.5 h-3.5 text-neutral-500" />
+                  )}
+                  Summary as PDF
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2.5 px-3 py-2 h-auto rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300"
+                  onClick={() => handleExport('txt', 'summary')}
+                  disabled={!!exporting}
+                >
+                  {exporting === 'summary-txt' ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-500" />
+                  ) : (
+                    <FileText className="w-3.5 h-3.5 text-neutral-500" />
+                  )}
+                  Summary as .txt
+                </Button>
+              </>
+            )}
+          </>
         )}
 
         {/* Public Link Section */}
