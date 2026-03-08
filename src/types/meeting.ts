@@ -87,6 +87,7 @@ export type Meeting = {
   updatedAt: string;
   participants: MeetingParticipant[];
   guests: MeetingGuest[];
+  tags?: Array<{ tagId: string; meetingId: string; tag: { id: string; name: string; color: string } }>;
   recording?: {
     id: string;
     gcsPath: string;

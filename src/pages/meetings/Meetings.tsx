@@ -19,6 +19,7 @@ import {
   ExternalLink,
   Video,
   Globe,
+  Tag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,6 +37,7 @@ import {
   useCancelMeeting,
   useCompleteMeeting,
 } from '@/hooks/queries/useMeetingQueries';
+import { useUserTags } from '@/hooks/queries/useTagQueries';
 import { toDisplayMeeting, type DisplayMeeting } from '@/lib/meetingHelpers';
 import { getStatusStyle, getStatusLabel } from '@/types';
 import type { MeetingStatus } from '@/types';
@@ -265,8 +267,10 @@ export default function Meetings() {
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
 
   const { data: meetingsData, isLoading: meetingsLoading } = useMeetingsAll();
+  const { data: userTags } = useUserTags();
 
   // Exclude VOICE_NOTE — they live in /voice-notes. Also apply type toggle.
   const scopedMeetings = useMemo(
@@ -294,9 +298,14 @@ export default function Meetings() {
         )
       )
         return false;
+      if (selectedTagIds.size > 0) {
+        const meetingTagIds = new Set(m.tags.map((t) => t.id));
+        if (![...selectedTagIds].some((id) => meetingTagIds.has(id)))
+          return false;
+      }
       return true;
     });
-  }, [scopedMeetings, activeTab, searchQuery]);
+  }, [scopedMeetings, activeTab, searchQuery, selectedTagIds]);
 
   const grouped = useMemo(() => groupByDate(filtered), [filtered]);
 
@@ -378,6 +387,49 @@ export default function Meetings() {
               </button>
             ))}
           </div>
+
+          {/* Tag filters — only shown if user has tags */}
+          {userTags && userTags.length > 0 && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Tag className="w-3 h-3 text-neutral-400 dark:text-neutral-500 shrink-0" />
+              {userTags.map((tag) => {
+                const active = selectedTagIds.has(tag.id);
+                return (
+                  <button
+                    key={tag.id}
+                    onClick={() =>
+                      setSelectedTagIds((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(tag.id)) next.delete(tag.id);
+                        else next.add(tag.id);
+                        return next;
+                      })
+                    }
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all duration-150
+                      ${
+                        active
+                          ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
+                          : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                      }`}
+                  >
+                    <span
+                      className="w-1.5 h-1.5 rounded-full shrink-0"
+                      style={{ backgroundColor: tag.color }}
+                    />
+                    {tag.name}
+                  </button>
+                );
+              })}
+              {selectedTagIds.size > 0 && (
+                <button
+                  onClick={() => setSelectedTagIds(new Set())}
+                  className="text-[11px] text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ── Meeting List ── */}
@@ -499,6 +551,24 @@ export default function Meetings() {
                             <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5 line-clamp-1">
                               {meeting.description}
                             </p>
+                          )}
+
+                          {/* Tags */}
+                          {meeting.tags.length > 0 && (
+                            <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                              {meeting.tags.map((tag) => (
+                                <span
+                                  key={tag.id}
+                                  className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                                >
+                                  <span
+                                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                                    style={{ backgroundColor: tag.color }}
+                                  />
+                                  {tag.name}
+                                </span>
+                              ))}
+                            </div>
                           )}
 
                           {/* Meta row */}

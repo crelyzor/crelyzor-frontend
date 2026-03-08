@@ -29,6 +29,7 @@ export type DisplayMeeting = {
   hasSummary: boolean;
   hasTasks: boolean;
   meetingProvider?: Meeting['meetingProvider'];
+  tags: Array<{ id: string; name: string; color: string }>;
   // Keep original for detailed views
   _raw: Meeting;
 };
@@ -52,6 +53,7 @@ export function toDisplayMeeting(m: Meeting): DisplayMeeting {
     hasSummary: !!m.aiSummary,
     hasTasks: (m.tasks?.length ?? 0) > 0,
     meetingProvider: m.meetingProvider,
+    tags: (m.tags ?? []).map((mt) => mt.tag),
     _raw: m,
   };
 }
