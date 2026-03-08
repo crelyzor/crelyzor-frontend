@@ -1,7 +1,14 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageMotion } from '@/components/PageMotion';
-import { Mic, Clock, CheckCircle2, Loader2, AlertCircle, Tag } from 'lucide-react';
+import {
+  Mic,
+  Clock,
+  CheckCircle2,
+  Loader2,
+  AlertCircle,
+  Tag,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'motion/react';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
