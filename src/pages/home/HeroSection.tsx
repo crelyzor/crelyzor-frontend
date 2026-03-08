@@ -46,7 +46,7 @@ export function HeroSection({
           y: greetingY,
           scale: greetingScale,
         }}
-        className="mb-10 origin-top"
+        className="mb-6 sm:mb-10 origin-top"
       >
         <p className="text-[11px] tracking-[0.18em] text-neutral-400 dark:text-neutral-500 mb-3 uppercase">
           {greeting}, {firstName}
@@ -65,7 +65,7 @@ export function HeroSection({
       {/* Quick action bubbles — staggered scroll */}
       <motion.div
         style={{ opacity: bubblesOpacity }}
-        className="flex items-start gap-10 justify-center mb-14"
+        className="flex items-start gap-6 sm:gap-10 justify-center mb-8 sm:mb-14"
       >
         {quickActions.map((action, i) => (
           <motion.button

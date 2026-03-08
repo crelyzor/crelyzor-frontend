@@ -493,7 +493,7 @@ export function ScheduledDetail({
           >
             <TabsList
               variant="line"
-              className="w-full h-auto justify-start gap-0 rounded-none border-b border-neutral-200 dark:border-neutral-800 bg-transparent p-0 overflow-x-auto"
+              className="w-full h-auto justify-start gap-0 rounded-none border-b border-neutral-200 dark:border-neutral-800 bg-transparent p-0 overflow-x-auto scrollbar-hide"
             >
               {SCHEDULED_TABS.map((tab) => (
                 <TabsTrigger
@@ -506,7 +506,7 @@ export function ScheduledDetail({
               ))}
             </TabsList>
 
-            <TabsContent value="overview" className="p-6 mt-0">
+            <TabsContent value="overview" className="p-4 sm:p-6 mt-0">
               <OverviewTab
                 meetingId={rawMeeting.id}
                 transcriptionStatus={transcriptionStatus}
@@ -514,40 +514,40 @@ export function ScheduledDetail({
                 onUploadClick={() => setActiveTab('recording')}
               />
             </TabsContent>
-            <TabsContent value="transcript" className="p-6 mt-0">
+            <TabsContent value="transcript" className="p-4 sm:p-6 mt-0">
               <TranscriptTab
                 meetingId={rawMeeting.id}
                 transcriptionStatus={transcriptionStatus}
               />
             </TabsContent>
-            <TabsContent value="summary" className="p-6 mt-0">
+            <TabsContent value="summary" className="p-4 sm:p-6 mt-0">
               <SummaryTab
                 meetingId={rawMeeting.id}
                 transcriptionStatus={transcriptionStatus}
               />
             </TabsContent>
-            <TabsContent value="actions" className="p-6 mt-0">
+            <TabsContent value="actions" className="p-4 sm:p-6 mt-0">
               <ActionsTab
                 meetingId={rawMeeting.id}
                 transcriptionStatus={transcriptionStatus}
               />
             </TabsContent>
-            <TabsContent value="notes" className="p-6 mt-0">
+            <TabsContent value="notes" className="p-4 sm:p-6 mt-0">
               <NotesTab meetingId={rawMeeting.id} />
             </TabsContent>
-            <TabsContent value="recording" className="p-6 mt-0">
+            <TabsContent value="recording" className="p-4 sm:p-6 mt-0">
               <RecordingTab
                 meetingId={rawMeeting.id}
                 transcriptionStatus={transcriptionStatus}
               />
             </TabsContent>
-            <TabsContent value="ask" className="p-6 mt-0">
+            <TabsContent value="ask" className="p-4 sm:p-6 mt-0">
               <AskAITab
                 meetingId={rawMeeting.id}
                 transcriptionStatus={transcriptionStatus}
               />
             </TabsContent>
-            <TabsContent value="generate" className="p-6 mt-0">
+            <TabsContent value="generate" className="p-4 sm:p-6 mt-0">
               <GenerateTab
                 meetingId={rawMeeting.id}
                 transcriptionStatus={transcriptionStatus}

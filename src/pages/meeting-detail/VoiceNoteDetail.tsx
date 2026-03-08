@@ -94,7 +94,7 @@ export function VoiceNoteDetail({
               <h1 className="text-xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight leading-snug">
                 {meeting.title}
               </h1>
-              <div className="flex items-center gap-3 mt-2">
+              <div className="flex items-center gap-3 mt-2 flex-wrap">
                 <span className="text-xs text-neutral-500 dark:text-neutral-400">
                   {recordedOn}
                 </span>

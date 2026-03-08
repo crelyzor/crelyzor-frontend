@@ -339,7 +339,7 @@ export default function Meetings() {
     <PageMotion>
       <div className="max-w-3xl mx-auto">
         {/* ── Header ── */}
-        <div className="flex items-end justify-between mb-8">
+        <div className="flex items-end justify-between mb-5 sm:mb-8">
           <div>
             <h1 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
               Meetings
@@ -388,7 +388,7 @@ export default function Meetings() {
           </div>
 
           {/* Animated status filter tabs */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-0.5">
             {FILTER_TABS.map((tab) => (
               <button
                 key={tab.id}

@@ -50,14 +50,17 @@ export function Toolbar() {
         </AnimatePresence>
 
         <div className="flex items-center gap-0.5">
-          {/* Pinned toolbar items */}
-          {pinnedItems.map((item) => (
-            <ToolbarButton
-              key={item.id}
-              item={item}
-              onClick={handleItemClick}
-            />
-          ))}
+          {/* Pinned toolbar items — hidden on mobile */}
+          <div className="hidden sm:flex items-center gap-0.5">
+            {pinnedItems.map((item) => (
+              <ToolbarButton
+                key={item.id}
+                item={item}
+                onClick={handleItemClick}
+              />
+            ))}
+            <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />
+          </div>
 
           {/* Theme Toggle */}
           <ThemeToggle />
