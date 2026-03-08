@@ -69,7 +69,8 @@ export function CardTagsSection({ cardId }: { cardId: string }) {
 
   const { mutate: createTag, isPending: isCreating } = useCreateTag();
   const { mutate: attach, isPending: isAttaching } = useAttachTagToCard(cardId);
-  const { mutate: detach, isPending: isDetaching } = useDetachTagFromCard(cardId);
+  const { mutate: detach, isPending: isDetaching } =
+    useDetachTagFromCard(cardId);
 
   const attachedIds = useMemo(
     () => new Set(cardTags.map((t) => t.id)),

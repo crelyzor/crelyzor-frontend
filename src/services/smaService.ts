@@ -248,12 +248,13 @@ export const smaApi = {
   },
 
   regenerateTranscript: async (meetingId: string): Promise<void> => {
-    await apiClient.post(
-      `/sma/meetings/${meetingId}/transcript/regenerate`
-    );
+    await apiClient.post(`/sma/meetings/${meetingId}/transcript/regenerate`);
   },
 
-  changeLanguage: async (meetingId: string, language: string): Promise<void> => {
+  changeLanguage: async (
+    meetingId: string,
+    language: string
+  ): Promise<void> => {
     await apiClient.post(`/sma/meetings/${meetingId}/language`, { language });
   },
 

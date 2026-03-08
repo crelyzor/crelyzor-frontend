@@ -288,7 +288,8 @@ export function useRegenerateTranscript(meetingId: string) {
 export function useChangeLanguage(meetingId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (language: string) => smaApi.changeLanguage(meetingId, language),
+    mutationFn: (language: string) =>
+      smaApi.changeLanguage(meetingId, language),
     onSuccess: () => {
       toast.success('Transcription starting…');
       qc.invalidateQueries({ queryKey: queryKeys.meetings.detail(meetingId) });

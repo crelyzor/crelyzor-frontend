@@ -131,10 +131,14 @@ export default function Cards() {
               Cards
             </h1>
             <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">
-              {isLoading ? '—' : (
+              {isLoading ? (
+                '—'
+              ) : (
                 <>
-                  {cards?.length ?? 0} digital card{(cards?.length ?? 0) !== 1 ? 's' : ''}
-                  {selectedTagIds.size > 0 && ` (${filteredCards.length} shown)`}
+                  {cards?.length ?? 0} digital card
+                  {(cards?.length ?? 0) !== 1 ? 's' : ''}
+                  {selectedTagIds.size > 0 &&
+                    ` (${filteredCards.length} shown)`}
                 </>
               )}
             </p>
