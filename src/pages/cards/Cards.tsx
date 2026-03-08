@@ -15,18 +15,24 @@ import {
   FileSignature,
   X,
   ArrowUpRight,
+  Tag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'motion/react';
+import { useQueries } from '@tanstack/react-query';
 import {
   useCards,
   useDeleteCard,
   useUpdateCard,
 } from '@/hooks/queries/useCardQueries';
+import { useUserTags } from '@/hooks/queries/useTagQueries';
+import { tagsApi } from '@/services/tagsService';
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from 'sonner';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Card as CardType } from '@/types';
+import type { Tag as TagType } from '@/types/meeting';
 import { CardPreview } from '@/components/cards/CardPreview';
 import { QRCodeDialog } from '@/components/cards/QRCodeDialog';
 import { EmailSignatureDialog } from '@/components/cards/EmailSignatureDialog';
@@ -41,11 +47,36 @@ export default function Cards() {
   const deleteCard = useDeleteCard();
   const updateCard = useUpdateCard();
   const { data: currentUser } = useCurrentUser();
+  const { data: userTags } = useUserTags();
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [qrDialogCard, setQrDialogCard] = useState<CardType | null>(null);
   const [sigCard, setSigCard] = useState<CardType | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
   const [closing, setClosing] = useState(false);
+
+  // Batch-fetch tags for all cards in parallel
+  const cardTagsMap = useQueries({
+    queries: (cards ?? []).map((card) => ({
+      queryKey: queryKeys.tags.byCard(card.id),
+      queryFn: () => tagsApi.getCardTags(card.id),
+    })),
+    combine: (results): Map<string, TagType[]> => {
+      const map = new Map<string, TagType[]>();
+      (cards ?? []).forEach((card, i) => {
+        map.set(card.id, results[i]?.data ?? []);
+      });
+      return map;
+    },
+  });
+
+  const filteredCards = useMemo(() => {
+    if (selectedTagIds.size === 0) return cards ?? [];
+    return (cards ?? []).filter((card) => {
+      const tags = cardTagsMap.get(card.id) ?? [];
+      return [...selectedTagIds].some((id) => tags.some((t) => t.id === id));
+    });
+  }, [cards, cardTagsMap, selectedTagIds]);
 
   const openCard = (card: CardType) => {
     setClosing(false);
@@ -100,7 +131,12 @@ export default function Cards() {
               Cards
             </h1>
             <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">
-              {cards?.length ?? 0} digital card{cards?.length !== 1 ? 's' : ''}
+              {isLoading ? '—' : (
+                <>
+                  {cards?.length ?? 0} digital card{(cards?.length ?? 0) !== 1 ? 's' : ''}
+                  {selectedTagIds.size > 0 && ` (${filteredCards.length} shown)`}
+                </>
+              )}
             </p>
           </div>
           <Button
@@ -113,6 +149,50 @@ export default function Cards() {
             Contacts
           </Button>
         </div>
+
+        {/* Tag filters — only shown if user has tags */}
+        {userTags && userTags.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap mb-6">
+            <Tag className="w-3 h-3 text-neutral-400 dark:text-neutral-500 shrink-0" />
+            {userTags.map((tag) => {
+              const active = selectedTagIds.has(tag.id);
+              return (
+                <Button
+                  key={tag.id}
+                  variant="ghost"
+                  onClick={() =>
+                    setSelectedTagIds((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(tag.id)) next.delete(tag.id);
+                      else next.add(tag.id);
+                      return next;
+                    })
+                  }
+                  className={`flex items-center gap-1 px-2.5 py-1 h-auto rounded-full text-[11px] font-medium transition-all duration-150
+                    ${
+                      active
+                        ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-900 dark:hover:bg-neutral-100'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                    }`}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ backgroundColor: tag.color }}
+                  />
+                  {tag.name}
+                </Button>
+              );
+            })}
+            {selectedTagIds.size > 0 && (
+              <button
+                onClick={() => setSelectedTagIds(new Set())}
+                className="text-[11px] text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Cards grid */}
         {isLoading ? (
@@ -161,9 +241,26 @@ export default function Cards() {
               Create Card
             </Button>
           </motion.div>
+        ) : filteredCards.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20"
+          >
+            <CreditCard className="w-9 h-9 mx-auto text-neutral-200 dark:text-neutral-700 mb-3" />
+            <p className="text-sm text-neutral-400 dark:text-neutral-500">
+              No cards match the selected tags
+            </p>
+            <button
+              onClick={() => setSelectedTagIds(new Set())}
+              className="text-xs text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 mt-2 transition-colors"
+            >
+              Clear filter
+            </button>
+          </motion.div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pb-24">
-            {cards.map((card, i) => (
+            {filteredCards.map((card, i) => (
               <motion.div
                 key={card.id}
                 initial={{ opacity: 0, y: 16, scale: 0.97 }}
@@ -363,6 +460,24 @@ export default function Cards() {
                     /{card.slug}
                   </span>
                 </div>
+
+                {/* Tag chips */}
+                {(cardTagsMap.get(card.id) ?? []).length > 0 && (
+                  <div className="flex items-center gap-1 mt-1.5 flex-wrap px-1">
+                    {(cardTagsMap.get(card.id) ?? []).map((tag) => (
+                      <span
+                        key={tag.id}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                      >
+                        <span
+                          className="w-1.5 h-1.5 rounded-full shrink-0"
+                          style={{ backgroundColor: tag.color }}
+                        />
+                        {tag.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             ))}
           </div>

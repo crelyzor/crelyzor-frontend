@@ -15,6 +15,7 @@ import {
   ThumbsDown,
   Loader2,
   Edit3,
+  Languages,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -45,9 +46,13 @@ import {
 } from './SharedTabs';
 import { EditMeetingModal } from './EditMeetingModal';
 import { ShareSheet } from './ShareSheet';
-import { useRegenerateTitle } from '@/hooks/queries/useSMAQueries';
+import {
+  useRegenerateTitle,
+  useRegenerateTranscript,
+} from '@/hooks/queries/useSMAQueries';
 import { TagsSection } from './TagsSection';
 import { AttachmentsSection } from './AttachmentsSection';
+import { ChangeLanguageDialog } from './ChangeLanguageDialog';
 
 const SCHEDULED_TABS = [
   { id: 'overview', label: 'Overview' },
@@ -73,6 +78,7 @@ export function ScheduledDetail({
   const [activeTab, setActiveTab] = useState<ScheduledTab>('overview');
   const [moreOpen, setMoreOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
 
   const accept = useAcceptMeeting();
   const decline = useDeclineMeeting();
@@ -87,6 +93,8 @@ export function ScheduledDetail({
 
   const { mutate: regenerateTitle, isPending: isRegeneratingTitle } =
     useRegenerateTitle(rawMeeting.id);
+  const { mutate: regenerateTranscript, isPending: isRegeneratingTranscript } =
+    useRegenerateTranscript(rawMeeting.id);
 
   const canAccept =
     rawMeeting.status === 'PENDING_ACCEPTANCE' ||
@@ -201,6 +209,35 @@ export function ScheduledDetail({
                     >
                       <ThumbsUp className="w-3.5 h-3.5" /> Accept
                     </button>
+                  )}
+                  {hasSMA && (
+                    <>
+                      <button
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        disabled={isRegeneratingTranscript}
+                        onClick={() => {
+                          regenerateTranscript();
+                          setMoreOpen(false);
+                        }}
+                      >
+                        {isRegeneratingTranscript ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <RefreshCcw className="w-3.5 h-3.5" />
+                        )}
+                        Regenerate Transcript
+                      </button>
+                      <button
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                        onClick={() => {
+                          setLangOpen(true);
+                          setMoreOpen(false);
+                        }}
+                      >
+                        <Languages className="w-3.5 h-3.5" />
+                        Change Language
+                      </button>
+                    </>
                   )}
                   {canCancel && (
                     <button
@@ -524,6 +561,11 @@ export function ScheduledDetail({
         meeting={rawMeeting}
         open={editOpen}
         onOpenChange={setEditOpen}
+      />
+      <ChangeLanguageDialog
+        meetingId={rawMeeting.id}
+        open={langOpen}
+        onOpenChange={setLangOpen}
       />
     </div>
   );

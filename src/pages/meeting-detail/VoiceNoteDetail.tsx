@@ -7,6 +7,7 @@ import {
   Trash2,
   Loader2,
   RefreshCcw,
+  Languages,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,6 +22,7 @@ import {
   useSummary,
   useTriggerAI,
   useRegenerateTitle,
+  useRegenerateTranscript,
 } from '@/hooks/queries/useSMAQueries';
 import {
   RecordingTab,
@@ -36,6 +38,7 @@ import { ShareSheet } from './ShareSheet';
 import { SkeletonLines } from './meetingDetailHelpers';
 import { TagsSection } from './TagsSection';
 import { AttachmentsSection } from './AttachmentsSection';
+import { ChangeLanguageDialog } from './ChangeLanguageDialog';
 
 export function VoiceNoteDetail({
   meeting: rawMeeting,
@@ -47,6 +50,7 @@ export function VoiceNoteDetail({
   const navigate = useNavigate();
   const [moreOpen, setMoreOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
 
   const meeting = toDisplayMeeting(rawMeeting);
   const isCompleted = transcriptionStatus === 'COMPLETED';
@@ -57,6 +61,8 @@ export function VoiceNoteDetail({
   );
   const { mutate: regenerateTitle, isPending: isRegeneratingTitle } =
     useRegenerateTitle(rawMeeting.id);
+  const { mutate: regenerateTranscript, isPending: isRegeneratingTranscript } =
+    useRegenerateTranscript(rawMeeting.id);
   const aiMissing = isCompleted && !summary;
 
   const recordedOn = new Date(rawMeeting.startTime).toLocaleDateString(
@@ -143,6 +149,31 @@ export function VoiceNoteDetail({
                       Regenerate Title
                     </button>
                   )}
+                  <button
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                    disabled={isRegeneratingTranscript}
+                    onClick={() => {
+                      regenerateTranscript();
+                      setMoreOpen(false);
+                    }}
+                  >
+                    {isRegeneratingTranscript ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCcw className="w-3.5 h-3.5" />
+                    )}
+                    Regenerate Transcript
+                  </button>
+                  <button
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                    onClick={() => {
+                      setLangOpen(true);
+                      setMoreOpen(false);
+                    }}
+                  >
+                    <Languages className="w-3.5 h-3.5" />
+                    Change Language
+                  </button>
                   <button
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                     onClick={() => {
@@ -268,6 +299,11 @@ export function VoiceNoteDetail({
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         onDeleted={() => navigate('/voice-notes')}
+      />
+      <ChangeLanguageDialog
+        meetingId={rawMeeting.id}
+        open={langOpen}
+        onOpenChange={setLangOpen}
       />
     </div>
   );

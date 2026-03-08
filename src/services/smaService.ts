@@ -247,6 +247,16 @@ export const smaApi = {
     await apiClient.post(`/sma/meetings/${meetingId}/process-ai`);
   },
 
+  regenerateTranscript: async (meetingId: string): Promise<void> => {
+    await apiClient.post(
+      `/sma/meetings/${meetingId}/transcript/regenerate`
+    );
+  },
+
+  changeLanguage: async (meetingId: string, language: string): Promise<void> => {
+    await apiClient.post(`/sma/meetings/${meetingId}/language`, { language });
+  },
+
   // Ask AI — streaming SSE (cannot use apiClient; need raw Response stream)
   askAI: async (
     meetingId: string,

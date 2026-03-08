@@ -271,6 +271,34 @@ export function useUpdateSummary(meetingId: string) {
   });
 }
 
+export function useRegenerateTranscript(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => smaApi.regenerateTranscript(meetingId),
+    onSuccess: () => {
+      toast.success('Transcription starting…');
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.detail(meetingId) });
+      qc.invalidateQueries({ queryKey: queryKeys.sma.transcript(meetingId) });
+      qc.invalidateQueries({ queryKey: queryKeys.sma.speakers(meetingId) });
+    },
+    onError: () => toast.error('Failed to start transcription'),
+  });
+}
+
+export function useChangeLanguage(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (language: string) => smaApi.changeLanguage(meetingId, language),
+    onSuccess: () => {
+      toast.success('Transcription starting…');
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.detail(meetingId) });
+      qc.invalidateQueries({ queryKey: queryKeys.sma.transcript(meetingId) });
+      qc.invalidateQueries({ queryKey: queryKeys.sma.speakers(meetingId) });
+    },
+    onError: () => toast.error('Failed to change language'),
+  });
+}
+
 export function useUploadRecording(meetingId: string) {
   const qc = useQueryClient();
   return useMutation({

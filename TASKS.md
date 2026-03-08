@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-08 (added tasks 17-22)
+Last updated: 2026-03-08 (tasks 20, 15 done)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -143,9 +143,9 @@ Requires backend Tags API.
 
 ### 15. Regenerate Transcript + Change Language
 
-- [ ] Regenerate transcript option in ⋯ menu (only when recording exists)
-- [ ] Change language option — opens language picker, re-runs Deepgram
-- [ ] Both show progress (polls transcription status)
+- [x] Regenerate transcript option in ⋯ menu (only when recording exists)
+- [x] Change language option — opens language picker, re-runs Deepgram
+- [x] Both show progress (polls transcription status)
 
 ### 16. UI Revamp
 
@@ -194,10 +194,10 @@ Fix: show tag chips on each voice note row + tag filter at top (same pattern as 
 Currently: Cards list doesn't show tags. No way to add/remove tags from a card in the dashboard.
 Backend already has `GET/POST/DELETE /cards/:cardId/tags` + `CardTag` junction.
 
-- [ ] Tag chips on each card row in Cards list
-- [ ] Tag filter bar on Cards list (same chip UI)
-- [ ] Tag editor on Card detail/editor page — add/remove tags inline (same popover pattern as MeetingDetail TagsSection)
-- [ ] Use existing `queryKeys.tags.byCard(cardId)` key + backend tag endpoints
+- [x] Tag chips on each card row in Cards list
+- [x] Tag filter bar on Cards list (same chip UI)
+- [x] Tag editor on Card detail/editor page — add/remove tags inline (same popover pattern as MeetingDetail TagsSection)
+- [x] Use existing `queryKeys.tags.byCard(cardId)` key + backend tag endpoints
 
 ### 21. Hover Jitter Fix
 
