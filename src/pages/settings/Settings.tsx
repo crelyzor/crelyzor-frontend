@@ -578,7 +578,9 @@ function TagsSection() {
                           </Button>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-neutral-400 dark:text-neutral-500 mr-0.5">Color</span>
+                          <span className="text-[10px] text-neutral-400 dark:text-neutral-500 mr-0.5">
+                            Color
+                          </span>
                           {TAG_COLOR_PRESETS.map((color) => (
                             <button
                               key={color}
@@ -608,46 +610,50 @@ function TagsSection() {
                         </span>
                         <div className="flex items-center gap-1 shrink-0">
                           {isConfirming ? (
-                        <>
-                          <button
-                            onClick={() => handleDelete(tag.id)}
-                            disabled={deleteTag.isPending}
-                            className="text-[11px] font-medium text-red-500 hover:text-red-600 transition-colors px-1.5"
-                          >
-                            {deleteTag.isPending ? 'Deleting...' : 'Delete?'}
-                          </button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => setConfirmDeleteId(null)}
-                          >
-                            <X className="w-3.5 h-3.5 text-neutral-400" />
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => startEdit(tag.id, tag.name, tag.color)}
-                          >
-                            <Pencil className="w-3.5 h-3.5 text-neutral-400" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => {
-                              cancelEdit();
-                              setConfirmDeleteId(tag.id);
-                            }}
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-neutral-400 hover:text-red-400" />
-                          </Button>
-                        </>
-                      )}
+                            <>
+                              <button
+                                onClick={() => handleDelete(tag.id)}
+                                disabled={deleteTag.isPending}
+                                className="text-[11px] font-medium text-red-500 hover:text-red-600 transition-colors px-1.5"
+                              >
+                                {deleteTag.isPending
+                                  ? 'Deleting...'
+                                  : 'Delete?'}
+                              </button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => setConfirmDeleteId(null)}
+                              >
+                                <X className="w-3.5 h-3.5 text-neutral-400" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() =>
+                                  startEdit(tag.id, tag.name, tag.color)
+                                }
+                              >
+                                <Pencil className="w-3.5 h-3.5 text-neutral-400" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => {
+                                  cancelEdit();
+                                  setConfirmDeleteId(tag.id);
+                                }}
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-neutral-400 hover:text-red-400" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
                     )}
