@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-08
+Last updated: 2026-03-08 (added tasks 17-22)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -137,9 +137,9 @@ Requires backend Tags API.
 
 ### 14. Edit Transcript / Summary
 
-- [ ] Click-to-edit on transcript segments (inline)
-- [ ] Click-to-edit on summary (textarea modal or inline)
-- [ ] Save on blur or explicit Save button
+- [x] Click-to-edit on transcript segments (inline)
+- [x] Click-to-edit on summary (textarea modal or inline)
+- [x] Save on blur or explicit Save button
 
 ### 15. Regenerate Transcript + Change Language
 
@@ -154,6 +154,62 @@ All the new P1/P2 features add significant surface area. Plan a layout pass:
 - [ ] MeetingDetail — rethink sidebar vs tab layout to fit: notes, tasks, ask AI, generate, attachments, tags
 - [ ] Share sheet — polished bottom sheet with all export/share options
 - [ ] Consider splitting into panels: left = content (transcript/summary), right = tools (ask AI, generate, notes, tasks)
+
+---
+
+## UX & Polish — Discovered Issues
+
+### 17. Meeting List UX — Single Click to Navigate
+
+Currently: click → card expands → click "Open" to navigate (two clicks).
+Fix: click anywhere on card → navigate to meeting detail. Context menu (⋯) stays for actions.
+
+- [ ] Remove `expandedId` state and expand/collapse behavior
+- [ ] Card `onClick` → `navigate(/meetings/:id)` directly
+- [ ] Move context menu (⋯) to always-visible right side of card (stop-propagation on click)
+- [ ] For RECORDED meetings: ⋯ menu only has "Open" + "Delete" (no accept/decline)
+- [ ] For SCHEDULED meetings: ⋯ menu retains accept/decline/complete/cancel
+
+### 18. RECORDED Meeting Status Badge
+
+Currently: RECORDED meetings show "Created" badge — meaningless for recordings.
+Fix: hide the status badge for RECORDED meetings. The Video icon + transcription status icons are enough.
+
+- [ ] In Meetings.tsx, only render the status badge when `meeting.meetingType === 'SCHEDULED'`
+- [ ] Ensure RECORDED card still looks complete without the badge
+
+### 19. Tags on Voice Notes Listing
+
+Currently: Voice Notes page shows no tags.
+Fix: show tag chips on each voice note row + tag filter at top (same pattern as Meetings page).
+
+- [ ] Fetch user tags (`useUserTags`) in VoiceNotes page
+- [ ] Tag filter bar (same chip UI as Meetings)
+- [ ] Tag chips on each voice note row (below title)
+- [ ] Filter logic: only show notes that have any of the selected tags
+- [ ] Note: tags on VOICE_NOTE meetings are stored via `MeetingTag` — backend already supports this
+
+### 20. Tags on Cards Listing + Dashboard Tag Edit
+
+Currently: Cards list doesn't show tags. No way to add/remove tags from a card in the dashboard.
+Backend already has `GET/POST/DELETE /cards/:cardId/tags` + `CardTag` junction.
+
+- [ ] Tag chips on each card row in Cards list
+- [ ] Tag filter bar on Cards list (same chip UI)
+- [ ] Tag editor on Card detail/editor page — add/remove tags inline (same popover pattern as MeetingDetail TagsSection)
+- [ ] Use existing `queryKeys.tags.byCard(cardId)` key + backend tag endpoints
+
+### 21. Hover Jitter Fix
+
+Currently: meeting cards use `transition-all` which causes jitter/paint issues on hover.
+
+- [ ] Replace `transition-all duration-200` with `transition-[border-color,box-shadow] duration-200` on meeting cards (Meetings.tsx)
+- [ ] Same fix on VoiceNotes.tsx cards and any other list cards using `transition-all`
+- [ ] Test in both light and dark mode
+
+### 22. Ask AI Persistence (Deferred)
+
+Deferred until Ask AI becomes universal (Phase 2 Big Brain). Skip for now.
 
 ---
 

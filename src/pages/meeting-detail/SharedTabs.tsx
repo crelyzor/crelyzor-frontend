@@ -22,7 +22,9 @@ import {
   Mail,
   Wand2,
   MoreHorizontal,
+  Pencil,
 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -51,6 +53,8 @@ import {
   useRegenerateSummary,
   useGeneratedContents,
   useGenerateContent,
+  useUpdateSegment,
+  useUpdateSummary,
 } from '@/hooks/queries/useSMAQueries';
 import type { AIContentType, GeneratedContent } from '@/services/smaService';
 import { smaApi } from '@/services/smaService';
@@ -274,6 +278,110 @@ export function RecordingTab({
   );
 }
 
+// ── Transcript Segment Row (with inline edit) ──
+function SegmentRow({
+  seg,
+  meetingId,
+  speakerNames,
+}: {
+  seg: SMATranscriptSegment;
+  meetingId: string;
+  speakerNames: Record<string, string>;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(seg.text);
+  const { mutate: updateSegment, isPending } = useUpdateSegment(meetingId);
+
+  const handleSave = () => {
+    if (!draft.trim()) return;
+    if (draft.trim() === seg.text) {
+      setEditing(false);
+      return;
+    }
+    updateSegment(
+      { segmentId: seg.id, text: draft.trim() },
+      { onSuccess: () => setEditing(false) }
+    );
+  };
+
+  const handleCancel = () => {
+    setDraft(seg.text);
+    setEditing(false);
+  };
+
+  return (
+    <div className="flex gap-3 py-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 -mx-2 px-2 rounded-md transition-colors group">
+      <span className="text-[10px] text-neutral-400 dark:text-neutral-500 w-10 shrink-0 pt-0.5 font-mono">
+        {formatTimestamp(seg.startTime)}
+      </span>
+      <div className="flex-1 min-w-0">
+        <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+          {speakerNames[seg.speaker] ?? seg.speaker}
+        </span>
+        {editing ? (
+          <div className="mt-1 space-y-1.5">
+            <Textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') handleCancel();
+              }}
+              className="text-sm min-h-[60px] resize-none"
+              autoFocus
+              disabled={isPending}
+            />
+            <div className="flex gap-1.5">
+              <Button
+                size="xs"
+                onClick={handleSave}
+                disabled={isPending || !draft.trim()}
+              >
+                {isPending ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  'Save'
+                )}
+              </Button>
+              <Button
+                size="xs"
+                variant="ghost"
+                onClick={handleCancel}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-start gap-1 group/text">
+            <p
+              className="text-sm text-neutral-600 dark:text-neutral-400 mt-0.5 leading-relaxed flex-1 cursor-text"
+              onClick={() => {
+                setDraft(seg.text);
+                setEditing(true);
+              }}
+            >
+              {seg.text}
+            </p>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              className="opacity-0 group-hover/text:opacity-100 transition-opacity h-5 w-5 shrink-0 mt-1"
+              onClick={() => {
+                setDraft(seg.text);
+                setEditing(true);
+              }}
+              title="Edit segment"
+            >
+              <Pencil className="w-3 h-3 text-neutral-400" />
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Transcript Tab ──
 export function TranscriptTab({
   meetingId,
@@ -342,22 +450,12 @@ export function TranscriptTab({
         Transcript
       </h3>
       {transcript.segments.map((seg: SMATranscriptSegment) => (
-        <div
+        <SegmentRow
           key={seg.id}
-          className="flex gap-3 py-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 -mx-2 px-2 rounded-md transition-colors"
-        >
-          <span className="text-[10px] text-neutral-400 dark:text-neutral-500 w-10 shrink-0 pt-0.5 font-mono">
-            {formatTimestamp(seg.startTime)}
-          </span>
-          <div className="flex-1 min-w-0">
-            <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-              {speakerNames[seg.speaker] ?? seg.speaker}
-            </span>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-0.5 leading-relaxed">
-              {seg.text}
-            </p>
-          </div>
-        </div>
+          seg={seg}
+          meetingId={meetingId}
+          speakerNames={speakerNames}
+        />
       ))}
     </div>
   );
@@ -379,6 +477,13 @@ export function SummaryTab({
   } = useSummary(meetingId, isCompleted);
   const { mutate: regenerate, isPending: isRegenerating } =
     useRegenerateSummary(meetingId);
+  const { mutate: updateSummary, isPending: isSaving } =
+    useUpdateSummary(meetingId);
+
+  const [editingSummary, setEditingSummary] = useState(false);
+  const [summaryDraft, setSummaryDraft] = useState('');
+  const [editingKeyPoints, setEditingKeyPoints] = useState(false);
+  const [keyPointsDraft, setKeyPointsDraft] = useState('');
 
   if (!isCompleted) {
     return (
@@ -402,6 +507,26 @@ export function SummaryTab({
     );
   }
 
+  const handleSaveSummary = () => {
+    if (!summaryDraft.trim()) return;
+    updateSummary(
+      { summary: summaryDraft.trim() },
+      { onSuccess: () => setEditingSummary(false) }
+    );
+  };
+
+  const handleSaveKeyPoints = () => {
+    const points = keyPointsDraft
+      .split('\n')
+      .map((p) => p.trim())
+      .filter(Boolean);
+    if (points.length === 0) return;
+    updateSummary(
+      { keyPoints: points },
+      { onSuccess: () => setEditingKeyPoints(false) }
+    );
+  };
+
   return (
     <div className="space-y-5">
       <div>
@@ -410,41 +535,149 @@ export function SummaryTab({
             <FileText className="w-4 h-4 text-neutral-500" />
             AI Summary
           </h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs text-neutral-500 gap-1"
-            onClick={() => regenerate()}
-            disabled={isRegenerating}
-          >
-            {isRegenerating ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
-            ) : (
-              <RefreshCcw className="w-3 h-3" />
+          <div className="flex items-center gap-1">
+            {!editingSummary && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => {
+                  setSummaryDraft(summary.summary);
+                  setEditingSummary(true);
+                }}
+                title="Edit summary"
+              >
+                <Pencil className="w-3.5 h-3.5 text-neutral-400" />
+              </Button>
             )}
-            {isRegenerating ? 'Regenerating…' : 'Regenerate'}
-          </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs text-neutral-500 gap-1"
+              onClick={() => regenerate()}
+              disabled={isRegenerating}
+            >
+              {isRegenerating ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <RefreshCcw className="w-3 h-3" />
+              )}
+              {isRegenerating ? 'Regenerating…' : 'Regenerate'}
+            </Button>
+          </div>
         </div>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-          {summary.summary}
-        </p>
+        {editingSummary ? (
+          <div className="space-y-1.5">
+            <Textarea
+              value={summaryDraft}
+              onChange={(e) => setSummaryDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setEditingSummary(false);
+              }}
+              className="text-sm min-h-[120px] resize-none leading-relaxed"
+              autoFocus
+              disabled={isSaving}
+            />
+            <div className="flex gap-1.5">
+              <Button
+                size="xs"
+                onClick={handleSaveSummary}
+                disabled={isSaving || !summaryDraft.trim()}
+              >
+                {isSaving ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  'Save'
+                )}
+              </Button>
+              <Button
+                size="xs"
+                variant="ghost"
+                onClick={() => setEditingSummary(false)}
+                disabled={isSaving}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+            {summary.summary}
+          </p>
+        )}
       </div>
       {summary.keyPoints.length > 0 && (
         <div>
-          <h4 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider mb-2">
-            Key Points
-          </h4>
-          <ul className="space-y-1.5">
-            {summary.keyPoints.map((point: string, i: number) => (
-              <li
-                key={i}
-                className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-400"
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
+              Key Points
+            </h4>
+            {!editingKeyPoints && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => {
+                  setKeyPointsDraft(summary.keyPoints.join('\n'));
+                  setEditingKeyPoints(true);
+                }}
+                title="Edit key points"
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-neutral-400 mt-1.5 shrink-0" />
-                {point}
-              </li>
-            ))}
-          </ul>
+                <Pencil className="w-3 h-3 text-neutral-400" />
+              </Button>
+            )}
+          </div>
+          {editingKeyPoints ? (
+            <div className="space-y-1.5">
+              <Textarea
+                value={keyPointsDraft}
+                onChange={(e) => setKeyPointsDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') setEditingKeyPoints(false);
+                }}
+                placeholder="One key point per line"
+                className="text-sm min-h-[100px] resize-none"
+                autoFocus
+                disabled={isSaving}
+              />
+              <p className="text-[10px] text-neutral-400">
+                One point per line
+              </p>
+              <div className="flex gap-1.5">
+                <Button
+                  size="xs"
+                  onClick={handleSaveKeyPoints}
+                  disabled={isSaving || !keyPointsDraft.trim()}
+                >
+                  {isSaving ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    'Save'
+                  )}
+                </Button>
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  onClick={() => setEditingKeyPoints(false)}
+                  disabled={isSaving}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <ul className="space-y-1.5">
+              {summary.keyPoints.map((point: string, i: number) => (
+                <li
+                  key={i}
+                  className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-400"
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-400 mt-1.5 shrink-0" />
+                  {point}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </div>

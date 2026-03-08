@@ -237,6 +237,40 @@ export function useRenameSpeaker(meetingId: string) {
   });
 }
 
+export function useUpdateSegment(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ segmentId, text }: { segmentId: string; text: string }) =>
+      smaApi.patchSegment(meetingId, segmentId, text),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.sma.transcript(meetingId) });
+    },
+    onError: () => toast.error('Failed to save segment'),
+  });
+}
+
+export function useUpdateSummary(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      summary?: string;
+      keyPoints?: string[];
+      title?: string;
+    }) => smaApi.patchSummary(meetingId, data),
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: queryKeys.sma.summary(meetingId) });
+      if (result.title !== undefined) {
+        qc.invalidateQueries({
+          queryKey: queryKeys.meetings.detail(meetingId),
+        });
+        qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
+      }
+      toast.success('Saved');
+    },
+    onError: () => toast.error('Failed to save'),
+  });
+}
+
 export function useUploadRecording(meetingId: string) {
   const qc = useQueryClient();
   return useMutation({

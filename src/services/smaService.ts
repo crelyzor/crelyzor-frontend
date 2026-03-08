@@ -220,6 +220,29 @@ export const smaApi = {
     return result.share;
   },
 
+  patchSegment: async (
+    meetingId: string,
+    segmentId: string,
+    text: string
+  ): Promise<SMATranscriptSegment> => {
+    const result = await apiClient.patch(
+      `/sma/meetings/${meetingId}/transcript/segments/${segmentId}`,
+      { text }
+    );
+    return unwrap<{ segment: SMATranscriptSegment }>(result).segment;
+  },
+
+  patchSummary: async (
+    meetingId: string,
+    data: { summary?: string; keyPoints?: string[]; title?: string }
+  ): Promise<{ summary: SMAAISummary; title?: string }> => {
+    const result = await apiClient.patch(
+      `/sma/meetings/${meetingId}/summary`,
+      data
+    );
+    return unwrap<{ summary: SMAAISummary; title?: string }>(result);
+  },
+
   triggerAI: async (meetingId: string): Promise<void> => {
     await apiClient.post(`/sma/meetings/${meetingId}/process-ai`);
   },
