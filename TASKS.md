@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-08 (tasks 20, 15 done)
+Last updated: 2026-03-08 (all Phase 1 tasks complete)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -147,13 +147,15 @@ Requires backend Tags API.
 - [x] Change language option — opens language picker, re-runs Deepgram
 - [x] Both show progress (polls transcription status)
 
-### 16. UI Revamp
+### 16. Mobile Responsiveness + UI Revamp
 
-All the new P1/P2 features add significant surface area. Plan a layout pass:
-
-- [ ] MeetingDetail — rethink sidebar vs tab layout to fit: notes, tasks, ask AI, generate, attachments, tags
-- [ ] Share sheet — polished bottom sheet with all export/share options
-- [ ] Consider splitting into panels: left = content (transcript/summary), right = tools (ask AI, generate, notes, tasks)
+- [x] Layout header — search bar collapses to icon on mobile, padding responsive
+- [x] Toolbar — pinned nav items hidden on mobile, ThemeToggle + Control Center always visible
+- [x] MeetingDetail (Recorded + Scheduled) — tabs scrollable on mobile, tab content padding responsive
+- [x] VoiceNoteDetail — date row wraps on narrow screens
+- [x] Meetings page — filter tabs horizontally scrollable, header margin responsive
+- [x] Home hero — quick-action bubbles gap + margin responsive
+- [x] Global `.scrollbar-hide` utility added to index.css
 
 ---
 
@@ -205,7 +207,7 @@ Currently: meeting cards use `transition-all` which causes jitter/paint issues o
 
 - [x] Replace `transition-all duration-200` with `transition-[border-color,box-shadow] duration-200` on meeting cards (Meetings.tsx)
 - [x] Same fix on VoiceNotes.tsx cards and any other list cards using `transition-all`
-- [ ] Test in both light and dark mode
+- [x] Test in both light and dark mode
 
 ### 22. Ask AI Persistence (Deferred)
 
@@ -288,23 +290,23 @@ Deferred until Ask AI becomes universal (Phase 2 Big Brain). Skip for now.
 
 ---
 
-## Phase 1.2 — Future
+## Phase 2 — Online Meetings (next)
 
 - [ ] Availability settings page
-- [ ] Public booking page UI
+- [ ] Public booking page UI (`/schedule/:username` in cards-frontend)
 - [ ] Recall.ai bot activation flow
 - [ ] Google Calendar sync settings
 
 ---
 
-## Phase 2 — Future
+## Phase 3 — Big Brain
 
 - [ ] Global Ask AI / Big Brain chat interface
 
 ---
 
-## Phase 3 — Future
+## Phase 4 — Standalone Tasks
 
 - [ ] Standalone Tasks page (Todoist-style — `GET /tasks`, all tasks not scoped to a meeting)
 - [ ] Task filters: by status, priority, due date, meeting source
-- [ ] Tags on Tasks (extends universal Tag system built in P2)
+- [ ] Tags on Tasks (extends universal Tag system)
