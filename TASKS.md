@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-07
+Last updated: 2026-03-08
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -125,8 +125,8 @@ Requires backend Tags API.
 - [x] Tag pill display in MeetingDetail header (all 3 layouts)
 - [x] Tag editor — add/remove tags on a meeting (inline popover in MeetingDetail)
 - [x] Create new tag inline (name + color picker) from within the tag editor
-- [ ] Tag management page (or settings section) — rename, delete standalone
-- [ ] Tag filter on Meetings list
+- [x] Tag management page (or settings section) — rename, delete standalone
+- [x] Tag filter on Meetings list
 
 ### 13. Attachments
 
