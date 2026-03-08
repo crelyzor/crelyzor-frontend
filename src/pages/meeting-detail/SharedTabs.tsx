@@ -640,9 +640,7 @@ export function SummaryTab({
                 autoFocus
                 disabled={isSaving}
               />
-              <p className="text-[10px] text-neutral-400">
-                One point per line
-              </p>
+              <p className="text-[10px] text-neutral-400">One point per line</p>
               <div className="flex gap-1.5">
                 <Button
                   size="xs"
