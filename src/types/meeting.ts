@@ -212,7 +212,7 @@ export function getStatusStyle(status: MeetingStatus): string {
     case 'DECLINED':
       return 'bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400';
     case 'RESCHEDULING_REQUESTED':
-      return 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400';
+      return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400';
     default:
       return 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400';
   }

@@ -1,10 +1,12 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageMotion } from '@/components/PageMotion';
-import { Mic, Clock, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { Mic, Clock, CheckCircle2, Loader2, AlertCircle, Tag } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { motion } from 'motion/react';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
 import { useVoiceNotes } from '@/hooks/queries/useMeetingQueries';
+import { useUserTags } from '@/hooks/queries/useTagQueries';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import type { TranscriptionStatus } from '@/types';
 
@@ -64,14 +66,25 @@ function groupByDate(notes: ReturnType<typeof toDisplayMeeting>[]) {
 
 export default function VoiceNotes() {
   const navigate = useNavigate();
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
+
   const { data: rawNotes, isLoading } = useVoiceNotes();
+  const { data: userTags } = useUserTags();
 
   const notes = useMemo(
     () => (rawNotes ?? []).map(toDisplayMeeting),
     [rawNotes]
   );
 
-  const grouped = useMemo(() => groupByDate(notes), [notes]);
+  const filtered = useMemo(() => {
+    if (selectedTagIds.size === 0) return notes;
+    return notes.filter((n) => {
+      const noteTagIds = new Set(n.tags.map((t) => t.id));
+      return [...selectedTagIds].some((id) => noteTagIds.has(id));
+    });
+  }, [notes, selectedTagIds]);
+
+  const grouped = useMemo(() => groupByDate(filtered), [filtered]);
 
   let globalIndex = 0;
 
@@ -87,10 +100,54 @@ export default function VoiceNotes() {
             <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">
               {isLoading
                 ? '—'
-                : `${notes.length} recording${notes.length !== 1 ? 's' : ''}`}
+                : `${filtered.length} recording${filtered.length !== 1 ? 's' : ''}`}
             </p>
           </div>
         </div>
+
+        {/* Tag filters — only shown if user has tags */}
+        {userTags && userTags.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap mb-6">
+            <Tag className="w-3 h-3 text-neutral-400 dark:text-neutral-500 shrink-0" />
+            {userTags.map((tag) => {
+              const active = selectedTagIds.has(tag.id);
+              return (
+                <Button
+                  key={tag.id}
+                  variant="ghost"
+                  onClick={() =>
+                    setSelectedTagIds((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(tag.id)) next.delete(tag.id);
+                      else next.add(tag.id);
+                      return next;
+                    })
+                  }
+                  className={`flex items-center gap-1 px-2.5 py-1 h-auto rounded-full text-[11px] font-medium transition-all duration-150
+                    ${
+                      active
+                        ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-900 dark:hover:bg-neutral-100'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                    }`}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ backgroundColor: tag.color }}
+                  />
+                  {tag.name}
+                </Button>
+              );
+            })}
+            {selectedTagIds.size > 0 && (
+              <button
+                onClick={() => setSelectedTagIds(new Set())}
+                className="text-[11px] text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        )}
 
         {/* List */}
         <div className="space-y-7 pb-24">
@@ -112,12 +169,28 @@ export default function VoiceNotes() {
               className="text-center py-20"
             >
               <Mic className="w-9 h-9 mx-auto text-neutral-200 dark:text-neutral-700 mb-3" />
-              <p className="text-sm text-neutral-400 dark:text-neutral-500">
-                No voice notes yet
-              </p>
-              <p className="text-xs text-neutral-300 dark:text-neutral-600 mt-1">
-                Tap the mic in the FAB to record one
-              </p>
+              {selectedTagIds.size > 0 ? (
+                <>
+                  <p className="text-sm text-neutral-400 dark:text-neutral-500">
+                    No voice notes match the selected tags
+                  </p>
+                  <button
+                    onClick={() => setSelectedTagIds(new Set())}
+                    className="text-xs text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 mt-2 transition-colors"
+                  >
+                    Clear filter
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-neutral-400 dark:text-neutral-500">
+                    No voice notes yet
+                  </p>
+                  <p className="text-xs text-neutral-300 dark:text-neutral-600 mt-1">
+                    Tap the mic in the FAB to record one
+                  </p>
+                </>
+              )}
             </motion.div>
           )}
 
@@ -150,11 +223,11 @@ export default function VoiceNotes() {
                       className="group bg-white dark:bg-neutral-900 rounded-xl border cursor-pointer
                                 border-neutral-100 dark:border-neutral-800
                                 hover:border-neutral-200 dark:hover:border-neutral-700
-                                hover:shadow-sm transition-all duration-200"
+                                hover:shadow-sm transition-[border-color,box-shadow] duration-200"
                     >
-                      <div className="px-4 py-3.5 flex items-center gap-3">
+                      <div className="px-4 py-3.5 flex items-start gap-3">
                         {/* Mic icon */}
-                        <div className="shrink-0 w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                        <div className="shrink-0 w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mt-0.5">
                           <Mic className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
                         </div>
 
@@ -163,6 +236,26 @@ export default function VoiceNotes() {
                           <p className="text-sm font-medium text-neutral-950 dark:text-neutral-50 truncate">
                             {note.title}
                           </p>
+
+                          {/* Tags */}
+                          {note.tags.length > 0 && (
+                            <div className="flex items-center gap-1 mt-1 flex-wrap">
+                              {note.tags.map((tag) => (
+                                <span
+                                  key={tag.id}
+                                  className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                                >
+                                  <span
+                                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                                    style={{ backgroundColor: tag.color }}
+                                  />
+                                  {tag.name}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Meta */}
                           <div className="flex items-center gap-3 mt-0.5">
                             <span className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
                               <Clock className="w-3 h-3" />

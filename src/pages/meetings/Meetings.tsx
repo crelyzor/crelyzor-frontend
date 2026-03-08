@@ -11,7 +11,6 @@ import {
   Users,
   MoreHorizontal,
   Calendar,
-  ArrowUpRight,
   CheckCircle2,
   XCircle,
   ThumbsUp,
@@ -20,6 +19,7 @@ import {
   Video,
   Globe,
   Tag,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,7 +27,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
 import {
@@ -36,6 +36,7 @@ import {
   useDeclineMeeting,
   useCancelMeeting,
   useCompleteMeeting,
+  useDeleteMeeting,
 } from '@/hooks/queries/useMeetingQueries';
 import { useUserTags } from '@/hooks/queries/useTagQueries';
 import { toDisplayMeeting, type DisplayMeeting } from '@/lib/meetingHelpers';
@@ -121,15 +122,20 @@ function MeetingContextMenu({ meeting }: { meeting: DisplayMeeting }) {
   const decline = useDeclineMeeting();
   const cancel = useCancelMeeting();
   const complete = useCompleteMeeting();
+  const deleteMeeting = useDeleteMeeting();
 
   const close = () => setOpen(false);
 
+  const isRecorded = meeting.meetingType === 'RECORDED';
+
   const canAccept =
-    meeting.status === 'PENDING_ACCEPTANCE' ||
-    meeting.status === 'RESCHEDULING_REQUESTED';
+    !isRecorded &&
+    (meeting.status === 'PENDING_ACCEPTANCE' ||
+      meeting.status === 'RESCHEDULING_REQUESTED');
   const canDecline = canAccept;
   const canComplete =
-    meeting.status === 'ACCEPTED' || meeting.status === 'CREATED';
+    !isRecorded &&
+    (meeting.status === 'ACCEPTED' || meeting.status === 'CREATED');
   const canCancel = canComplete;
 
   const menuItems: {
@@ -222,6 +228,24 @@ function MeetingContextMenu({ meeting }: { meeting: DisplayMeeting }) {
           },
         ]
       : []),
+    ...(isRecorded
+      ? [
+          {
+            label: 'Delete',
+            icon: Trash2,
+            action: () => {
+              deleteMeeting.mutate(meeting.id, {
+                onSuccess: () => {
+                  toast.success('Meeting deleted');
+                  close();
+                },
+                onError: () => toast.error('Failed to delete'),
+              });
+            },
+            danger: true,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -230,7 +254,7 @@ function MeetingContextMenu({ meeting }: { meeting: DisplayMeeting }) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7"
+          className="h-7 w-7 shrink-0"
           onClick={(e) => e.stopPropagation()}
         >
           <MoreHorizontal className="w-4 h-4 text-neutral-400" />
@@ -242,19 +266,20 @@ function MeetingContextMenu({ meeting }: { meeting: DisplayMeeting }) {
         onClick={(e) => e.stopPropagation()}
       >
         {menuItems.map((item) => (
-          <button
+          <Button
             key={item.label}
+            variant="ghost"
             onClick={item.action}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors
+            className={`w-full justify-start gap-2.5 px-3 py-2 h-auto rounded-lg text-xs font-medium
               ${
                 item.danger
-                  ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30'
-                  : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                  ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400'
+                  : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-700 dark:hover:text-neutral-300'
               }`}
           >
             <item.icon className="w-3.5 h-3.5 shrink-0" />
             {item.label}
-          </button>
+          </Button>
         ))}
       </PopoverContent>
     </Popover>
@@ -266,7 +291,6 @@ export default function Meetings() {
   const [typeTab, setTypeTab] = useState<TypeTab>('all');
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
 
   const { data: meetingsData, isLoading: meetingsLoading } = useMeetingsAll();
@@ -485,7 +509,6 @@ export default function Meetings() {
                 <div className="space-y-2">
                   {group.meetings.map((meeting) => {
                     const idx = globalIndex++;
-                    const isExpanded = expandedId === meeting.id;
                     const hasSMA =
                       meeting.hasRecording ||
                       meeting.hasTranscript ||
@@ -502,16 +525,11 @@ export default function Meetings() {
                           delay: idx * 0.04,
                           ease: [0.25, 0.1, 0.25, 1],
                         }}
-                        onClick={() =>
-                          setExpandedId(isExpanded ? null : meeting.id)
-                        }
-                        className={`group bg-white dark:bg-neutral-900 rounded-xl border cursor-pointer
-                                transition-all duration-200 overflow-hidden
-                                ${
-                                  isExpanded
-                                    ? 'border-neutral-300 dark:border-neutral-600 shadow-md'
-                                    : 'border-neutral-100 dark:border-neutral-800 hover:border-neutral-200 dark:hover:border-neutral-700 hover:shadow-sm'
-                                }`}
+                        onClick={() => navigate(`/meetings/${meeting.id}`)}
+                        className="group bg-white dark:bg-neutral-900 rounded-xl border cursor-pointer
+                                border-neutral-100 dark:border-neutral-800
+                                hover:border-neutral-200 dark:hover:border-neutral-700
+                                hover:shadow-sm transition-[border-color,box-shadow] duration-200"
                       >
                         <div className="px-4 py-3.5">
                           {/* Top row */}
@@ -541,11 +559,16 @@ export default function Meetings() {
                                 {meeting.title}
                               </h3>
                             </div>
-                            <span
-                              className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(meeting.status)}`}
-                            >
-                              {getStatusLabel(meeting.status)}
-                            </span>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {meeting.meetingType === 'SCHEDULED' && (
+                                <span
+                                  className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(meeting.status)}`}
+                                >
+                                  {getStatusLabel(meeting.status)}
+                                </span>
+                              )}
+                              <MeetingContextMenu meeting={meeting} />
+                            </div>
                           </div>
                           {meeting.description && (
                             <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5 line-clamp-1">
@@ -618,14 +641,14 @@ export default function Meetings() {
                                 )}
                                 {meeting.hasSummary && (
                                   <div
-                                    className="w-5 h-5 rounded-full bg-violet-50 dark:bg-violet-950/40 flex items-center justify-center"
+                                    className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
                                     title="AI Summary"
                                   />
                                 )}
                                 {meeting.hasTasks && (
                                   <div
                                     className="w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
-                                    title="Action items"
+                                    title="Tasks"
                                   >
                                     <ClipboardList className="w-2.5 h-2.5 text-neutral-500 dark:text-neutral-400" />
                                   </div>
@@ -633,51 +656,6 @@ export default function Meetings() {
                               </div>
                             )}
                           </div>
-
-                          {/* Expanded — animated */}
-                          <AnimatePresence>
-                            {isExpanded && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{
-                                  duration: 0.2,
-                                  ease: [0.25, 0.1, 0.25, 1],
-                                }}
-                                className="overflow-hidden"
-                              >
-                                <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    {meeting.category && (
-                                      <span className="px-2 py-0.5 rounded-md text-[10px] font-medium uppercase tracking-wide bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-                                        {meeting.category}
-                                      </span>
-                                    )}
-                                    {meeting.organizer && (
-                                      <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                                        by {meeting.organizer}
-                                      </span>
-                                    )}
-                                    <div className="flex-1" />
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7 text-xs text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 gap-1"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate(`/meetings/${meeting.id}`);
-                                      }}
-                                    >
-                                      Open
-                                      <ArrowUpRight className="w-3 h-3" />
-                                    </Button>
-                                    <MeetingContextMenu meeting={meeting} />
-                                  </div>
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
                         </div>
                       </motion.div>
                     );

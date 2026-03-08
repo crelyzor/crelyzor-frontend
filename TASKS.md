@@ -164,30 +164,30 @@ All the new P1/P2 features add significant surface area. Plan a layout pass:
 Currently: click → card expands → click "Open" to navigate (two clicks).
 Fix: click anywhere on card → navigate to meeting detail. Context menu (⋯) stays for actions.
 
-- [ ] Remove `expandedId` state and expand/collapse behavior
-- [ ] Card `onClick` → `navigate(/meetings/:id)` directly
-- [ ] Move context menu (⋯) to always-visible right side of card (stop-propagation on click)
-- [ ] For RECORDED meetings: ⋯ menu only has "Open" + "Delete" (no accept/decline)
-- [ ] For SCHEDULED meetings: ⋯ menu retains accept/decline/complete/cancel
+- [x] Remove `expandedId` state and expand/collapse behavior
+- [x] Card `onClick` → `navigate(/meetings/:id)` directly
+- [x] Move context menu (⋯) to always-visible right side of card (stop-propagation on click)
+- [x] For RECORDED meetings: ⋯ menu only has "Open" + "Delete" (no accept/decline)
+- [x] For SCHEDULED meetings: ⋯ menu retains accept/decline/complete/cancel
 
 ### 18. RECORDED Meeting Status Badge
 
 Currently: RECORDED meetings show "Created" badge — meaningless for recordings.
 Fix: hide the status badge for RECORDED meetings. The Video icon + transcription status icons are enough.
 
-- [ ] In Meetings.tsx, only render the status badge when `meeting.meetingType === 'SCHEDULED'`
-- [ ] Ensure RECORDED card still looks complete without the badge
+- [x] In Meetings.tsx, only render the status badge when `meeting.meetingType === 'SCHEDULED'`
+- [x] Ensure RECORDED card still looks complete without the badge
 
 ### 19. Tags on Voice Notes Listing
 
 Currently: Voice Notes page shows no tags.
 Fix: show tag chips on each voice note row + tag filter at top (same pattern as Meetings page).
 
-- [ ] Fetch user tags (`useUserTags`) in VoiceNotes page
-- [ ] Tag filter bar (same chip UI as Meetings)
-- [ ] Tag chips on each voice note row (below title)
-- [ ] Filter logic: only show notes that have any of the selected tags
-- [ ] Note: tags on VOICE_NOTE meetings are stored via `MeetingTag` — backend already supports this
+- [x] Fetch user tags (`useUserTags`) in VoiceNotes page
+- [x] Tag filter bar (same chip UI as Meetings)
+- [x] Tag chips on each voice note row (above meta row)
+- [x] Filter logic: only show notes that have any of the selected tags
+- [x] Note: tags on VOICE_NOTE meetings are stored via `MeetingTag` — backend already supports this
 
 ### 20. Tags on Cards Listing + Dashboard Tag Edit
 
@@ -203,8 +203,8 @@ Backend already has `GET/POST/DELETE /cards/:cardId/tags` + `CardTag` junction.
 
 Currently: meeting cards use `transition-all` which causes jitter/paint issues on hover.
 
-- [ ] Replace `transition-all duration-200` with `transition-[border-color,box-shadow] duration-200` on meeting cards (Meetings.tsx)
-- [ ] Same fix on VoiceNotes.tsx cards and any other list cards using `transition-all`
+- [x] Replace `transition-all duration-200` with `transition-[border-color,box-shadow] duration-200` on meeting cards (Meetings.tsx)
+- [x] Same fix on VoiceNotes.tsx cards and any other list cards using `transition-all`
 - [ ] Test in both light and dark mode
 
 ### 22. Ask AI Persistence (Deferred)
