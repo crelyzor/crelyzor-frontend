@@ -16,7 +16,11 @@ export default function MeetingDetail() {
   const completedAtRef = useRef<number | null>(null);
 
   // Poll while transcription is in-flight, then for 30s after COMPLETED (AI title update)
-  const { data: rawMeeting, isLoading, isError } = useQuery({
+  const {
+    data: rawMeeting,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: queryKeys.meetings.detail(id ?? ''),
     queryFn: () => meetingsApi.getById(id ?? ''),
     enabled: !!id,
