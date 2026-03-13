@@ -16,7 +16,7 @@ export default function MeetingDetail() {
   const completedAtRef = useRef<number | null>(null);
 
   // Poll while transcription is in-flight, then for 30s after COMPLETED (AI title update)
-  const { data: rawMeeting, isLoading } = useQuery({
+  const { data: rawMeeting, isLoading, isError } = useQuery({
     queryKey: queryKeys.meetings.detail(id ?? ''),
     queryFn: () => meetingsApi.getById(id ?? ''),
     enabled: !!id,
@@ -35,6 +35,24 @@ export default function MeetingDetail() {
   });
 
   if (isLoading) return <PageLoader />;
+
+  if (isError) {
+    return (
+      <PageMotion>
+        <div className="max-w-3xl mx-auto py-20 text-center">
+          <h2 className="text-lg font-semibold text-neutral-950 dark:text-neutral-50 mb-2">
+            Failed to load meeting
+          </h2>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
+            Something went wrong. Please try again.
+          </p>
+          <Button variant="outline" onClick={() => navigate('/meetings')}>
+            Back to Meetings
+          </Button>
+        </div>
+      </PageMotion>
+    );
+  }
 
   if (!rawMeeting) {
     return (

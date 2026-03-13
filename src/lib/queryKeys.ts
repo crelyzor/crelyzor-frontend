@@ -13,6 +13,7 @@ export const queryKeys = {
   auth: {
     all: ['auth'] as const,
     me: () => [...queryKeys.auth.all, 'me'] as const,
+    sessions: () => [...queryKeys.auth.all, 'sessions'] as const,
   },
 
   // Meetings
@@ -100,6 +101,7 @@ export const queryKeys = {
     all: ['cards'] as const,
     list: () => [...queryKeys.cards.all, 'list'] as const,
     detail: (id: string) => [...queryKeys.cards.all, 'detail', id] as const,
+    templates: () => [...queryKeys.cards.all, 'templates'] as const,
     analytics: (id: string, days?: number) =>
       [...queryKeys.cards.all, 'analytics', id, days] as const,
     contacts: (filters?: Record<string, unknown>) =>

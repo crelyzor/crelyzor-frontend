@@ -7,6 +7,7 @@ export function useUserTags() {
   return useQuery({
     queryKey: queryKeys.tags.userTags(),
     queryFn: () => tagsApi.getTags(),
+    staleTime: 5 * 60 * 1000, // 5 minutes — tags change infrequently
   });
 }
 

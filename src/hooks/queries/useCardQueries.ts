@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import { cardsApi } from '@/services/cardsService';
 import type {
@@ -9,14 +10,18 @@ import type {
 
 export function useTemplates() {
   return useQuery({
-    queryKey: [...queryKeys.cards.all, 'templates'],
+    queryKey: queryKeys.cards.templates(),
     queryFn: () => cardsApi.getTemplates(),
+    staleTime: Infinity, // templates are static per deploy
   });
 }
 
 export function usePreviewCard() {
   return useMutation({
     mutationFn: (data: PreviewCardPayload) => cardsApi.preview(data),
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to preview card');
+    },
   });
 }
 
@@ -24,6 +29,7 @@ export function useCards() {
   return useQuery({
     queryKey: queryKeys.cards.list(),
     queryFn: () => cardsApi.list(),
+    staleTime: 60 * 1000, // 1 minute
   });
 }
 
@@ -32,6 +38,7 @@ export function useCard(id: string) {
     queryKey: queryKeys.cards.detail(id),
     queryFn: () => cardsApi.getById(id),
     enabled: !!id,
+    staleTime: 60 * 1000,
   });
 }
 
@@ -62,6 +69,10 @@ export function useCreateCard() {
     mutationFn: (data: CreateCardPayload) => cardsApi.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.cards.all });
+      toast.success('Card created');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to create card');
     },
   });
 }
@@ -74,6 +85,9 @@ export function useUpdateCard() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.cards.all });
     },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update card');
+    },
   });
 }
 
@@ -83,6 +97,9 @@ export function useDeleteCard() {
     mutationFn: (id: string) => cardsApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.cards.all });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to delete card');
     },
   });
 }
@@ -95,6 +112,9 @@ export function useDuplicateCard() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.cards.all });
     },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to duplicate card');
+    },
   });
 }
 
@@ -106,6 +126,9 @@ export function useUpdateContactTags() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.cards.contacts() });
     },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update contact tags');
+    },
   });
 }
 
@@ -115,6 +138,9 @@ export function useDeleteContact() {
     mutationFn: (id: string) => cardsApi.deleteContact(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.cards.contacts() });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to delete contact');
     },
   });
 }

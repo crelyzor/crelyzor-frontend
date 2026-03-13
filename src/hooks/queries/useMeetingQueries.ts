@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import { meetingsApi } from '@/services/meetingsService';
 import type {
@@ -39,6 +40,10 @@ export function useCreateMeeting() {
     mutationFn: (data: CreateMeetingPayload) => meetingsApi.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
+      toast.success('Meeting created');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to create meeting');
     },
   });
 }
@@ -51,6 +56,9 @@ export function useUpdateMeeting() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
     },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update meeting');
+    },
   });
 }
 
@@ -60,6 +68,9 @@ export function useAcceptMeeting() {
     mutationFn: (id: string) => meetingsApi.accept(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to accept meeting');
     },
   });
 }
@@ -72,6 +83,9 @@ export function useDeclineMeeting() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
     },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to decline meeting');
+    },
   });
 }
 
@@ -83,6 +97,9 @@ export function useCancelMeeting() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
     },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to cancel meeting');
+    },
   });
 }
 
@@ -93,6 +110,9 @@ export function useCompleteMeeting() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
     },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to complete meeting');
+    },
   });
 }
 
@@ -102,6 +122,9 @@ export function useDeleteMeeting() {
     mutationFn: (id: string) => meetingsApi.deleteMeeting(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to delete meeting');
     },
   });
 }
