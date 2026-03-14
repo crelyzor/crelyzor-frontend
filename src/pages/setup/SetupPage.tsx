@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,10 +24,24 @@ export default function SetupPage() {
   const [username, setUsername] = useState('');
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const [isChecking, setIsChecking] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const qc = useQueryClient();
+
+  const submitMutation = useMutation({
+    mutationFn: () => authApi.setUsername(username),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: queryKeys.auth.me() });
+      navigate('/', { replace: true });
+    },
+    onError: (err: unknown) => {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Failed to set username. Please try again.';
+      setError(message);
+    },
+  });
 
   // Debounced availability check
   useEffect(() => {
@@ -60,7 +74,7 @@ export default function SetupPage() {
     setError(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const validationError = getValidationError(username);
@@ -74,22 +88,8 @@ export default function SetupPage() {
       return;
     }
 
-    setIsSubmitting(true);
     setError(null);
-
-    try {
-      await authApi.setUsername(username);
-      await qc.invalidateQueries({ queryKey: queryKeys.auth.me() });
-      navigate('/', { replace: true });
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Failed to set username. Please try again.';
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
+    submitMutation.mutate();
   };
 
   const validationError = getValidationError(username);
@@ -172,9 +172,9 @@ export default function SetupPage() {
             type="submit"
             size="lg"
             className="w-full h-12"
-            disabled={!canSubmit || isSubmitting}
+            disabled={!canSubmit || submitMutation.isPending}
           >
-            {isSubmitting ? 'Setting up...' : 'Continue'}
+            {submitMutation.isPending ? 'Setting up...' : 'Continue'}
           </Button>
         </form>
 

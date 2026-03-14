@@ -30,7 +30,7 @@ import { useUserTags } from '@/hooks/queries/useTagQueries';
 import { tagsApi } from '@/services/tagsService';
 import { queryKeys } from '@/lib/queryKeys';
 import { toast } from 'sonner';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import type { Card as CardType } from '@/types';
 import type { Tag as TagType } from '@/types/meeting';
 import { CardPreview } from '@/components/cards/CardPreview';
@@ -54,6 +54,7 @@ export default function Cards() {
   const [sigCard, setSigCard] = useState<CardType | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
   const [closing, setClosing] = useState(false);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Batch-fetch tags for all cards in parallel
   const cardTagsMap = useQueries({
@@ -85,11 +86,18 @@ export default function Cards() {
 
   const closeCard = () => {
     setClosing(true);
-    setTimeout(() => {
+    closeTimerRef.current = setTimeout(() => {
       setSelectedCard(null);
       setClosing(false);
+      closeTimerRef.current = null;
     }, 180);
   };
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

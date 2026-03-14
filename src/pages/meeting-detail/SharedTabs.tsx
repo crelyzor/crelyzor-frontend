@@ -1196,6 +1196,13 @@ export function AskAITab({
 
   const isAvailable = transcriptionStatus === 'COMPLETED';
 
+  // Abort any in-flight SSE stream when the component unmounts
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);

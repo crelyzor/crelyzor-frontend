@@ -14,6 +14,7 @@ export function useTranscript(meetingId: string, enabled = true) {
     queryFn: () => smaApi.getTranscript(meetingId),
     enabled: !!meetingId && enabled,
     retry: false,
+    staleTime: 10 * 60 * 1000,
   });
 }
 
@@ -23,6 +24,7 @@ export function useSummary(meetingId: string, enabled = true) {
     queryFn: () => smaApi.getSummary(meetingId),
     enabled: !!meetingId && enabled,
     retry: false,
+    staleTime: 10 * 60 * 1000,
   });
 }
 

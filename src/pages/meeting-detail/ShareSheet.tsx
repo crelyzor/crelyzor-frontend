@@ -35,7 +35,7 @@ interface ShareSheetProps {
 }
 
 const CARDS_BASE =
-  (import.meta.env.VITE_CARDS_BASE_URL as string | undefined) ??
+  (import.meta.env.VITE_CARDS_PUBLIC_URL as string | undefined) ??
   'http://localhost:5174';
 
 export function ShareSheet({

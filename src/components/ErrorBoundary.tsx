@@ -1,4 +1,5 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Component, type ReactNode } from 'react';
+import { Button } from '@/components/ui/button';
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -23,9 +24,6 @@ export class ErrorBoundary extends Component<
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
-  }
 
   render() {
     if (this.state.hasError) {
@@ -45,12 +43,9 @@ export class ErrorBoundary extends Component<
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
               An unexpected error occurred. Please try refreshing the page.
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 rounded-lg text-sm font-medium hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-colors cursor-pointer"
-            >
+            <Button onClick={() => window.location.reload()}>
               Refresh Page
-            </button>
+            </Button>
           </div>
         </div>
       );
