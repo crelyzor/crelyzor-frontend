@@ -33,6 +33,7 @@ export function useTasks(meetingId: string, enabled = true) {
     queryKey: queryKeys.sma.tasks(meetingId),
     queryFn: () => smaApi.getTasks(meetingId),
     enabled: !!meetingId && enabled,
+    staleTime: 2 * 60 * 1000, // 2 minutes — tasks change more often than tags
   });
 }
 
@@ -91,6 +92,7 @@ export function useNotes(meetingId: string) {
     queryKey: queryKeys.sma.notes(meetingId),
     queryFn: () => smaApi.getNotes(meetingId),
     enabled: !!meetingId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }
 

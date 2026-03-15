@@ -29,8 +29,8 @@ const {
 
 function App() {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <ErrorBoundary>
         <ThemeProvider>
           <BrowserRouter>
             <CommandPalette />
@@ -161,8 +161,8 @@ function App() {
           />
         </ThemeProvider>
         <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </QueryClientProvider>
   );
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { PageMotion } from '@/components/PageMotion';
 import {
   User,
@@ -134,13 +134,15 @@ function ProfileSection() {
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [nameInit, setNameInit] = useState(false);
+  const initDone = useRef(false);
 
-  if (profile && !nameInit) {
-    setName(profile.name ?? '');
-    setPhone(profile.phoneNumber ?? '');
-    setNameInit(true);
-  }
+  useEffect(() => {
+    if (profile && !initDone.current) {
+      setName(profile.name ?? '');
+      setPhone(profile.phoneNumber ?? '');
+      initDone.current = true;
+    }
+  }, [profile]);
 
   const initials = (profile?.name ?? 'U')
     .split(' ')

@@ -16,6 +16,7 @@ export function useMeetingTags(meetingId: string) {
     queryKey: queryKeys.tags.byMeeting(meetingId),
     queryFn: () => tagsApi.getMeetingTags(meetingId),
     enabled: !!meetingId,
+    staleTime: 5 * 60 * 1000, // 5 minutes — tags change infrequently
   });
 }
 
@@ -114,5 +115,6 @@ export function useCardTags(cardId: string) {
     queryKey: queryKeys.tags.byCard(cardId),
     queryFn: () => tagsApi.getCardTags(cardId),
     enabled: !!cardId,
+    staleTime: 5 * 60 * 1000, // 5 minutes — tags change infrequently
   });
 }

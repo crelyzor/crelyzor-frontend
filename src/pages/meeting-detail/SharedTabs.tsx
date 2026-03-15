@@ -1412,6 +1412,13 @@ export function GenerateTab({
   const [selectedType, setSelectedType] =
     useState<AIContentType>('MEETING_REPORT');
   const [copied, setCopied] = useState(false);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
 
   const isAvailable = transcriptionStatus === 'COMPLETED';
   const { data: existingContents, isLoading: isLoadingExisting } =
@@ -1429,7 +1436,7 @@ export function GenerateTab({
     try {
       await navigator.clipboard.writeText(selectedContent);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error('Failed to copy');
     }
