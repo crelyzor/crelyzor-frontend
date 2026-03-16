@@ -40,9 +40,12 @@ export const meetingsApi = {
     startDate?: string;
     endDate?: string;
   }) =>
-    apiClient.get<{ meetings: Meeting[]; truncated: boolean }>('/meetings/without-pagination', {
-      params: params as Record<string, string>,
-    }),
+    apiClient.get<{ meetings: Meeting[]; truncated: boolean }>(
+      '/meetings/without-pagination',
+      {
+        params: params as Record<string, string>,
+      }
+    ),
 
   /** GET /meetings/:id */
   getById: (id: string) => apiClient.get<Meeting>(`/meetings/${id}`),

@@ -72,7 +72,8 @@ export function RecentVoiceNotes() {
           </div>
         )}
 
-        {!isLoading && !isError &&
+        {!isLoading &&
+          !isError &&
           notes.map((note) => (
             <button
               key={note.id}
