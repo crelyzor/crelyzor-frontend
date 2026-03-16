@@ -247,7 +247,9 @@ export default function CardContacts() {
         {/* Contact list */}
         {isError ? (
           <div className="text-center py-20">
-            <p className="text-sm text-neutral-400 dark:text-neutral-500">Failed to load contacts</p>
+            <p className="text-sm text-neutral-400 dark:text-neutral-500">
+              Failed to load contacts
+            </p>
           </div>
         ) : isLoading ? (
           <div className="space-y-3">

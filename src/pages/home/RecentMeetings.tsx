@@ -36,7 +36,11 @@ function MeetingRowSkeleton() {
   );
 }
 
-export function RecentMeetings({ meetings, isLoading, isError }: RecentMeetingsProps) {
+export function RecentMeetings({
+  meetings,
+  isLoading,
+  isError,
+}: RecentMeetingsProps) {
   const navigate = useNavigate();
 
   return (
@@ -63,7 +67,8 @@ export function RecentMeetings({ meetings, isLoading, isError }: RecentMeetingsP
           </>
         )}
 
-        {!isLoading && !isError &&
+        {!isLoading &&
+          !isError &&
           meetings.map((meeting, i) => (
             <motion.div
               key={meeting.id}

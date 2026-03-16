@@ -209,7 +209,9 @@ export default function Cards() {
         {/* Cards grid */}
         {isError ? (
           <div className="text-center py-20">
-            <p className="text-sm text-neutral-400 dark:text-neutral-500">Failed to load cards</p>
+            <p className="text-sm text-neutral-400 dark:text-neutral-500">
+              Failed to load cards
+            </p>
           </div>
         ) : isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">

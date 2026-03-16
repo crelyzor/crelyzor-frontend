@@ -383,7 +383,13 @@ export function RecordedDetail({
             </TabsList>
 
             <TabsContent value="recording" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary fallback={<p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">Something went wrong in this tab</p>}>
+              <ErrorBoundary
+                fallback={
+                  <p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">
+                    Something went wrong in this tab
+                  </p>
+                }
+              >
                 <RecordingTab
                   meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}
@@ -391,7 +397,13 @@ export function RecordedDetail({
               </ErrorBoundary>
             </TabsContent>
             <TabsContent value="transcript" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary fallback={<p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">Something went wrong in this tab</p>}>
+              <ErrorBoundary
+                fallback={
+                  <p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">
+                    Something went wrong in this tab
+                  </p>
+                }
+              >
                 <TranscriptTab
                   meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}
@@ -400,7 +412,13 @@ export function RecordedDetail({
               </ErrorBoundary>
             </TabsContent>
             <TabsContent value="summary" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary fallback={<p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">Something went wrong in this tab</p>}>
+              <ErrorBoundary
+                fallback={
+                  <p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">
+                    Something went wrong in this tab
+                  </p>
+                }
+              >
                 <SummaryTab
                   meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}
@@ -408,7 +426,13 @@ export function RecordedDetail({
               </ErrorBoundary>
             </TabsContent>
             <TabsContent value="actions" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary fallback={<p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">Something went wrong in this tab</p>}>
+              <ErrorBoundary
+                fallback={
+                  <p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">
+                    Something went wrong in this tab
+                  </p>
+                }
+              >
                 <ActionsTab
                   meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}
@@ -416,12 +440,24 @@ export function RecordedDetail({
               </ErrorBoundary>
             </TabsContent>
             <TabsContent value="notes" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary fallback={<p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">Something went wrong in this tab</p>}>
+              <ErrorBoundary
+                fallback={
+                  <p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">
+                    Something went wrong in this tab
+                  </p>
+                }
+              >
                 <NotesTab meetingId={rawMeeting.id} />
               </ErrorBoundary>
             </TabsContent>
             <TabsContent value="ask" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary fallback={<p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">Something went wrong in this tab</p>}>
+              <ErrorBoundary
+                fallback={
+                  <p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">
+                    Something went wrong in this tab
+                  </p>
+                }
+              >
                 <AskAITab
                   meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}
@@ -429,7 +465,13 @@ export function RecordedDetail({
               </ErrorBoundary>
             </TabsContent>
             <TabsContent value="generate" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary fallback={<p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">Something went wrong in this tab</p>}>
+              <ErrorBoundary
+                fallback={
+                  <p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-8">
+                    Something went wrong in this tab
+                  </p>
+                }
+              >
                 <GenerateTab
                   meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}

@@ -171,7 +171,9 @@ export default function VoiceNotes() {
 
           {isError && (
             <div className="text-center py-20">
-              <p className="text-sm text-neutral-400 dark:text-neutral-500">Failed to load voice notes</p>
+              <p className="text-sm text-neutral-400 dark:text-neutral-500">
+                Failed to load voice notes
+              </p>
             </div>
           )}
 
@@ -207,85 +209,87 @@ export default function VoiceNotes() {
             </motion.div>
           )}
 
-          {!isLoading && !isError && grouped.map((group) => (
-            <div key={group.date}>
-              {/* Date header */}
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.12em]">
-                  {group.label}
-                </span>
-                <div className="flex-1 h-px bg-neutral-100 dark:bg-neutral-800" />
-              </div>
+          {!isLoading &&
+            !isError &&
+            grouped.map((group) => (
+              <div key={group.date}>
+                {/* Date header */}
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.12em]">
+                    {group.label}
+                  </span>
+                  <div className="flex-1 h-px bg-neutral-100 dark:bg-neutral-800" />
+                </div>
 
-              {/* Note cards */}
-              <div className="space-y-2">
-                {group.notes.map((note) => {
-                  const idx = globalIndex++;
+                {/* Note cards */}
+                <div className="space-y-2">
+                  {group.notes.map((note) => {
+                    const idx = globalIndex++;
 
-                  return (
-                    <motion.div
-                      key={note.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        duration: 0.28,
-                        delay: idx * 0.04,
-                        ease: [0.25, 0.1, 0.25, 1],
-                      }}
-                      onClick={() => navigate(`/meetings/${note.id}`)}
-                      className="group bg-white dark:bg-neutral-900 rounded-xl border cursor-pointer
+                    return (
+                      <motion.div
+                        key={note.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: 0.28,
+                          delay: idx * 0.04,
+                          ease: [0.25, 0.1, 0.25, 1],
+                        }}
+                        onClick={() => navigate(`/meetings/${note.id}`)}
+                        className="group bg-white dark:bg-neutral-900 rounded-xl border cursor-pointer
                                 border-neutral-100 dark:border-neutral-800
                                 hover:border-neutral-200 dark:hover:border-neutral-700
                                 hover:shadow-sm transition-[border-color,box-shadow] duration-200"
-                    >
-                      <div className="px-4 py-3.5 flex items-start gap-3">
-                        {/* Mic icon */}
-                        <div className="shrink-0 w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mt-0.5">
-                          <Mic className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
-                        </div>
+                      >
+                        <div className="px-4 py-3.5 flex items-start gap-3">
+                          {/* Mic icon */}
+                          <div className="shrink-0 w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mt-0.5">
+                            <Mic className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
+                          </div>
 
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-neutral-950 dark:text-neutral-50 truncate">
-                            {note.title}
-                          </p>
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-neutral-950 dark:text-neutral-50 truncate">
+                              {note.title}
+                            </p>
 
-                          {/* Tags */}
-                          {note.tags.length > 0 && (
-                            <div className="flex items-center gap-1 mt-1 flex-wrap">
-                              {note.tags.map((tag) => (
-                                <span
-                                  key={tag.id}
-                                  className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
-                                >
+                            {/* Tags */}
+                            {note.tags.length > 0 && (
+                              <div className="flex items-center gap-1 mt-1 flex-wrap">
+                                {note.tags.map((tag) => (
                                   <span
-                                    className="w-1.5 h-1.5 rounded-full shrink-0"
-                                    style={{ backgroundColor: tag.color }}
-                                  />
-                                  {tag.name}
-                                </span>
-                              ))}
-                            </div>
-                          )}
+                                    key={tag.id}
+                                    className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                                  >
+                                    <span
+                                      className="w-1.5 h-1.5 rounded-full shrink-0"
+                                      style={{ backgroundColor: tag.color }}
+                                    />
+                                    {tag.name}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
 
-                          {/* Meta */}
-                          <div className="flex items-center gap-3 mt-0.5">
-                            <span className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
-                              <Clock className="w-3 h-3" />
-                              {note.time} · {note.duration}
-                            </span>
-                            <TranscriptBadge
-                              status={note._raw.transcriptionStatus}
-                            />
+                            {/* Meta */}
+                            <div className="flex items-center gap-3 mt-0.5">
+                              <span className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
+                                <Clock className="w-3 h-3" />
+                                {note.time} · {note.duration}
+                              </span>
+                              <TranscriptBadge
+                                status={note._raw.transcriptionStatus}
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
 
         <StartMeetingFab />

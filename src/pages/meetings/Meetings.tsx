@@ -293,7 +293,11 @@ export default function Meetings() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
 
-  const { data: meetingsData, isLoading: meetingsLoading, isError: meetingsError } = useMeetingsAll();
+  const {
+    data: meetingsData,
+    isLoading: meetingsLoading,
+    isError: meetingsError,
+  } = useMeetingsAll();
   const { data: userTags } = useUserTags();
 
   // Exclude VOICE_NOTE — they live in /voice-notes. Also apply type toggle.
@@ -483,7 +487,9 @@ export default function Meetings() {
           )}
           {meetingsError && (
             <div className="text-center py-20">
-              <p className="text-sm text-neutral-400 dark:text-neutral-500">Failed to load meetings</p>
+              <p className="text-sm text-neutral-400 dark:text-neutral-500">
+                Failed to load meetings
+              </p>
             </div>
           )}
           {!meetingsLoading && !meetingsError && grouped.length === 0 && (
@@ -499,7 +505,8 @@ export default function Meetings() {
             </motion.div>
           )}
 
-          {!meetingsLoading && !meetingsError &&
+          {!meetingsLoading &&
+            !meetingsError &&
             grouped.map((group) => (
               <div key={group.date}>
                 {/* Date header */}
