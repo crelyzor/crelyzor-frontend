@@ -53,6 +53,7 @@ import {
 import { TagsSection } from './TagsSection';
 import { AttachmentsSection } from './AttachmentsSection';
 import { ChangeLanguageDialog } from './ChangeLanguageDialog';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const SCHEDULED_TABS = [
   { id: 'overview', label: 'Overview' },
@@ -507,51 +508,67 @@ export function ScheduledDetail({
             </TabsList>
 
             <TabsContent value="overview" className="p-4 sm:p-6 mt-0">
-              <OverviewTab
-                meetingId={rawMeeting.id}
-                transcriptionStatus={transcriptionStatus}
-                hasSMA={hasSMA}
-                onUploadClick={() => setActiveTab('recording')}
-              />
+              <ErrorBoundary>
+                <OverviewTab
+                  meetingId={rawMeeting.id}
+                  transcriptionStatus={transcriptionStatus}
+                  hasSMA={hasSMA}
+                  onUploadClick={() => setActiveTab('recording')}
+                />
+              </ErrorBoundary>
             </TabsContent>
             <TabsContent value="transcript" className="p-4 sm:p-6 mt-0">
-              <TranscriptTab
-                meetingId={rawMeeting.id}
-                transcriptionStatus={transcriptionStatus}
-              />
+              <ErrorBoundary>
+                <TranscriptTab
+                  meetingId={rawMeeting.id}
+                  transcriptionStatus={transcriptionStatus}
+                />
+              </ErrorBoundary>
             </TabsContent>
             <TabsContent value="summary" className="p-4 sm:p-6 mt-0">
-              <SummaryTab
-                meetingId={rawMeeting.id}
-                transcriptionStatus={transcriptionStatus}
-              />
+              <ErrorBoundary>
+                <SummaryTab
+                  meetingId={rawMeeting.id}
+                  transcriptionStatus={transcriptionStatus}
+                />
+              </ErrorBoundary>
             </TabsContent>
             <TabsContent value="actions" className="p-4 sm:p-6 mt-0">
-              <ActionsTab
-                meetingId={rawMeeting.id}
-                transcriptionStatus={transcriptionStatus}
-              />
+              <ErrorBoundary>
+                <ActionsTab
+                  meetingId={rawMeeting.id}
+                  transcriptionStatus={transcriptionStatus}
+                />
+              </ErrorBoundary>
             </TabsContent>
             <TabsContent value="notes" className="p-4 sm:p-6 mt-0">
-              <NotesTab meetingId={rawMeeting.id} />
+              <ErrorBoundary>
+                <NotesTab meetingId={rawMeeting.id} />
+              </ErrorBoundary>
             </TabsContent>
             <TabsContent value="recording" className="p-4 sm:p-6 mt-0">
-              <RecordingTab
-                meetingId={rawMeeting.id}
-                transcriptionStatus={transcriptionStatus}
-              />
+              <ErrorBoundary>
+                <RecordingTab
+                  meetingId={rawMeeting.id}
+                  transcriptionStatus={transcriptionStatus}
+                />
+              </ErrorBoundary>
             </TabsContent>
             <TabsContent value="ask" className="p-4 sm:p-6 mt-0">
-              <AskAITab
-                meetingId={rawMeeting.id}
-                transcriptionStatus={transcriptionStatus}
-              />
+              <ErrorBoundary>
+                <AskAITab
+                  meetingId={rawMeeting.id}
+                  transcriptionStatus={transcriptionStatus}
+                />
+              </ErrorBoundary>
             </TabsContent>
             <TabsContent value="generate" className="p-4 sm:p-6 mt-0">
-              <GenerateTab
-                meetingId={rawMeeting.id}
-                transcriptionStatus={transcriptionStatus}
-              />
+              <ErrorBoundary>
+                <GenerateTab
+                  meetingId={rawMeeting.id}
+                  transcriptionStatus={transcriptionStatus}
+                />
+              </ErrorBoundary>
             </TabsContent>
           </Tabs>
         </CardContent>

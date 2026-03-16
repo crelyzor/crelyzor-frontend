@@ -20,7 +20,7 @@ function relativeDate(isoString: string): string {
 
 export function RecentVoiceNotes() {
   const navigate = useNavigate();
-  const { data: allNotes, isLoading } = useVoiceNotes();
+  const { data: allNotes, isLoading, isError } = useVoiceNotes();
 
   const notes = (allNotes ?? []).slice(0, 3);
 
@@ -55,7 +55,15 @@ export function RecentVoiceNotes() {
           </div>
         )}
 
-        {!isLoading && notes.length === 0 && (
+        {!isLoading && isError && (
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <p className="text-[11px] text-neutral-400 dark:text-neutral-600">
+              Failed to load voice notes
+            </p>
+          </div>
+        )}
+
+        {!isLoading && !isError && notes.length === 0 && (
           <div className="flex flex-col items-center justify-center py-6 text-center">
             <Mic className="w-6 h-6 text-neutral-300 dark:text-neutral-700 mb-2" />
             <p className="text-[11px] text-neutral-400 dark:text-neutral-600">
@@ -64,7 +72,7 @@ export function RecentVoiceNotes() {
           </div>
         )}
 
-        {!isLoading &&
+        {!isLoading && !isError &&
           notes.map((note) => (
             <button
               key={note.id}

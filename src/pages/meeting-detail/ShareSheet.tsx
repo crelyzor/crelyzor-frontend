@@ -140,17 +140,25 @@ export function ShareSheet({
 
   const handleCopyPublicLink = async () => {
     if (!share) return;
-    if (!share.isPublic) {
-      await updateShare.mutateAsync({ isPublic: true });
+    try {
+      if (!share.isPublic) {
+        await updateShare.mutateAsync({ isPublic: true });
+      }
+      const url = `${CARDS_BASE}/m/${share.shortId}`;
+      await copyWithFeedback(url, 'link');
+    } catch {
+      // onError in useUpdateShare handles the toast
     }
-    const url = `${CARDS_BASE}/m/${share.shortId}`;
-    await copyWithFeedback(url, 'link');
   };
 
   const handleDisableLink = async () => {
     if (!share?.isPublic) return;
-    await updateShare.mutateAsync({ isPublic: false });
-    toast.success('Public link disabled');
+    try {
+      await updateShare.mutateAsync({ isPublic: false });
+      toast.success('Public link disabled');
+    } catch {
+      // onError in useUpdateShare handles the toast
+    }
   };
 
   return (

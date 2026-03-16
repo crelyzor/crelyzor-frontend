@@ -39,6 +39,7 @@ import { SkeletonLines } from './meetingDetailHelpers';
 import { TagsSection } from './TagsSection';
 import { AttachmentsSection } from './AttachmentsSection';
 import { ChangeLanguageDialog } from './ChangeLanguageDialog';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export function VoiceNoteDetail({
   meeting: rawMeeting,
@@ -219,77 +220,91 @@ export function VoiceNoteDetail({
         {/* Recording player */}
         <Card className="border-neutral-200 dark:border-neutral-800">
           <CardContent className="p-5">
-            <RecordingTab
-              meetingId={rawMeeting.id}
-              transcriptionStatus={transcriptionStatus}
-            />
+            <ErrorBoundary>
+              <RecordingTab
+                meetingId={rawMeeting.id}
+                transcriptionStatus={transcriptionStatus}
+              />
+            </ErrorBoundary>
           </CardContent>
         </Card>
 
         {/* Transcript */}
         <Card className="border-neutral-200 dark:border-neutral-800">
           <CardContent className="p-5">
-            <TranscriptTab
-              meetingId={rawMeeting.id}
-              transcriptionStatus={transcriptionStatus}
-            />
+            <ErrorBoundary>
+              <TranscriptTab
+                meetingId={rawMeeting.id}
+                transcriptionStatus={transcriptionStatus}
+              />
+            </ErrorBoundary>
           </CardContent>
         </Card>
 
         {/* Summary + key points */}
         <Card className="border-neutral-200 dark:border-neutral-800">
           <CardContent className="p-5">
-            {!isCompleted ? (
-              <div>
-                <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-3">
-                  AI Summary
-                </h3>
-                <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                  Available after transcription completes.
-                </p>
-              </div>
-            ) : !summary ? (
-              <SkeletonLines count={4} />
-            ) : (
-              <SummaryTab
-                meetingId={rawMeeting.id}
-                transcriptionStatus={transcriptionStatus}
-              />
-            )}
+            <ErrorBoundary>
+              {!isCompleted ? (
+                <div>
+                  <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-3">
+                    AI Summary
+                  </h3>
+                  <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                    Available after transcription completes.
+                  </p>
+                </div>
+              ) : !summary ? (
+                <SkeletonLines count={4} />
+              ) : (
+                <SummaryTab
+                  meetingId={rawMeeting.id}
+                  transcriptionStatus={transcriptionStatus}
+                />
+              )}
+            </ErrorBoundary>
           </CardContent>
         </Card>
 
         {/* Tasks */}
         <Card className="border-neutral-200 dark:border-neutral-800">
           <CardContent className="p-5">
-            <ActionsTab meetingId={rawMeeting.id} />
+            <ErrorBoundary>
+              <ActionsTab meetingId={rawMeeting.id} />
+            </ErrorBoundary>
           </CardContent>
         </Card>
 
         {/* Notes */}
         <Card className="border-neutral-200 dark:border-neutral-800">
           <CardContent className="p-5">
-            <NotesTab meetingId={rawMeeting.id} />
+            <ErrorBoundary>
+              <NotesTab meetingId={rawMeeting.id} />
+            </ErrorBoundary>
           </CardContent>
         </Card>
 
         {/* Ask AI */}
         <Card className="border-neutral-200 dark:border-neutral-800">
           <CardContent className="p-5">
-            <AskAITab
-              meetingId={rawMeeting.id}
-              transcriptionStatus={transcriptionStatus}
-            />
+            <ErrorBoundary>
+              <AskAITab
+                meetingId={rawMeeting.id}
+                transcriptionStatus={transcriptionStatus}
+              />
+            </ErrorBoundary>
           </CardContent>
         </Card>
 
         {/* Generate */}
         <Card className="border-neutral-200 dark:border-neutral-800">
           <CardContent className="p-5">
-            <GenerateTab
-              meetingId={rawMeeting.id}
-              transcriptionStatus={transcriptionStatus}
-            />
+            <ErrorBoundary>
+              <GenerateTab
+                meetingId={rawMeeting.id}
+                transcriptionStatus={transcriptionStatus}
+              />
+            </ErrorBoundary>
           </CardContent>
         </Card>
       </div>

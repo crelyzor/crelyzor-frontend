@@ -124,6 +124,7 @@ export function useRecordings(meetingId: string) {
     queryKey: queryKeys.sma.recordings(meetingId),
     queryFn: () => smaApi.getRecordings(meetingId),
     enabled: !!meetingId,
+    staleTime: 60 * 1000,
   });
 }
 
@@ -219,6 +220,7 @@ export function useSpeakers(meetingId: string, enabled = true) {
     queryKey: queryKeys.sma.speakers(meetingId),
     queryFn: () => smaApi.getSpeakers(meetingId),
     enabled: !!meetingId && enabled,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

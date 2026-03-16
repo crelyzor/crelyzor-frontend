@@ -33,14 +33,14 @@ export const meetingsApi = {
       { params: params as Record<string, string> }
     ),
 
-  /** GET /meetings/without-pagination — all meetings (calendar view, max 1000) */
+  /** GET /meetings/without-pagination — all meetings (calendar view, max 200) */
   listAll: (params?: {
     status?: MeetingStatus;
     type?: MeetingKind;
     startDate?: string;
     endDate?: string;
   }) =>
-    apiClient.get<Meeting[]>('/meetings/without-pagination', {
+    apiClient.get<{ meetings: Meeting[]; truncated: boolean }>('/meetings/without-pagination', {
       params: params as Record<string, string>,
     }),
 

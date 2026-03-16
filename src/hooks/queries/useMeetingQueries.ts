@@ -12,6 +12,7 @@ export function useMeetings(params?: MeetingsListParams) {
   return useQuery({
     queryKey: queryKeys.meetings.list(params),
     queryFn: () => meetingsApi.list(params),
+    staleTime: 60 * 1000,
   });
 }
 
@@ -22,7 +23,11 @@ export function useMeetingsAll(params?: {
 }) {
   return useQuery({
     queryKey: queryKeys.meetings.list({ ...params, noPagination: true }),
-    queryFn: () => meetingsApi.listAll(params as MeetingsListParams),
+    queryFn: async () => {
+      const result = await meetingsApi.listAll(params as MeetingsListParams);
+      return result.meetings;
+    },
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -31,6 +36,7 @@ export function useMeeting(id: string) {
     queryKey: queryKeys.meetings.detail(id),
     queryFn: () => meetingsApi.getById(id),
     enabled: !!id,
+    staleTime: 60 * 1000,
   });
 }
 
@@ -135,6 +141,10 @@ export function useVoiceNotes() {
       type: 'VOICE_NOTE',
       noPagination: true,
     }),
-    queryFn: () => meetingsApi.listAll({ type: 'VOICE_NOTE' }),
+    queryFn: async () => {
+      const result = await meetingsApi.listAll({ type: 'VOICE_NOTE' });
+      return result.meetings;
+    },
+    staleTime: 60 * 1000,
   });
 }

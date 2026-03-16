@@ -47,6 +47,7 @@ export function useCardAnalytics(id: string, days?: number) {
     queryKey: queryKeys.cards.analytics(id, days),
     queryFn: () => cardsApi.analytics(id, days),
     enabled: !!id,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -60,6 +61,7 @@ export function useCardContacts(params?: {
   return useQuery({
     queryKey: queryKeys.cards.contacts(params),
     queryFn: () => cardsApi.contacts(params),
+    staleTime: 30 * 1000,
   });
 }
 

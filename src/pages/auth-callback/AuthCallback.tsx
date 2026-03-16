@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useAuthStore } from '@/stores';
 import { PageLoader } from '@/components/PageLoader';
 
@@ -25,7 +26,12 @@ export default function AuthCallback() {
       // Navigate to home — useCurrentUser hook will fetch profile
       navigate('/', { replace: true });
     } else {
-      // No token — something went wrong, redirect to sign-in
+      // No token — OAuth failed or was cancelled
+      const oauthError = searchParams.get('error');
+      const errorMessage = oauthError
+        ? `Sign-in failed: ${oauthError.replace(/_/g, ' ')}`
+        : 'Sign-in failed. Please try again.';
+      toast.error(errorMessage);
       navigate('/signin', { replace: true });
     }
   }, [searchParams, setAccessToken, navigate]);
