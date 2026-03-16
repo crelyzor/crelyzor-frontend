@@ -43,7 +43,7 @@ const CARDS_PUBLIC_URL =
 
 export default function Cards() {
   const navigate = useNavigate();
-  const { data: cards, isLoading } = useCards();
+  const { data: cards, isLoading, isError } = useCards();
   const deleteCard = useDeleteCard();
   const updateCard = useUpdateCard();
   const { data: currentUser } = useCurrentUser();
@@ -207,7 +207,11 @@ export default function Cards() {
         )}
 
         {/* Cards grid */}
-        {isLoading ? (
+        {isError ? (
+          <div className="text-center py-20">
+            <p className="text-sm text-neutral-400 dark:text-neutral-500">Failed to load cards</p>
+          </div>
+        ) : isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
             {[1, 2, 3].map((i) => (
               <div key={i}>

@@ -25,7 +25,15 @@ export default function CardAnalytics() {
   const [days, setDays] = useState(30);
 
   const { data: card } = useCard(id ?? '');
-  const { data: analytics, isLoading } = useCardAnalytics(id ?? '', days);
+  const { data: analytics, isLoading, isError } = useCardAnalytics(id ?? '', days);
+
+  if (isError) {
+    return (
+      <div className="max-w-4xl mx-auto text-center py-20">
+        <p className="text-neutral-500 dark:text-neutral-400 text-sm">Failed to load analytics</p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

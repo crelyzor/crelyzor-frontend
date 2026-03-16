@@ -47,7 +47,7 @@ export default function CardContacts() {
   const [bulkTagging, setBulkTagging] = useState(false);
   const [bulkTags, setBulkTags] = useState<string[]>([]);
 
-  const { data, isLoading } = useCardContacts({
+  const { data, isLoading, isError } = useCardContacts({
     search: search || undefined,
     tags: filterTags.length > 0 ? filterTags.join(',') : undefined,
     page,
@@ -245,7 +245,11 @@ export default function CardContacts() {
         )}
 
         {/* Contact list */}
-        {isLoading ? (
+        {isError ? (
+          <div className="text-center py-20">
+            <p className="text-sm text-neutral-400 dark:text-neutral-500">Failed to load contacts</p>
+          </div>
+        ) : isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <div

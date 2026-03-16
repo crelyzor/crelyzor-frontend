@@ -17,7 +17,7 @@ export default function Home() {
   const { data: currentUser } = useCurrentUser();
 
   // Use same query key as /meetings page → shared cache, no duplicate fetch
-  const { data: allMeetingsData, isLoading: meetingsLoading } =
+  const { data: allMeetingsData, isLoading: meetingsLoading, isError: meetingsError } =
     useMeetingsAll();
 
   const recentMeetings = useMemo(
@@ -98,6 +98,7 @@ export default function Home() {
           <RecentMeetings
             meetings={recentMeetings}
             isLoading={meetingsLoading}
+            isError={meetingsError}
           />
         </div>
 

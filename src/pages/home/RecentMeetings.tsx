@@ -14,6 +14,7 @@ import type { DisplayMeeting } from '@/lib/meetingHelpers';
 type RecentMeetingsProps = {
   meetings: DisplayMeeting[];
   isLoading?: boolean;
+  isError?: boolean;
 };
 
 function MeetingRowSkeleton() {
@@ -35,7 +36,7 @@ function MeetingRowSkeleton() {
   );
 }
 
-export function RecentMeetings({ meetings, isLoading }: RecentMeetingsProps) {
+export function RecentMeetings({ meetings, isLoading, isError }: RecentMeetingsProps) {
   const navigate = useNavigate();
 
   return (
@@ -62,7 +63,7 @@ export function RecentMeetings({ meetings, isLoading }: RecentMeetingsProps) {
           </>
         )}
 
-        {!isLoading &&
+        {!isLoading && !isError &&
           meetings.map((meeting, i) => (
             <motion.div
               key={meeting.id}
@@ -137,7 +138,13 @@ export function RecentMeetings({ meetings, isLoading }: RecentMeetingsProps) {
             </motion.div>
           ))}
 
-        {!isLoading && meetings.length === 0 && (
+        {isError && (
+          <div className="text-center py-10 text-neutral-400 dark:text-neutral-600">
+            <p className="text-xs">Failed to load meetings</p>
+          </div>
+        )}
+
+        {!isLoading && !isError && meetings.length === 0 && (
           <div className="text-center py-10 text-neutral-400 dark:text-neutral-600">
             <Clock className="w-8 h-8 mx-auto mb-2 opacity-40" />
             <p className="text-xs">No recent meetings</p>
