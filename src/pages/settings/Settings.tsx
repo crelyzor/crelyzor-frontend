@@ -305,7 +305,7 @@ function AppearanceSection() {
 // ── Security ──
 function SecuritySection() {
   const { data: profile } = useCurrentUser();
-  const { data: sessions } = useSessions();
+  const { data: sessions, isLoading: sessionsLoading, isError: sessionsError } = useSessions();
 
   return (
     <div className="space-y-6">
@@ -344,7 +344,15 @@ function SecuritySection() {
             <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-3">
               Active Sessions
             </h3>
-            {sessions && Array.isArray(sessions) && sessions.length > 0 ? (
+            {sessionsLoading ? (
+              <div className="space-y-2">
+                {[1, 2].map((i) => (
+                  <div key={i} className="h-14 rounded-lg bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
+                ))}
+              </div>
+            ) : sessionsError ? (
+              <p className="text-xs text-neutral-400">Failed to load sessions.</p>
+            ) : sessions && Array.isArray(sessions) && sessions.length > 0 ? (
               <div className="space-y-2">
                 {sessions.map(
                   (session: {

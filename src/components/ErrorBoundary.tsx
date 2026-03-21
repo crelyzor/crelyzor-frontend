@@ -24,6 +24,10 @@ export class ErrorBoundary extends Component<
     return { hasError: true, error };
   }
 
+  componentDidCatch(error: Error, info: { componentStack: string }) {
+    console.error('[ErrorBoundary] Uncaught error:', error, info.componentStack);
+  }
+
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) {

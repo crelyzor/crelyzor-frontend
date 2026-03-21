@@ -331,8 +331,8 @@ export const smaApi = {
             } else if (parsed.error) {
               onError(parsed.error);
             }
-          } catch {
-            // ignore malformed SSE lines
+          } catch (parseErr) {
+            console.warn('[smaService] Malformed SSE line, skipping:', raw, parseErr);
           }
         }
       }

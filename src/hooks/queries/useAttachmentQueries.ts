@@ -8,6 +8,7 @@ export function useMeetingAttachments(meetingId: string) {
     queryKey: queryKeys.attachments.byMeeting(meetingId),
     queryFn: () => attachmentsApi.getAttachments(meetingId),
     enabled: !!meetingId,
+    staleTime: 60_000,
   });
 }
 

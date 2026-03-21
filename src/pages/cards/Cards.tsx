@@ -61,6 +61,7 @@ export default function Cards() {
     queries: (cards ?? []).map((card) => ({
       queryKey: queryKeys.tags.byCard(card.id),
       queryFn: () => tagsApi.getCardTags(card.id),
+      staleTime: 5 * 60 * 1000,
     })),
     combine: (results): Map<string, TagType[]> => {
       const map = new Map<string, TagType[]>();

@@ -14,8 +14,11 @@ export default function AuthCallback() {
     if (processed.current) return;
     processed.current = true;
 
-    const accessToken = searchParams.get('accessToken');
-    const refreshToken = searchParams.get('refreshToken');
+    // Tokens are passed via hash fragment to avoid server logs and referrer leakage
+    const hash = window.location.hash.slice(1);
+    const hashParams = new URLSearchParams(hash);
+    const accessToken = hashParams.get('accessToken');
+    const refreshToken = hashParams.get('refreshToken');
 
     if (accessToken) {
       // Store tokens

@@ -71,7 +71,12 @@ async function attemptTokenRefresh(): Promise<boolean> {
     useAuthStore.getState().setAccessToken(data.accessToken);
     localStorage.setItem('calendar-refresh-token', data.refreshToken);
     return true;
-  } catch {
+  } catch (err) {
+    const isNetworkError =
+      err instanceof TypeError && err.message.toLowerCase().includes('fetch');
+    if (!isNetworkError) {
+      console.error('[apiClient] Token refresh failed unexpectedly', err);
+    }
     return false;
   }
 }

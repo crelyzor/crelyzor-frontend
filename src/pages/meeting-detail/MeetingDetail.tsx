@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { PageMotion } from '@/components/PageMotion';
@@ -14,6 +14,13 @@ export default function MeetingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const completedAtRef = useRef<number | null>(null);
+  const pollCountRef = useRef(0);
+
+  // Reset polling state whenever the meeting id changes
+  useEffect(() => {
+    completedAtRef.current = null;
+    pollCountRef.current = 0;
+  }, [id]);
 
   // Poll while transcription is in-flight, then for 30s after COMPLETED (AI title update)
   const {
@@ -28,8 +35,12 @@ export default function MeetingDetail() {
       const status = query.state.data?.transcriptionStatus;
       if (status === 'UPLOADED' || status === 'PROCESSING') {
         completedAtRef.current = null;
-        return 3000;
+        // Exponential backoff: 3s → 6s → 12s → max 30s
+        const interval = Math.min(3000 * Math.pow(2, pollCountRef.current), 30_000);
+        pollCountRef.current += 1;
+        return interval;
       }
+      pollCountRef.current = 0;
       if (status === 'COMPLETED') {
         if (!completedAtRef.current) completedAtRef.current = Date.now();
         if (Date.now() - completedAtRef.current < 30_000) return 4000;

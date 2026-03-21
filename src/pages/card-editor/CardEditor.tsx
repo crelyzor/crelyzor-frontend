@@ -61,7 +61,7 @@ export default function CardEditor() {
   const { id } = useParams();
   const isEditing = !!id;
 
-  const { data: existingCard, isLoading } = useCard(id ?? '');
+  const { data: existingCard, isLoading, isError } = useCard(id ?? '');
   const createCard = useCreateCard();
   const updateCard = useUpdateCard();
   const { data: templates } = useTemplates();
@@ -211,6 +211,18 @@ export default function CardEditor() {
   };
 
   const isSaving = createCard.isPending || updateCard.isPending;
+
+  if (isEditing && isError) {
+    return (
+      <div className="max-w-6xl mx-auto pb-24 flex flex-col items-center justify-center py-24 text-center">
+        <p className="text-sm font-medium text-foreground">Failed to load card</p>
+        <p className="text-xs text-muted-foreground mt-1">The card could not be found or you don&apos;t have access.</p>
+        <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate('/cards')}>
+          Back to cards
+        </Button>
+      </div>
+    );
+  }
 
   if (isEditing && isLoading) {
     return (

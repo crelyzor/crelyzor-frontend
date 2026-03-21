@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo, memo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import {
@@ -279,18 +279,19 @@ export function RecordingTab({
 }
 
 // ── Transcript Segment Row (with inline edit) ──
-function SegmentRow({
+const SegmentRow = memo(function SegmentRow({
   seg,
-  meetingId,
   speakerNames,
+  updateSegment,
+  isPending,
 }: {
   seg: SMATranscriptSegment;
-  meetingId: string;
   speakerNames: Record<string, string>;
+  updateSegment: (args: { segmentId: string; text: string }, opts?: { onSuccess?: () => void }) => void;
+  isPending: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(seg.text);
-  const { mutate: updateSegment, isPending } = useUpdateSegment(meetingId);
 
   const handleSave = () => {
     if (!draft.trim()) return;
@@ -300,7 +301,7 @@ function SegmentRow({
     }
     updateSegment(
       { segmentId: seg.id, text: draft.trim() },
-      { onSuccess: () => setEditing(false) }
+        { onSuccess: () => setEditing(false) }
     );
   };
 
@@ -380,7 +381,7 @@ function SegmentRow({
       </div>
     </div>
   );
-}
+});
 
 // ── Transcript Tab ──
 export function TranscriptTab({
@@ -397,6 +398,8 @@ export function TranscriptTab({
   const isProcessing =
     transcriptionStatus === 'UPLOADED' || transcriptionStatus === 'PROCESSING';
   const { data: transcript, isLoading } = useTranscript(meetingId, isCompleted);
+  const { mutate: updateSegment, isPending: isUpdatingSegment } = useUpdateSegment(meetingId);
+  const segments = useMemo(() => transcript?.segments ?? [], [transcript]);
 
   if (transcriptionStatus === 'NONE') {
     return (
@@ -434,7 +437,7 @@ export function TranscriptTab({
 
   if (isLoading) return <SkeletonLines count={6} />;
 
-  if (!transcript || transcript.segments.length === 0) {
+  if (segments.length === 0) {
     return (
       <EmptyState
         icon={FileText}
@@ -449,12 +452,13 @@ export function TranscriptTab({
       <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-4">
         Transcript
       </h3>
-      {transcript.segments.map((seg: SMATranscriptSegment) => (
+      {segments.map((seg: SMATranscriptSegment) => (
         <SegmentRow
           key={seg.id}
           seg={seg}
-          meetingId={meetingId}
           speakerNames={speakerNames}
+          updateSegment={updateSegment}
+          isPending={isUpdatingSegment}
         />
       ))}
     </div>
