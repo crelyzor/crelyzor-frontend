@@ -287,7 +287,10 @@ const SegmentRow = memo(function SegmentRow({
 }: {
   seg: SMATranscriptSegment;
   speakerNames: Record<string, string>;
-  updateSegment: (args: { segmentId: string; text: string }, opts?: { onSuccess?: () => void }) => void;
+  updateSegment: (
+    args: { segmentId: string; text: string },
+    opts?: { onSuccess?: () => void }
+  ) => void;
   isPending: boolean;
 }) {
   const [editing, setEditing] = useState(false);
@@ -301,7 +304,7 @@ const SegmentRow = memo(function SegmentRow({
     }
     updateSegment(
       { segmentId: seg.id, text: draft.trim() },
-        { onSuccess: () => setEditing(false) }
+      { onSuccess: () => setEditing(false) }
     );
   };
 
@@ -398,7 +401,8 @@ export function TranscriptTab({
   const isProcessing =
     transcriptionStatus === 'UPLOADED' || transcriptionStatus === 'PROCESSING';
   const { data: transcript, isLoading } = useTranscript(meetingId, isCompleted);
-  const { mutate: updateSegment, isPending: isUpdatingSegment } = useUpdateSegment(meetingId);
+  const { mutate: updateSegment, isPending: isUpdatingSegment } =
+    useUpdateSegment(meetingId);
   const segments = useMemo(() => transcript?.segments ?? [], [transcript]);
 
   if (transcriptionStatus === 'NONE') {

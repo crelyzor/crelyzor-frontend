@@ -36,7 +36,10 @@ export default function MeetingDetail() {
       if (status === 'UPLOADED' || status === 'PROCESSING') {
         completedAtRef.current = null;
         // Exponential backoff: 3s → 6s → 12s → max 30s
-        const interval = Math.min(3000 * Math.pow(2, pollCountRef.current), 30_000);
+        const interval = Math.min(
+          3000 * Math.pow(2, pollCountRef.current),
+          30_000
+        );
         pollCountRef.current += 1;
         return interval;
       }
