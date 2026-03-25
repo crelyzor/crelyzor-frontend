@@ -86,7 +86,7 @@ export type Meeting = {
   createdAt: string;
   updatedAt: string;
   participants: MeetingParticipant[];
-  guests: MeetingGuest[];
+  guests?: MeetingGuest[];
   tags?: Array<{
     tagId: string;
     meetingId: string;

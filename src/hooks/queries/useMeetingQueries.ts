@@ -72,8 +72,9 @@ export function useAcceptMeeting() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => meetingsApi.accept(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
+    onSuccess: (_, id) => {
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.detail(id) });
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.list() });
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to accept meeting');
@@ -86,8 +87,9 @@ export function useDeclineMeeting() {
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
       meetingsApi.decline(id, reason),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
+    onSuccess: (_, { id }) => {
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.detail(id) });
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.list() });
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to decline meeting');
@@ -100,8 +102,9 @@ export function useCancelMeeting() {
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
       meetingsApi.cancel(id, reason),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
+    onSuccess: (_, { id }) => {
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.detail(id) });
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.list() });
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to cancel meeting');
@@ -113,8 +116,9 @@ export function useCompleteMeeting() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => meetingsApi.complete(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
+    onSuccess: (_, id) => {
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.detail(id) });
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.list() });
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to complete meeting');

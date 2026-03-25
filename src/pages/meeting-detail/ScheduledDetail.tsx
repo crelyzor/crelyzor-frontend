@@ -55,6 +55,20 @@ import { AttachmentsSection } from './AttachmentsSection';
 import { ChangeLanguageDialog } from './ChangeLanguageDialog';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
+function TabError() {
+  return (
+    <div className="py-10 text-center">
+      <p className="text-sm text-muted-foreground">Something went wrong in this section.</p>
+      <button
+        className="mt-3 text-xs text-neutral-500 dark:text-neutral-400 underline underline-offset-2"
+        onClick={() => window.location.reload()}
+      >
+        Refresh page
+      </button>
+    </div>
+  );
+}
+
 const SCHEDULED_TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'transcript', label: 'Transcript' },
@@ -508,7 +522,7 @@ export function ScheduledDetail({
             </TabsList>
 
             <TabsContent value="overview" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary>
+              <ErrorBoundary fallback={<TabError />}>
                 <OverviewTab
                   meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}
@@ -518,7 +532,7 @@ export function ScheduledDetail({
               </ErrorBoundary>
             </TabsContent>
             <TabsContent value="transcript" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary>
+              <ErrorBoundary fallback={<TabError />}>
                 <TranscriptTab
                   meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}
@@ -526,7 +540,7 @@ export function ScheduledDetail({
               </ErrorBoundary>
             </TabsContent>
             <TabsContent value="summary" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary>
+              <ErrorBoundary fallback={<TabError />}>
                 <SummaryTab
                   meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}
@@ -534,7 +548,7 @@ export function ScheduledDetail({
               </ErrorBoundary>
             </TabsContent>
             <TabsContent value="actions" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary>
+              <ErrorBoundary fallback={<TabError />}>
                 <ActionsTab
                   meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}
@@ -542,12 +556,12 @@ export function ScheduledDetail({
               </ErrorBoundary>
             </TabsContent>
             <TabsContent value="notes" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary>
+              <ErrorBoundary fallback={<TabError />}>
                 <NotesTab meetingId={rawMeeting.id} />
               </ErrorBoundary>
             </TabsContent>
             <TabsContent value="recording" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary>
+              <ErrorBoundary fallback={<TabError />}>
                 <RecordingTab
                   meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}
@@ -555,7 +569,7 @@ export function ScheduledDetail({
               </ErrorBoundary>
             </TabsContent>
             <TabsContent value="ask" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary>
+              <ErrorBoundary fallback={<TabError />}>
                 <AskAITab
                   meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}
@@ -563,7 +577,7 @@ export function ScheduledDetail({
               </ErrorBoundary>
             </TabsContent>
             <TabsContent value="generate" className="p-4 sm:p-6 mt-0">
-              <ErrorBoundary>
+              <ErrorBoundary fallback={<TabError />}>
                 <GenerateTab
                   meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}
