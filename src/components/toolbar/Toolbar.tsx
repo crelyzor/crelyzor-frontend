@@ -4,6 +4,7 @@ import { Grip } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { useToolbarPins } from '@/hooks';
+import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import type { ToolbarItem } from '@/types';
 import {
   Tooltip,
@@ -15,22 +16,30 @@ import { ToolbarButton } from './ToolbarButton';
 import { ThemeToggle } from './ThemeToggle';
 import { ControlCenter } from './ControlCenter';
 
+const CARDS_PUBLIC_URL = import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
+
 export function Toolbar() {
   const [controlCenterOpen, setControlCenterOpen] = useState(false);
   const navigate = useNavigate();
   const { pinnedItems, togglePin, resetToDefaults, isPinned } =
     useToolbarPins();
+  const { data: currentUser } = useCurrentUser();
 
   const handleItemClick = useCallback(
     (item: ToolbarItem) => {
       if (item.action === 'navigate' && item.path) {
         navigate(item.path);
       } else if (item.id === 'share-link') {
-        navigator.clipboard.writeText('https://cal.harsh.dev/book/harsh');
-        toast.success('Booking link copied to clipboard');
+        const username = currentUser?.username;
+        if (!username) {
+          toast.error('Set a username first to share your link');
+          return;
+        }
+        navigator.clipboard.writeText(`${CARDS_PUBLIC_URL}/${username}`);
+        toast.success('Profile link copied to clipboard');
       }
     },
-    [navigate]
+    [navigate, currentUser]
   );
 
   return (

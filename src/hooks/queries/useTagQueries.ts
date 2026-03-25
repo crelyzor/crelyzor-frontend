@@ -48,7 +48,7 @@ export function useUpdateTag() {
       data: { name?: string; color?: string };
     }) => tagsApi.updateTag(tagId, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.tags.userTags() });
+      qc.invalidateQueries({ queryKey: queryKeys.tags.all });
     },
     onError: () => toast.error('Failed to update tag'),
   });
@@ -59,7 +59,7 @@ export function useDeleteTag() {
   return useMutation({
     mutationFn: (tagId: string) => tagsApi.deleteTag(tagId),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.tags.userTags() });
+      qc.invalidateQueries({ queryKey: queryKeys.tags.all });
     },
     onError: () => toast.error('Failed to delete tag'),
   });

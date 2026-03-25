@@ -25,11 +25,10 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: { componentStack: string }) {
-    console.error(
-      '[ErrorBoundary] Uncaught error:',
-      error,
-      info.componentStack
-    );
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.error('[ErrorBoundary] Uncaught error:', error, info.componentStack);
+    }
   }
 
   render() {
