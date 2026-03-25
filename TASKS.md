@@ -290,12 +290,32 @@ Deferred until Ask AI becomes universal (Phase 2 Big Brain). Skip for now.
 
 ---
 
-## Phase 2 — Online Meetings (next)
+## Phase 1.2 — Scheduling & Online Meetings ← current
 
-- [ ] Availability settings page
-- [ ] Public booking page UI (`/schedule/:username` in cards-frontend)
-- [ ] Recall.ai bot activation flow
-- [ ] Google Calendar sync settings
+Design doc: `docs/dev-notes/phase-1.2-scheduling.md`
+
+Depends on: backend P0 (UserSettings API) must exist before building settings UI.
+
+### P0 — Settings Page Restructure
+
+- [ ] **Settings page skeleton:** Restructure `/settings` into tabbed sections: Profile | Scheduling | Event Types | Availability | Integrations | AI & Transcription | Privacy. URL-based tabs (`?tab=scheduling`, etc.). Each section its own component under `src/pages/settings/`.
+- [ ] **Scheduling settings section:** Master on/off toggle, min notice hours (number input), max window days, default buffer mins. Wire to `PATCH /settings/user`. Skeleton + optimistic update.
+- [ ] **AI & Transcription settings section:** Auto-transcribe toggle, auto-AI toggle, default language selector (dropdown, BCP-47). Wire to `PATCH /settings/user`.
+
+### P1 — Event Types + Availability UI
+
+- [ ] **Event types section:** List event type cards (title, duration, locationType badge, active toggle). "New event type" button. Edit + delete. React Query hooks: `useEventTypes`, `useCreateEventType`, `useUpdateEventType`, `useDeleteEventType`. Wire to `/scheduling/event-types` endpoints.
+- [ ] **Event type form (slide-over/dialog):** Fields: title, slug (auto-derived, editable), duration (15/30/45/60/90 min select), locationType (IN_PERSON | ONLINE), meeting link (ONLINE only), buffer before/after, max per day. Client-side Zod validation. Full error handling.
+- [ ] **Availability weekly grid:** 7-row grid (Sun–Sat). Each row: day label + on/off toggle + time range inputs. Disabled when off. "Reset to defaults" button. Wire to `GET/PATCH /scheduling/availability`.
+- [ ] **Availability overrides:** Date picker to block specific dates. Blocked dates shown as removable chips. Wire to `POST/DELETE /scheduling/availability/overrides`.
+
+### P3 — Google Calendar Settings
+
+- [ ] **Google Calendar integration section:** "Connect Google Calendar" OAuth button (triggers re-auth for calendar write scope). Shows connected email + disconnect when connected. `googleCalendarSyncEnabled` toggle. Wire to `PATCH /settings/user`.
+
+### P4 — Recall.ai Settings
+
+- [ ] **Recall.ai integration section:** `recallEnabled` toggle. API key input (masked, show/hide). Save with loading. Wire to `PATCH /settings/user`. Instructional note about bot behavior.
 
 ---
 
