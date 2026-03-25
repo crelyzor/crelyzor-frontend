@@ -101,7 +101,11 @@ export default function Home() {
         {/* Left — today + recent meetings (2/3) */}
         <div className="lg:col-span-2 space-y-8">
           <TodaysMeetings
-            meetings={allMeetingsData?.filter((m) => m.type !== 'VOICE_NOTE').map(toDisplayMeeting) ?? []}
+            meetings={
+              allMeetingsData
+                ?.filter((m) => m.type !== 'VOICE_NOTE')
+                .map(toDisplayMeeting) ?? []
+            }
             isLoading={meetingsLoading}
           />
           <RecentMeetings

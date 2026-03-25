@@ -175,7 +175,7 @@ export function StartMeetingFab() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-[320px] px-4"
+              className="fixed bottom-20 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-[320px] px-4"
             >
               <div className="bg-[#1C1C1E] border border-white/5 rounded-[28px] p-2 shadow-2xl flex flex-col gap-2">
                 {/* Voice Note */}
@@ -241,7 +241,7 @@ export function StartMeetingFab() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-[320px] px-4"
+              className="fixed bottom-20 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-[320px] px-4"
             >
               <div className="bg-[#1C1C1E] border border-white/5 rounded-[28px] p-2 shadow-2xl flex flex-col gap-2">
                 {/* Back label */}
@@ -300,7 +300,7 @@ export function StartMeetingFab() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40"
+            className="fixed bottom-20 sm:bottom-8 left-1/2 -translate-x-1/2 z-40"
           >
             <div className="flex items-center gap-3 h-12 pl-4 pr-2 rounded-full bg-[#1C1C1E] border border-white/5 shadow-xl shadow-black/40">
               <span className="relative flex h-2.5 w-2.5 shrink-0">
@@ -339,7 +339,7 @@ export function StartMeetingFab() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-[320px] px-4"
+              className="fixed bottom-20 sm:bottom-8 left-1/2 -translate-x-1/2 z-50 w-full max-w-[320px] px-4"
             >
               <div className="bg-[#1C1C1E] border border-white/5 rounded-[28px] p-2 shadow-2xl flex flex-col gap-2">
                 <div className="px-4 pt-3 pb-2 flex items-center gap-3">
@@ -388,7 +388,7 @@ export function StartMeetingFab() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40"
+            className="fixed bottom-20 sm:bottom-8 left-1/2 -translate-x-1/2 z-40"
           >
             <div className="flex items-center gap-3 h-12 pl-4 pr-5 rounded-full bg-[#1C1C1E] border border-white/5 shadow-xl shadow-black/40">
               <div className="w-4 h-4 border-2 border-neutral-600 border-t-white rounded-full animate-spin" />
@@ -405,7 +405,7 @@ export function StartMeetingFab() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40"
+            className="fixed bottom-20 sm:bottom-8 left-1/2 -translate-x-1/2 z-40"
           >
             <Button
               onClick={() => setState('menu')}
