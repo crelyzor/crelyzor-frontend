@@ -85,10 +85,12 @@ export const smaApi = {
     return unwrap<SMAAISummary>(result);
   },
 
-  getAllTasks: async (): Promise<(Task & { meeting: { id: string; title: string } | null })[]> => {
-    const result = await apiClient.get<{ tasks: (Task & { meeting: { id: string; title: string } | null })[] }>(
-      `/sma/tasks`
-    );
+  getAllTasks: async (): Promise<
+    (Task & { meeting: { id: string; title: string } | null })[]
+  > => {
+    const result = await apiClient.get<{
+      tasks: (Task & { meeting: { id: string; title: string } | null })[];
+    }>(`/sma/tasks`);
     return result.tasks;
   },
 
