@@ -58,7 +58,9 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 function TabError() {
   return (
     <div className="py-10 text-center">
-      <p className="text-sm text-muted-foreground">Something went wrong in this section.</p>
+      <p className="text-sm text-muted-foreground">
+        Something went wrong in this section.
+      </p>
       <button
         className="mt-3 text-xs text-neutral-500 dark:text-neutral-400 underline underline-offset-2"
         onClick={() => window.location.reload()}
