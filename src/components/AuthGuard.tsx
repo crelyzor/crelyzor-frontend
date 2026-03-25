@@ -9,7 +9,7 @@ type Props = {
 
 export function AuthGuard({ children }: Props) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const { data: profile, isLoading } = useCurrentUser();
+  const { data: profile, isLoading, isError } = useCurrentUser();
   const location = useLocation();
 
   if (!isAuthenticated) {
@@ -18,6 +18,10 @@ export function AuthGuard({ children }: Props) {
 
   if (isLoading) {
     return <PageLoader />;
+  }
+
+  if (isError) {
+    return <Navigate to="/signin" replace />;
   }
 
   if (profile && !profile.username && location.pathname !== '/setup') {

@@ -48,7 +48,13 @@ export function useUpdateTag() {
       data: { name?: string; color?: string };
     }) => tagsApi.updateTag(tagId, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.tags.all });
+      // Invalidate user tag list and all per-meeting/per-card caches since
+      // tag name/color may be rendered in those views. Use partial prefix keys
+      // so every ['tags', 'meeting', *] and ['tags', 'card', *] query is
+      // invalidated without blowing up unrelated caches.
+      qc.invalidateQueries({ queryKey: queryKeys.tags.userTags() });
+      qc.invalidateQueries({ queryKey: ['tags', 'meeting'] });
+      qc.invalidateQueries({ queryKey: ['tags', 'card'] });
     },
     onError: () => toast.error('Failed to update tag'),
   });
@@ -59,7 +65,9 @@ export function useDeleteTag() {
   return useMutation({
     mutationFn: (tagId: string) => tagsApi.deleteTag(tagId),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.tags.all });
+      qc.invalidateQueries({ queryKey: queryKeys.tags.userTags() });
+      qc.invalidateQueries({ queryKey: ['tags', 'meeting'] });
+      qc.invalidateQueries({ queryKey: ['tags', 'card'] });
     },
     onError: () => toast.error('Failed to delete tag'),
   });
