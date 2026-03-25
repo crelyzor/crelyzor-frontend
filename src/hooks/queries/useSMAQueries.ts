@@ -28,6 +28,14 @@ export function useSummary(meetingId: string, enabled = true) {
   });
 }
 
+export function useAllTasks() {
+  return useQuery({
+    queryKey: queryKeys.sma.allTasks(),
+    queryFn: () => smaApi.getAllTasks(),
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
 export function useTasks(meetingId: string, enabled = true) {
   return useQuery({
     queryKey: queryKeys.sma.tasks(meetingId),

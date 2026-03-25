@@ -77,6 +77,7 @@ export const queryKeys = {
       [...queryKeys.sma.all, 'generated', meetingId] as const,
     share: (meetingId: string) =>
       [...queryKeys.sma.all, 'share', meetingId] as const,
+    allTasks: () => [...queryKeys.sma.all, 'allTasks'] as const,
   },
 
   // Tags
