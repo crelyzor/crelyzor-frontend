@@ -7,6 +7,8 @@ import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { CompactStickyBar } from './CompactStickyBar';
 import { HeroSection } from './HeroSection';
 import { RecentMeetings } from './RecentMeetings';
+import { TodaysMeetings } from './TodaysMeetings';
+import { PendingTasksWidget } from './PendingTasksWidget';
 import { DefaultCardWidget } from './DefaultCardWidget';
 import { RecentVoiceNotes } from './RecentVoiceNotes';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
@@ -96,8 +98,12 @@ export default function Home() {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="grid grid-cols-1 lg:grid-cols-3 gap-8"
       >
-        {/* Left — recent meetings (2/3) */}
-        <div className="lg:col-span-2">
+        {/* Left — today + recent meetings (2/3) */}
+        <div className="lg:col-span-2 space-y-8">
+          <TodaysMeetings
+            meetings={allMeetingsData?.filter((m) => m.type !== 'VOICE_NOTE').map(toDisplayMeeting) ?? []}
+            isLoading={meetingsLoading}
+          />
           <RecentMeetings
             meetings={recentMeetings}
             isLoading={meetingsLoading}
@@ -105,9 +111,10 @@ export default function Home() {
           />
         </div>
 
-        {/* Right — card widget + voice notes (1/3) */}
+        {/* Right — card widget + pending tasks + voice notes (1/3) */}
         <div className="lg:col-span-1 space-y-6">
           <DefaultCardWidget />
+          <PendingTasksWidget />
           <RecentVoiceNotes />
         </div>
       </motion.div>

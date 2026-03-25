@@ -3,6 +3,7 @@ import { ReactNode } from 'react';
 import { useCommandPalette } from '@/hooks';
 import { Toolbar } from '@/components/toolbar';
 import { UserMenu } from '@/components/user-menu/UserMenu';
+import { MobileNav } from '@/components/MobileNav';
 
 type LayoutProps = {
   children: ReactNode;
@@ -55,10 +56,12 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6 sm:py-10">
+      {/* Main Content — extra bottom padding on mobile to clear the nav bar */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6 sm:py-10 pb-20 sm:pb-10">
         {children}
       </main>
+
+      <MobileNav />
     </div>
   );
 }
