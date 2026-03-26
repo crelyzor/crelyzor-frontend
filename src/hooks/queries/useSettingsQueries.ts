@@ -18,9 +18,7 @@ export function useUpdateUserSettings() {
       settingsApi.updateUserSettings(data),
     onMutate: async (data) => {
       await qc.cancelQueries({ queryKey: queryKeys.settings.user() });
-      const previous = qc.getQueryData<UserSettings>(
-        queryKeys.settings.user()
-      );
+      const previous = qc.getQueryData<UserSettings>(queryKeys.settings.user());
       if (previous) {
         qc.setQueryData<UserSettings>(queryKeys.settings.user(), {
           ...previous,

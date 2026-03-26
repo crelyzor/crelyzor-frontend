@@ -56,11 +56,31 @@ import type { Theme } from '@/types';
 const SETTINGS_SECTIONS = [
   { id: 'profile', label: 'Profile', icon: User, group: 'account' },
   { id: 'appearance', label: 'Appearance', icon: Palette, group: 'account' },
-  { id: 'scheduling', label: 'Scheduling', icon: CalendarClock, group: 'scheduling' },
-  { id: 'event-types', label: 'Event Types', icon: LayoutList, group: 'scheduling' },
-  { id: 'availability', label: 'Availability', icon: Clock, group: 'scheduling' },
+  {
+    id: 'scheduling',
+    label: 'Scheduling',
+    icon: CalendarClock,
+    group: 'scheduling',
+  },
+  {
+    id: 'event-types',
+    label: 'Event Types',
+    icon: LayoutList,
+    group: 'scheduling',
+  },
+  {
+    id: 'availability',
+    label: 'Availability',
+    icon: Clock,
+    group: 'scheduling',
+  },
   { id: 'ai', label: 'AI & Transcription', icon: Sparkles, group: 'features' },
-  { id: 'integrations', label: 'Integrations', icon: Puzzle, group: 'features' },
+  {
+    id: 'integrations',
+    label: 'Integrations',
+    icon: Puzzle,
+    group: 'features',
+  },
   { id: 'tags', label: 'Tags', icon: Tag, group: 'features' },
   { id: 'security', label: 'Security', icon: Shield, group: 'other' },
   { id: 'privacy', label: 'Privacy', icon: Lock, group: 'other' },
@@ -214,7 +234,12 @@ function SchedulingSection() {
     updateSettings.mutate({ [field]: value });
   };
 
-  const handleNumberChange = (field: string, raw: string, min: number, max: number) => {
+  const handleNumberChange = (
+    field: string,
+    raw: string,
+    min: number,
+    max: number
+  ) => {
     const num = parseInt(raw, 10);
     if (isNaN(num)) return;
     const clamped = Math.max(min, Math.min(max, num));
@@ -1165,7 +1190,10 @@ function SettingsSkeleton({ rows }: { rows: number }) {
     <Card className="border-neutral-200 dark:border-neutral-800">
       <CardContent className="p-6 space-y-6">
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} className="flex items-center justify-between animate-pulse">
+          <div
+            key={i}
+            className="flex items-center justify-between animate-pulse"
+          >
             <div className="space-y-2">
               <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-32" />
               <div className="h-3 bg-neutral-100 dark:bg-neutral-800 rounded w-48" />
