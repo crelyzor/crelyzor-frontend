@@ -1370,7 +1370,8 @@ function IntegrationsSection() {
                 )}
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Sync your availability and write confirmed bookings to your calendar
+                Sync your availability and write confirmed bookings to your
+                calendar
               </p>
 
               {isLoading ? (
@@ -1407,7 +1408,9 @@ function IntegrationsSection() {
                     className="h-8 px-3 text-xs border-neutral-200 dark:border-neutral-700"
                   >
                     <CalendarDays className="w-3.5 h-3.5 mr-1.5" />
-                    {isConnecting ? 'Redirecting...' : 'Connect Google Calendar'}
+                    {isConnecting
+                      ? 'Redirecting...'
+                      : 'Connect Google Calendar'}
                   </Button>
                 </div>
               )}
@@ -1428,7 +1431,8 @@ function IntegrationsSection() {
                 Recall.ai
               </p>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
-                Automatically join your online meetings and begin transcribing in real time
+                Automatically join your online meetings and begin transcribing
+                in real time
               </p>
 
               {isLoading ? (
@@ -1452,7 +1456,8 @@ function IntegrationsSection() {
 
                   <div className="border-t border-neutral-100 dark:border-neutral-800 pt-4">
                     <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
-                      API key configuration and encrypted key storage will be available in the next update
+                      API key configuration and encrypted key storage will be
+                      available in the next update
                     </p>
                   </div>
                 </div>
