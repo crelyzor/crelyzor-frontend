@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-26 (Phase 1.2 P0 + Event Types UI + Availability UI complete)
+Last updated: 2026-03-26 (Phase 1.2 complete — P0 Settings, Event Types, Availability, Integrations UI done)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -311,11 +311,11 @@ Depends on: backend P0 (UserSettings API) must exist before building settings UI
 
 ### P3 — Google Calendar Settings
 
-- [ ] **Google Calendar integration section:** "Connect Google Calendar" OAuth button (triggers re-auth for calendar write scope). Shows connected email + disconnect when connected. `googleCalendarSyncEnabled` toggle. Wire to `PATCH /settings/user`.
+- [x] **Google Calendar integration section:** Connected state (email badge + sync toggle) vs unconnected (disabled connect button + note). `googleCalendarSyncEnabled` toggle wired to `PATCH /settings/user`. Connect button pending backend P3 OAuth.
 
 ### P4 — Recall.ai Settings
 
-- [ ] **Recall.ai integration section:** `recallEnabled` toggle. API key input (masked, show/hide). Save with loading. Wire to `PATCH /settings/user`. Instructional note about bot behavior.
+- [x] **Recall.ai integration section:** `recallEnabled` toggle wired to `PATCH /settings/user`. API key input shown as disabled with "coming soon" note (backend P4 encryption not done). Instructional note about bot behavior.
 
 ---
 

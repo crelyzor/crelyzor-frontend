@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { PageMotion } from '@/components/PageMotion';
 import {
   User,
@@ -27,6 +28,8 @@ import {
   Copy,
   RotateCcw,
   CalendarOff,
+  CalendarDays,
+  Bot,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -63,6 +66,7 @@ import {
   useUserSettings,
   useUpdateUserSettings,
 } from '@/hooks/queries/useSettingsQueries';
+import { settingsApi } from '@/services/settingsService';
 import {
   useEventTypes,
   useCreateEventType,
@@ -987,7 +991,15 @@ function EventTypesSection() {
 }
 
 // ── Availability (placeholder — P1) ──
-const DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAY_LABELS = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+];
 const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const DEFAULT_SCHEDULE: PatchAvailabilityDayPayload[] = [
@@ -1054,7 +1066,9 @@ function AvailabilitySection() {
     const payload: PatchAvailabilityDayPayload[] = localSchedule.map((d) => {
       if (d.isOff) return { dayOfWeek: d.dayOfWeek, isOff: true };
       if (d.startTime >= d.endTime) {
-        toast.error(`${DAY_LABELS[d.dayOfWeek]}: start time must be before end time`);
+        toast.error(
+          `${DAY_LABELS[d.dayOfWeek]}: start time must be before end time`
+        );
         return null as unknown as PatchAvailabilityDayPayload;
       }
       return {
@@ -1152,10 +1166,7 @@ function AvailabilitySection() {
       <Card className="border-neutral-200 dark:border-neutral-800">
         <CardContent className="p-6 space-y-3">
           {localSchedule.map((day) => (
-            <div
-              key={day.dayOfWeek}
-              className="flex items-center gap-3 py-1"
-            >
+            <div key={day.dayOfWeek} className="flex items-center gap-3 py-1">
               <div className="w-10 shrink-0">
                 <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
                   {DAY_SHORT[day.dayOfWeek]}
@@ -1175,7 +1186,11 @@ function AvailabilitySection() {
                     type="time"
                     value={day.startTime}
                     onChange={(e) =>
-                      handleTimeChange(day.dayOfWeek, 'startTime', e.target.value)
+                      handleTimeChange(
+                        day.dayOfWeek,
+                        'startTime',
+                        e.target.value
+                      )
                     }
                     className="w-28 h-8 text-xs border-neutral-200 dark:border-neutral-700"
                   />
@@ -1275,7 +1290,8 @@ function AvailabilitySection() {
 
           {!overridesLoading && (!overrides || overrides.length === 0) && (
             <p className="text-xs text-neutral-400 dark:text-neutral-500">
-              No blocked dates. Use the date picker above to block specific days.
+              No blocked dates. Use the date picker above to block specific
+              days.
             </p>
           )}
         </CardContent>
@@ -1284,19 +1300,167 @@ function AvailabilitySection() {
   );
 }
 
-// ── Integrations (placeholder — P3/P4) ──
+// ── Integrations ──
 function IntegrationsSection() {
+  const { data: settings, isLoading } = useUserSettings();
+  const updateSettings = useUpdateUserSettings();
+  const qc = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  const isCalendarConnected = !!settings?.googleCalendarEmail;
+
+  // After Google Calendar OAuth redirect, detect success/failure and refetch settings
+  useEffect(() => {
+    const calendarConnected = searchParams.get('calendarConnected');
+    if (calendarConnected === 'true') {
+      qc.invalidateQueries({ queryKey: ['settings'] });
+      toast.success('Google Calendar connected');
+      setSearchParams((prev) => {
+        prev.delete('calendarConnected');
+        return prev;
+      });
+    } else if (calendarConnected === 'false') {
+      toast.error('Calendar connection cancelled');
+      setSearchParams((prev) => {
+        prev.delete('calendarConnected');
+        return prev;
+      });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleCalendarConnect = async () => {
+    setIsConnecting(true);
+    try {
+      const redirectUrl = window.location.href;
+      const { url } = await settingsApi.getCalendarConnectUrl(redirectUrl);
+      window.location.href = url;
+    } catch {
+      toast.error('Failed to initiate Google Calendar connection');
+      setIsConnecting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <SectionHeader
         title="Integrations"
         description="Connect external services to enhance your workflow"
       />
-      <PlaceholderCard
-        icon={Puzzle}
-        message="Integrations are coming soon"
-        hint="Google Calendar sync, Recall.ai for meeting bots, and more"
-      />
+
+      {/* Google Calendar */}
+      <Card className="border-neutral-200 dark:border-neutral-800">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+              <CalendarDays className="w-5 h-5 text-neutral-600 dark:text-neutral-300" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                  Google Calendar
+                </p>
+                {isCalendarConnected && (
+                  <Badge
+                    variant="secondary"
+                    className="text-[10px] px-1.5 py-0 h-4 bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400"
+                  >
+                    Connected
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                Sync your availability and write confirmed bookings to your calendar
+              </p>
+
+              {isLoading ? (
+                <div className="mt-4 animate-pulse h-4 w-40 bg-neutral-200 dark:bg-neutral-800 rounded" />
+              ) : isCalendarConnected ? (
+                <div className="mt-4 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant="secondary"
+                      className="text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700"
+                    >
+                      {settings?.googleCalendarEmail}
+                    </Badge>
+                  </div>
+                  <SettingRow
+                    label="Sync enabled"
+                    description="Block busy times and write new bookings to this calendar"
+                  >
+                    <Switch
+                      checked={settings?.googleCalendarSyncEnabled ?? false}
+                      onCheckedChange={(v) =>
+                        updateSettings.mutate({ googleCalendarSyncEnabled: v })
+                      }
+                    />
+                  </SettingRow>
+                </div>
+              ) : (
+                <div className="mt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCalendarConnect}
+                    disabled={isConnecting}
+                    className="h-8 px-3 text-xs border-neutral-200 dark:border-neutral-700"
+                  >
+                    <CalendarDays className="w-3.5 h-3.5 mr-1.5" />
+                    {isConnecting ? 'Redirecting...' : 'Connect Google Calendar'}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recall.ai */}
+      <Card className="border-neutral-200 dark:border-neutral-800">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+              <Bot className="w-5 h-5 text-neutral-600 dark:text-neutral-300" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-0.5">
+                Recall.ai
+              </p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
+                Automatically join your online meetings and begin transcribing in real time
+              </p>
+
+              {isLoading ? (
+                <div className="space-y-4 animate-pulse">
+                  <div className="h-4 w-48 bg-neutral-200 dark:bg-neutral-800 rounded" />
+                  <div className="h-4 w-36 bg-neutral-100 dark:bg-neutral-700 rounded" />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <SettingRow
+                    label="Enable Recall.ai bot"
+                    description="Bot joins scheduled online meetings and transcribes automatically"
+                  >
+                    <Switch
+                      checked={settings?.recallEnabled ?? false}
+                      onCheckedChange={(v) =>
+                        updateSettings.mutate({ recallEnabled: v })
+                      }
+                    />
+                  </SettingRow>
+
+                  <div className="border-t border-neutral-100 dark:border-neutral-800 pt-4">
+                    <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                      API key configuration and encrypted key storage will be available in the next update
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
