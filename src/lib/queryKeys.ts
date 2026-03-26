@@ -103,6 +103,14 @@ export const queryKeys = {
     user: () => [...queryKeys.settings.all, 'user'] as const,
   },
 
+  // Scheduling
+  scheduling: {
+    all: ['scheduling'] as const,
+    eventTypes: () => [...queryKeys.scheduling.all, 'eventTypes'] as const,
+    availability: () => [...queryKeys.scheduling.all, 'availability'] as const,
+    overrides: () => [...queryKeys.scheduling.all, 'overrides'] as const,
+  },
+
   // Cards
   cards: {
     all: ['cards'] as const,

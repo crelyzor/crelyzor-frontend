@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { PageMotion } from '@/components/PageMotion';
 import {
   User,
@@ -21,6 +21,10 @@ import {
   Puzzle,
   Sparkles,
   Lock,
+  Video,
+  MapPin,
+  Link2,
+  Copy,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -36,6 +40,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
 import { useUpdateProfile } from '@/hooks/queries/useUserQueries';
 import { useSessions } from '@/hooks/queries/useIntegrationQueries';
@@ -49,8 +60,19 @@ import {
   useUserSettings,
   useUpdateUserSettings,
 } from '@/hooks/queries/useSettingsQueries';
+import {
+  useEventTypes,
+  useCreateEventType,
+  useUpdateEventType,
+  useDeleteEventType,
+} from '@/hooks/queries/useSchedulingQueries';
 import { useThemeStore } from '@/stores';
 import type { Theme } from '@/types';
+import type {
+  EventType,
+  LocationType,
+  CreateEventTypePayload,
+} from '@/types/settings';
 
 // ── Settings sections ──
 const SETTINGS_SECTIONS = [
@@ -436,19 +458,512 @@ function AITranscriptionSection() {
   );
 }
 
-// ── Event Types (placeholder — P1) ──
+// ── Event Types ──
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+const DURATION_OPTIONS = [
+  { value: 15, label: '15 min' },
+  { value: 30, label: '30 min' },
+  { value: 45, label: '45 min' },
+  { value: 60, label: '1 hour' },
+  { value: 90, label: '1.5 hours' },
+  { value: 120, label: '2 hours' },
+];
+
+const EMPTY_FORM = {
+  title: '',
+  slug: '',
+  description: '',
+  duration: 30,
+  locationType: 'IN_PERSON' as LocationType,
+  meetingLink: '',
+  bufferBefore: 0,
+  bufferAfter: 0,
+  maxPerDay: '',
+};
+
 function EventTypesSection() {
+  const { data: eventTypes, isLoading, isError } = useEventTypes();
+  const createEventType = useCreateEventType();
+  const updateEventType = useUpdateEventType();
+  const deleteEventType = useDeleteEventType();
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [slugEdited, setSlugEdited] = useState(false);
+
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(EMPTY_FORM);
+    setSlugEdited(false);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (et: EventType) => {
+    setEditingId(et.id);
+    setForm({
+      title: et.title,
+      slug: et.slug,
+      description: et.description ?? '',
+      duration: et.duration,
+      locationType: et.locationType,
+      meetingLink: et.meetingLink ?? '',
+      bufferBefore: et.bufferBefore,
+      bufferAfter: et.bufferAfter,
+      maxPerDay: et.maxPerDay != null ? String(et.maxPerDay) : '',
+    });
+    setSlugEdited(true);
+    setDialogOpen(true);
+  };
+
+  const handleTitleChange = (title: string) => {
+    setForm((prev) => ({
+      ...prev,
+      title,
+      ...(!slugEdited ? { slug: slugify(title) } : {}),
+    }));
+  };
+
+  const handleSubmit = () => {
+    if (!form.title.trim() || !form.slug.trim()) {
+      toast.error('Title and slug are required');
+      return;
+    }
+    if (form.locationType === 'ONLINE' && !form.meetingLink.trim()) {
+      toast.error('Meeting link is required for online events');
+      return;
+    }
+
+    const payload: CreateEventTypePayload = {
+      title: form.title.trim(),
+      slug: form.slug.trim(),
+      duration: form.duration,
+      locationType: form.locationType,
+      ...(form.description.trim() && { description: form.description.trim() }),
+      ...(form.locationType === 'ONLINE' &&
+        form.meetingLink.trim() && { meetingLink: form.meetingLink.trim() }),
+      ...(form.bufferBefore > 0 && { bufferBefore: form.bufferBefore }),
+      ...(form.bufferAfter > 0 && { bufferAfter: form.bufferAfter }),
+      ...(form.maxPerDay && { maxPerDay: parseInt(form.maxPerDay, 10) }),
+    };
+
+    if (editingId) {
+      updateEventType.mutate(
+        { id: editingId, data: payload },
+        {
+          onSuccess: () => {
+            toast.success('Event type updated');
+            setDialogOpen(false);
+          },
+        }
+      );
+    } else {
+      createEventType.mutate(payload, {
+        onSuccess: () => {
+          setDialogOpen(false);
+        },
+      });
+    }
+  };
+
+  const handleToggleActive = (et: EventType) => {
+    updateEventType.mutate({ id: et.id, data: { isActive: !et.isActive } });
+  };
+
+  const handleDelete = (id: string) => {
+    deleteEventType.mutate(id, {
+      onSuccess: () => setConfirmDeleteId(null),
+    });
+  };
+
+  const handleCopySlug = useCallback((slug: string) => {
+    navigator.clipboard.writeText(slug);
+    toast.success('Slug copied');
+  }, []);
+
   return (
     <div className="space-y-6">
-      <SectionHeader
-        title="Event Types"
-        description="Define the types of meetings people can book with you"
-      />
-      <PlaceholderCard
-        icon={LayoutList}
-        message="Event types management is coming soon"
-        hint="You'll be able to create event types like '30-min call' or '1-hour consultation'"
-      />
+      <div className="flex items-center justify-between">
+        <SectionHeader
+          title="Event Types"
+          description="Define the types of meetings people can book with you"
+        />
+        <Button
+          size="sm"
+          onClick={openCreate}
+          className="h-8 px-3 text-xs bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 shrink-0"
+        >
+          <Plus className="w-3.5 h-3.5 mr-1" />
+          New Event Type
+        </Button>
+      </div>
+
+      {/* Loading */}
+      {isLoading && (
+        <div className="space-y-3">
+          {[1, 2].map((i) => (
+            <Card key={i} className="border-neutral-200 dark:border-neutral-800">
+              <CardContent className="p-4 animate-pulse">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-36" />
+                    <div className="h-3 bg-neutral-100 dark:bg-neutral-800 rounded w-48" />
+                  </div>
+                  <div className="h-6 w-11 bg-neutral-200 dark:bg-neutral-700 rounded-full" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Error state */}
+      {!isLoading && isError && (
+        <Card className="border-neutral-200 dark:border-neutral-800">
+          <CardContent className="p-6">
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <LayoutList className="w-10 h-10 text-neutral-200 dark:text-neutral-700 mb-3" />
+              <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                Failed to load event types
+              </p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+                Check your connection and try refreshing
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Empty state */}
+      {!isLoading && !isError && (!eventTypes || eventTypes.length === 0) && (
+        <Card className="border-neutral-200 dark:border-neutral-800">
+          <CardContent className="p-6">
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <LayoutList className="w-10 h-10 text-neutral-200 dark:text-neutral-700 mb-3" />
+              <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                No event types yet
+              </p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1 mb-4">
+                Create your first event type so people can book time with you
+              </p>
+              <Button
+                size="sm"
+                onClick={openCreate}
+                className="h-8 px-3 text-xs bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900"
+              >
+                <Plus className="w-3.5 h-3.5 mr-1" />
+                Create Event Type
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Event type list */}
+      {!isLoading && eventTypes && eventTypes.length > 0 && (
+        <div className="space-y-2">
+          {eventTypes.map((et) => (
+            <Card
+              key={et.id}
+              className={`border-neutral-200 dark:border-neutral-800 transition-opacity ${
+                !et.isActive ? 'opacity-60' : ''
+              }`}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
+                        {et.title}
+                      </h3>
+                      {!et.isActive && (
+                        <span className="text-[10px] font-medium text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
+                          Inactive
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {et.duration} min
+                      </span>
+                      <span className="flex items-center gap-1">
+                        {et.locationType === 'ONLINE' ? (
+                          <Video className="w-3 h-3" />
+                        ) : (
+                          <MapPin className="w-3 h-3" />
+                        )}
+                        {et.locationType === 'ONLINE' ? 'Online' : 'In Person'}
+                      </span>
+                      {(et.bufferBefore > 0 || et.bufferAfter > 0) && (
+                        <span className="text-neutral-400 dark:text-neutral-500">
+                          Buffer: {et.bufferBefore}/{et.bufferAfter}m
+                        </span>
+                      )}
+                      {et.maxPerDay != null && (
+                        <span className="text-neutral-400 dark:text-neutral-500">
+                          Max {et.maxPerDay}/day
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <button
+                        onClick={() => handleCopySlug(et.slug)}
+                        className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                      >
+                        <Link2 className="w-3 h-3" />
+                        /schedule/you/{et.slug}
+                        <Copy className="w-2.5 h-2.5 ml-0.5 opacity-50" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => openEdit(et)}
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-neutral-400" />
+                    </Button>
+                    {confirmDeleteId === et.id ? (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleDelete(et.id)}
+                          disabled={deleteEventType.isPending}
+                          className="text-[11px] font-medium text-red-500 hover:text-red-600 transition-colors px-1"
+                        >
+                          {deleteEventType.isPending ? 'Deleting...' : 'Delete?'}
+                        </button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => setConfirmDeleteId(null)}
+                        >
+                          <X className="w-3.5 h-3.5 text-neutral-400" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => setConfirmDeleteId(et.id)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-neutral-400 hover:text-red-400" />
+                      </Button>
+                    )}
+                    <Switch
+                      checked={et.isActive}
+                      onCheckedChange={() => handleToggleActive(et)}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Create / Edit dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold">
+              {editingId ? 'Edit Event Type' : 'New Event Type'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-2">
+            {/* Title */}
+            <FieldGroup label="Title">
+              <Input
+                value={form.title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                placeholder="e.g. 30-min consultation"
+                maxLength={100}
+                className="border-neutral-200 dark:border-neutral-700"
+              />
+            </FieldGroup>
+
+            {/* Slug */}
+            <FieldGroup label="Slug (URL path)">
+              <div className="flex items-center gap-2">
+                <Input
+                  value={form.slug}
+                  onChange={(e) => {
+                    setSlugEdited(true);
+                    setForm((prev) => ({ ...prev, slug: e.target.value }));
+                  }}
+                  placeholder="30-min-consultation"
+                  maxLength={60}
+                  className="border-neutral-200 dark:border-neutral-700 font-mono text-xs"
+                />
+              </div>
+              <p className="text-[10px] text-neutral-400 mt-1">
+                Lowercase letters, numbers, and hyphens only
+              </p>
+            </FieldGroup>
+
+            {/* Duration + Location row */}
+            <div className="grid grid-cols-2 gap-4">
+              <FieldGroup label="Duration">
+                <Select
+                  value={String(form.duration)}
+                  onValueChange={(v) =>
+                    setForm((prev) => ({ ...prev, duration: parseInt(v, 10) }))
+                  }
+                >
+                  <SelectTrigger className="border-neutral-200 dark:border-neutral-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DURATION_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={String(opt.value)}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FieldGroup>
+
+              <FieldGroup label="Location">
+                <Select
+                  value={form.locationType}
+                  onValueChange={(v) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      locationType: v as LocationType,
+                    }))
+                  }
+                >
+                  <SelectTrigger className="border-neutral-200 dark:border-neutral-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="IN_PERSON">In Person</SelectItem>
+                    <SelectItem value="ONLINE">Online</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FieldGroup>
+            </div>
+
+            {/* Meeting link (ONLINE only) */}
+            {form.locationType === 'ONLINE' && (
+              <FieldGroup label="Meeting Link">
+                <Input
+                  value={form.meetingLink}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, meetingLink: e.target.value }))
+                  }
+                  placeholder="https://zoom.us/j/..."
+                  className="border-neutral-200 dark:border-neutral-700 text-xs"
+                />
+              </FieldGroup>
+            )}
+
+            {/* Description */}
+            <FieldGroup label="Description (optional)">
+              <Textarea
+                value={form.description}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, description: e.target.value }))
+                }
+                placeholder="Brief description shown on the booking page"
+                maxLength={500}
+                rows={2}
+                className="border-neutral-200 dark:border-neutral-700 resize-none text-sm"
+              />
+            </FieldGroup>
+
+            {/* Buffer + Max per day row */}
+            <div className="grid grid-cols-3 gap-4">
+              <FieldGroup label="Buffer before (min)">
+                <Input
+                  type="number"
+                  min={0}
+                  max={120}
+                  value={form.bufferBefore}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      bufferBefore: parseInt(e.target.value, 10) || 0,
+                    }))
+                  }
+                  className="border-neutral-200 dark:border-neutral-700"
+                />
+              </FieldGroup>
+              <FieldGroup label="Buffer after (min)">
+                <Input
+                  type="number"
+                  min={0}
+                  max={120}
+                  value={form.bufferAfter}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      bufferAfter: parseInt(e.target.value, 10) || 0,
+                    }))
+                  }
+                  className="border-neutral-200 dark:border-neutral-700"
+                />
+              </FieldGroup>
+              <FieldGroup label="Max per day">
+                <Input
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={form.maxPerDay}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, maxPerDay: e.target.value }))
+                  }
+                  placeholder="No limit"
+                  className="border-neutral-200 dark:border-neutral-700"
+                />
+              </FieldGroup>
+            </div>
+
+            {/* Submit */}
+            <div className="flex justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDialogOpen(false)}
+                className="text-xs h-8"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSubmit}
+                disabled={
+                  createEventType.isPending || updateEventType.isPending
+                }
+                className="h-8 px-4 text-xs bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900"
+              >
+                {createEventType.isPending || updateEventType.isPending
+                  ? 'Saving...'
+                  : editingId
+                    ? 'Save Changes'
+                    : 'Create'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
