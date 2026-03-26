@@ -613,7 +613,10 @@ function EventTypesSection() {
       {isLoading && (
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <Card key={i} className="border-neutral-200 dark:border-neutral-800">
+            <Card
+              key={i}
+              className="border-neutral-200 dark:border-neutral-800"
+            >
               <CardContent className="p-4 animate-pulse">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
@@ -745,7 +748,9 @@ function EventTypesSection() {
                           disabled={deleteEventType.isPending}
                           className="text-[11px] font-medium text-red-500 hover:text-red-600 transition-colors px-1"
                         >
-                          {deleteEventType.isPending ? 'Deleting...' : 'Delete?'}
+                          {deleteEventType.isPending
+                            ? 'Deleting...'
+                            : 'Delete?'}
                         </button>
                         <Button
                           variant="ghost"
@@ -867,7 +872,10 @@ function EventTypesSection() {
                 <Input
                   value={form.meetingLink}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, meetingLink: e.target.value }))
+                    setForm((prev) => ({
+                      ...prev,
+                      meetingLink: e.target.value,
+                    }))
                   }
                   placeholder="https://zoom.us/j/..."
                   className="border-neutral-200 dark:border-neutral-700 text-xs"
