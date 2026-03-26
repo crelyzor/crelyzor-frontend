@@ -1482,8 +1482,12 @@ function IntegrationsSection() {
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled={!recallApiKey.trim() || saveRecallApiKey.isPending}
-                        onClick={() => saveRecallApiKey.mutate(recallApiKey.trim())}
+                        disabled={
+                          !recallApiKey.trim() || saveRecallApiKey.isPending
+                        }
+                        onClick={() =>
+                          saveRecallApiKey.mutate(recallApiKey.trim())
+                        }
                         className="shrink-0"
                       >
                         {saveRecallApiKey.isPending ? 'Saving…' : 'Save key'}
@@ -1497,7 +1501,9 @@ function IntegrationsSection() {
                     ) : (
                       <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
                         Get your key at{' '}
-                        <span className="font-mono">app.recall.ai → Settings → API Keys</span>
+                        <span className="font-mono">
+                          app.recall.ai → Settings → API Keys
+                        </span>
                       </p>
                     )}
                   </div>
