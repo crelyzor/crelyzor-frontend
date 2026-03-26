@@ -32,6 +32,8 @@ import {
   Bot,
   Eye,
   EyeOff,
+  BookOpen,
+  XCircle,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -80,6 +82,8 @@ import {
   useOverrides,
   useCreateOverride,
   useDeleteOverride,
+  useBookings,
+  useCancelBooking,
 } from '@/hooks/queries/useSchedulingQueries';
 import { useThemeStore } from '@/stores';
 import type { Theme } from '@/types';
@@ -89,6 +93,8 @@ import type {
   CreateEventTypePayload,
   AvailabilityDay,
   PatchAvailabilityDayPayload,
+  HostBooking,
+  BookingStatus,
 } from '@/types/settings';
 
 // ── Settings sections ──
@@ -111,6 +117,12 @@ const SETTINGS_SECTIONS = [
     id: 'availability',
     label: 'Availability',
     icon: Clock,
+    group: 'scheduling',
+  },
+  {
+    id: 'bookings',
+    label: 'Bookings',
+    icon: BookOpen,
     group: 'scheduling',
   },
   { id: 'ai', label: 'AI & Transcription', icon: Sparkles, group: 'features' },
@@ -252,6 +264,7 @@ export default function Settings() {
             {activeSection === 'scheduling' && <SchedulingSection />}
             {activeSection === 'event-types' && <EventTypesSection />}
             {activeSection === 'availability' && <AvailabilitySection />}
+            {activeSection === 'bookings' && <BookingsSection />}
             {activeSection === 'ai' && <AITranscriptionSection />}
             {activeSection === 'integrations' && <IntegrationsSection />}
             {activeSection === 'tags' && <TagsSection />}
@@ -2247,6 +2260,283 @@ function SettingsSkeleton({ rows }: { rows: number }) {
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+// ── Bookings ──
+const STATUS_LABELS: Record<BookingStatus, string> = {
+  CONFIRMED: 'Confirmed',
+  CANCELLED: 'Cancelled',
+  RESCHEDULED: 'Rescheduled',
+  NO_SHOW: 'No show',
+};
+
+const STATUS_STYLES: Record<
+  BookingStatus,
+  { badge: string; dot: string }
+> = {
+  CONFIRMED: {
+    badge:
+      'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300',
+    dot: 'bg-emerald-500',
+  },
+  CANCELLED: {
+    badge:
+      'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500',
+    dot: 'bg-neutral-400',
+  },
+  RESCHEDULED: {
+    badge:
+      'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300',
+    dot: 'bg-amber-500',
+  },
+  NO_SHOW: {
+    badge:
+      'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500',
+    dot: 'bg-red-400',
+  },
+};
+
+function formatBookingTime(iso: string, tz: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: tz,
+  }).format(new Date(iso));
+}
+
+function BookingsSection() {
+  const [statusFilter, setStatusFilter] = useState<string>('CONFIRMED');
+  const [cancelId, setCancelId] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+
+  const { data, isLoading } = useBookings({ status: statusFilter, limit: 50 });
+  const cancelBooking = useCancelBooking();
+
+  const bookings: HostBooking[] = data?.bookings ?? [];
+
+  const handleCancel = () => {
+    if (!cancelId) return;
+    cancelBooking.mutate(
+      { id: cancelId, reason: cancelReason.trim() || undefined },
+      {
+        onSettled: () => {
+          setCancelId(null);
+          setCancelReason('');
+        },
+      }
+    );
+  };
+
+  const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader
+        title="Bookings"
+        description="View and manage meetings booked by guests via your scheduling page"
+      />
+
+      {/* Status filter */}
+      <div className="flex gap-2 flex-wrap">
+        {(['CONFIRMED', 'CANCELLED', 'NO_SHOW'] as BookingStatus[]).map(
+          (s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={[
+                'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                statusFilter === s
+                  ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
+                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700',
+              ].join(' ')}
+            >
+              {STATUS_LABELS[s]}
+            </button>
+          )
+        )}
+      </div>
+
+      {/* Loading */}
+      {isLoading && (
+        <Card className="border-neutral-200 dark:border-neutral-800">
+          <CardContent className="p-6 space-y-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="animate-pulse flex items-start justify-between gap-4"
+              >
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-40" />
+                  <div className="h-3 bg-neutral-100 dark:bg-neutral-800 rounded w-60" />
+                  <div className="h-3 bg-neutral-100 dark:bg-neutral-800 rounded w-32" />
+                </div>
+                <div className="h-6 w-20 bg-neutral-100 dark:bg-neutral-800 rounded-full" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Empty state */}
+      {!isLoading && bookings.length === 0 && (
+        <Card className="border-neutral-200 dark:border-neutral-800">
+          <CardContent className="p-6">
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <CalendarDays className="w-10 h-10 text-neutral-200 dark:text-neutral-700 mb-3" />
+              <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                No {STATUS_LABELS[statusFilter as BookingStatus]?.toLowerCase()} bookings
+              </p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1 max-w-xs">
+                Bookings will appear here once guests schedule time with you.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Booking list */}
+      {!isLoading && bookings.length > 0 && (
+        <Card className="border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800">
+          {bookings.map((booking) => {
+            const style = STATUS_STYLES[booking.status];
+            const canCancel =
+              booking.status === 'CONFIRMED' ||
+              booking.status === 'RESCHEDULED';
+            return (
+              <div key={booking.id} className="p-5 flex items-start gap-4">
+                {/* Left */}
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                      {booking.eventType.title}
+                    </p>
+                    <span
+                      className={[
+                        'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium',
+                        style.badge,
+                      ].join(' ')}
+                    >
+                      <span
+                        className={[
+                          'w-1.5 h-1.5 rounded-full shrink-0',
+                          style.dot,
+                        ].join(' ')}
+                      />
+                      {STATUS_LABELS[booking.status]}
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    {formatBookingTime(booking.startTime, userTz)}
+                    <span className="text-neutral-300 dark:text-neutral-600 mx-1.5">·</span>
+                    {booking.eventType.duration} min
+                    <span className="text-neutral-300 dark:text-neutral-600 mx-1.5">·</span>
+                    {booking.eventType.locationType === 'ONLINE' ? (
+                      <span className="inline-flex items-center gap-1">
+                        <Video className="w-3 h-3" />
+                        Online
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        In person
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                    {booking.guestName}
+                    <span className="text-neutral-400 dark:text-neutral-500 ml-1.5">
+                      {booking.guestEmail}
+                    </span>
+                  </p>
+                  {booking.guestNote && (
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500 italic mt-1">
+                      &ldquo;{booking.guestNote}&rdquo;
+                    </p>
+                  )}
+                  {booking.cancelReason && (
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+                      Cancellation reason: {booking.cancelReason}
+                    </p>
+                  )}
+                </div>
+
+                {/* Cancel action */}
+                {canCancel && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setCancelId(booking.id);
+                      setCancelReason('');
+                    }}
+                    className="shrink-0 text-xs text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                  >
+                    <XCircle className="w-3.5 h-3.5 mr-1" />
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+        </Card>
+      )}
+
+      {/* Pagination hint */}
+      {data && data.pagination.total > data.pagination.limit && (
+        <p className="text-xs text-neutral-400 dark:text-neutral-500 text-center">
+          Showing {bookings.length} of {data.pagination.total} bookings
+        </p>
+      )}
+
+      {/* Cancel confirm dialog */}
+      <Dialog open={!!cancelId} onOpenChange={(open) => !open && setCancelId(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Cancel booking</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              The guest will be notified that this booking has been cancelled.
+            </p>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-neutral-500">
+                Reason <span className="text-neutral-400">(optional)</span>
+              </Label>
+              <Textarea
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                placeholder="Let the guest know why…"
+                rows={3}
+                className="resize-none text-sm"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCancelId(null)}
+              >
+                Keep booking
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleCancel}
+                disabled={cancelBooking.isPending}
+              >
+                {cancelBooking.isPending ? 'Cancelling…' : 'Cancel booking'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
 

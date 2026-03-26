@@ -8,6 +8,8 @@ import type {
   AvailabilityDay,
   PatchAvailabilityDayPayload,
   AvailabilityOverride,
+  HostBooking,
+  BookingsResponse,
 } from '@/types/settings';
 
 export const settingsApi = {
@@ -97,4 +99,35 @@ export const availabilityApi = {
   /** DELETE /scheduling/availability/overrides/:id */
   deleteOverride: (id: string) =>
     apiClient.delete<void>(`/scheduling/availability/overrides/${id}`),
+};
+
+export interface ListBookingsParams {
+  status?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+}
+
+export const bookingsApi = {
+  /** GET /scheduling/bookings — paginated list of host's bookings */
+  list: (params: ListBookingsParams = {}) => {
+    const searchParams = new URLSearchParams();
+    if (params.status) searchParams.set('status', params.status);
+    if (params.from) searchParams.set('from', params.from);
+    if (params.to) searchParams.set('to', params.to);
+    if (params.page) searchParams.set('page', String(params.page));
+    if (params.limit) searchParams.set('limit', String(params.limit));
+    const qs = searchParams.toString();
+    return apiClient
+      .get<BookingsResponse>(`/scheduling/bookings${qs ? `?${qs}` : ''}`)
+      .then((r) => r);
+  },
+
+  /** PATCH /scheduling/bookings/:id/cancel — host cancels a booking */
+  cancel: (id: string, reason?: string) =>
+    apiClient.patch<{ booking: Pick<HostBooking, 'id' | 'status' | 'cancelReason' | 'canceledAt'> }>(
+      `/scheduling/bookings/${id}/cancel`,
+      { reason }
+    ),
 };

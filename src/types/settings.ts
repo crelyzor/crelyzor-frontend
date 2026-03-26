@@ -108,3 +108,38 @@ export interface AvailabilityOverride {
   createdAt: string;
   updatedAt: string;
 }
+
+// ── Bookings ──
+
+export type BookingStatus = 'CONFIRMED' | 'CANCELLED' | 'RESCHEDULED' | 'NO_SHOW';
+
+export interface HostBooking {
+  id: string;
+  startTime: string;
+  endTime: string;
+  status: BookingStatus;
+  timezone: string;
+  guestName: string;
+  guestEmail: string;
+  guestNote: string | null;
+  cancelReason: string | null;
+  canceledAt: string | null;
+  createdAt: string;
+  eventType: {
+    id: string;
+    title: string;
+    slug: string;
+    duration: number;
+    locationType: LocationType;
+  };
+}
+
+export interface BookingsResponse {
+  bookings: HostBooking[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}

@@ -1,7 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
-import { eventTypesApi, availabilityApi } from '@/services/settingsService';
+import {
+  eventTypesApi,
+  availabilityApi,
+  bookingsApi,
+  type ListBookingsParams,
+} from '@/services/settingsService';
 import type {
   EventType,
   CreateEventTypePayload,
@@ -144,6 +149,30 @@ export function useDeleteOverride() {
     },
     onError: () => {
       toast.error('Failed to unblock date');
+    },
+  });
+}
+
+// ── Bookings ──
+
+export function useBookings(params: ListBookingsParams = {}) {
+  return useQuery({
+    queryKey: queryKeys.scheduling.bookings(params as Record<string, unknown>),
+    queryFn: () => bookingsApi.list(params),
+  });
+}
+
+export function useCancelBooking() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      bookingsApi.cancel(id, reason),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.scheduling.bookings() });
+      toast.success('Booking cancelled');
+    },
+    onError: () => {
+      toast.error('Failed to cancel booking');
     },
   });
 }
