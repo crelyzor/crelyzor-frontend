@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
-import { eventTypesApi } from '@/services/settingsService';
+import { eventTypesApi, availabilityApi } from '@/services/settingsService';
 import type {
   EventType,
   CreateEventTypePayload,
   UpdateEventTypePayload,
+  PatchAvailabilityDayPayload,
 } from '@/types/settings';
 
 // ── Event Types ──
@@ -82,6 +83,67 @@ export function useDeleteEventType() {
         err.message ||
         'Failed to delete event type';
       toast.error(msg);
+    },
+  });
+}
+
+// ── Availability ──
+
+export function useAvailability() {
+  return useQuery({
+    queryKey: queryKeys.scheduling.availability(),
+    queryFn: availabilityApi.get,
+  });
+}
+
+export function useUpdateAvailability() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (days: PatchAvailabilityDayPayload[]) =>
+      availabilityApi.patch(days),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.scheduling.availability() });
+      toast.success('Availability updated');
+    },
+    onError: () => {
+      toast.error('Failed to update availability');
+    },
+  });
+}
+
+// ── Overrides ──
+
+export function useOverrides() {
+  return useQuery({
+    queryKey: queryKeys.scheduling.overrides(),
+    queryFn: availabilityApi.getOverrides,
+  });
+}
+
+export function useCreateOverride() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (date: string) => availabilityApi.createOverride(date),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.scheduling.overrides() });
+      toast.success('Date blocked');
+    },
+    onError: () => {
+      toast.error('Failed to block date');
+    },
+  });
+}
+
+export function useDeleteOverride() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => availabilityApi.deleteOverride(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.scheduling.overrides() });
+      toast.success('Date unblocked');
+    },
+    onError: () => {
+      toast.error('Failed to unblock date');
     },
   });
 }

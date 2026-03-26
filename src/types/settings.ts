@@ -70,3 +70,40 @@ export type UpdateEventTypePayload = Partial<
     maxPerDay?: number | null;
   }
 >;
+
+// ── Availability ──
+
+export interface AvailabilityDayOn {
+  dayOfWeek: number;
+  isOff: false;
+  id: string;
+  startTime: string;
+  endTime: string;
+  updatedAt: string;
+}
+
+export interface AvailabilityDayOff {
+  dayOfWeek: number;
+  isOff: true;
+  id: null;
+  startTime: null;
+  endTime: null;
+  updatedAt: null;
+}
+
+export type AvailabilityDay = AvailabilityDayOn | AvailabilityDayOff;
+
+export interface PatchAvailabilityDayPayload {
+  dayOfWeek: number;
+  startTime?: string;
+  endTime?: string;
+  isOff?: boolean;
+}
+
+export interface AvailabilityOverride {
+  id: string;
+  date: string;
+  isBlocked: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

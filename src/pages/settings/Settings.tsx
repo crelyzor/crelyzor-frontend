@@ -25,6 +25,8 @@ import {
   MapPin,
   Link2,
   Copy,
+  RotateCcw,
+  CalendarOff,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -32,6 +34,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import {
   Select,
@@ -65,6 +68,11 @@ import {
   useCreateEventType,
   useUpdateEventType,
   useDeleteEventType,
+  useAvailability,
+  useUpdateAvailability,
+  useOverrides,
+  useCreateOverride,
+  useDeleteOverride,
 } from '@/hooks/queries/useSchedulingQueries';
 import { useThemeStore } from '@/stores';
 import type { Theme } from '@/types';
@@ -72,6 +80,8 @@ import type {
   EventType,
   LocationType,
   CreateEventTypePayload,
+  AvailabilityDay,
+  PatchAvailabilityDayPayload,
 } from '@/types/settings';
 
 // ── Settings sections ──
@@ -977,18 +987,299 @@ function EventTypesSection() {
 }
 
 // ── Availability (placeholder — P1) ──
+const DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+const DEFAULT_SCHEDULE: PatchAvailabilityDayPayload[] = [
+  { dayOfWeek: 0, isOff: true },
+  { dayOfWeek: 1, startTime: '09:00', endTime: '17:00' },
+  { dayOfWeek: 2, startTime: '09:00', endTime: '17:00' },
+  { dayOfWeek: 3, startTime: '09:00', endTime: '17:00' },
+  { dayOfWeek: 4, startTime: '09:00', endTime: '17:00' },
+  { dayOfWeek: 5, startTime: '09:00', endTime: '17:00' },
+  { dayOfWeek: 6, isOff: true },
+];
+
 function AvailabilitySection() {
+  const { data: schedule, isLoading, isError } = useAvailability();
+  const updateAvailability = useUpdateAvailability();
+  const { data: overrides, isLoading: overridesLoading } = useOverrides();
+  const createOverride = useCreateOverride();
+  const deleteOverride = useDeleteOverride();
+
+  const [localSchedule, setLocalSchedule] = useState<
+    { dayOfWeek: number; isOff: boolean; startTime: string; endTime: string }[]
+  >([]);
+  const [dirty, setDirty] = useState(false);
+  const [blockDate, setBlockDate] = useState('');
+  const initDone = useRef(false);
+
+  useEffect(() => {
+    if (schedule && !initDone.current) {
+      setLocalSchedule(
+        schedule.map((d: AvailabilityDay) => ({
+          dayOfWeek: d.dayOfWeek,
+          isOff: d.isOff,
+          startTime: d.isOff ? '09:00' : d.startTime,
+          endTime: d.isOff ? '17:00' : d.endTime,
+        }))
+      );
+      initDone.current = true;
+    }
+  }, [schedule]);
+
+  const handleToggleDay = (dayOfWeek: number) => {
+    setLocalSchedule((prev) =>
+      prev.map((d) =>
+        d.dayOfWeek === dayOfWeek ? { ...d, isOff: !d.isOff } : d
+      )
+    );
+    setDirty(true);
+  };
+
+  const handleTimeChange = (
+    dayOfWeek: number,
+    field: 'startTime' | 'endTime',
+    value: string
+  ) => {
+    setLocalSchedule((prev) =>
+      prev.map((d) =>
+        d.dayOfWeek === dayOfWeek ? { ...d, [field]: value } : d
+      )
+    );
+    setDirty(true);
+  };
+
+  const handleSave = () => {
+    const payload: PatchAvailabilityDayPayload[] = localSchedule.map((d) => {
+      if (d.isOff) return { dayOfWeek: d.dayOfWeek, isOff: true };
+      if (d.startTime >= d.endTime) {
+        toast.error(`${DAY_LABELS[d.dayOfWeek]}: start time must be before end time`);
+        return null as unknown as PatchAvailabilityDayPayload;
+      }
+      return {
+        dayOfWeek: d.dayOfWeek,
+        startTime: d.startTime,
+        endTime: d.endTime,
+      };
+    });
+    if (payload.some((p) => p === null)) return;
+
+    updateAvailability.mutate(payload, {
+      onSuccess: () => {
+        setDirty(false);
+        initDone.current = false;
+      },
+    });
+  };
+
+  const handleReset = () => {
+    setLocalSchedule(
+      DEFAULT_SCHEDULE.map((d) => ({
+        dayOfWeek: d.dayOfWeek,
+        isOff: !!d.isOff,
+        startTime: d.startTime ?? '09:00',
+        endTime: d.endTime ?? '17:00',
+      }))
+    );
+    setDirty(true);
+  };
+
+  const handleBlockDate = () => {
+    if (!blockDate) return;
+    const today = new Date().toISOString().split('T')[0];
+    if (blockDate < today) {
+      toast.error('Cannot block a past date');
+      return;
+    }
+    createOverride.mutate(blockDate, {
+      onSuccess: () => setBlockDate(''),
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <SectionHeader
+          title="Availability"
+          description="Set your weekly schedule and block specific dates"
+        />
+        <SettingsSkeleton rows={7} />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <SectionHeader
+          title="Availability"
+          description="Set your weekly schedule and block specific dates"
+        />
+        <Card className="border-neutral-200 dark:border-neutral-800">
+          <CardContent className="p-6">
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <Clock className="w-10 h-10 text-neutral-200 dark:text-neutral-700 mb-3" />
+              <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                Failed to load availability
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <SectionHeader
-        title="Availability"
-        description="Set your weekly schedule and block specific dates"
-      />
-      <PlaceholderCard
-        icon={Clock}
-        message="Availability management is coming soon"
-        hint="You'll be able to set your weekly hours and block specific dates"
-      />
+      <div className="flex items-center justify-between">
+        <SectionHeader
+          title="Availability"
+          description="Set your weekly schedule and block specific dates"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleReset}
+          className="h-8 px-3 text-xs shrink-0"
+        >
+          <RotateCcw className="w-3 h-3 mr-1.5" />
+          Reset to Defaults
+        </Button>
+      </div>
+
+      {/* Weekly grid */}
+      <Card className="border-neutral-200 dark:border-neutral-800">
+        <CardContent className="p-6 space-y-3">
+          {localSchedule.map((day) => (
+            <div
+              key={day.dayOfWeek}
+              className="flex items-center gap-3 py-1"
+            >
+              <div className="w-10 shrink-0">
+                <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                  {DAY_SHORT[day.dayOfWeek]}
+                </span>
+              </div>
+              <Switch
+                checked={!day.isOff}
+                onCheckedChange={() => handleToggleDay(day.dayOfWeek)}
+              />
+              {day.isOff ? (
+                <span className="text-xs text-neutral-400 dark:text-neutral-500 italic">
+                  Unavailable
+                </span>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="time"
+                    value={day.startTime}
+                    onChange={(e) =>
+                      handleTimeChange(day.dayOfWeek, 'startTime', e.target.value)
+                    }
+                    className="w-28 h-8 text-xs border-neutral-200 dark:border-neutral-700"
+                  />
+                  <span className="text-xs text-neutral-400">to</span>
+                  <Input
+                    type="time"
+                    value={day.endTime}
+                    onChange={(e) =>
+                      handleTimeChange(day.dayOfWeek, 'endTime', e.target.value)
+                    }
+                    className="w-28 h-8 text-xs border-neutral-200 dark:border-neutral-700"
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+
+          <div className="flex justify-end pt-4 border-t border-neutral-100 dark:border-neutral-800">
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={!dirty || updateAvailability.isPending}
+              className="h-8 px-4 text-xs bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900"
+            >
+              {updateAvailability.isPending ? 'Saving...' : 'Save Schedule'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Date overrides */}
+      <Card className="border-neutral-200 dark:border-neutral-800">
+        <CardContent className="p-6">
+          <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-1">
+            Blocked Dates
+          </h3>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
+            Block specific dates when you're unavailable
+          </p>
+
+          <div className="flex items-center gap-2 mb-4">
+            <Input
+              type="date"
+              value={blockDate}
+              onChange={(e) => setBlockDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+              className="w-44 h-8 text-xs border-neutral-200 dark:border-neutral-700"
+            />
+            <Button
+              size="sm"
+              onClick={handleBlockDate}
+              disabled={!blockDate || createOverride.isPending}
+              className="h-8 px-3 text-xs bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900"
+            >
+              {createOverride.isPending ? 'Blocking...' : 'Block Date'}
+            </Button>
+          </div>
+
+          {overridesLoading && (
+            <div className="flex gap-2 animate-pulse">
+              {[1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="h-7 w-28 bg-neutral-100 dark:bg-neutral-800 rounded-full"
+                />
+              ))}
+            </div>
+          )}
+
+          {!overridesLoading && overrides && overrides.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {overrides.map((o) => (
+                <Badge
+                  key={o.id}
+                  variant="secondary"
+                  className="gap-1.5 pr-1 text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700"
+                >
+                  <CalendarOff className="w-3 h-3" />
+                  {new Date(o.date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => deleteOverride.mutate(o.id)}
+                    disabled={deleteOverride.isPending}
+                    className="h-4 w-4 ml-0.5 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {!overridesLoading && (!overrides || overrides.length === 0) && (
+            <p className="text-xs text-neutral-400 dark:text-neutral-500">
+              No blocked dates. Use the date picker above to block specific days.
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

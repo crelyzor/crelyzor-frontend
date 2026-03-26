@@ -5,6 +5,9 @@ import type {
   EventType,
   CreateEventTypePayload,
   UpdateEventTypePayload,
+  AvailabilityDay,
+  PatchAvailabilityDayPayload,
+  AvailabilityOverride,
 } from '@/types/settings';
 
 export const settingsApi = {
@@ -38,4 +41,41 @@ export const eventTypesApi = {
   /** DELETE /scheduling/event-types/:id */
   delete: (id: string) =>
     apiClient.delete<void>(`/scheduling/event-types/${id}`),
+};
+
+export const availabilityApi = {
+  /** GET /scheduling/availability — 7-row weekly schedule */
+  get: () =>
+    apiClient
+      .get<{ schedule: AvailabilityDay[] }>('/scheduling/availability')
+      .then((r) => r.schedule),
+
+  /** PATCH /scheduling/availability — bulk upsert weekly schedule */
+  patch: (days: PatchAvailabilityDayPayload[]) =>
+    apiClient
+      .patch<{ schedule: AvailabilityDay[] }>('/scheduling/availability', {
+        days,
+      })
+      .then((r) => r.schedule),
+
+  /** GET /scheduling/availability/overrides */
+  getOverrides: () =>
+    apiClient
+      .get<{ overrides: AvailabilityOverride[] }>(
+        '/scheduling/availability/overrides'
+      )
+      .then((r) => r.overrides),
+
+  /** POST /scheduling/availability/overrides */
+  createOverride: (date: string) =>
+    apiClient
+      .post<{ override: AvailabilityOverride }>(
+        '/scheduling/availability/overrides',
+        { date, isBlocked: true }
+      )
+      .then((r) => r.override),
+
+  /** DELETE /scheduling/availability/overrides/:id */
+  deleteOverride: (id: string) =>
+    apiClient.delete<void>(`/scheduling/availability/overrides/${id}`),
 };
