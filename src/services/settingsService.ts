@@ -14,11 +14,16 @@ import type {
 
 export const settingsApi = {
   /** GET /settings/user — get or create user settings */
-  getUserSettings: () => apiClient.get<UserSettings>('/settings/user'),
+  getUserSettings: () =>
+    apiClient
+      .get<{ settings: UserSettings }>('/settings/user')
+      .then((r) => r.settings),
 
   /** PATCH /settings/user — update user settings */
   updateUserSettings: (data: PatchUserSettingsPayload) =>
-    apiClient.patch<UserSettings>('/settings/user', data),
+    apiClient
+      .patch<{ settings: UserSettings }>('/settings/user', data)
+      .then((r) => r.settings),
 
   /**
    * POST /auth/google/calendar/connect

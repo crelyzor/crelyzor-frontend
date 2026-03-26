@@ -523,6 +523,7 @@ const EMPTY_FORM = {
 
 function EventTypesSection() {
   const { data: eventTypes, isLoading, isError } = useEventTypes();
+  const { data: profile } = useCurrentUser();
   const createEventType = useCreateEventType();
   const updateEventType = useUpdateEventType();
   const deleteEventType = useDeleteEventType();
@@ -617,10 +618,17 @@ function EventTypesSection() {
     });
   };
 
-  const handleCopySlug = useCallback((slug: string) => {
-    navigator.clipboard.writeText(slug);
-    toast.success('Slug copied');
-  }, []);
+  const handleCopySlug = useCallback(
+    (slug: string) => {
+      const publicBase =
+        import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
+      const username = profile?.username ?? '';
+      const url = `${publicBase}/schedule/${username}/${slug}`;
+      navigator.clipboard.writeText(url);
+      toast.success('Booking URL copied');
+    },
+    [profile?.username]
+  );
 
   return (
     <div className="space-y-6">
@@ -756,7 +764,7 @@ function EventTypesSection() {
                         className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
                       >
                         <Link2 className="w-3 h-3" />
-                        /schedule/you/{et.slug}
+                        /schedule/{profile?.username ?? '…'}/{et.slug}
                         <Copy className="w-2.5 h-2.5 ml-0.5 opacity-50" />
                       </button>
                     </div>
