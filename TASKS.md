@@ -315,18 +315,18 @@ Depends on: backend P0 (UserSettings API) must exist before building settings UI
 
 ### P4 — Recall.ai Settings
 
-- [x] **Recall.ai integration section:** `recallEnabled` toggle wired to `PATCH /settings/user`. API key input shown as disabled with "coming soon" note (backend P4 encryption not done). Instructional note about bot behavior.
+- [x] **Recall.ai integration section:** API key input (password-masked, show/hide toggle) wired to `PUT /settings/recall-api-key`. `recallEnabled` toggle wired to `PATCH /settings/user`. "API key saved" confirmation after save. Instructional link to app.recall.ai.
+
+---
+
+## Phase 2 — Standalone Tasks
+
+- [ ] Standalone Tasks page (Todoist-style — `GET /tasks`, all tasks not scoped to a meeting)
+- [ ] Task filters: by status, priority, due date, meeting source
+- [ ] Tags on Tasks (extends universal Tag system)
 
 ---
 
 ## Phase 3 — Big Brain
 
 - [ ] Global Ask AI / Big Brain chat interface
-
----
-
-## Phase 4 — Standalone Tasks
-
-- [ ] Standalone Tasks page (Todoist-style — `GET /tasks`, all tasks not scoped to a meeting)
-- [ ] Task filters: by status, priority, due date, meeting source
-- [ ] Tags on Tasks (extends universal Tag system)

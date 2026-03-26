@@ -30,6 +30,8 @@ import {
   CalendarOff,
   CalendarDays,
   Bot,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -65,6 +67,7 @@ import {
 import {
   useUserSettings,
   useUpdateUserSettings,
+  useSaveRecallApiKey,
 } from '@/hooks/queries/useSettingsQueries';
 import { settingsApi } from '@/services/settingsService';
 import {
@@ -1308,6 +1311,11 @@ function IntegrationsSection() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isConnecting, setIsConnecting] = useState(false);
 
+  // Recall.ai API key state
+  const [recallApiKey, setRecallApiKey] = useState('');
+  const [showRecallKey, setShowRecallKey] = useState(false);
+  const saveRecallApiKey = useSaveRecallApiKey(() => setRecallApiKey(''));
+
   const isCalendarConnected = !!settings?.googleCalendarEmail;
 
   // After Google Calendar OAuth redirect, detect success/failure and refetch settings
@@ -1442,23 +1450,70 @@ function IntegrationsSection() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <SettingRow
-                    label="Enable Recall.ai bot"
-                    description="Bot joins scheduled online meetings and transcribes automatically"
-                  >
-                    <Switch
-                      checked={settings?.recallEnabled ?? false}
-                      onCheckedChange={(v) =>
-                        updateSettings.mutate({ recallEnabled: v })
-                      }
-                    />
-                  </SettingRow>
+                  {/* API key input */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                      API Key
+                    </Label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          type={showRecallKey ? 'text' : 'password'}
+                          value={recallApiKey}
+                          onChange={(e) => {
+                            setRecallApiKey(e.target.value);
+                            setRecallKeySaved(false);
+                          }}
+                          placeholder="Paste your Recall.ai API key"
+                          className="pr-9 text-sm font-mono"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowRecallKey((v) => !v)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                        >
+                          {showRecallKey ? (
+                            <EyeOff className="w-4 h-4" />
+                          ) : (
+                            <Eye className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={!recallApiKey.trim() || saveRecallApiKey.isPending}
+                        onClick={() => saveRecallApiKey.mutate(recallApiKey.trim())}
+                        className="shrink-0"
+                      >
+                        {saveRecallApiKey.isPending ? 'Saving…' : 'Save key'}
+                      </Button>
+                    </div>
+                    {settings?.hasRecallApiKey ? (
+                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
+                        <Check className="w-3 h-3" />
+                        API key saved — paste a new key to replace it
+                      </p>
+                    ) : (
+                      <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                        Get your key at{' '}
+                        <span className="font-mono">app.recall.ai → Settings → API Keys</span>
+                      </p>
+                    )}
+                  </div>
 
                   <div className="border-t border-neutral-100 dark:border-neutral-800 pt-4">
-                    <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
-                      API key configuration and encrypted key storage will be
-                      available in the next update
-                    </p>
+                    <SettingRow
+                      label="Enable Recall.ai bot"
+                      description="Bot joins scheduled online meetings and transcribes automatically"
+                    >
+                      <Switch
+                        checked={settings?.recallEnabled ?? false}
+                        onCheckedChange={(v) =>
+                          updateSettings.mutate({ recallEnabled: v })
+                        }
+                      />
+                    </SettingRow>
                   </div>
                 </div>
               )}

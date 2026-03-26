@@ -2,7 +2,37 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import { settingsApi } from '@/services/settingsService';
+import { ApiError } from '@/lib/apiClient';
 import type { UserSettings, PatchUserSettingsPayload } from '@/types/settings';
+
+/** Extracts the backend's error message from an ApiError, falling back to a default. */
+function getApiErrorMessage(err: unknown, fallback: string): string {
+  if (
+    err instanceof ApiError &&
+    err.data !== null &&
+    typeof (err.data as Record<string, unknown>).message === 'string'
+  ) {
+    return (err.data as Record<string, string>).message;
+  }
+  return fallback;
+}
+
+export function useSaveRecallApiKey(onSuccess?: () => void) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (apiKey: string) => settingsApi.saveRecallApiKey(apiKey),
+    onSuccess: () => {
+      toast.success('Recall.ai API key saved');
+      onSuccess?.();
+    },
+    onError: (err) => {
+      toast.error(getApiErrorMessage(err, 'Failed to save API key'));
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.settings.user() });
+    },
+  });
+}
 
 export function useUserSettings() {
   return useQuery({
@@ -27,11 +57,11 @@ export function useUpdateUserSettings() {
       }
       return { previous };
     },
-    onError: (_err, _data, context) => {
+    onError: (err, _data, context) => {
       if (context?.previous) {
         qc.setQueryData(queryKeys.settings.user(), context.previous);
       }
-      toast.error('Failed to update settings');
+      toast.error(getApiErrorMessage(err, 'Failed to update settings'));
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: queryKeys.settings.user() });
