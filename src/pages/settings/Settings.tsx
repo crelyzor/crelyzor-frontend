@@ -2271,10 +2271,7 @@ const STATUS_LABELS: Record<BookingStatus, string> = {
   NO_SHOW: 'No show',
 };
 
-const STATUS_STYLES: Record<
-  BookingStatus,
-  { badge: string; dot: string }
-> = {
+const STATUS_STYLES: Record<BookingStatus, { badge: string; dot: string }> = {
   CONFIRMED: {
     badge:
       'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300',
@@ -2344,22 +2341,20 @@ function BookingsSection() {
 
       {/* Status filter */}
       <div className="flex gap-2 flex-wrap">
-        {(['CONFIRMED', 'CANCELLED', 'NO_SHOW'] as BookingStatus[]).map(
-          (s) => (
-            <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={[
-                'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                statusFilter === s
-                  ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
-                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700',
-              ].join(' ')}
-            >
-              {STATUS_LABELS[s]}
-            </button>
-          )
-        )}
+        {(['CONFIRMED', 'CANCELLED', 'NO_SHOW'] as BookingStatus[]).map((s) => (
+          <button
+            key={s}
+            onClick={() => setStatusFilter(s)}
+            className={[
+              'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
+              statusFilter === s
+                ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
+                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700',
+            ].join(' ')}
+          >
+            {STATUS_LABELS[s]}
+          </button>
+        ))}
       </div>
 
       {/* Loading */}
@@ -2390,7 +2385,8 @@ function BookingsSection() {
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <CalendarDays className="w-10 h-10 text-neutral-200 dark:text-neutral-700 mb-3" />
               <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                No {STATUS_LABELS[statusFilter as BookingStatus]?.toLowerCase()} bookings
+                No {STATUS_LABELS[statusFilter as BookingStatus]?.toLowerCase()}{' '}
+                bookings
               </p>
               <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1 max-w-xs">
                 Bookings will appear here once guests schedule time with you.
@@ -2433,9 +2429,13 @@ function BookingsSection() {
                   </div>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400">
                     {formatBookingTime(booking.startTime, userTz)}
-                    <span className="text-neutral-300 dark:text-neutral-600 mx-1.5">·</span>
+                    <span className="text-neutral-300 dark:text-neutral-600 mx-1.5">
+                      ·
+                    </span>
                     {booking.eventType.duration} min
-                    <span className="text-neutral-300 dark:text-neutral-600 mx-1.5">·</span>
+                    <span className="text-neutral-300 dark:text-neutral-600 mx-1.5">
+                      ·
+                    </span>
                     {booking.eventType.locationType === 'ONLINE' ? (
                       <span className="inline-flex items-center gap-1">
                         <Video className="w-3 h-3" />
@@ -2495,7 +2495,10 @@ function BookingsSection() {
       )}
 
       {/* Cancel confirm dialog */}
-      <Dialog open={!!cancelId} onOpenChange={(open) => !open && setCancelId(null)}>
+      <Dialog
+        open={!!cancelId}
+        onOpenChange={(open) => !open && setCancelId(null)}
+      >
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Cancel booking</DialogTitle>

@@ -111,7 +111,11 @@ export interface AvailabilityOverride {
 
 // ── Bookings ──
 
-export type BookingStatus = 'CONFIRMED' | 'CANCELLED' | 'RESCHEDULED' | 'NO_SHOW';
+export type BookingStatus =
+  | 'CONFIRMED'
+  | 'CANCELLED'
+  | 'RESCHEDULED'
+  | 'NO_SHOW';
 
 export interface HostBooking {
   id: string;

@@ -126,8 +126,10 @@ export const bookingsApi = {
 
   /** PATCH /scheduling/bookings/:id/cancel — host cancels a booking */
   cancel: (id: string, reason?: string) =>
-    apiClient.patch<{ booking: Pick<HostBooking, 'id' | 'status' | 'cancelReason' | 'canceledAt'> }>(
-      `/scheduling/bookings/${id}/cancel`,
-      { reason }
-    ),
+    apiClient.patch<{
+      booking: Pick<
+        HostBooking,
+        'id' | 'status' | 'cancelReason' | 'canceledAt'
+      >;
+    }>(`/scheduling/bookings/${id}/cancel`, { reason }),
 };
