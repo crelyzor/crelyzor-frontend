@@ -97,6 +97,12 @@ export const queryKeys = {
       [...queryKeys.attachments.all, 'meeting', meetingId] as const,
   },
 
+  // Settings
+  settings: {
+    all: ['settings'] as const,
+    user: () => [...queryKeys.settings.all, 'user'] as const,
+  },
+
   // Cards
   cards: {
     all: ['cards'] as const,

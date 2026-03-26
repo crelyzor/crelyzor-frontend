@@ -15,6 +15,12 @@ import {
   Check,
   X,
   Plus,
+  CalendarClock,
+  LayoutList,
+  Clock,
+  Puzzle,
+  Sparkles,
+  Lock,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -22,6 +28,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
 import { useUpdateProfile } from '@/hooks/queries/useUserQueries';
 import { useSessions } from '@/hooks/queries/useIntegrationQueries';
@@ -31,24 +45,40 @@ import {
   useUpdateTag,
   useDeleteTag,
 } from '@/hooks/queries/useTagQueries';
+import {
+  useUserSettings,
+  useUpdateUserSettings,
+} from '@/hooks/queries/useSettingsQueries';
 import { useThemeStore } from '@/stores';
 import type { Theme } from '@/types';
 
 // ── Settings sections ──
 const SETTINGS_SECTIONS = [
-  { id: 'profile', label: 'Profile', icon: User },
-  { id: 'appearance', label: 'Appearance', icon: Palette },
-  { id: 'security', label: 'Security', icon: Shield },
-  { id: 'tags', label: 'Tags', icon: Tag },
+  { id: 'profile', label: 'Profile', icon: User, group: 'account' },
+  { id: 'appearance', label: 'Appearance', icon: Palette, group: 'account' },
+  { id: 'scheduling', label: 'Scheduling', icon: CalendarClock, group: 'scheduling' },
+  { id: 'event-types', label: 'Event Types', icon: LayoutList, group: 'scheduling' },
+  { id: 'availability', label: 'Availability', icon: Clock, group: 'scheduling' },
+  { id: 'ai', label: 'AI & Transcription', icon: Sparkles, group: 'features' },
+  { id: 'integrations', label: 'Integrations', icon: Puzzle, group: 'features' },
+  { id: 'tags', label: 'Tags', icon: Tag, group: 'features' },
+  { id: 'security', label: 'Security', icon: Shield, group: 'other' },
+  { id: 'privacy', label: 'Privacy', icon: Lock, group: 'other' },
 ] as const;
 
 type SettingsSection = (typeof SETTINGS_SECTIONS)[number]['id'];
+
+const SECTION_GROUPS = [
+  { key: 'account', label: 'Account' },
+  { key: 'scheduling', label: 'Scheduling' },
+  { key: 'features', label: 'Features' },
+  { key: 'other', label: '' },
+] as const;
 
 export default function Settings() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Tab state is driven by ?tab= search param
   const activeSection = (searchParams.get('tab') ??
     'profile') as SettingsSection;
   const setActiveSection = (section: SettingsSection) => {
@@ -79,25 +109,42 @@ export default function Settings() {
 
         <div className="flex gap-6">
           {/* ── Sidebar ── */}
-          <nav className="w-48 shrink-0">
-            <div className="space-y-1">
-              {SETTINGS_SECTIONS.map((section) => {
-                const Icon = section.icon;
-                const isActive = activeSection === section.id;
+          <nav className="w-48 shrink-0 hidden md:block">
+            <div className="space-y-4">
+              {SECTION_GROUPS.map((group) => {
+                const items = SETTINGS_SECTIONS.filter(
+                  (s) => s.group === group.key
+                );
+                if (items.length === 0) return null;
                 return (
-                  <button
-                    key={section.id}
-                    onClick={() => setActiveSection(section.id)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                    ${
-                      isActive
-                        ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
-                        : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {section.label}
-                  </button>
+                  <div key={group.key}>
+                    {group.label && (
+                      <p className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider px-3 mb-1.5">
+                        {group.label}
+                      </p>
+                    )}
+                    <div className="space-y-0.5">
+                      {items.map((section) => {
+                        const Icon = section.icon;
+                        const isActive = activeSection === section.id;
+                        return (
+                          <button
+                            key={section.id}
+                            onClick={() => setActiveSection(section.id)}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                            ${
+                              isActive
+                                ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
+                                : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                            }`}
+                          >
+                            <Icon className="w-4 h-4" />
+                            {section.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -114,16 +161,321 @@ export default function Settings() {
             </div>
           </nav>
 
+          {/* ── Mobile tab bar ── */}
+          <div className="md:hidden w-full mb-4 -mt-2">
+            <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide">
+              {SETTINGS_SECTIONS.map((section) => {
+                const Icon = section.icon;
+                const isActive = activeSection === section.id;
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => setActiveSection(section.id)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0
+                    ${
+                      isActive
+                        ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {section.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* ── Content ── */}
           <div className="flex-1 min-w-0">
             {activeSection === 'profile' && <ProfileSection />}
             {activeSection === 'appearance' && <AppearanceSection />}
-            {activeSection === 'security' && <SecuritySection />}
+            {activeSection === 'scheduling' && <SchedulingSection />}
+            {activeSection === 'event-types' && <EventTypesSection />}
+            {activeSection === 'availability' && <AvailabilitySection />}
+            {activeSection === 'ai' && <AITranscriptionSection />}
+            {activeSection === 'integrations' && <IntegrationsSection />}
             {activeSection === 'tags' && <TagsSection />}
+            {activeSection === 'security' && <SecuritySection />}
+            {activeSection === 'privacy' && <PrivacySection />}
           </div>
         </div>
       </div>
     </PageMotion>
+  );
+}
+
+// ── Scheduling ──
+function SchedulingSection() {
+  const { data: settings, isLoading } = useUserSettings();
+  const updateSettings = useUpdateUserSettings();
+
+  const handleToggle = (field: string, value: boolean) => {
+    updateSettings.mutate({ [field]: value });
+  };
+
+  const handleNumberChange = (field: string, raw: string, min: number, max: number) => {
+    const num = parseInt(raw, 10);
+    if (isNaN(num)) return;
+    const clamped = Math.max(min, Math.min(max, num));
+    updateSettings.mutate({ [field]: clamped });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <SectionHeader
+          title="Scheduling"
+          description="Configure your booking preferences"
+        />
+        <SettingsSkeleton rows={4} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader
+        title="Scheduling"
+        description="Configure your booking preferences"
+      />
+
+      <Card className="border-neutral-200 dark:border-neutral-800">
+        <CardContent className="p-6 space-y-6">
+          {/* Master toggle */}
+          <SettingRow
+            label="Enable scheduling"
+            description="Allow others to book time with you via your public booking page"
+          >
+            <Switch
+              checked={settings?.schedulingEnabled ?? false}
+              onCheckedChange={(v) => handleToggle('schedulingEnabled', v)}
+            />
+          </SettingRow>
+
+          <div className="border-t border-neutral-100 dark:border-neutral-800" />
+
+          {/* Min notice */}
+          <SettingRow
+            label="Minimum notice"
+            description="How far in advance someone must book (hours)"
+          >
+            <Input
+              type="number"
+              min={0}
+              max={168}
+              value={settings?.minNoticeHours ?? 24}
+              onChange={(e) =>
+                handleNumberChange('minNoticeHours', e.target.value, 0, 168)
+              }
+              className="w-24 border-neutral-200 dark:border-neutral-700 text-right"
+            />
+          </SettingRow>
+
+          {/* Max window */}
+          <SettingRow
+            label="Booking window"
+            description="How far into the future bookings are allowed (days)"
+          >
+            <Input
+              type="number"
+              min={1}
+              max={365}
+              value={settings?.maxWindowDays ?? 60}
+              onChange={(e) =>
+                handleNumberChange('maxWindowDays', e.target.value, 1, 365)
+              }
+              className="w-24 border-neutral-200 dark:border-neutral-700 text-right"
+            />
+          </SettingRow>
+
+          {/* Default buffer */}
+          <SettingRow
+            label="Default buffer"
+            description="Minutes between back-to-back meetings"
+          >
+            <Input
+              type="number"
+              min={0}
+              max={120}
+              value={settings?.defaultBufferMins ?? 15}
+              onChange={(e) =>
+                handleNumberChange('defaultBufferMins', e.target.value, 0, 120)
+              }
+              className="w-24 border-neutral-200 dark:border-neutral-700 text-right"
+            />
+          </SettingRow>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ── AI & Transcription ──
+const LANGUAGES = [
+  { value: 'en', label: 'English' },
+  { value: 'en-US', label: 'English (US)' },
+  { value: 'en-GB', label: 'English (UK)' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+  { value: 'de', label: 'German' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'it', label: 'Italian' },
+  { value: 'nl', label: 'Dutch' },
+  { value: 'ja', label: 'Japanese' },
+  { value: 'ko', label: 'Korean' },
+  { value: 'zh', label: 'Chinese' },
+  { value: 'hi', label: 'Hindi' },
+  { value: 'ar', label: 'Arabic' },
+  { value: 'ru', label: 'Russian' },
+];
+
+function AITranscriptionSection() {
+  const { data: settings, isLoading } = useUserSettings();
+  const updateSettings = useUpdateUserSettings();
+
+  const handleToggle = (field: string, value: boolean) => {
+    updateSettings.mutate({ [field]: value });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <SectionHeader
+          title="AI & Transcription"
+          description="Configure automatic transcription and AI processing"
+        />
+        <SettingsSkeleton rows={3} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader
+        title="AI & Transcription"
+        description="Configure automatic transcription and AI processing"
+      />
+
+      <Card className="border-neutral-200 dark:border-neutral-800">
+        <CardContent className="p-6 space-y-6">
+          <SettingRow
+            label="Auto-transcribe"
+            description="Automatically transcribe recordings after upload"
+          >
+            <Switch
+              checked={settings?.autoTranscribe ?? true}
+              onCheckedChange={(v) => handleToggle('autoTranscribe', v)}
+            />
+          </SettingRow>
+
+          <div className="border-t border-neutral-100 dark:border-neutral-800" />
+
+          <SettingRow
+            label="Auto AI processing"
+            description="Automatically generate summary, key points, and tasks after transcription"
+          >
+            <Switch
+              checked={settings?.autoAIProcess ?? true}
+              onCheckedChange={(v) => handleToggle('autoAIProcess', v)}
+            />
+          </SettingRow>
+
+          <div className="border-t border-neutral-100 dark:border-neutral-800" />
+
+          <SettingRow
+            label="Default language"
+            description="Language used for new transcriptions"
+          >
+            <Select
+              value={settings?.defaultLanguage ?? 'en'}
+              onValueChange={(v) =>
+                updateSettings.mutate({ defaultLanguage: v })
+              }
+            >
+              <SelectTrigger className="w-44 border-neutral-200 dark:border-neutral-700">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </SettingRow>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ── Event Types (placeholder — P1) ──
+function EventTypesSection() {
+  return (
+    <div className="space-y-6">
+      <SectionHeader
+        title="Event Types"
+        description="Define the types of meetings people can book with you"
+      />
+      <PlaceholderCard
+        icon={LayoutList}
+        message="Event types management is coming soon"
+        hint="You'll be able to create event types like '30-min call' or '1-hour consultation'"
+      />
+    </div>
+  );
+}
+
+// ── Availability (placeholder — P1) ──
+function AvailabilitySection() {
+  return (
+    <div className="space-y-6">
+      <SectionHeader
+        title="Availability"
+        description="Set your weekly schedule and block specific dates"
+      />
+      <PlaceholderCard
+        icon={Clock}
+        message="Availability management is coming soon"
+        hint="You'll be able to set your weekly hours and block specific dates"
+      />
+    </div>
+  );
+}
+
+// ── Integrations (placeholder — P3/P4) ──
+function IntegrationsSection() {
+  return (
+    <div className="space-y-6">
+      <SectionHeader
+        title="Integrations"
+        description="Connect external services to enhance your workflow"
+      />
+      <PlaceholderCard
+        icon={Puzzle}
+        message="Integrations are coming soon"
+        hint="Google Calendar sync, Recall.ai for meeting bots, and more"
+      />
+    </div>
+  );
+}
+
+// ── Privacy (placeholder) ──
+function PrivacySection() {
+  return (
+    <div className="space-y-6">
+      <SectionHeader
+        title="Privacy"
+        description="Control your data and privacy preferences"
+      />
+      <PlaceholderCard
+        icon={Lock}
+        message="Privacy settings are coming soon"
+        hint="Data export, account deletion, and visibility controls"
+      />
+    </div>
   );
 }
 
@@ -199,7 +551,7 @@ function ProfileSection() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FieldGroup label="Full Name">
               <Input
                 value={name}
@@ -747,6 +1099,7 @@ function TagsSection() {
 }
 
 // ── Shared components ──
+
 function SectionHeader({
   title,
   description,
@@ -780,5 +1133,73 @@ function FieldGroup({
       </Label>
       {children}
     </div>
+  );
+}
+
+function SettingRow({
+  label,
+  description,
+  children,
+}: {
+  label: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+          {label}
+        </p>
+        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+          {description}
+        </p>
+      </div>
+      <div className="shrink-0">{children}</div>
+    </div>
+  );
+}
+
+function SettingsSkeleton({ rows }: { rows: number }) {
+  return (
+    <Card className="border-neutral-200 dark:border-neutral-800">
+      <CardContent className="p-6 space-y-6">
+        {Array.from({ length: rows }).map((_, i) => (
+          <div key={i} className="flex items-center justify-between animate-pulse">
+            <div className="space-y-2">
+              <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-32" />
+              <div className="h-3 bg-neutral-100 dark:bg-neutral-800 rounded w-48" />
+            </div>
+            <div className="h-6 w-11 bg-neutral-200 dark:bg-neutral-700 rounded-full" />
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function PlaceholderCard({
+  icon: Icon,
+  message,
+  hint,
+}: {
+  icon: typeof Clock;
+  message: string;
+  hint: string;
+}) {
+  return (
+    <Card className="border-neutral-200 dark:border-neutral-800">
+      <CardContent className="p-6">
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+          <Icon className="w-10 h-10 text-neutral-200 dark:text-neutral-700 mb-3" />
+          <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+            {message}
+          </p>
+          <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1 max-w-xs">
+            {hint}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
