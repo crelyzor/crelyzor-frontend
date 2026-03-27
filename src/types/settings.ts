@@ -47,6 +47,7 @@ export interface EventType {
   bufferAfter: number;
   maxPerDay: number | null;
   isActive: boolean;
+  availabilityScheduleId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -62,6 +63,7 @@ export interface CreateEventTypePayload {
   bufferAfter?: number;
   maxPerDay?: number;
   isActive?: boolean;
+  availabilityScheduleId?: string | null;
 }
 
 export type UpdateEventTypePayload = Partial<
@@ -69,36 +71,33 @@ export type UpdateEventTypePayload = Partial<
     slug?: string;
     meetingLink?: string | null;
     maxPerDay?: number | null;
+    availabilityScheduleId?: string | null;
   }
 >;
 
-// ── Availability ──
+// ── Availability Schedules (Phase 1.2 v2) ──
 
-export interface AvailabilityDayOn {
-  dayOfWeek: number;
-  isOff: false;
+export interface AvailabilitySchedule {
   id: string;
+  name: string;
+  timezone: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AvailabilitySlot {
+  id: string;
+  scheduleId: string;
+  dayOfWeek: number;
   startTime: string;
   endTime: string;
   updatedAt: string;
 }
 
-export interface AvailabilityDayOff {
+export interface ScheduleAvailabilityDay {
   dayOfWeek: number;
-  isOff: true;
-  id: null;
-  startTime: null;
-  endTime: null;
-  updatedAt: null;
-}
-
-export type AvailabilityDay = AvailabilityDayOn | AvailabilityDayOff;
-
-export interface PatchAvailabilityDayPayload {
-  dayOfWeek: number;
-  startTime?: string;
-  endTime?: string;
-  isOff?: boolean;
+  slots: AvailabilitySlot[];
 }
 
 export interface AvailabilityOverride {
@@ -112,7 +111,9 @@ export interface AvailabilityOverride {
 // ── Bookings ──
 
 export type BookingStatus =
+  | 'PENDING'
   | 'CONFIRMED'
+  | 'DECLINED'
   | 'CANCELLED'
   | 'RESCHEDULED'
   | 'NO_SHOW';

@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageMotion } from '@/components/PageMotion';
 import {
   Search,
@@ -23,6 +23,14 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -32,6 +40,7 @@ import { toast } from 'sonner';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
 import {
   useMeetingsAll,
+  useCreateMeeting,
   useAcceptMeeting,
   useDeclineMeeting,
   useCancelMeeting,
@@ -288,10 +297,52 @@ function MeetingContextMenu({ meeting }: { meeting: DisplayMeeting }) {
 
 export default function Meetings() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [typeTab, setTypeTab] = useState<TypeTab>('all');
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
+  const [showCreateScheduled, setShowCreateScheduled] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    title: '',
+    startTime: '',
+    endTime: '',
+    location: '',
+  });
+
+  const createMeeting = useCreateMeeting();
+
+  // Auto-open create scheduled dialog from FAB
+  useEffect(() => {
+    if (searchParams.get('create') === 'scheduled') {
+      setShowCreateScheduled(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  const handleCreateScheduled = () => {
+    if (!createForm.title.trim() || !createForm.startTime || !createForm.endTime) {
+      toast.error('Title, start time, and end time are required');
+      return;
+    }
+    createMeeting.mutate(
+      {
+        title: createForm.title.trim(),
+        type: 'SCHEDULED',
+        startTime: new Date(createForm.startTime).toISOString(),
+        endTime: new Date(createForm.endTime).toISOString(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        location: createForm.location.trim() || undefined,
+      },
+      {
+        onSuccess: (meeting) => {
+          setShowCreateScheduled(false);
+          setCreateForm({ title: '', startTime: '', endTime: '', location: '' });
+          navigate(`/meetings/${meeting.id}`);
+        },
+      }
+    );
+  };
 
   const {
     data: meetingsData,
@@ -680,6 +731,77 @@ export default function Meetings() {
         {/* ── Floating CTA ── */}
         <StartMeetingFab />
       </div>
+
+      {/* ── Create Scheduled Meeting Dialog ── */}
+      <Dialog
+        open={showCreateScheduled}
+        onOpenChange={(open) => {
+          setShowCreateScheduled(open);
+          if (!open) setCreateForm({ title: '', startTime: '', endTime: '', location: '' });
+        }}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Schedule a meeting</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-neutral-500">Title</Label>
+              <Input
+                value={createForm.title}
+                onChange={(e) => setCreateForm((f) => ({ ...f, title: e.target.value }))}
+                placeholder="Meeting title"
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-neutral-500">Start time</Label>
+              <Input
+                type="datetime-local"
+                value={createForm.startTime}
+                onChange={(e) => setCreateForm((f) => ({ ...f, startTime: e.target.value }))}
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-neutral-500">End time</Label>
+              <Input
+                type="datetime-local"
+                value={createForm.endTime}
+                onChange={(e) => setCreateForm((f) => ({ ...f, endTime: e.target.value }))}
+                className="text-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-neutral-500">
+                Location <span className="text-neutral-400">(optional)</span>
+              </Label>
+              <Input
+                value={createForm.location}
+                onChange={(e) => setCreateForm((f) => ({ ...f, location: e.target.value }))}
+                placeholder="Zoom link or address"
+                className="text-sm"
+              />
+            </div>
+            <div className="flex gap-2 justify-end pt-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCreateScheduled(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleCreateScheduled}
+                disabled={createMeeting.isPending}
+              >
+                {createMeeting.isPending ? 'Creating…' : 'Create meeting'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </PageMotion>
   );
 }

@@ -107,8 +107,11 @@ export const queryKeys = {
   scheduling: {
     all: ['scheduling'] as const,
     eventTypes: () => [...queryKeys.scheduling.all, 'eventTypes'] as const,
-    availability: () => [...queryKeys.scheduling.all, 'availability'] as const,
-    overrides: () => [...queryKeys.scheduling.all, 'overrides'] as const,
+    schedules: () => [...queryKeys.scheduling.all, 'schedules'] as const,
+    scheduleSlots: (scheduleId: string) =>
+      [...queryKeys.scheduling.all, 'scheduleSlots', scheduleId] as const,
+    scheduleOverrides: (scheduleId: string) =>
+      [...queryKeys.scheduling.all, 'scheduleOverrides', scheduleId] as const,
     bookings: (filters?: Record<string, unknown>) =>
       [
         ...queryKeys.scheduling.all,

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 // Shared helpers for MeetingDetail layouts
 
 export function formatTimestamp(seconds: number): string {

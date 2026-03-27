@@ -26,7 +26,6 @@ import {
   MapPin,
   Link2,
   Copy,
-  RotateCcw,
   CalendarOff,
   CalendarDays,
   Bot,
@@ -34,6 +33,9 @@ import {
   EyeOff,
   BookOpen,
   XCircle,
+  Star,
+  CheckCircle2,
+  Ban,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -77,12 +79,20 @@ import {
   useCreateEventType,
   useUpdateEventType,
   useDeleteEventType,
-  useAvailability,
-  useUpdateAvailability,
-  useOverrides,
-  useCreateOverride,
-  useDeleteOverride,
+  useSchedules,
+  useCreateSchedule,
+  useUpdateSchedule,
+  useDeleteSchedule,
+  useCopySchedule,
+  useSetDefaultSchedule,
+  useScheduleSlots,
+  useUpdateScheduleSlots,
+  useScheduleOverrides,
+  useCreateScheduleOverride,
+  useDeleteScheduleOverride,
   useBookings,
+  useConfirmBooking,
+  useDeclineBooking,
   useCancelBooking,
 } from '@/hooks/queries/useSchedulingQueries';
 import { useThemeStore } from '@/stores';
@@ -91,8 +101,9 @@ import type {
   EventType,
   LocationType,
   CreateEventTypePayload,
-  AvailabilityDay,
-  PatchAvailabilityDayPayload,
+  AvailabilitySchedule,
+  AvailabilitySlot,
+  AvailabilityOverride,
   HostBooking,
   BookingStatus,
 } from '@/types/settings';
@@ -519,6 +530,7 @@ const EMPTY_FORM = {
   bufferBefore: 0,
   bufferAfter: 0,
   maxPerDay: '',
+  availabilityScheduleId: null as string | null,
 };
 
 function EventTypesSection() {
@@ -553,6 +565,7 @@ function EventTypesSection() {
       bufferBefore: et.bufferBefore,
       bufferAfter: et.bufferAfter,
       maxPerDay: et.maxPerDay != null ? String(et.maxPerDay) : '',
+      availabilityScheduleId: et.availabilityScheduleId ?? null,
     });
     setSlugEdited(true);
     setDialogOpen(true);
@@ -587,6 +600,7 @@ function EventTypesSection() {
       ...(form.bufferBefore > 0 && { bufferBefore: form.bufferBefore }),
       ...(form.bufferAfter > 0 && { bufferAfter: form.bufferAfter }),
       ...(form.maxPerDay && { maxPerDay: parseInt(form.maxPerDay, 10) }),
+      availabilityScheduleId: form.availabilityScheduleId,
     };
 
     if (editingId) {
@@ -982,6 +996,14 @@ function EventTypesSection() {
               </FieldGroup>
             </div>
 
+            {/* Availability schedule picker */}
+            <EventTypeSchedulePicker
+              scheduleId={form.availabilityScheduleId}
+              onChange={(id) =>
+                setForm((prev) => ({ ...prev, availabilityScheduleId: id }))
+              }
+            />
+
             {/* Submit */}
             <div className="flex justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
               <Button
@@ -1014,247 +1036,284 @@ function EventTypesSection() {
   );
 }
 
-// ── Availability (placeholder — P1) ──
-const DAY_LABELS = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-];
+// ── Availability (Phase 1.2 v2 — multi-schedule) ──
+
 const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-const DEFAULT_SCHEDULE: PatchAvailabilityDayPayload[] = [
-  { dayOfWeek: 0, isOff: true },
-  { dayOfWeek: 1, startTime: '09:00', endTime: '17:00' },
-  { dayOfWeek: 2, startTime: '09:00', endTime: '17:00' },
-  { dayOfWeek: 3, startTime: '09:00', endTime: '17:00' },
-  { dayOfWeek: 4, startTime: '09:00', endTime: '17:00' },
-  { dayOfWeek: 5, startTime: '09:00', endTime: '17:00' },
-  { dayOfWeek: 6, isOff: true },
-];
+// Sub-component: schedule picker for event type dialog
+function EventTypeSchedulePicker({
+  scheduleId,
+  onChange,
+}: {
+  scheduleId: string | null;
+  onChange: (id: string | null) => void;
+}) {
+  const { data: schedules } = useSchedules();
+  if (!schedules || schedules.length === 0) return null;
 
-function AvailabilitySection() {
-  const { data: schedule, isLoading, isError } = useAvailability();
-  const updateAvailability = useUpdateAvailability();
-  const { data: overrides, isLoading: overridesLoading } = useOverrides();
-  const createOverride = useCreateOverride();
-  const deleteOverride = useDeleteOverride();
+  return (
+    <FieldGroup label="Availability Schedule">
+      <Select
+        value={scheduleId ?? '__default__'}
+        onValueChange={(v) => onChange(v === '__default__' ? null : v)}
+      >
+        <SelectTrigger className="border-neutral-200 dark:border-neutral-700">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__default__">
+            {schedules.find((s) => s.isDefault)?.name ?? 'Working Hours'} (default)
+          </SelectItem>
+          {schedules
+            .filter((s) => !s.isDefault)
+            .map((s) => (
+              <SelectItem key={s.id} value={s.id}>
+                {s.name}
+              </SelectItem>
+            ))}
+        </SelectContent>
+      </Select>
+      <p className="text-[10px] text-neutral-400 mt-1">
+        Which schedule controls availability for this event type
+      </p>
+    </FieldGroup>
+  );
+}
 
-  const [localSchedule, setLocalSchedule] = useState<
-    { dayOfWeek: number; isOff: boolean; startTime: string; endTime: string }[]
-  >([]);
+// Sub-component: slot editor for a single day
+function DaySlotEditor({
+  dayOfWeek,
+  slots,
+  onAdd,
+  onRemove,
+  onChange,
+}: {
+  dayOfWeek: number;
+  slots: Array<{ startTime: string; endTime: string; _id?: string }>;
+  onAdd: () => void;
+  onRemove: (idx: number) => void;
+  onChange: (idx: number, field: 'startTime' | 'endTime', value: string) => void;
+}) {
+  return (
+    <div className="flex items-start gap-3 py-2">
+      <div className="w-10 pt-2 shrink-0">
+        <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
+          {DAY_SHORT[dayOfWeek]}
+        </span>
+      </div>
+      <div className="flex-1 space-y-1.5">
+        {slots.length === 0 && (
+          <span className="text-xs text-neutral-400 dark:text-neutral-500 italic pt-2 block">
+            Unavailable
+          </span>
+        )}
+        {slots.map((slot, idx) => (
+          <div key={idx} className="flex items-center gap-2">
+            <Input
+              type="time"
+              value={slot.startTime}
+              onChange={(e) => onChange(idx, 'startTime', e.target.value)}
+              className="w-28 h-8 text-xs border-neutral-200 dark:border-neutral-700"
+            />
+            <span className="text-xs text-neutral-400">to</span>
+            <Input
+              type="time"
+              value={slot.endTime}
+              onChange={(e) => onChange(idx, 'endTime', e.target.value)}
+              className="w-28 h-8 text-xs border-neutral-200 dark:border-neutral-700"
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 shrink-0"
+              onClick={() => onRemove(idx)}
+            >
+              <X className="w-3.5 h-3.5 text-neutral-400 hover:text-red-400" />
+            </Button>
+          </div>
+        ))}
+        <button
+          onClick={onAdd}
+          className="flex items-center gap-1 text-[11px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors mt-0.5"
+        >
+          <Plus className="w-3 h-3" />
+          Add slot
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Sub-component: schedule slot editor panel
+function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
+  const { data: availabilityData, isLoading: slotsLoading } = useScheduleSlots(schedule.id);
+  const { data: overrides, isLoading: overridesLoading } = useScheduleOverrides(schedule.id);
+  const updateSlots = useUpdateScheduleSlots(schedule.id);
+  const createOverride = useCreateScheduleOverride(schedule.id);
+  const deleteOverride = useDeleteScheduleOverride(schedule.id);
+  const updateSchedule = useUpdateSchedule();
+
+  type LocalSlot = { startTime: string; endTime: string };
+  const [localSlots, setLocalSlots] = useState<Record<number, LocalSlot[]>>({});
   const [dirty, setDirty] = useState(false);
   const [blockDate, setBlockDate] = useState('');
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(schedule.name);
   const initDone = useRef(false);
 
+  // Reset when schedule changes
   useEffect(() => {
-    if (schedule && !initDone.current) {
-      setLocalSchedule(
-        schedule.map((d: AvailabilityDay) => ({
-          dayOfWeek: d.dayOfWeek,
-          isOff: d.isOff,
-          startTime: d.isOff ? '09:00' : d.startTime,
-          endTime: d.isOff ? '17:00' : d.endTime,
-        }))
-      );
+    initDone.current = false;
+    setDirty(false);
+    setNameInput(schedule.name);
+  }, [schedule.id, schedule.name]);
+
+  useEffect(() => {
+    if (availabilityData && !initDone.current) {
+      const map: Record<number, LocalSlot[]> = {};
+      for (const day of availabilityData) {
+        map[day.dayOfWeek] = day.slots.map((s: AvailabilitySlot) => ({
+          startTime: s.startTime,
+          endTime: s.endTime,
+        }));
+      }
+      setLocalSlots(map);
       initDone.current = true;
     }
-  }, [schedule]);
+  }, [availabilityData]);
 
-  const handleToggleDay = (dayOfWeek: number) => {
-    setLocalSchedule((prev) =>
-      prev.map((d) =>
-        d.dayOfWeek === dayOfWeek ? { ...d, isOff: !d.isOff } : d
-      )
-    );
+  const handleAddSlot = (day: number) => {
+    setLocalSlots((prev) => ({
+      ...prev,
+      [day]: [...(prev[day] ?? []), { startTime: '09:00', endTime: '17:00' }],
+    }));
     setDirty(true);
   };
 
-  const handleTimeChange = (
-    dayOfWeek: number,
-    field: 'startTime' | 'endTime',
-    value: string
-  ) => {
-    setLocalSchedule((prev) =>
-      prev.map((d) =>
-        d.dayOfWeek === dayOfWeek ? { ...d, [field]: value } : d
-      )
-    );
+  const handleRemoveSlot = (day: number, idx: number) => {
+    setLocalSlots((prev) => ({
+      ...prev,
+      [day]: (prev[day] ?? []).filter((_, i) => i !== idx),
+    }));
+    setDirty(true);
+  };
+
+  const handleChangeSlot = (day: number, idx: number, field: 'startTime' | 'endTime', value: string) => {
+    setLocalSlots((prev) => ({
+      ...prev,
+      [day]: (prev[day] ?? []).map((s, i) =>
+        i === idx ? { ...s, [field]: value } : s,
+      ),
+    }));
     setDirty(true);
   };
 
   const handleSave = () => {
-    const payload: PatchAvailabilityDayPayload[] = localSchedule.map((d) => {
-      if (d.isOff) return { dayOfWeek: d.dayOfWeek, isOff: true };
-      if (d.startTime >= d.endTime) {
-        toast.error(
-          `${DAY_LABELS[d.dayOfWeek]}: start time must be before end time`
-        );
-        return null as unknown as PatchAvailabilityDayPayload;
+    const slots: Array<{ dayOfWeek: number; startTime: string; endTime: string }> = [];
+    for (const [day, daySlots] of Object.entries(localSlots)) {
+      for (const slot of daySlots) {
+        if (slot.startTime >= slot.endTime) {
+          toast.error(`${DAY_SHORT[Number(day)]}: start must be before end`);
+          return;
+        }
+        slots.push({ dayOfWeek: Number(day), startTime: slot.startTime, endTime: slot.endTime });
       }
-      return {
-        dayOfWeek: d.dayOfWeek,
-        startTime: d.startTime,
-        endTime: d.endTime,
-      };
-    });
-    if (payload.some((p) => p === null)) return;
-
-    updateAvailability.mutate(payload, {
-      onSuccess: () => {
-        setDirty(false);
-        initDone.current = false;
-      },
-    });
-  };
-
-  const handleReset = () => {
-    setLocalSchedule(
-      DEFAULT_SCHEDULE.map((d) => ({
-        dayOfWeek: d.dayOfWeek,
-        isOff: !!d.isOff,
-        startTime: d.startTime ?? '09:00',
-        endTime: d.endTime ?? '17:00',
-      }))
-    );
-    setDirty(true);
+    }
+    updateSlots.mutate(slots, { onSuccess: () => { setDirty(false); initDone.current = false; } });
   };
 
   const handleBlockDate = () => {
     if (!blockDate) return;
     const today = new Date().toISOString().split('T')[0];
-    if (blockDate < today) {
-      toast.error('Cannot block a past date');
-      return;
-    }
-    createOverride.mutate(blockDate, {
-      onSuccess: () => setBlockDate(''),
+    if (blockDate < today) { toast.error('Cannot block a past date'); return; }
+    createOverride.mutate(blockDate, { onSuccess: () => setBlockDate('') });
+  };
+
+  const handleSaveName = () => {
+    if (!nameInput.trim()) return;
+    updateSchedule.mutate({ id: schedule.id, data: { name: nameInput.trim() } }, {
+      onSuccess: () => setEditingName(false),
     });
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <SectionHeader
-          title="Availability"
-          description="Set your weekly schedule and block specific dates"
-        />
-        <SettingsSkeleton rows={7} />
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="space-y-6">
-        <SectionHeader
-          title="Availability"
-          description="Set your weekly schedule and block specific dates"
-        />
-        <Card className="border-neutral-200 dark:border-neutral-800">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <Clock className="w-10 h-10 text-neutral-200 dark:text-neutral-700 mb-3" />
-              <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                Failed to load availability
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  if (slotsLoading) return <SettingsSkeleton rows={5} />;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <SectionHeader
-          title="Availability"
-          description="Set your weekly schedule and block specific dates"
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleReset}
-          className="h-8 px-3 text-xs shrink-0"
-        >
-          <RotateCcw className="w-3 h-3 mr-1.5" />
-          Reset to Defaults
-        </Button>
+    <div className="space-y-5">
+      {/* Header: name + timezone */}
+      <div className="flex items-center gap-3 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+        {editingName ? (
+          <div className="flex items-center gap-2 flex-1">
+            <Input
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              className="h-8 text-sm border-neutral-200 dark:border-neutral-700 max-w-xs"
+              autoFocus
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') setEditingName(false); }}
+            />
+            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSaveName} disabled={updateSchedule.isPending}>
+              <Check className="w-3.5 h-3.5" />
+            </Button>
+            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditingName(false)}>
+              <X className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 flex-1">
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+              {schedule.name}
+            </h3>
+            {schedule.isDefault && (
+              <span className="text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 px-1.5 py-0.5 rounded">
+                Default
+              </span>
+            )}
+            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => { setEditingName(true); setNameInput(schedule.name); }}>
+              <Pencil className="w-3 h-3 text-neutral-400" />
+            </Button>
+          </div>
+        )}
+        <div className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 shrink-0">
+          <Globe className="w-3.5 h-3.5" />
+          {schedule.timezone}
+        </div>
       </div>
 
       {/* Weekly grid */}
       <Card className="border-neutral-200 dark:border-neutral-800">
-        <CardContent className="p-6 space-y-3">
-          {localSchedule.map((day) => (
-            <div key={day.dayOfWeek} className="flex items-center gap-3 py-1">
-              <div className="w-10 shrink-0">
-                <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
-                  {DAY_SHORT[day.dayOfWeek]}
-                </span>
-              </div>
-              <Switch
-                checked={!day.isOff}
-                onCheckedChange={() => handleToggleDay(day.dayOfWeek)}
-              />
-              {day.isOff ? (
-                <span className="text-xs text-neutral-400 dark:text-neutral-500 italic">
-                  Unavailable
-                </span>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="time"
-                    value={day.startTime}
-                    onChange={(e) =>
-                      handleTimeChange(
-                        day.dayOfWeek,
-                        'startTime',
-                        e.target.value
-                      )
-                    }
-                    className="w-28 h-8 text-xs border-neutral-200 dark:border-neutral-700"
-                  />
-                  <span className="text-xs text-neutral-400">to</span>
-                  <Input
-                    type="time"
-                    value={day.endTime}
-                    onChange={(e) =>
-                      handleTimeChange(day.dayOfWeek, 'endTime', e.target.value)
-                    }
-                    className="w-28 h-8 text-xs border-neutral-200 dark:border-neutral-700"
-                  />
-                </div>
-              )}
-            </div>
+        <CardContent className="p-5 divide-y divide-neutral-50 dark:divide-neutral-800/50">
+          {Array.from({ length: 7 }, (_, i) => (
+            <DaySlotEditor
+              key={i}
+              dayOfWeek={i}
+              slots={localSlots[i] ?? []}
+              onAdd={() => handleAddSlot(i)}
+              onRemove={(idx) => handleRemoveSlot(i, idx)}
+              onChange={(idx, field, value) => handleChangeSlot(i, idx, field, value)}
+            />
           ))}
-
-          <div className="flex justify-end pt-4 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="flex justify-end pt-4">
             <Button
               size="sm"
               onClick={handleSave}
-              disabled={!dirty || updateAvailability.isPending}
+              disabled={!dirty || updateSlots.isPending}
               className="h-8 px-4 text-xs bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900"
             >
-              {updateAvailability.isPending ? 'Saving...' : 'Save Schedule'}
+              {updateSlots.isPending ? 'Saving...' : 'Save Schedule'}
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Date overrides */}
+      {/* Blocked dates */}
       <Card className="border-neutral-200 dark:border-neutral-800">
-        <CardContent className="p-6">
-          <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-1">
+        <CardContent className="p-5">
+          <h4 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-1">
             Blocked Dates
-          </h3>
+          </h4>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
-            Block specific dates when you're unavailable
+            Specific dates when you're unavailable (for this schedule)
           </p>
-
           <div className="flex items-center gap-2 mb-4">
             <Input
               type="date"
@@ -1272,32 +1331,17 @@ function AvailabilitySection() {
               {createOverride.isPending ? 'Blocking...' : 'Block Date'}
             </Button>
           </div>
-
-          {overridesLoading && (
-            <div className="flex gap-2 animate-pulse">
-              {[1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="h-7 w-28 bg-neutral-100 dark:bg-neutral-800 rounded-full"
-                />
-              ))}
-            </div>
-          )}
-
+          {overridesLoading && <div className="h-7 w-28 bg-neutral-100 dark:bg-neutral-800 rounded-full animate-pulse" />}
           {!overridesLoading && overrides && overrides.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {overrides.map((o) => (
+              {overrides.map((o: AvailabilityOverride) => (
                 <Badge
                   key={o.id}
                   variant="secondary"
                   className="gap-1.5 pr-1 text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700"
                 >
                   <CalendarOff className="w-3 h-3" />
-                  {new Date(o.date).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
+                  {new Date(o.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   <Button
                     variant="ghost"
                     size="icon-xs"
@@ -1311,15 +1355,291 @@ function AvailabilitySection() {
               ))}
             </div>
           )}
-
           {!overridesLoading && (!overrides || overrides.length === 0) && (
             <p className="text-xs text-neutral-400 dark:text-neutral-500">
-              No blocked dates. Use the date picker above to block specific
-              days.
+              No blocked dates.
             </p>
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function AvailabilitySection() {
+  const { data: schedules, isLoading } = useSchedules();
+  const createSchedule = useCreateSchedule();
+  const deleteSchedule = useDeleteSchedule();
+  const copySchedule = useCopySchedule();
+  const setDefaultSchedule = useSetDefaultSchedule();
+
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [newScheduleOpen, setNewScheduleOpen] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newTimezone, setNewTimezone] = useState(
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+  );
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [copyId, setCopyId] = useState<string | null>(null);
+  const [copyName, setCopyName] = useState('');
+
+  // Auto-select default schedule on first load
+  useEffect(() => {
+    if (schedules && schedules.length > 0 && !selectedId) {
+      const def = schedules.find((s) => s.isDefault) ?? schedules[0];
+      setSelectedId(def.id);
+    }
+  }, [schedules, selectedId]);
+
+  const selectedSchedule = schedules?.find((s) => s.id === selectedId) ?? null;
+
+  const handleCreateSchedule = () => {
+    if (!newName.trim()) return;
+    createSchedule.mutate(
+      { name: newName.trim(), timezone: newTimezone },
+      {
+        onSuccess: (s) => {
+          setNewScheduleOpen(false);
+          setNewName('');
+          setSelectedId(s.id);
+        },
+      },
+    );
+  };
+
+  const handleCopySchedule = () => {
+    if (!copyId || !copyName.trim()) return;
+    copySchedule.mutate(
+      { id: copyId, name: copyName.trim() },
+      {
+        onSuccess: (s) => {
+          setCopyId(null);
+          setCopyName('');
+          setSelectedId(s.id);
+        },
+      },
+    );
+  };
+
+  if (isLoading) return <SettingsSkeleton rows={5} />;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <SectionHeader
+          title="Availability"
+          description="Named schedules — each with its own timezone, slots, and blocked dates"
+        />
+        <Button
+          size="sm"
+          onClick={() => setNewScheduleOpen(true)}
+          className="h-8 px-3 text-xs bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900 shrink-0"
+        >
+          <Plus className="w-3.5 h-3.5 mr-1" />
+          New Schedule
+        </Button>
+      </div>
+
+      {(!schedules || schedules.length === 0) && (
+        <Card className="border-neutral-200 dark:border-neutral-800">
+          <CardContent className="p-6 text-center py-12">
+            <Clock className="w-10 h-10 text-neutral-200 dark:text-neutral-700 mx-auto mb-3" />
+            <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+              No availability schedules yet
+            </p>
+            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1 mb-4">
+              Create a schedule to define when guests can book you
+            </p>
+            <Button
+              size="sm"
+              onClick={() => setNewScheduleOpen(true)}
+              className="h-8 px-3 text-xs bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900"
+            >
+              <Plus className="w-3.5 h-3.5 mr-1" />
+              Create Schedule
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {schedules && schedules.length > 0 && (
+        <div className="flex gap-4">
+          {/* Left: schedule list */}
+          <div className="w-52 shrink-0 space-y-1">
+            {schedules.map((s) => (
+              <div
+                key={s.id}
+                onClick={() => setSelectedId(s.id)}
+                className={[
+                  'group relative rounded-lg px-3 py-2.5 cursor-pointer transition-colors',
+                  selectedId === s.id
+                    ? 'bg-neutral-100 dark:bg-neutral-800'
+                    : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50',
+                ].join(' ')}
+              >
+                <div className="flex items-center gap-1.5">
+                  {s.isDefault && <Star className="w-3 h-3 text-neutral-500 shrink-0" />}
+                  <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
+                    {s.name}
+                  </span>
+                </div>
+                <p className="text-[11px] text-neutral-400 dark:text-neutral-500 truncate mt-0.5">
+                  {s.timezone}
+                </p>
+
+                {/* Actions on hover */}
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5">
+                  {!s.isDefault && (
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      className="h-5 w-5"
+                      title="Set as default"
+                      onClick={(e) => { e.stopPropagation(); setDefaultSchedule.mutate(s.id); }}
+                    >
+                      <Star className="w-3 h-3 text-neutral-400" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className="h-5 w-5"
+                    title="Copy schedule"
+                    onClick={(e) => { e.stopPropagation(); setCopyId(s.id); setCopyName(`${s.name} (copy)`); }}
+                  >
+                    <Copy className="w-3 h-3 text-neutral-400" />
+                  </Button>
+                  {!s.isDefault && (
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      className="h-5 w-5"
+                      title="Delete schedule"
+                      onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(s.id); }}
+                    >
+                      <Trash2 className="w-3 h-3 text-neutral-400 hover:text-red-400" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Right: editor for selected schedule */}
+          <div className="flex-1 min-w-0">
+            {selectedSchedule ? (
+              <ScheduleEditor key={selectedSchedule.id} schedule={selectedSchedule} />
+            ) : (
+              <div className="flex items-center justify-center h-40 text-xs text-neutral-400">
+                Select a schedule to edit
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* New schedule dialog */}
+      <Dialog open={newScheduleOpen} onOpenChange={setNewScheduleOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>New Schedule</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <FieldGroup label="Schedule Name">
+              <Input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="e.g. Consulting Hours"
+                autoFocus
+                className="border-neutral-200 dark:border-neutral-700"
+              />
+            </FieldGroup>
+            <FieldGroup label="Timezone">
+              <Input
+                value={newTimezone}
+                onChange={(e) => setNewTimezone(e.target.value)}
+                placeholder="America/New_York"
+                className="border-neutral-200 dark:border-neutral-700 text-xs font-mono"
+              />
+              <p className="text-[10px] text-neutral-400 mt-1">IANA timezone (e.g. America/New_York)</p>
+            </FieldGroup>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" onClick={() => setNewScheduleOpen(false)}>Cancel</Button>
+              <Button
+                size="sm"
+                onClick={handleCreateSchedule}
+                disabled={!newName.trim() || createSchedule.isPending}
+                className="bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900"
+              >
+                {createSchedule.isPending ? 'Creating...' : 'Create'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Copy schedule dialog */}
+      <Dialog open={!!copyId} onOpenChange={(open) => !open && setCopyId(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Copy Schedule</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <FieldGroup label="New Schedule Name">
+              <Input
+                value={copyName}
+                onChange={(e) => setCopyName(e.target.value)}
+                autoFocus
+                className="border-neutral-200 dark:border-neutral-700"
+              />
+            </FieldGroup>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" onClick={() => setCopyId(null)}>Cancel</Button>
+              <Button
+                size="sm"
+                onClick={handleCopySchedule}
+                disabled={!copyName.trim() || copySchedule.isPending}
+                className="bg-neutral-900 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200 text-white dark:text-neutral-900"
+              >
+                {copySchedule.isPending ? 'Copying...' : 'Copy'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm delete dialog */}
+      <Dialog open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete Schedule?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              This will permanently delete the schedule and all its slots and blocked dates.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" onClick={() => setConfirmDeleteId(null)}>Cancel</Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={deleteSchedule.isPending}
+                onClick={() => {
+                  if (!confirmDeleteId) return;
+                  deleteSchedule.mutate(confirmDeleteId, {
+                    onSuccess: () => {
+                      if (selectedId === confirmDeleteId) setSelectedId(null);
+                      setConfirmDeleteId(null);
+                    },
+                  });
+                }}
+              >
+                {deleteSchedule.isPending ? 'Deleting...' : 'Delete'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -2273,17 +2593,29 @@ function SettingsSkeleton({ rows }: { rows: number }) {
 
 // ── Bookings ──
 const STATUS_LABELS: Record<BookingStatus, string> = {
+  PENDING: 'Pending',
   CONFIRMED: 'Confirmed',
+  DECLINED: 'Declined',
   CANCELLED: 'Cancelled',
   RESCHEDULED: 'Rescheduled',
   NO_SHOW: 'No show',
 };
 
 const STATUS_STYLES: Record<BookingStatus, { badge: string; dot: string }> = {
+  PENDING: {
+    badge:
+      'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400',
+    dot: 'bg-amber-400',
+  },
   CONFIRMED: {
     badge:
       'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300',
     dot: 'bg-emerald-500',
+  },
+  DECLINED: {
+    badge:
+      'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500',
+    dot: 'bg-red-400',
   },
   CANCELLED: {
     badge:
@@ -2316,12 +2648,16 @@ function formatBookingTime(iso: string, tz: string): string {
 }
 
 function BookingsSection() {
-  const [statusFilter, setStatusFilter] = useState<string>('CONFIRMED');
+  const [statusFilter, setStatusFilter] = useState<string>('PENDING');
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [cancelReason, setCancelReason] = useState('');
+  const [declineId, setDeclineId] = useState<string | null>(null);
+  const [declineReason, setDeclineReason] = useState('');
 
   const { data, isLoading } = useBookings({ status: statusFilter, limit: 50 });
   const cancelBooking = useCancelBooking();
+  const confirmBooking = useConfirmBooking();
+  const declineBooking = useDeclineBooking();
 
   const bookings: HostBooking[] = data?.bookings ?? [];
 
@@ -2338,6 +2674,19 @@ function BookingsSection() {
     );
   };
 
+  const handleDecline = () => {
+    if (!declineId) return;
+    declineBooking.mutate(
+      { id: declineId, reason: declineReason.trim() || undefined },
+      {
+        onSettled: () => {
+          setDeclineId(null);
+          setDeclineReason('');
+        },
+      }
+    );
+  };
+
   const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   return (
@@ -2349,7 +2698,7 @@ function BookingsSection() {
 
       {/* Status filter */}
       <div className="flex gap-2 flex-wrap">
-        {(['CONFIRMED', 'CANCELLED', 'NO_SHOW'] as BookingStatus[]).map((s) => (
+        {(['PENDING', 'CONFIRMED', 'DECLINED', 'CANCELLED', 'NO_SHOW'] as BookingStatus[]).map((s) => (
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
@@ -2409,6 +2758,7 @@ function BookingsSection() {
         <Card className="border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800">
           {bookings.map((booking) => {
             const style = STATUS_STYLES[booking.status];
+            const isPending = booking.status === 'PENDING';
             const canCancel =
               booking.status === 'CONFIRMED' ||
               booking.status === 'RESCHEDULED';
@@ -2469,26 +2819,54 @@ function BookingsSection() {
                   )}
                   {booking.cancelReason && (
                     <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-                      Cancellation reason: {booking.cancelReason}
+                      Reason: {booking.cancelReason}
                     </p>
                   )}
                 </div>
 
-                {/* Cancel action */}
-                {canCancel && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setCancelId(booking.id);
-                      setCancelReason('');
-                    }}
-                    className="shrink-0 text-xs text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
-                  >
-                    <XCircle className="w-3.5 h-3.5 mr-1" />
-                    Cancel
-                  </Button>
-                )}
+                {/* Actions */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {isPending && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => confirmBooking.mutate(booking.id)}
+                        disabled={confirmBooking.isPending}
+                        className="text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                        Approve
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setDeclineId(booking.id);
+                          setDeclineReason('');
+                        }}
+                        className="text-xs text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                      >
+                        <Ban className="w-3.5 h-3.5 mr-1" />
+                        Decline
+                      </Button>
+                    </>
+                  )}
+                  {canCancel && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setCancelId(booking.id);
+                        setCancelReason('');
+                      }}
+                      className="text-xs text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                    >
+                      <XCircle className="w-3.5 h-3.5 mr-1" />
+                      Cancel
+                    </Button>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -2542,6 +2920,52 @@ function BookingsSection() {
                 disabled={cancelBooking.isPending}
               >
                 {cancelBooking.isPending ? 'Cancelling…' : 'Cancel booking'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Decline confirm dialog */}
+      <Dialog
+        open={!!declineId}
+        onOpenChange={(open) => !open && setDeclineId(null)}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Decline booking</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              The guest will be notified that this booking has been declined.
+            </p>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-neutral-500">
+                Reason <span className="text-neutral-400">(optional)</span>
+              </Label>
+              <Textarea
+                value={declineReason}
+                onChange={(e) => setDeclineReason(e.target.value)}
+                placeholder="Let the guest know why…"
+                rows={3}
+                className="resize-none text-sm"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeclineId(null)}
+              >
+                Keep pending
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDecline}
+                disabled={declineBooking.isPending}
+              >
+                {declineBooking.isPending ? 'Declining…' : 'Decline booking'}
               </Button>
             </div>
           </div>

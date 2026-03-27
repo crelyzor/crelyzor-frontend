@@ -5,8 +5,8 @@ import type {
   EventType,
   CreateEventTypePayload,
   UpdateEventTypePayload,
-  AvailabilityDay,
-  PatchAvailabilityDayPayload,
+  AvailabilitySchedule,
+  ScheduleAvailabilityDay,
   AvailabilityOverride,
   HostBooking,
   BookingsResponse,
@@ -28,7 +28,6 @@ export const settingsApi = {
   /**
    * POST /auth/google/calendar/connect
    * Returns the Google OAuth URL to navigate to for calendar scope grant.
-   * After getting the URL, the frontend must navigate: window.location.href = url
    */
   getCalendarConnectUrl: (redirectUrl: string) =>
     apiClient.post<{ url: string }>('/auth/google/calendar/connect', {
@@ -38,7 +37,6 @@ export const settingsApi = {
   /**
    * PUT /settings/recall-api-key
    * Saves the Recall.ai API key (encrypted at rest).
-   * The key is never returned — only a success response.
    */
   saveRecallApiKey: (apiKey: string) =>
     apiClient.put<{ recallEnabled: boolean }>('/settings/recall-api-key', {
@@ -70,40 +68,83 @@ export const eventTypesApi = {
     apiClient.delete<void>(`/scheduling/event-types/${id}`),
 };
 
-export const availabilityApi = {
-  /** GET /scheduling/availability — 7-row weekly schedule */
-  get: () =>
+export const schedulesApi = {
+  /** GET /scheduling/schedules */
+  list: () =>
     apiClient
-      .get<{ schedule: AvailabilityDay[] }>('/scheduling/availability')
+      .get<{ schedules: AvailabilitySchedule[] }>('/scheduling/schedules')
+      .then((r) => r.schedules),
+
+  /** POST /scheduling/schedules */
+  create: (data: { name: string; timezone: string }) =>
+    apiClient
+      .post<{ schedule: AvailabilitySchedule }>('/scheduling/schedules', data)
       .then((r) => r.schedule),
 
-  /** PATCH /scheduling/availability — bulk upsert weekly schedule */
-  patch: (days: PatchAvailabilityDayPayload[]) =>
+  /** PATCH /scheduling/schedules/:id */
+  update: (id: string, data: { name?: string; timezone?: string }) =>
     apiClient
-      .patch<{ schedule: AvailabilityDay[] }>('/scheduling/availability', {
-        days,
-      })
+      .patch<{ schedule: AvailabilitySchedule }>(`/scheduling/schedules/${id}`, data)
       .then((r) => r.schedule),
 
-  /** GET /scheduling/availability/overrides */
-  getOverrides: () =>
+  /** DELETE /scheduling/schedules/:id */
+  delete: (id: string) =>
+    apiClient.delete<void>(`/scheduling/schedules/${id}`),
+
+  /** POST /scheduling/schedules/:id/copy */
+  copy: (id: string, name: string) =>
     apiClient
-      .get<{
-        overrides: AvailabilityOverride[];
-      }>('/scheduling/availability/overrides')
+      .post<{ schedule: AvailabilitySchedule }>(`/scheduling/schedules/${id}/copy`, { name })
+      .then((r) => r.schedule),
+
+  /** POST /scheduling/schedules/:id/set-default */
+  setDefault: (id: string) =>
+    apiClient
+      .post<{ schedule: AvailabilitySchedule }>(`/scheduling/schedules/${id}/set-default`, {})
+      .then((r) => r.schedule),
+
+  /** GET /scheduling/schedules/:id/availability */
+  getSlots: (scheduleId: string) =>
+    apiClient
+      .get<{ availability: ScheduleAvailabilityDay[] }>(
+        `/scheduling/schedules/${scheduleId}/availability`,
+      )
+      .then((r) => r.availability),
+
+  /** PATCH /scheduling/schedules/:id/availability */
+  patchSlots: (
+    scheduleId: string,
+    slots: Array<{ dayOfWeek: number; startTime: string; endTime: string }>,
+  ) =>
+    apiClient
+      .patch<{ availability: ScheduleAvailabilityDay[] }>(
+        `/scheduling/schedules/${scheduleId}/availability`,
+        { slots },
+      )
+      .then((r) => r.availability),
+
+  /** GET /scheduling/schedules/:id/overrides */
+  getOverrides: (scheduleId: string) =>
+    apiClient
+      .get<{ overrides: AvailabilityOverride[] }>(
+        `/scheduling/schedules/${scheduleId}/overrides`,
+      )
       .then((r) => r.overrides),
 
-  /** POST /scheduling/availability/overrides */
-  createOverride: (date: string) =>
+  /** POST /scheduling/schedules/:id/overrides */
+  createOverride: (scheduleId: string, date: string) =>
     apiClient
-      .post<{
-        override: AvailabilityOverride;
-      }>('/scheduling/availability/overrides', { date, isBlocked: true })
+      .post<{ override: AvailabilityOverride }>(
+        `/scheduling/schedules/${scheduleId}/overrides`,
+        { date, isBlocked: true },
+      )
       .then((r) => r.override),
 
-  /** DELETE /scheduling/availability/overrides/:id */
-  deleteOverride: (id: string) =>
-    apiClient.delete<void>(`/scheduling/availability/overrides/${id}`),
+  /** DELETE /scheduling/schedules/:id/overrides/:overrideId */
+  deleteOverride: (scheduleId: string, overrideId: string) =>
+    apiClient.delete<void>(
+      `/scheduling/schedules/${scheduleId}/overrides/${overrideId}`,
+    ),
 };
 
 export interface ListBookingsParams {
@@ -129,6 +170,18 @@ export const bookingsApi = {
       .then((r) => r);
   },
 
+  /** POST /scheduling/bookings/:id/confirm — host approves a PENDING booking */
+  confirm: (id: string) =>
+    apiClient.post<{
+      booking: Pick<HostBooking, 'id' | 'status'>;
+    }>(`/scheduling/bookings/${id}/confirm`, {}),
+
+  /** POST /scheduling/bookings/:id/decline — host declines a PENDING booking */
+  decline: (id: string, reason?: string) =>
+    apiClient.post<{
+      booking: Pick<HostBooking, 'id' | 'status' | 'cancelReason' | 'canceledAt'>;
+    }>(`/scheduling/bookings/${id}/decline`, { reason }),
+
   /** PATCH /scheduling/bookings/:id/cancel — host cancels a booking */
   cancel: (id: string, reason?: string) =>
     apiClient.patch<{
@@ -137,4 +190,15 @@ export const bookingsApi = {
         'id' | 'status' | 'cancelReason' | 'canceledAt'
       >;
     }>(`/scheduling/bookings/${id}/cancel`, { reason }),
+};
+
+// Legacy — kept for type compatibility only. No longer has backend routes.
+// Use schedulesApi instead.
+export const availabilityApi = {
+  get: (): Promise<never[]> => Promise.resolve([]),
+  patch: (): Promise<never[]> => Promise.resolve([]),
+  getOverrides: (): Promise<never[]> => Promise.resolve([]),
+  createOverride: (): Promise<AvailabilityOverride> =>
+    Promise.reject(new Error('Use schedulesApi.createOverride')),
+  deleteOverride: (): Promise<void> => Promise.resolve(),
 };

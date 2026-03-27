@@ -264,19 +264,17 @@ export function StartMeetingFab() {
                   Start Recording
                 </Button>
 
-                {/* Schedule — coming soon */}
+                {/* Schedule */}
                 <Button
                   variant="ghost"
-                  disabled
-                  className="h-14 w-full bg-[#2C2C2E] text-neutral-600 rounded-[20px] text-[15px] font-medium justify-between px-5 cursor-not-allowed opacity-40"
+                  onClick={() => {
+                    setState('idle');
+                    navigate('/meetings?create=scheduled');
+                  }}
+                  className="h-14 w-full bg-[#2C2C2E] text-neutral-200 hover:bg-[#3A3A3C] rounded-[20px] text-[15px] font-medium justify-start px-5 active:scale-[0.98] transition-all"
                 >
-                  <div className="flex items-center gap-3">
-                    <CalendarPlus className="w-5 h-5" />
-                    Schedule
-                  </div>
-                  <span className="text-[10px] uppercase tracking-wider text-neutral-600">
-                    Soon
-                  </span>
+                  <CalendarPlus className="w-5 h-5 mr-3" />
+                  Schedule
                 </Button>
 
                 {/* Back */}

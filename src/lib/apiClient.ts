@@ -76,7 +76,6 @@ async function attemptTokenRefresh(): Promise<boolean> {
       err instanceof TypeError && err.message.toLowerCase().includes('fetch');
     if (!isNetworkError && import.meta.env.DEV) {
       // In development only — token refresh failed unexpectedly
-      // eslint-disable-next-line no-console
       console.warn('[apiClient] Token refresh failed unexpectedly', err);
     }
     return false;
