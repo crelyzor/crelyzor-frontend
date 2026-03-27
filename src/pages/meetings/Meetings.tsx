@@ -551,7 +551,12 @@ export default function Meetings() {
               <p className="text-sm text-neutral-400 dark:text-neutral-500">
                 Failed to load meetings
               </p>
-              <Button variant="outline" size="sm" className="mt-3" onClick={() => refetchMeetings()}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3"
+                onClick={() => refetchMeetings()}
+              >
                 Try again
               </Button>
             </div>

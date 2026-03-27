@@ -71,7 +71,8 @@ export function TodaysMeetings({ meetings, isLoading, isError }: Props) {
           </div>
         )}
 
-        {!isLoading && !isError &&
+        {!isLoading &&
+          !isError &&
           todayMeetings.map((meeting, i) => (
             <motion.div
               key={meeting.id}

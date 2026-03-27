@@ -174,7 +174,12 @@ export default function VoiceNotes() {
               <p className="text-sm text-neutral-400 dark:text-neutral-500">
                 Failed to load voice notes
               </p>
-              <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3"
+                onClick={() => refetch()}
+              >
                 Try again
               </Button>
             </div>
