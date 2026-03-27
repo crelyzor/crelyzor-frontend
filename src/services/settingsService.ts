@@ -140,7 +140,10 @@ export const schedulesApi = {
     apiClient
       .post<{
         override: AvailabilityOverride;
-      }>(`/scheduling/schedules/${scheduleId}/overrides`, { date, isBlocked: true })
+      }>(`/scheduling/schedules/${scheduleId}/overrides`, {
+        date,
+        isBlocked: true,
+      })
       .then((r) => r.override),
 
   /** DELETE /scheduling/schedules/:id/overrides/:overrideId */
