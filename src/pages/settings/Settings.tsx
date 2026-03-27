@@ -1841,7 +1841,9 @@ function IntegrationsSection() {
     const calendarConnected = searchParams.get('calendarConnected');
     if (calendarConnected === 'true') {
       qc.invalidateQueries({ queryKey: queryKeys.settings.all });
-      qc.invalidateQueries({ queryKey: queryKeys.integrations.google.status() });
+      qc.invalidateQueries({
+        queryKey: queryKeys.integrations.google.status(),
+      });
       toast.success('Google Calendar connected');
       setSearchParams((prev) => {
         prev.delete('calendarConnected');
@@ -1934,9 +1936,12 @@ function IntegrationsSection() {
                           {
                             onSuccess: () =>
                               toast.success(
-                                v ? 'Calendar sync enabled' : 'Calendar sync disabled'
+                                v
+                                  ? 'Calendar sync enabled'
+                                  : 'Calendar sync disabled'
                               ),
-                            onError: () => toast.error('Failed to update setting'),
+                            onError: () =>
+                              toast.error('Failed to update setting'),
                           }
                         )
                       }

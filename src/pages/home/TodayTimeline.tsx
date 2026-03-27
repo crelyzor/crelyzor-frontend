@@ -87,7 +87,11 @@ const GCAL_BASE =
 const MOTION_PROPS = (i: number) => ({
   initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.25, delay: i * 0.04, ease: [0.25, 0.1, 0.25, 1] as const },
+  transition: {
+    duration: 0.25,
+    delay: i * 0.04,
+    ease: [0.25, 0.1, 0.25, 1] as const,
+  },
 });
 
 export function TodayTimeline({ meetings, isLoading, isError }: Props) {
@@ -111,10 +115,11 @@ export function TodayTimeline({ meetings, isLoading, isError }: Props) {
   const isGCalConnected = gcalStatus?.connected === true;
 
   // Gate the events query — pass empty strings to disable the query when not connected
-  const { data: gcalEvents = [], isLoading: gcalLoading } = useGoogleCalendarEvents(
-    isGCalConnected ? start : '',
-    isGCalConnected ? end : '',
-  );
+  const { data: gcalEvents = [], isLoading: gcalLoading } =
+    useGoogleCalendarEvents(
+      isGCalConnected ? start : '',
+      isGCalConnected ? end : ''
+    );
 
   const todayMeetings = meetings.filter((m) => m.date === today);
 

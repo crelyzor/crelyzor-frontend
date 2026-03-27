@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { Link2, Copy, Check, ExternalLink, CalendarDays, CreditCard } from 'lucide-react';
+import {
+  Link2,
+  Copy,
+  Check,
+  ExternalLink,
+  CalendarDays,
+  CreditCard,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';

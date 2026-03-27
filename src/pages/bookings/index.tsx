@@ -1,7 +1,18 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { format, parseISO } from 'date-fns';
-import { CalendarClock, Check, X, Ban, Clock, User, Mail, Video, MapPin, Phone } from 'lucide-react';
+import {
+  CalendarClock,
+  Check,
+  X,
+  Ban,
+  Clock,
+  User,
+  Mail,
+  Video,
+  MapPin,
+  Phone,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PageMotion from '@/components/PageMotion';
 import {
@@ -68,7 +79,13 @@ function getLocationIcon(locationType: string) {
 
 // ── BookingRow ─────────────────────────────────────────────────────────────
 
-function BookingRow({ booking, index }: { booking: HostBooking; index: number }) {
+function BookingRow({
+  booking,
+  index,
+}: {
+  booking: HostBooking;
+  index: number;
+}) {
   const confirm = useConfirmBooking();
   const decline = useDeclineBooking();
   const cancel = useCancelBooking();
@@ -110,7 +127,9 @@ function BookingRow({ booking, index }: { booking: HostBooking; index: number })
               </span>
               <span className="text-neutral-300 dark:text-neutral-600">·</span>
               {getLocationIcon(booking.eventType.locationType)}
-              <span className="capitalize">{booking.eventType.locationType.toLowerCase()}</span>
+              <span className="capitalize">
+                {booking.eventType.locationType.toLowerCase()}
+              </span>
             </div>
           </div>
 
@@ -215,11 +234,26 @@ function BookingRowSkeleton() {
 
 function EmptyState({ filter }: { filter: FilterStatus }) {
   const messages: Record<FilterStatus, { title: string; subtitle: string }> = {
-    all: { title: 'No bookings yet', subtitle: 'Bookings from your scheduling page will appear here' },
-    PENDING: { title: 'No pending bookings', subtitle: 'New requests will show up here' },
-    CONFIRMED: { title: 'No confirmed bookings', subtitle: 'Accepted bookings will appear here' },
-    CANCELLED: { title: 'No cancelled bookings', subtitle: 'Cancelled bookings will appear here' },
-    DECLINED: { title: 'No declined bookings', subtitle: 'Declined bookings will appear here' },
+    all: {
+      title: 'No bookings yet',
+      subtitle: 'Bookings from your scheduling page will appear here',
+    },
+    PENDING: {
+      title: 'No pending bookings',
+      subtitle: 'New requests will show up here',
+    },
+    CONFIRMED: {
+      title: 'No confirmed bookings',
+      subtitle: 'Accepted bookings will appear here',
+    },
+    CANCELLED: {
+      title: 'No cancelled bookings',
+      subtitle: 'Cancelled bookings will appear here',
+    },
+    DECLINED: {
+      title: 'No declined bookings',
+      subtitle: 'Declined bookings will appear here',
+    },
   };
   const { title, subtitle } = messages[filter];
 
@@ -228,8 +262,12 @@ function EmptyState({ filter }: { filter: FilterStatus }) {
       <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
         <CalendarClock className="w-5 h-5 text-neutral-400 dark:text-neutral-500" />
       </div>
-      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{title}</p>
-      <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">{subtitle}</p>
+      <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+        {title}
+      </p>
+      <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+        {subtitle}
+      </p>
     </div>
   );
 }
@@ -248,7 +286,9 @@ export default function Bookings() {
     <PageMotion>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">Bookings</h1>
+        <h1 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+          Bookings
+        </h1>
         <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
           Manage requests from your scheduling page
         </p>
@@ -281,7 +321,9 @@ export default function Bookings() {
           </>
         ) : isError ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">Failed to load bookings</p>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              Failed to load bookings
+            </p>
           </div>
         ) : bookings.length === 0 ? (
           <EmptyState filter={activeFilter} />

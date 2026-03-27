@@ -1,4 +1,11 @@
-import { Home, CalendarDays, Settings, CreditCard, Mic, CalendarClock } from 'lucide-react';
+import {
+  Home,
+  CalendarDays,
+  Settings,
+  CreditCard,
+  Mic,
+  CalendarClock,
+} from 'lucide-react';
 import type { ToolbarItem, ToolbarItemGroup } from '@/types';
 
 export const TOOLBAR_STORAGE_KEY = 'toolbar-pinned-items';

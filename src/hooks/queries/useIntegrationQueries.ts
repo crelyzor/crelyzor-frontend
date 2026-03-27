@@ -53,7 +53,9 @@ export function useDisconnectGoogleCalendar() {
   return useMutation({
     mutationFn: () => integrationsApi.disconnectGoogleCalendar(),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.integrations.google.status() });
+      qc.invalidateQueries({
+        queryKey: queryKeys.integrations.google.status(),
+      });
       qc.invalidateQueries({ queryKey: queryKeys.settings.all });
       toast.success('Google Calendar disconnected');
     },
