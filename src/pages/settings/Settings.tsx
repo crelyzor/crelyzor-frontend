@@ -1118,14 +1118,14 @@ function DaySlotEditor({
               type="time"
               value={slot.startTime}
               onChange={(e) => onChange(idx, 'startTime', e.target.value)}
-              className="w-28 h-8 text-xs border-neutral-200 dark:border-neutral-700"
+              className="w-36 h-8 text-xs border-neutral-200 dark:border-neutral-700"
             />
             <span className="text-xs text-neutral-400">to</span>
             <Input
               type="time"
               value={slot.endTime}
               onChange={(e) => onChange(idx, 'endTime', e.target.value)}
-              className="w-28 h-8 text-xs border-neutral-200 dark:border-neutral-700"
+              className="w-36 h-8 text-xs border-neutral-200 dark:border-neutral-700"
             />
             <Button
               variant="ghost"
@@ -1633,15 +1633,35 @@ function AvailabilitySection() {
               />
             </FieldGroup>
             <FieldGroup label="Timezone">
-              <Input
-                value={newTimezone}
-                onChange={(e) => setNewTimezone(e.target.value)}
-                placeholder="America/New_York"
-                className="border-neutral-200 dark:border-neutral-700 text-xs font-mono"
-              />
-              <p className="text-[10px] text-neutral-400 mt-1">
-                IANA timezone (e.g. America/New_York)
-              </p>
+              <Select value={newTimezone} onValueChange={setNewTimezone}>
+                <SelectTrigger className="border-neutral-200 dark:border-neutral-700 text-xs">
+                  <SelectValue placeholder="Select timezone" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Pacific/Honolulu">Hawaii (HST)</SelectItem>
+                  <SelectItem value="America/Anchorage">Alaska (AKST)</SelectItem>
+                  <SelectItem value="America/Los_Angeles">Pacific (PST/PDT)</SelectItem>
+                  <SelectItem value="America/Denver">Mountain (MST/MDT)</SelectItem>
+                  <SelectItem value="America/Chicago">Central (CST/CDT)</SelectItem>
+                  <SelectItem value="America/New_York">Eastern (EST/EDT)</SelectItem>
+                  <SelectItem value="America/Sao_Paulo">Brasília (BRT)</SelectItem>
+                  <SelectItem value="America/Argentina/Buenos_Aires">Buenos Aires (ART)</SelectItem>
+                  <SelectItem value="Europe/London">London (GMT/BST)</SelectItem>
+                  <SelectItem value="Europe/Paris">Paris / Berlin (CET/CEST)</SelectItem>
+                  <SelectItem value="Europe/Helsinki">Helsinki / Tallinn (EET/EEST)</SelectItem>
+                  <SelectItem value="Europe/Istanbul">Istanbul (TRT)</SelectItem>
+                  <SelectItem value="Asia/Dubai">Dubai (GST)</SelectItem>
+                  <SelectItem value="Asia/Karachi">Karachi (PKT)</SelectItem>
+                  <SelectItem value="Asia/Kolkata">India (IST)</SelectItem>
+                  <SelectItem value="Asia/Dhaka">Dhaka (BST)</SelectItem>
+                  <SelectItem value="Asia/Bangkok">Bangkok / Jakarta (WIB)</SelectItem>
+                  <SelectItem value="Asia/Singapore">Singapore / KL (SGT)</SelectItem>
+                  <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
+                  <SelectItem value="Asia/Seoul">Seoul (KST)</SelectItem>
+                  <SelectItem value="Australia/Sydney">Sydney (AEST/AEDT)</SelectItem>
+                  <SelectItem value="Pacific/Auckland">Auckland (NZST/NZDT)</SelectItem>
+                </SelectContent>
+              </Select>
             </FieldGroup>
             <div className="flex gap-2 justify-end">
               <Button
