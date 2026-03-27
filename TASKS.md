@@ -326,6 +326,7 @@ Depends on: backend P0 (UserSettings API) must exist before building settings UI
 Design doc: `docs/dev-notes/phase-1.3-gcal.md`
 
 > **What already exists from Phase 1.2:**
+>
 > - Settings > Integrations > Google Calendar section — connect button + `googleCalendarSyncEnabled` toggle (skeleton wired)
 > - `PATCH /settings/user` wired for sync toggle
 
