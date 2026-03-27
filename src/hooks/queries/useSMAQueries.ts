@@ -56,6 +56,7 @@ export function useCreateTask(meetingId: string) {
     }) => smaApi.createTask(meetingId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
+      qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
     },
     onError: () => toast.error('Failed to create task'),
   });
@@ -79,6 +80,7 @@ export function useUpdateTask(meetingId: string) {
     }) => smaApi.updateTask(taskId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
+      qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
     },
     onError: () => toast.error('Failed to update task'),
   });
@@ -90,6 +92,7 @@ export function useDeleteTask(meetingId: string) {
     mutationFn: (taskId: string) => smaApi.deleteTask(taskId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
+      qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
     },
     onError: () => toast.error('Failed to delete task'),
   });

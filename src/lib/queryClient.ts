@@ -13,7 +13,9 @@ export const queryClient = new QueryClient({
       retry: 1,
       onError: (error: unknown) => {
         const message =
-          error instanceof Error ? error.message : 'Something went wrong';
+          import.meta.env.PROD || !(error instanceof Error)
+            ? 'Something went wrong'
+            : error.message;
         toast.error(message);
       },
     },

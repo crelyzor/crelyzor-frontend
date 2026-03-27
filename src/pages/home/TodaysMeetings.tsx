@@ -7,6 +7,7 @@ import { getStatusStyle, getStatusLabel } from '@/types';
 type Props = {
   meetings: DisplayMeeting[];
   isLoading?: boolean;
+  isError?: boolean;
 };
 
 function RowSkeleton() {
@@ -25,7 +26,7 @@ function RowSkeleton() {
   );
 }
 
-export function TodaysMeetings({ meetings, isLoading }: Props) {
+export function TodaysMeetings({ meetings, isLoading, isError }: Props) {
   const navigate = useNavigate();
 
   const today = new Date().toISOString().split('T')[0];
@@ -57,14 +58,20 @@ export function TodaysMeetings({ meetings, isLoading }: Props) {
       <div className="space-y-2">
         {isLoading && [1, 2].map((i) => <RowSkeleton key={i} />)}
 
-        {!isLoading && todayMeetings.length === 0 && (
+        {!isLoading && isError && (
+          <div className="text-center py-8 text-neutral-400 dark:text-neutral-600">
+            <p className="text-xs">Failed to load meetings</p>
+          </div>
+        )}
+
+        {!isLoading && !isError && todayMeetings.length === 0 && (
           <div className="text-center py-8 text-neutral-400 dark:text-neutral-600">
             <Clock className="w-7 h-7 mx-auto mb-2 opacity-40" />
             <p className="text-xs">No meetings today</p>
           </div>
         )}
 
-        {!isLoading &&
+        {!isLoading && !isError &&
           todayMeetings.map((meeting, i) => (
             <motion.div
               key={meeting.id}

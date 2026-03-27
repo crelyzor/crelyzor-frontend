@@ -75,7 +75,7 @@ export default function VoiceNotes() {
   const navigate = useNavigate();
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
 
-  const { data: rawNotes, isLoading, isError } = useVoiceNotes();
+  const { data: rawNotes, isLoading, isError, refetch } = useVoiceNotes();
   const { data: userTags } = useUserTags();
 
   const notes = useMemo(
@@ -174,6 +174,9 @@ export default function VoiceNotes() {
               <p className="text-sm text-neutral-400 dark:text-neutral-500">
                 Failed to load voice notes
               </p>
+              <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
+                Try again
+              </Button>
             </div>
           )}
 

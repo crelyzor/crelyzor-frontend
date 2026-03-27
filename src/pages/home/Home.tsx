@@ -107,6 +107,7 @@ export default function Home() {
                 .map(toDisplayMeeting) ?? []
             }
             isLoading={meetingsLoading}
+            isError={meetingsError}
           />
           <RecentMeetings
             meetings={recentMeetings}

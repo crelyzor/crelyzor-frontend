@@ -357,6 +357,7 @@ export default function Meetings() {
     data: meetingsData,
     isLoading: meetingsLoading,
     isError: meetingsError,
+    refetch: refetchMeetings,
   } = useMeetingsAll();
   const { data: userTags } = useUserTags();
 
@@ -550,6 +551,9 @@ export default function Meetings() {
               <p className="text-sm text-neutral-400 dark:text-neutral-500">
                 Failed to load meetings
               </p>
+              <Button variant="outline" size="sm" className="mt-3" onClick={() => refetchMeetings()}>
+                Try again
+              </Button>
             </div>
           )}
           {!meetingsLoading && !meetingsError && grouped.length === 0 && (
