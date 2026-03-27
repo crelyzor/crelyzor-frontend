@@ -85,7 +85,8 @@ function ParticipantPicker({
     inputRef.current?.focus();
   };
 
-  const remove = (id: string) => onChange(participants.filter((p) => p.id !== id));
+  const remove = (id: string) =>
+    onChange(participants.filter((p) => p.id !== id));
 
   return (
     <div className="space-y-2">
@@ -132,9 +133,13 @@ function ParticipantPicker({
         {open && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg z-50 overflow-hidden">
             {isFetching ? (
-              <div className="px-3 py-2.5 text-xs text-neutral-400">Searching…</div>
+              <div className="px-3 py-2.5 text-xs text-neutral-400">
+                Searching…
+              </div>
             ) : results.length === 0 ? (
-              <div className="px-3 py-2.5 text-xs text-neutral-400">No users found</div>
+              <div className="px-3 py-2.5 text-xs text-neutral-400">
+                No users found
+              </div>
             ) : (
               results
                 .filter((u) => !selectedIds.has(u.id))
@@ -149,8 +154,12 @@ function ParticipantPicker({
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate">{user.name}</p>
-                      <p className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate">{user.email}</p>
+                      <p className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate">
+                        {user.name}
+                      </p>
+                      <p className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate">
+                        {user.email}
+                      </p>
                     </div>
                   </button>
                 ))
@@ -496,7 +505,8 @@ export default function Meetings() {
             m.status === 'RESCHEDULING_REQUESTED'
           )
             return false;
-          if (typeTab === 'scheduled') return m.type === 'SCHEDULED' && m.status === 'CREATED';
+          if (typeTab === 'scheduled')
+            return m.type === 'SCHEDULED' && m.status === 'CREATED';
           if (typeTab === 'recorded') return m.type === 'RECORDED';
           if (typeTab === 'bookings') return m.status === 'ACCEPTED';
           return true;
@@ -557,7 +567,8 @@ export default function Meetings() {
               </div>
               <div>
                 <p className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
-                  {pendingCount} pending booking {pendingCount === 1 ? 'request' : 'requests'}
+                  {pendingCount} pending booking{' '}
+                  {pendingCount === 1 ? 'request' : 'requests'}
                 </p>
                 <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
                   Confirm or decline on the Bookings page
@@ -993,7 +1004,8 @@ export default function Meetings() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-neutral-500">
-                Participants <span className="text-neutral-400">(optional)</span>
+                Participants{' '}
+                <span className="text-neutral-400">(optional)</span>
               </Label>
               <ParticipantPicker
                 participants={participants}
