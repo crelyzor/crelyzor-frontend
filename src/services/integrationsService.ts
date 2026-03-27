@@ -13,7 +13,7 @@ export type CalendarEvent = {
   id: string;
   title: string;
   startTime: string; // ISO string (serialized from Date by backend)
-  endTime: string;   // ISO string
+  endTime: string; // ISO string
   location?: string;
   meetLink?: string;
   source: 'GOOGLE';
@@ -44,4 +44,8 @@ export const integrationsApi = {
     apiClient.get<{ events: CalendarEvent[] }>('/integrations/google/events', {
       params: { start, end },
     }),
+
+  /** DELETE /integrations/google/disconnect — strips calendar scopes and clears settings */
+  disconnectGoogleCalendar: () =>
+    apiClient.delete<void>('/integrations/google/disconnect'),
 };

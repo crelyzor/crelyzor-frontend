@@ -103,6 +103,16 @@ export function VoiceNoteDetail({
                   <Clock className="w-3 h-3" />
                   {meeting.duration}
                 </div>
+                {rawMeeting.meetLink && (
+                  <a
+                    href={rawMeeting.meetLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+                  >
+                    Join meeting →
+                  </a>
+                )}
               </div>
               <div className="mt-2.5">
                 <TagsSection meetingId={rawMeeting.id} />

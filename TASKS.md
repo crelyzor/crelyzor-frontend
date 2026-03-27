@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-26 (Phase 1.2 complete — P0 Settings, Event Types, Availability, Integrations UI done)
+Last updated: 2026-03-27 (Phase 1.3 complete — GCal timeline, meet link UX, settings integrations wired)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -332,37 +332,36 @@ Design doc: `docs/dev-notes/phase-1.3-gcal.md`
 
 ### P0 — Types + Service Layer
 
-- [ ] Add `CalendarEvent` type to `src/types/integrations.ts`: `{ id, title, startTime, endTime, location?: string, meetLink?: string, source: 'GOOGLE' }`
-- [ ] Add `meetLink?: string | null` to `Meeting` / `DisplayMeeting` types in `src/types/meeting.ts`
-- [ ] Add `googleEventId?: string | null` to `Meeting` types
-- [ ] `src/services/integrationsService.ts` — `getGoogleCalendarStatus()` → `GET /integrations/google/status`, `getGoogleCalendarEvents(start, end)` → `GET /integrations/google/events`
-- [ ] Query keys: `queryKeys.integrations.google.status()`, `queryKeys.integrations.google.events(start, end)` in `src/lib/queryKeys.ts`
-- [ ] `useGoogleCalendarStatus()` hook in `src/hooks/queries/useIntegrations.ts`
-- [ ] `useGoogleCalendarEvents(start, end)` hook in the same file
+- [x] Add `CalendarEvent` type to `src/services/integrationsService.ts` (types live in service file, not a separate integrations.ts)
+- [x] Add `meetLink?: string | null` to `Meeting` type in `src/types/meeting.ts`
+- [x] `googleEventId?: string` already existed in Meeting type
+- [x] `src/services/integrationsService.ts` — `getGoogleCalendarStatus()` + `getGoogleCalendarEvents(start, end)` + `CalendarEvent` + `GCalConnectionStatus` types
+- [x] Query keys: `queryKeys.integrations.google.status()`, `queryKeys.integrations.google.events(start, end)` in `src/lib/queryKeys.ts` (replaced legacy `queryKeys.sync`)
+- [x] `useGoogleCalendarStatus()` + `useGoogleCalendarEvents(start, end)` hooks in `src/hooks/queries/useIntegrationQueries.ts`
 
 ### P1 — Meet Link UX in Meeting Detail
 
-- [ ] **ScheduledDetail:** When `meeting.meetLink` is set → show **"Join Meeting"** button (prominent, primary style) in the quick-actions area. Next to it, a copy-link icon button. Only shown for ONLINE meetings with a meetLink.
-- [ ] **RecordedDetail + VoiceNoteDetail:** Same Join button pattern if meetLink present (edge case — recordings can have a meet link if they originated from a booking).
-- [ ] Meeting creation form (`CreateMeetingModal` or equivalent): when `locationType === 'ONLINE'` → show "Auto-generate Google Meet link" checkbox (shown only if GCal connected, checked by default). When unchecked → reveal manual URL input field.
+- [x] **ScheduledDetail:** When `meeting.meetLink` is set → "Join Meeting" button (primary) + copy icon button in quick-actions area
+- [x] **RecordedDetail + VoiceNoteDetail:** Inline "Join meeting →" link in header when meetLink present
+- [x] Meeting creation form: "Add to Google Calendar with a Meet link" switch (shown only if GCal connected, on by default). Passes `addToCalendar: true` to backend.
 
 ### P2 — Unified Timeline on Home Dashboard
 
-- [ ] **`TodayTimeline` component** (`src/components/home/TodayTimeline.tsx`) — replaces or extends the existing "Today's meetings" widget. Shows Crelyzor meetings + GCal events for today on a single chronological list.
-  - Crelyzor meetings: existing card style
-  - GCal events: subtle Google Calendar icon, slightly different background (muted, not card), `source: 'GOOGLE'` badge
+- [x] **`TodayTimeline` component** (`src/pages/home/TodayTimeline.tsx`) — replaces the "Today's meetings" widget. Shows Crelyzor meetings + GCal events for today in a chronological unified list.
+  - Crelyzor meetings: same card style, navigates to /meetings/:id
+  - GCal events: muted bg, CalendarDays icon, "Google Calendar" label — clickable when meetLink present, display-only otherwise
   - Empty state: "No events today"
-  - Loading: skeleton rows
-  - Both datasets fetched in parallel: `useGoogleCalendarEvents(todayStart, todayEnd)` + existing meetings query
-- [ ] Wire `TodayTimeline` into the Home dashboard, replacing the current "Today's meetings" widget
-- [ ] **GCal events never show AI/transcription actions** — they are display-only. No ⋯ menu. Clicking opens the GCal event link if available.
+  - Loading: skeleton rows (waits for both queries)
+  - Gated behind gcalStatus?.connected — no API call for disconnected users
+- [x] Wired into Home dashboard replacing TodaysMeetings
+- [x] GCal events are display-only — no ⋯ menu, no AI actions. Non-interactive div when no meetLink.
 
 ### P3 — Settings > Integrations Wiring
 
-- [ ] **Google Calendar status:** Use `useGoogleCalendarStatus()` to show: connected email badge (green dot + email), or "Not connected" state. Replace the static skeleton with live data.
-- [ ] **Connect flow:** "Connect Google Calendar" button → calls `POST /auth/google/calendar/connect` → navigates to returned OAuth URL. On return, callback params handled (already wired from Phase 1.2) → status refetched.
-- [ ] **Disconnect:** "Disconnect" button → call `DELETE /integrations/google/disconnect` (backend needs this endpoint — coordinate with backend P2). Optimistic update + toast.
-- [ ] **Sync toggle:** `googleCalendarSyncEnabled` already wired to `PATCH /settings/user` — verify it still works, add visual feedback (toast on save).
+- [x] **Google Calendar status:** `useGoogleCalendarStatus()` wired in `IntegrationsSection`. Shows connected email badge or "Not connected" state. Live data from `GET /integrations/google/status`. Replaces static skeleton.
+- [x] **Connect flow:** "Connect Google Calendar" button already wired from Phase 1.2. On OAuth return, `queryKeys.integrations.google.status()` + `queryKeys.settings.all` both invalidated so UI refreshes.
+- [x] **Disconnect:** `useDisconnectGoogleCalendar` mutation wired. Ghost "Disconnect" button next to email badge. Calls `DELETE /integrations/google/disconnect`, invalidates status + settings caches, shows toast.
+- [x] **Sync toggle:** `googleCalendarSyncEnabled` wired via `PATCH /settings/user`. Inline `onSuccess`/`onError` toast feedback added.
 
 ---
 

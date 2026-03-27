@@ -57,9 +57,16 @@ export const queryKeys = {
     all: ['integrations'] as const,
     google: {
       all: () => [...queryKeys.integrations.all, 'google'] as const,
-      status: () => [...queryKeys.integrations.all, 'google', 'status'] as const,
+      status: () =>
+        [...queryKeys.integrations.all, 'google', 'status'] as const,
       events: (start: string, end: string) =>
-        [...queryKeys.integrations.all, 'google', 'events', start, end] as const,
+        [
+          ...queryKeys.integrations.all,
+          'google',
+          'events',
+          start,
+          end,
+        ] as const,
     },
   },
 

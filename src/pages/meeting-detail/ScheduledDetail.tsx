@@ -381,7 +381,12 @@ export function ScheduledDetail({
           <div className="flex gap-2 mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800 flex-wrap">
             {rawMeeting.meetLink && (
               <>
-                <Button variant="default" size="sm" className="text-xs gap-1.5 h-8" asChild>
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="text-xs gap-1.5 h-8"
+                  asChild
+                >
                   <a
                     href={rawMeeting.meetLink}
                     target="_blank"

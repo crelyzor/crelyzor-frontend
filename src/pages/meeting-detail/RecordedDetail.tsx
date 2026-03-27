@@ -199,7 +199,7 @@ export function RecordedDetail({
               <h1 className="text-xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
                 {meeting.title}
               </h1>
-              <div className="flex items-center gap-3 mt-2">
+              <div className="flex items-center gap-3 mt-2 flex-wrap">
                 <span className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
                   <Calendar className="w-3 h-3" />
                   {recordedOn}
@@ -208,6 +208,16 @@ export function RecordedDetail({
                   <Clock className="w-3 h-3" />
                   {meeting.duration}
                 </span>
+                {rawMeeting.meetLink && (
+                  <a
+                    href={rawMeeting.meetLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+                  >
+                    Join meeting →
+                  </a>
+                )}
               </div>
               <div className="mt-2.5">
                 <TagsSection meetingId={rawMeeting.id} />

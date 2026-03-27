@@ -7,10 +7,11 @@ import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { CompactStickyBar } from './CompactStickyBar';
 import { HeroSection } from './HeroSection';
 import { RecentMeetings } from './RecentMeetings';
-import { TodaysMeetings } from './TodaysMeetings';
+import { TodayTimeline } from './TodayTimeline';
 import { PendingTasksWidget } from './PendingTasksWidget';
 import { DefaultCardWidget } from './DefaultCardWidget';
 import { RecentVoiceNotes } from './RecentVoiceNotes';
+import { PublicLinksWidget } from './PublicLinksWidget';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
 
 export default function Home() {
@@ -100,7 +101,7 @@ export default function Home() {
       >
         {/* Left — today + recent meetings (2/3) */}
         <div className="lg:col-span-2 space-y-8">
-          <TodaysMeetings
+          <TodayTimeline
             meetings={
               allMeetingsData
                 ?.filter((m) => m.type !== 'VOICE_NOTE')
@@ -116,8 +117,9 @@ export default function Home() {
           />
         </div>
 
-        {/* Right — card widget + pending tasks + voice notes (1/3) */}
+        {/* Right — identity (links + card) then work (tasks + voice notes) (1/3) */}
         <div className="lg:col-span-1 space-y-6">
+          <PublicLinksWidget />
           <DefaultCardWidget />
           <PendingTasksWidget />
           <RecentVoiceNotes />

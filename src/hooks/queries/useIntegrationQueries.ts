@@ -47,3 +47,18 @@ export function useGoogleCalendarEvents(start: string, end: string) {
     select: (data) => data.events,
   });
 }
+
+export function useDisconnectGoogleCalendar() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => integrationsApi.disconnectGoogleCalendar(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.integrations.google.status() });
+      qc.invalidateQueries({ queryKey: queryKeys.settings.all });
+      toast.success('Google Calendar disconnected');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to disconnect Google Calendar');
+    },
+  });
+}

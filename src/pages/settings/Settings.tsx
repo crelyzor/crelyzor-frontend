@@ -62,7 +62,12 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
 import { useUpdateProfile } from '@/hooks/queries/useUserQueries';
-import { useSessions } from '@/hooks/queries/useIntegrationQueries';
+import {
+  useSessions,
+  useGoogleCalendarStatus,
+  useDisconnectGoogleCalendar,
+} from '@/hooks/queries/useIntegrationQueries';
+import { queryKeys } from '@/lib/queryKeys';
 import {
   useUserTags,
   useCreateTag,
@@ -1824,13 +1829,19 @@ function IntegrationsSection() {
   const [showRecallKey, setShowRecallKey] = useState(false);
   const saveRecallApiKey = useSaveRecallApiKey(() => setRecallApiKey(''));
 
-  const isCalendarConnected = !!settings?.googleCalendarEmail;
+  const { data: gcalStatus } = useGoogleCalendarStatus();
+  const disconnect = useDisconnectGoogleCalendar();
 
-  // After Google Calendar OAuth redirect, detect success/failure and refetch settings
+  // GCal connected when OAuthAccount has calendar scope + email is stored
+  const isCalendarConnected = gcalStatus?.connected === true;
+  const calendarEmail = gcalStatus?.email ?? settings?.googleCalendarEmail;
+
+  // After Google Calendar OAuth redirect, detect success/failure and refetch
   useEffect(() => {
     const calendarConnected = searchParams.get('calendarConnected');
     if (calendarConnected === 'true') {
-      qc.invalidateQueries({ queryKey: ['settings'] });
+      qc.invalidateQueries({ queryKey: queryKeys.settings.all });
+      qc.invalidateQueries({ queryKey: queryKeys.integrations.google.status() });
       toast.success('Google Calendar connected');
       setSearchParams((prev) => {
         prev.delete('calendarConnected');
@@ -1894,13 +1905,22 @@ function IntegrationsSection() {
                 <div className="mt-4 animate-pulse h-4 w-40 bg-neutral-200 dark:bg-neutral-800 rounded" />
               ) : isCalendarConnected ? (
                 <div className="mt-4 space-y-4">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Badge
                       variant="secondary"
                       className="text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700"
                     >
-                      {settings?.googleCalendarEmail}
+                      {calendarEmail}
                     </Badge>
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => disconnect.mutate()}
+                      disabled={disconnect.isPending}
+                      className="text-xs text-neutral-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 h-auto px-1.5 py-0.5"
+                    >
+                      {disconnect.isPending ? 'Disconnecting…' : 'Disconnect'}
+                    </Button>
                   </div>
                   <SettingRow
                     label="Sync enabled"
@@ -1909,7 +1929,16 @@ function IntegrationsSection() {
                     <Switch
                       checked={settings?.googleCalendarSyncEnabled ?? false}
                       onCheckedChange={(v) =>
-                        updateSettings.mutate({ googleCalendarSyncEnabled: v })
+                        updateSettings.mutate(
+                          { googleCalendarSyncEnabled: v },
+                          {
+                            onSuccess: () =>
+                              toast.success(
+                                v ? 'Calendar sync enabled' : 'Calendar sync disabled'
+                              ),
+                            onError: () => toast.error('Failed to update setting'),
+                          }
+                        )
                       }
                     />
                   </SettingRow>

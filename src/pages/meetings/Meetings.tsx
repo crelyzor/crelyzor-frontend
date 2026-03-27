@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Popover,
   PopoverContent,
@@ -48,6 +49,7 @@ import {
   useDeleteMeeting,
 } from '@/hooks/queries/useMeetingQueries';
 import { useUserTags } from '@/hooks/queries/useTagQueries';
+import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
 import { toDisplayMeeting, type DisplayMeeting } from '@/lib/meetingHelpers';
 import { getStatusStyle, getStatusLabel } from '@/types';
 import type { MeetingStatus } from '@/types';
@@ -308,9 +310,11 @@ export default function Meetings() {
     startTime: '',
     endTime: '',
     location: '',
+    autoGenerateMeet: true,
   });
 
   const createMeeting = useCreateMeeting();
+  const { data: gcalStatus } = useGoogleCalendarStatus();
 
   // Auto-open create scheduled dialog from FAB
   useEffect(() => {
@@ -337,6 +341,9 @@ export default function Meetings() {
         endTime: new Date(createForm.endTime).toISOString(),
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         location: createForm.location.trim() || undefined,
+        addToCalendar: gcalStatus?.connected
+          ? createForm.autoGenerateMeet
+          : undefined,
       },
       {
         onSuccess: (meeting) => {
@@ -346,6 +353,7 @@ export default function Meetings() {
             startTime: '',
             endTime: '',
             location: '',
+            autoGenerateMeet: true,
           });
           navigate(`/meetings/${meeting.id}`);
         },
@@ -761,6 +769,7 @@ export default function Meetings() {
               startTime: '',
               endTime: '',
               location: '',
+              autoGenerateMeet: true,
             });
         }}
       >
@@ -815,6 +824,23 @@ export default function Meetings() {
                 className="text-sm"
               />
             </div>
+            {gcalStatus?.connected && (
+              <div className="flex items-center gap-2 pt-1">
+                <Switch
+                  id="gcal-meet"
+                  checked={createForm.autoGenerateMeet}
+                  onCheckedChange={(checked) =>
+                    setCreateForm((f) => ({ ...f, autoGenerateMeet: checked }))
+                  }
+                />
+                <Label
+                  htmlFor="gcal-meet"
+                  className="text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer"
+                >
+                  Add to Google Calendar with a Meet link
+                </Label>
+              </div>
+            )}
             <div className="flex gap-2 justify-end pt-1">
               <Button
                 variant="outline"

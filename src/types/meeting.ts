@@ -72,8 +72,8 @@ export type Meeting = {
   timezone: string;
   status: MeetingStatus;
   location?: string;
-  meetingLink?: string;        // legacy / manually set link
-  meetLink?: string | null;    // auto-generated Google Meet URL (Phase 1.3)
+  meetingLink?: string; // legacy / manually set link
+  meetLink?: string | null; // auto-generated Google Meet URL (Phase 1.3)
   meetingProvider?: MeetingProvider;
   googleEventId?: string;
   recordingLink?: string;
@@ -189,7 +189,7 @@ export function getParticipantNames(meeting: Meeting): string[] {
 
 export function getStatusLabel(status: MeetingStatus): string {
   const map: Record<MeetingStatus, string> = {
-    CREATED: 'Created',
+    CREATED: 'Upcoming',
     PENDING_ACCEPTANCE: 'Pending',
     ACCEPTED: 'Confirmed',
     DECLINED: 'Declined',
