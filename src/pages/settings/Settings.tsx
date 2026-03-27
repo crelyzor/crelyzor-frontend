@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { getTimeZones } from '@vvo/tzdb';
 import { useQueryClient } from '@tanstack/react-query';
 import { PageMotion } from '@/components/PageMotion';
 import {
@@ -107,6 +108,20 @@ import type {
   HostBooking,
   BookingStatus,
 } from '@/types/settings';
+
+// ── Timezone formatting ──
+function formatTimezone(tz: string): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZoneName: 'short',
+    timeZone: tz,
+  }).formatToParts(new Date());
+  return parts.find((p) => p.type === 'timeZoneName')?.value ?? tz;
+}
+
+const TIMEZONE_OPTIONS = getTimeZones({ includeUtc: true }).map((tz) => ({
+  value: tz.name,
+  label: `${tz.name} GMT ${tz.currentTimeOffsetInMinutes >= 0 ? '+' : ''}${Math.floor(Math.abs(tz.currentTimeOffsetInMinutes) / 60)}:${String(Math.abs(tz.currentTimeOffsetInMinutes) % 60).padStart(2, '0')}`,
+}));
 
 // ── Settings sections ──
 const SETTINGS_SECTIONS = [
@@ -1168,6 +1183,8 @@ function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
   const [blockDate, setBlockDate] = useState('');
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(schedule.name);
+  const [editingTimezone, setEditingTimezone] = useState(false);
+  const [timezoneInput, setTimezoneInput] = useState(schedule.timezone);
   const initDone = useRef(false);
 
   // Reset when schedule changes
@@ -1175,7 +1192,8 @@ function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
     initDone.current = false;
     setDirty(false);
     setNameInput(schedule.name);
-  }, [schedule.id, schedule.name]);
+    setTimezoneInput(schedule.timezone);
+  }, [schedule.id, schedule.name, schedule.timezone]);
 
   useEffect(() => {
     if (availabilityData && !initDone.current) {
@@ -1269,6 +1287,15 @@ function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
     );
   };
 
+  const handleSaveTimezone = (tz: string) => {
+    updateSchedule.mutate(
+      { id: schedule.id, data: { timezone: tz } },
+      {
+        onSuccess: () => setEditingTimezone(false),
+      }
+    );
+  };
+
   if (slotsLoading) return <SettingsSkeleton rows={5} />;
 
   return (
@@ -1328,10 +1355,45 @@ function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
             </Button>
           </div>
         )}
-        <div className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 shrink-0">
-          <Globe className="w-3.5 h-3.5" />
-          {schedule.timezone}
-        </div>
+        {editingTimezone ? (
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Select
+              value={timezoneInput}
+              onValueChange={(tz) => {
+                setTimezoneInput(tz);
+                handleSaveTimezone(tz);
+              }}
+            >
+              <SelectTrigger className="h-7 text-xs border-neutral-200 dark:border-neutral-700 w-52">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-64">
+                {TIMEZONE_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7"
+              onClick={() => setEditingTimezone(false)}
+            >
+              <X className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        ) : (
+          <button
+            className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 shrink-0 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors group"
+            onClick={() => setEditingTimezone(true)}
+          >
+            <Globe className="w-3.5 h-3.5" />
+            {formatTimezone(schedule.timezone)}
+            <Pencil className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        )}
       </div>
 
       {/* Weekly grid */}
@@ -1549,7 +1611,7 @@ function AvailabilitySection() {
                   </span>
                 </div>
                 <p className="text-[11px] text-neutral-400 dark:text-neutral-500 truncate mt-0.5">
-                  {s.timezone}
+                  {formatTimezone(s.timezone)}
                 </p>
 
                 {/* Actions on hover */}
@@ -1637,29 +1699,12 @@ function AvailabilitySection() {
                 <SelectTrigger className="border-neutral-200 dark:border-neutral-700 text-xs">
                   <SelectValue placeholder="Select timezone" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Pacific/Honolulu">Hawaii (HST)</SelectItem>
-                  <SelectItem value="America/Anchorage">Alaska (AKST)</SelectItem>
-                  <SelectItem value="America/Los_Angeles">Pacific (PST/PDT)</SelectItem>
-                  <SelectItem value="America/Denver">Mountain (MST/MDT)</SelectItem>
-                  <SelectItem value="America/Chicago">Central (CST/CDT)</SelectItem>
-                  <SelectItem value="America/New_York">Eastern (EST/EDT)</SelectItem>
-                  <SelectItem value="America/Sao_Paulo">Brasília (BRT)</SelectItem>
-                  <SelectItem value="America/Argentina/Buenos_Aires">Buenos Aires (ART)</SelectItem>
-                  <SelectItem value="Europe/London">London (GMT/BST)</SelectItem>
-                  <SelectItem value="Europe/Paris">Paris / Berlin (CET/CEST)</SelectItem>
-                  <SelectItem value="Europe/Helsinki">Helsinki / Tallinn (EET/EEST)</SelectItem>
-                  <SelectItem value="Europe/Istanbul">Istanbul (TRT)</SelectItem>
-                  <SelectItem value="Asia/Dubai">Dubai (GST)</SelectItem>
-                  <SelectItem value="Asia/Karachi">Karachi (PKT)</SelectItem>
-                  <SelectItem value="Asia/Kolkata">India (IST)</SelectItem>
-                  <SelectItem value="Asia/Dhaka">Dhaka (BST)</SelectItem>
-                  <SelectItem value="Asia/Bangkok">Bangkok / Jakarta (WIB)</SelectItem>
-                  <SelectItem value="Asia/Singapore">Singapore / KL (SGT)</SelectItem>
-                  <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
-                  <SelectItem value="Asia/Seoul">Seoul (KST)</SelectItem>
-                  <SelectItem value="Australia/Sydney">Sydney (AEST/AEDT)</SelectItem>
-                  <SelectItem value="Pacific/Auckland">Auckland (NZST/NZDT)</SelectItem>
+                <SelectContent className="max-h-64">
+                  {TIMEZONE_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </FieldGroup>
