@@ -84,66 +84,69 @@ export const schedulesApi = {
   /** PATCH /scheduling/schedules/:id */
   update: (id: string, data: { name?: string; timezone?: string }) =>
     apiClient
-      .patch<{ schedule: AvailabilitySchedule }>(`/scheduling/schedules/${id}`, data)
+      .patch<{
+        schedule: AvailabilitySchedule;
+      }>(`/scheduling/schedules/${id}`, data)
       .then((r) => r.schedule),
 
   /** DELETE /scheduling/schedules/:id */
-  delete: (id: string) =>
-    apiClient.delete<void>(`/scheduling/schedules/${id}`),
+  delete: (id: string) => apiClient.delete<void>(`/scheduling/schedules/${id}`),
 
   /** POST /scheduling/schedules/:id/copy */
   copy: (id: string, name: string) =>
     apiClient
-      .post<{ schedule: AvailabilitySchedule }>(`/scheduling/schedules/${id}/copy`, { name })
+      .post<{
+        schedule: AvailabilitySchedule;
+      }>(`/scheduling/schedules/${id}/copy`, { name })
       .then((r) => r.schedule),
 
   /** POST /scheduling/schedules/:id/set-default */
   setDefault: (id: string) =>
     apiClient
-      .post<{ schedule: AvailabilitySchedule }>(`/scheduling/schedules/${id}/set-default`, {})
+      .post<{
+        schedule: AvailabilitySchedule;
+      }>(`/scheduling/schedules/${id}/set-default`, {})
       .then((r) => r.schedule),
 
   /** GET /scheduling/schedules/:id/availability */
   getSlots: (scheduleId: string) =>
     apiClient
-      .get<{ availability: ScheduleAvailabilityDay[] }>(
-        `/scheduling/schedules/${scheduleId}/availability`,
-      )
+      .get<{
+        availability: ScheduleAvailabilityDay[];
+      }>(`/scheduling/schedules/${scheduleId}/availability`)
       .then((r) => r.availability),
 
   /** PATCH /scheduling/schedules/:id/availability */
   patchSlots: (
     scheduleId: string,
-    slots: Array<{ dayOfWeek: number; startTime: string; endTime: string }>,
+    slots: Array<{ dayOfWeek: number; startTime: string; endTime: string }>
   ) =>
     apiClient
-      .patch<{ availability: ScheduleAvailabilityDay[] }>(
-        `/scheduling/schedules/${scheduleId}/availability`,
-        { slots },
-      )
+      .patch<{
+        availability: ScheduleAvailabilityDay[];
+      }>(`/scheduling/schedules/${scheduleId}/availability`, { slots })
       .then((r) => r.availability),
 
   /** GET /scheduling/schedules/:id/overrides */
   getOverrides: (scheduleId: string) =>
     apiClient
-      .get<{ overrides: AvailabilityOverride[] }>(
-        `/scheduling/schedules/${scheduleId}/overrides`,
-      )
+      .get<{
+        overrides: AvailabilityOverride[];
+      }>(`/scheduling/schedules/${scheduleId}/overrides`)
       .then((r) => r.overrides),
 
   /** POST /scheduling/schedules/:id/overrides */
   createOverride: (scheduleId: string, date: string) =>
     apiClient
-      .post<{ override: AvailabilityOverride }>(
-        `/scheduling/schedules/${scheduleId}/overrides`,
-        { date, isBlocked: true },
-      )
+      .post<{
+        override: AvailabilityOverride;
+      }>(`/scheduling/schedules/${scheduleId}/overrides`, { date, isBlocked: true })
       .then((r) => r.override),
 
   /** DELETE /scheduling/schedules/:id/overrides/:overrideId */
   deleteOverride: (scheduleId: string, overrideId: string) =>
     apiClient.delete<void>(
-      `/scheduling/schedules/${scheduleId}/overrides/${overrideId}`,
+      `/scheduling/schedules/${scheduleId}/overrides/${overrideId}`
     ),
 };
 
@@ -179,7 +182,10 @@ export const bookingsApi = {
   /** POST /scheduling/bookings/:id/decline — host declines a PENDING booking */
   decline: (id: string, reason?: string) =>
     apiClient.post<{
-      booking: Pick<HostBooking, 'id' | 'status' | 'cancelReason' | 'canceledAt'>;
+      booking: Pick<
+        HostBooking,
+        'id' | 'status' | 'cancelReason' | 'canceledAt'
+      >;
     }>(`/scheduling/bookings/${id}/decline`, { reason }),
 
   /** PATCH /scheduling/bookings/:id/cancel — host cancels a booking */

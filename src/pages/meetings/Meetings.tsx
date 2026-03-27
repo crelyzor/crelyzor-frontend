@@ -321,7 +321,11 @@ export default function Meetings() {
   }, [searchParams, setSearchParams]);
 
   const handleCreateScheduled = () => {
-    if (!createForm.title.trim() || !createForm.startTime || !createForm.endTime) {
+    if (
+      !createForm.title.trim() ||
+      !createForm.startTime ||
+      !createForm.endTime
+    ) {
       toast.error('Title, start time, and end time are required');
       return;
     }
@@ -337,7 +341,12 @@ export default function Meetings() {
       {
         onSuccess: (meeting) => {
           setShowCreateScheduled(false);
-          setCreateForm({ title: '', startTime: '', endTime: '', location: '' });
+          setCreateForm({
+            title: '',
+            startTime: '',
+            endTime: '',
+            location: '',
+          });
           navigate(`/meetings/${meeting.id}`);
         },
       }
@@ -737,7 +746,13 @@ export default function Meetings() {
         open={showCreateScheduled}
         onOpenChange={(open) => {
           setShowCreateScheduled(open);
-          if (!open) setCreateForm({ title: '', startTime: '', endTime: '', location: '' });
+          if (!open)
+            setCreateForm({
+              title: '',
+              startTime: '',
+              endTime: '',
+              location: '',
+            });
         }}
       >
         <DialogContent className="max-w-sm">
@@ -749,7 +764,9 @@ export default function Meetings() {
               <Label className="text-xs text-neutral-500">Title</Label>
               <Input
                 value={createForm.title}
-                onChange={(e) => setCreateForm((f) => ({ ...f, title: e.target.value }))}
+                onChange={(e) =>
+                  setCreateForm((f) => ({ ...f, title: e.target.value }))
+                }
                 placeholder="Meeting title"
                 className="text-sm"
               />
@@ -759,7 +776,9 @@ export default function Meetings() {
               <Input
                 type="datetime-local"
                 value={createForm.startTime}
-                onChange={(e) => setCreateForm((f) => ({ ...f, startTime: e.target.value }))}
+                onChange={(e) =>
+                  setCreateForm((f) => ({ ...f, startTime: e.target.value }))
+                }
                 className="text-sm"
               />
             </div>
@@ -768,7 +787,9 @@ export default function Meetings() {
               <Input
                 type="datetime-local"
                 value={createForm.endTime}
-                onChange={(e) => setCreateForm((f) => ({ ...f, endTime: e.target.value }))}
+                onChange={(e) =>
+                  setCreateForm((f) => ({ ...f, endTime: e.target.value }))
+                }
                 className="text-sm"
               />
             </div>
@@ -778,7 +799,9 @@ export default function Meetings() {
               </Label>
               <Input
                 value={createForm.location}
-                onChange={(e) => setCreateForm((f) => ({ ...f, location: e.target.value }))}
+                onChange={(e) =>
+                  setCreateForm((f) => ({ ...f, location: e.target.value }))
+                }
                 placeholder="Zoom link or address"
                 className="text-sm"
               />

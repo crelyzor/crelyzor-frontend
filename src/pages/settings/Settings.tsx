@@ -1062,7 +1062,8 @@ function EventTypeSchedulePicker({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="__default__">
-            {schedules.find((s) => s.isDefault)?.name ?? 'Working Hours'} (default)
+            {schedules.find((s) => s.isDefault)?.name ?? 'Working Hours'}{' '}
+            (default)
           </SelectItem>
           {schedules
             .filter((s) => !s.isDefault)
@@ -1092,7 +1093,11 @@ function DaySlotEditor({
   slots: Array<{ startTime: string; endTime: string; _id?: string }>;
   onAdd: () => void;
   onRemove: (idx: number) => void;
-  onChange: (idx: number, field: 'startTime' | 'endTime', value: string) => void;
+  onChange: (
+    idx: number,
+    field: 'startTime' | 'endTime',
+    value: string
+  ) => void;
 }) {
   return (
     <div className="flex items-start gap-3 py-2">
@@ -1146,8 +1151,12 @@ function DaySlotEditor({
 
 // Sub-component: schedule slot editor panel
 function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
-  const { data: availabilityData, isLoading: slotsLoading } = useScheduleSlots(schedule.id);
-  const { data: overrides, isLoading: overridesLoading } = useScheduleOverrides(schedule.id);
+  const { data: availabilityData, isLoading: slotsLoading } = useScheduleSlots(
+    schedule.id
+  );
+  const { data: overrides, isLoading: overridesLoading } = useScheduleOverrides(
+    schedule.id
+  );
   const updateSlots = useUpdateScheduleSlots(schedule.id);
   const createOverride = useCreateScheduleOverride(schedule.id);
   const deleteOverride = useDeleteScheduleOverride(schedule.id);
@@ -1198,42 +1207,66 @@ function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
     setDirty(true);
   };
 
-  const handleChangeSlot = (day: number, idx: number, field: 'startTime' | 'endTime', value: string) => {
+  const handleChangeSlot = (
+    day: number,
+    idx: number,
+    field: 'startTime' | 'endTime',
+    value: string
+  ) => {
     setLocalSlots((prev) => ({
       ...prev,
       [day]: (prev[day] ?? []).map((s, i) =>
-        i === idx ? { ...s, [field]: value } : s,
+        i === idx ? { ...s, [field]: value } : s
       ),
     }));
     setDirty(true);
   };
 
   const handleSave = () => {
-    const slots: Array<{ dayOfWeek: number; startTime: string; endTime: string }> = [];
+    const slots: Array<{
+      dayOfWeek: number;
+      startTime: string;
+      endTime: string;
+    }> = [];
     for (const [day, daySlots] of Object.entries(localSlots)) {
       for (const slot of daySlots) {
         if (slot.startTime >= slot.endTime) {
           toast.error(`${DAY_SHORT[Number(day)]}: start must be before end`);
           return;
         }
-        slots.push({ dayOfWeek: Number(day), startTime: slot.startTime, endTime: slot.endTime });
+        slots.push({
+          dayOfWeek: Number(day),
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+        });
       }
     }
-    updateSlots.mutate(slots, { onSuccess: () => { setDirty(false); initDone.current = false; } });
+    updateSlots.mutate(slots, {
+      onSuccess: () => {
+        setDirty(false);
+        initDone.current = false;
+      },
+    });
   };
 
   const handleBlockDate = () => {
     if (!blockDate) return;
     const today = new Date().toISOString().split('T')[0];
-    if (blockDate < today) { toast.error('Cannot block a past date'); return; }
+    if (blockDate < today) {
+      toast.error('Cannot block a past date');
+      return;
+    }
     createOverride.mutate(blockDate, { onSuccess: () => setBlockDate('') });
   };
 
   const handleSaveName = () => {
     if (!nameInput.trim()) return;
-    updateSchedule.mutate({ id: schedule.id, data: { name: nameInput.trim() } }, {
-      onSuccess: () => setEditingName(false),
-    });
+    updateSchedule.mutate(
+      { id: schedule.id, data: { name: nameInput.trim() } },
+      {
+        onSuccess: () => setEditingName(false),
+      }
+    );
   };
 
   if (slotsLoading) return <SettingsSkeleton rows={5} />;
@@ -1249,12 +1282,26 @@ function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
               onChange={(e) => setNameInput(e.target.value)}
               className="h-8 text-sm border-neutral-200 dark:border-neutral-700 max-w-xs"
               autoFocus
-              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') setEditingName(false); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSaveName();
+                if (e.key === 'Escape') setEditingName(false);
+              }}
             />
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSaveName} disabled={updateSchedule.isPending}>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7"
+              onClick={handleSaveName}
+              disabled={updateSchedule.isPending}
+            >
               <Check className="w-3.5 h-3.5" />
             </Button>
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditingName(false)}>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7"
+              onClick={() => setEditingName(false)}
+            >
               <X className="w-3.5 h-3.5" />
             </Button>
           </div>
@@ -1268,7 +1315,15 @@ function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
                 Default
               </span>
             )}
-            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => { setEditingName(true); setNameInput(schedule.name); }}>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6"
+              onClick={() => {
+                setEditingName(true);
+                setNameInput(schedule.name);
+              }}
+            >
               <Pencil className="w-3 h-3 text-neutral-400" />
             </Button>
           </div>
@@ -1289,7 +1344,9 @@ function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
               slots={localSlots[i] ?? []}
               onAdd={() => handleAddSlot(i)}
               onRemove={(idx) => handleRemoveSlot(i, idx)}
-              onChange={(idx, field, value) => handleChangeSlot(i, idx, field, value)}
+              onChange={(idx, field, value) =>
+                handleChangeSlot(i, idx, field, value)
+              }
             />
           ))}
           <div className="flex justify-end pt-4">
@@ -1331,7 +1388,9 @@ function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
               {createOverride.isPending ? 'Blocking...' : 'Block Date'}
             </Button>
           </div>
-          {overridesLoading && <div className="h-7 w-28 bg-neutral-100 dark:bg-neutral-800 rounded-full animate-pulse" />}
+          {overridesLoading && (
+            <div className="h-7 w-28 bg-neutral-100 dark:bg-neutral-800 rounded-full animate-pulse" />
+          )}
           {!overridesLoading && overrides && overrides.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {overrides.map((o: AvailabilityOverride) => (
@@ -1341,7 +1400,11 @@ function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
                   className="gap-1.5 pr-1 text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700"
                 >
                   <CalendarOff className="w-3 h-3" />
-                  {new Date(o.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  {new Date(o.date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
                   <Button
                     variant="ghost"
                     size="icon-xs"
@@ -1377,7 +1440,7 @@ function AvailabilitySection() {
   const [newScheduleOpen, setNewScheduleOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newTimezone, setNewTimezone] = useState(
-    Intl.DateTimeFormat().resolvedOptions().timeZone,
+    Intl.DateTimeFormat().resolvedOptions().timeZone
   );
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [copyId, setCopyId] = useState<string | null>(null);
@@ -1403,7 +1466,7 @@ function AvailabilitySection() {
           setNewName('');
           setSelectedId(s.id);
         },
-      },
+      }
     );
   };
 
@@ -1417,7 +1480,7 @@ function AvailabilitySection() {
           setCopyName('');
           setSelectedId(s.id);
         },
-      },
+      }
     );
   };
 
@@ -1478,7 +1541,9 @@ function AvailabilitySection() {
                 ].join(' ')}
               >
                 <div className="flex items-center gap-1.5">
-                  {s.isDefault && <Star className="w-3 h-3 text-neutral-500 shrink-0" />}
+                  {s.isDefault && (
+                    <Star className="w-3 h-3 text-neutral-500 shrink-0" />
+                  )}
                   <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
                     {s.name}
                   </span>
@@ -1495,7 +1560,10 @@ function AvailabilitySection() {
                       size="icon-xs"
                       className="h-5 w-5"
                       title="Set as default"
-                      onClick={(e) => { e.stopPropagation(); setDefaultSchedule.mutate(s.id); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDefaultSchedule.mutate(s.id);
+                      }}
                     >
                       <Star className="w-3 h-3 text-neutral-400" />
                     </Button>
@@ -1505,7 +1573,11 @@ function AvailabilitySection() {
                     size="icon-xs"
                     className="h-5 w-5"
                     title="Copy schedule"
-                    onClick={(e) => { e.stopPropagation(); setCopyId(s.id); setCopyName(`${s.name} (copy)`); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCopyId(s.id);
+                      setCopyName(`${s.name} (copy)`);
+                    }}
                   >
                     <Copy className="w-3 h-3 text-neutral-400" />
                   </Button>
@@ -1515,7 +1587,10 @@ function AvailabilitySection() {
                       size="icon-xs"
                       className="h-5 w-5"
                       title="Delete schedule"
-                      onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(s.id); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setConfirmDeleteId(s.id);
+                      }}
                     >
                       <Trash2 className="w-3 h-3 text-neutral-400 hover:text-red-400" />
                     </Button>
@@ -1528,7 +1603,10 @@ function AvailabilitySection() {
           {/* Right: editor for selected schedule */}
           <div className="flex-1 min-w-0">
             {selectedSchedule ? (
-              <ScheduleEditor key={selectedSchedule.id} schedule={selectedSchedule} />
+              <ScheduleEditor
+                key={selectedSchedule.id}
+                schedule={selectedSchedule}
+              />
             ) : (
               <div className="flex items-center justify-center h-40 text-xs text-neutral-400">
                 Select a schedule to edit
@@ -1561,10 +1639,18 @@ function AvailabilitySection() {
                 placeholder="America/New_York"
                 className="border-neutral-200 dark:border-neutral-700 text-xs font-mono"
               />
-              <p className="text-[10px] text-neutral-400 mt-1">IANA timezone (e.g. America/New_York)</p>
+              <p className="text-[10px] text-neutral-400 mt-1">
+                IANA timezone (e.g. America/New_York)
+              </p>
             </FieldGroup>
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" size="sm" onClick={() => setNewScheduleOpen(false)}>Cancel</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setNewScheduleOpen(false)}
+              >
+                Cancel
+              </Button>
               <Button
                 size="sm"
                 onClick={handleCreateSchedule}
@@ -1594,7 +1680,13 @@ function AvailabilitySection() {
               />
             </FieldGroup>
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" size="sm" onClick={() => setCopyId(null)}>Cancel</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCopyId(null)}
+              >
+                Cancel
+              </Button>
               <Button
                 size="sm"
                 onClick={handleCopySchedule}
@@ -1609,17 +1701,27 @@ function AvailabilitySection() {
       </Dialog>
 
       {/* Confirm delete dialog */}
-      <Dialog open={!!confirmDeleteId} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
+      <Dialog
+        open={!!confirmDeleteId}
+        onOpenChange={(open) => !open && setConfirmDeleteId(null)}
+      >
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Delete Schedule?</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              This will permanently delete the schedule and all its slots and blocked dates.
+              This will permanently delete the schedule and all its slots and
+              blocked dates.
             </p>
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" size="sm" onClick={() => setConfirmDeleteId(null)}>Cancel</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmDeleteId(null)}
+              >
+                Cancel
+              </Button>
               <Button
                 variant="destructive"
                 size="sm"
@@ -2698,7 +2800,15 @@ function BookingsSection() {
 
       {/* Status filter */}
       <div className="flex gap-2 flex-wrap">
-        {(['PENDING', 'CONFIRMED', 'DECLINED', 'CANCELLED', 'NO_SHOW'] as BookingStatus[]).map((s) => (
+        {(
+          [
+            'PENDING',
+            'CONFIRMED',
+            'DECLINED',
+            'CANCELLED',
+            'NO_SHOW',
+          ] as BookingStatus[]
+        ).map((s) => (
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
