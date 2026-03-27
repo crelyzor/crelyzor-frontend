@@ -1,5 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import { userApi } from '@/services/userService';
 import type { UpdateProfilePayload } from '@/services/userService';
@@ -11,8 +10,14 @@ export function useUpdateProfile() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.auth.me() });
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to save profile');
-    },
+  });
+}
+
+export function useUserSearch(q: string) {
+  return useQuery({
+    queryKey: queryKeys.users.search(q),
+    queryFn: () => userApi.search(q),
+    enabled: q.trim().length >= 2,
+    staleTime: 30_000,
   });
 }

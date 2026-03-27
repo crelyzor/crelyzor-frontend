@@ -14,7 +14,7 @@ import {
   Phone,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import PageMotion from '@/components/PageMotion';
+import { PageMotion } from '@/components/PageMotion';
 import {
   useBookings,
   useConfirmBooking,

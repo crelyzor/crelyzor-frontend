@@ -44,7 +44,28 @@ export const useToolbarStore = create<ToolbarStore>()(
     }),
     {
       name: 'calendar-toolbar',
+      version: 1,
+      migrate: (persisted) => persisted,
       partialize: (state) => ({ pinnedIds: state.pinnedIds }),
+      onRehydrateStorage: () => (state) => {
+        if (!state) return;
+        // Ensure any new DEFAULT_PINNED_IDS items are added to existing saved lists
+        const missing = DEFAULT_PINNED_IDS.filter(
+          (id) => !state.pinnedIds.includes(id)
+        );
+        if (missing.length > 0) {
+          // Insert each missing item right after its left-neighbour in DEFAULT_PINNED_IDS
+          const next = [...state.pinnedIds];
+          for (const id of missing) {
+            const defaultIdx = DEFAULT_PINNED_IDS.indexOf(id);
+            const prev = DEFAULT_PINNED_IDS[defaultIdx - 1];
+            const insertAfter = prev ? next.indexOf(prev) : -1;
+            if (insertAfter >= 0) next.splice(insertAfter + 1, 0, id);
+            else next.push(id);
+          }
+          state.pinnedIds = next;
+        }
+      },
     }
   )
 );

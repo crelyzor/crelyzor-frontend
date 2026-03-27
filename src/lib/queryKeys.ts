@@ -132,6 +132,12 @@ export const queryKeys = {
       ] as const,
   },
 
+  // Users
+  users: {
+    all: ['users'] as const,
+    search: (q: string) => [...queryKeys.users.all, 'search', q] as const,
+  },
+
   // Cards
   cards: {
     all: ['cards'] as const,

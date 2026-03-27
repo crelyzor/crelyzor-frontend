@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageMotion } from '@/components/PageMotion';
 import {
@@ -20,6 +20,10 @@ import {
   Globe,
   Tag,
   Trash2,
+  X,
+  UserPlus,
+  CalendarClock,
+  CalendarDays,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -49,15 +53,120 @@ import {
   useDeleteMeeting,
 } from '@/hooks/queries/useMeetingQueries';
 import { useUserTags } from '@/hooks/queries/useTagQueries';
+import { useBookings } from '@/hooks/queries/useSchedulingQueries';
 import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
+import { useUserSearch } from '@/hooks/queries/useUserQueries';
 import { toDisplayMeeting, type DisplayMeeting } from '@/lib/meetingHelpers';
 import { getStatusStyle, getStatusLabel } from '@/types';
 import type { MeetingStatus } from '@/types';
+import type { UserSearchResult } from '@/services/userService';
+
+// ── Participant Picker ──────────────────────────────────────────────────────
+
+function ParticipantPicker({
+  participants,
+  onChange,
+}: {
+  participants: UserSearchResult[];
+  onChange: (participants: UserSearchResult[]) => void;
+}) {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { data, isFetching } = useUserSearch(query);
+  const results = data?.users ?? [];
+
+  const selectedIds = new Set(participants.map((p) => p.id));
+
+  const add = (user: UserSearchResult) => {
+    if (!selectedIds.has(user.id)) onChange([...participants, user]);
+    setQuery('');
+    setOpen(false);
+    inputRef.current?.focus();
+  };
+
+  const remove = (id: string) => onChange(participants.filter((p) => p.id !== id));
+
+  return (
+    <div className="space-y-2">
+      {/* Selected chips */}
+      {participants.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {participants.map((p) => (
+            <span
+              key={p.id}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-medium text-neutral-700 dark:text-neutral-300"
+            >
+              {p.name}
+              <button
+                type="button"
+                onClick={() => remove(p.id)}
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Search input */}
+      <div className="relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+          <UserPlus className="w-3.5 h-3.5" />
+        </div>
+        <Input
+          ref={inputRef}
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(e.target.value.trim().length >= 2);
+          }}
+          onFocus={() => query.trim().length >= 2 && setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          placeholder="Search by name or email"
+          className="text-sm pl-8"
+        />
+
+        {/* Dropdown */}
+        {open && (
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg z-50 overflow-hidden">
+            {isFetching ? (
+              <div className="px-3 py-2.5 text-xs text-neutral-400">Searching…</div>
+            ) : results.length === 0 ? (
+              <div className="px-3 py-2.5 text-xs text-neutral-400">No users found</div>
+            ) : (
+              results
+                .filter((u) => !selectedIds.has(u.id))
+                .map((user) => (
+                  <button
+                    key={user.id}
+                    type="button"
+                    onMouseDown={() => add(user)}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors text-left"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center shrink-0 text-[10px] font-medium text-neutral-600 dark:text-neutral-300">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate">{user.name}</p>
+                      <p className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate">{user.email}</p>
+                    </div>
+                  </button>
+                ))
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const TYPE_TABS = [
   { id: 'all', label: 'All' },
   { id: 'scheduled', label: 'Live' },
   { id: 'recorded', label: 'Recordings' },
+  { id: 'bookings', label: 'Bookings' },
 ] as const;
 
 type TypeTab = (typeof TYPE_TABS)[number]['id'];
@@ -66,7 +175,6 @@ const FILTER_TABS = [
   { id: 'all', label: 'All' },
   { id: 'upcoming', label: 'Upcoming' },
   { id: 'completed', label: 'Completed' },
-  { id: 'pending', label: 'Pending' },
   { id: 'cancelled', label: 'Cancelled' },
 ] as const;
 
@@ -312,6 +420,7 @@ export default function Meetings() {
     location: '',
     autoGenerateMeet: true,
   });
+  const [participants, setParticipants] = useState<UserSearchResult[]>([]);
 
   const createMeeting = useCreateMeeting();
   const { data: gcalStatus } = useGoogleCalendarStatus();
@@ -344,6 +453,8 @@ export default function Meetings() {
         addToCalendar: gcalStatus?.connected
           ? createForm.autoGenerateMeet
           : undefined,
+        participantUserIds:
+          participants.length > 0 ? participants.map((p) => p.id) : undefined,
       },
       {
         onSuccess: (meeting) => {
@@ -355,6 +466,7 @@ export default function Meetings() {
             location: '',
             autoGenerateMeet: true,
           });
+          setParticipants([]);
           navigate(`/meetings/${meeting.id}`);
         },
       }
@@ -368,15 +480,25 @@ export default function Meetings() {
     refetch: refetchMeetings,
   } = useMeetingsAll();
   const { data: userTags } = useUserTags();
+  const { data: pendingBookingsData } = useBookings({ status: 'PENDING' });
+  const pendingCount = pendingBookingsData?.bookings?.length ?? 0;
 
-  // Exclude VOICE_NOTE — they live in /voice-notes. Also apply type toggle.
+  // Exclude VOICE_NOTE (live in /voice-notes) and pending bookings (live in /bookings).
+  // PENDING_ACCEPTANCE + RESCHEDULING_REQUESTED are booking requests awaiting host action —
+  // they show on the Bookings page, not here.
   const scopedMeetings = useMemo(
     () =>
       (meetingsData ?? [])
         .filter((m) => {
           if (m.type === 'VOICE_NOTE') return false;
-          if (typeTab === 'scheduled') return m.type === 'SCHEDULED';
+          if (
+            m.status === 'PENDING_ACCEPTANCE' ||
+            m.status === 'RESCHEDULING_REQUESTED'
+          )
+            return false;
+          if (typeTab === 'scheduled') return m.type === 'SCHEDULED' && m.status === 'CREATED';
           if (typeTab === 'recorded') return m.type === 'RECORDED';
+          if (typeTab === 'bookings') return m.status === 'ACCEPTED';
           return true;
         })
         .map(toDisplayMeeting),
@@ -422,6 +544,29 @@ export default function Meetings() {
             </p>
           </div>
         </div>
+
+        {/* ── Pending bookings CTA ── */}
+        {pendingCount > 0 && (
+          <button
+            onClick={() => navigate('/bookings')}
+            className="w-full flex items-center justify-between gap-3 px-4 py-3 mb-5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors text-left group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center shrink-0">
+                <CalendarClock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
+                  {pendingCount} pending booking {pendingCount === 1 ? 'request' : 'requests'}
+                </p>
+                <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                  Confirm or decline on the Bookings page
+                </p>
+              </div>
+            </div>
+            <ExternalLink className="w-3.5 h-3.5 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors shrink-0" />
+          </button>
+        )}
 
         {/* ── Type toggle: Live / Recordings ── */}
         <div className="flex items-center gap-1 mb-5 p-1 bg-neutral-100 dark:bg-neutral-800/60 rounded-xl w-fit">
@@ -633,6 +778,26 @@ export default function Meetings() {
                                 </div>
                               )}
                               {meeting.meetingType === 'SCHEDULED' &&
+                                meeting.status === 'ACCEPTED' && (
+                                  <div
+                                    title="Confirmed booking"
+                                    className="shrink-0 w-5 h-5 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
+                                  >
+                                    <CalendarClock className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
+                                  </div>
+                                )}
+                              {meeting.meetingType === 'SCHEDULED' &&
+                                meeting.status === 'CREATED' && (
+                                  <div
+                                    title="Meeting"
+                                    className="shrink-0 w-5 h-5 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
+                                  >
+                                    <CalendarDays className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
+                                  </div>
+                                )}
+                              {meeting.meetingType === 'SCHEDULED' &&
+                                meeting.status !== 'ACCEPTED' &&
+                                meeting.status !== 'CREATED' &&
                                 isOnlineMeeting(
                                   meeting.location,
                                   meeting.meetingProvider
@@ -763,7 +928,7 @@ export default function Meetings() {
         open={showCreateScheduled}
         onOpenChange={(open) => {
           setShowCreateScheduled(open);
-          if (!open)
+          if (!open) {
             setCreateForm({
               title: '',
               startTime: '',
@@ -771,9 +936,11 @@ export default function Meetings() {
               location: '',
               autoGenerateMeet: true,
             });
+            setParticipants([]);
+          }
         }}
       >
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Schedule a meeting</DialogTitle>
           </DialogHeader>
@@ -822,6 +989,15 @@ export default function Meetings() {
                 }
                 placeholder="Zoom link or address"
                 className="text-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-neutral-500">
+                Participants <span className="text-neutral-400">(optional)</span>
+              </Label>
+              <ParticipantPicker
+                participants={participants}
+                onChange={setParticipants}
               />
             </div>
             {gcalStatus?.connected && (

@@ -25,4 +25,18 @@ export const userApi = {
   /** PATCH /users/profile — update current user profile */
   updateProfile: (data: UpdateProfilePayload) =>
     apiClient.patch<UserProfile>('/users/profile', data),
+
+  /** GET /users/search?q= — search other Crelyzor users by name/email */
+  search: (q: string): Promise<{ users: UserSearchResult[] }> =>
+    apiClient.get<{ users: UserSearchResult[] }>('/users/search', {
+      params: { q },
+    }),
 };
+
+export interface UserSearchResult {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+  username: string | null;
+}
