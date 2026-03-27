@@ -319,11 +319,67 @@ Depends on: backend P0 (UserSettings API) must exist before building settings UI
 
 ---
 
+---
+
+## Phase 1.3 — Google Calendar Deep Integration
+
+Design doc: `docs/dev-notes/phase-1.3-gcal.md`
+
+> **What already exists from Phase 1.2:**
+> - Settings > Integrations > Google Calendar section — connect button + `googleCalendarSyncEnabled` toggle (skeleton wired)
+> - `PATCH /settings/user` wired for sync toggle
+
+### P0 — Types + Service Layer
+
+- [ ] Add `CalendarEvent` type to `src/types/integrations.ts`: `{ id, title, startTime, endTime, location?: string, meetLink?: string, source: 'GOOGLE' }`
+- [ ] Add `meetLink?: string | null` to `Meeting` / `DisplayMeeting` types in `src/types/meeting.ts`
+- [ ] Add `googleEventId?: string | null` to `Meeting` types
+- [ ] `src/services/integrationsService.ts` — `getGoogleCalendarStatus()` → `GET /integrations/google/status`, `getGoogleCalendarEvents(start, end)` → `GET /integrations/google/events`
+- [ ] Query keys: `queryKeys.integrations.google.status()`, `queryKeys.integrations.google.events(start, end)` in `src/lib/queryKeys.ts`
+- [ ] `useGoogleCalendarStatus()` hook in `src/hooks/queries/useIntegrations.ts`
+- [ ] `useGoogleCalendarEvents(start, end)` hook in the same file
+
+### P1 — Meet Link UX in Meeting Detail
+
+- [ ] **ScheduledDetail:** When `meeting.meetLink` is set → show **"Join Meeting"** button (prominent, primary style) in the quick-actions area. Next to it, a copy-link icon button. Only shown for ONLINE meetings with a meetLink.
+- [ ] **RecordedDetail + VoiceNoteDetail:** Same Join button pattern if meetLink present (edge case — recordings can have a meet link if they originated from a booking).
+- [ ] Meeting creation form (`CreateMeetingModal` or equivalent): when `locationType === 'ONLINE'` → show "Auto-generate Google Meet link" checkbox (shown only if GCal connected, checked by default). When unchecked → reveal manual URL input field.
+
+### P2 — Unified Timeline on Home Dashboard
+
+- [ ] **`TodayTimeline` component** (`src/components/home/TodayTimeline.tsx`) — replaces or extends the existing "Today's meetings" widget. Shows Crelyzor meetings + GCal events for today on a single chronological list.
+  - Crelyzor meetings: existing card style
+  - GCal events: subtle Google Calendar icon, slightly different background (muted, not card), `source: 'GOOGLE'` badge
+  - Empty state: "No events today"
+  - Loading: skeleton rows
+  - Both datasets fetched in parallel: `useGoogleCalendarEvents(todayStart, todayEnd)` + existing meetings query
+- [ ] Wire `TodayTimeline` into the Home dashboard, replacing the current "Today's meetings" widget
+- [ ] **GCal events never show AI/transcription actions** — they are display-only. No ⋯ menu. Clicking opens the GCal event link if available.
+
+### P3 — Settings > Integrations Wiring
+
+- [ ] **Google Calendar status:** Use `useGoogleCalendarStatus()` to show: connected email badge (green dot + email), or "Not connected" state. Replace the static skeleton with live data.
+- [ ] **Connect flow:** "Connect Google Calendar" button → calls `POST /auth/google/calendar/connect` → navigates to returned OAuth URL. On return, callback params handled (already wired from Phase 1.2) → status refetched.
+- [ ] **Disconnect:** "Disconnect" button → call `DELETE /integrations/google/disconnect` (backend needs this endpoint — coordinate with backend P2). Optimistic update + toast.
+- [ ] **Sync toggle:** `googleCalendarSyncEnabled` already wired to `PATCH /settings/user` — verify it still works, add visual feedback (toast on save).
+
+---
+
 ## Phase 2 — Standalone Tasks
 
 - [ ] Standalone Tasks page (Todoist-style — `GET /tasks`, all tasks not scoped to a meeting)
 - [ ] Task filters: by status, priority, due date, meeting source
 - [ ] Tags on Tasks (extends universal Tag system)
+
+---
+
+## Phase 3 — Calendar View + Tasks on Calendar
+
+- [ ] Tasks with `scheduledTime` appear on `TodayTimeline` as time blocks (block style, not list item)
+- [ ] Tasks with only `dueDate` appear as all-day markers at top of timeline
+- [ ] Click empty time slot in timeline → quick-create menu (New Meeting | New Task)
+- [ ] Drag task to time slot → sets `scheduledTime` via `PATCH /tasks/:id`
+- [ ] Full calendar page (`/calendar`) — week/day view, same data sources as `TodayTimeline` but full-page
 
 ---
 
