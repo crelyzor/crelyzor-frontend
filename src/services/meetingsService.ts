@@ -21,6 +21,7 @@ export type CreateMeetingPayload = {
   location?: string;
   participantUserIds?: string[];
   notes?: string;
+  addToCalendar?: boolean;
 };
 
 export type UpdateMeetingPayload = Partial<CreateMeetingPayload>;

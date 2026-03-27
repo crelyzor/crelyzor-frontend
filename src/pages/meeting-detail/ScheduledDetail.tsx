@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Calendar,
   Clock,
+  Copy,
   MapPin,
   Users,
   MoreHorizontal,
@@ -16,6 +17,7 @@ import {
   Loader2,
   Edit3,
   Languages,
+  Video,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -377,6 +379,32 @@ export function ScheduledDetail({
 
           {/* Quick actions */}
           <div className="flex gap-2 mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800 flex-wrap">
+            {rawMeeting.meetLink && (
+              <>
+                <Button variant="default" size="sm" className="text-xs gap-1.5 h-8" asChild>
+                  <a
+                    href={rawMeeting.meetLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Video className="w-3.5 h-3.5" />
+                    Join Meeting
+                  </a>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  onClick={() => {
+                    navigator.clipboard.writeText(rawMeeting.meetLink!);
+                    toast.success('Link copied');
+                  }}
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </Button>
+              </>
+            )}
+
             {canAccept && (
               <>
                 <Button

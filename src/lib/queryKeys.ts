@@ -52,10 +52,15 @@ export const queryKeys = {
       [...queryKeys.transcripts.all, 'detail', id] as const,
   },
 
-  // Sync (Google Calendar)
-  sync: {
-    all: ['sync'] as const,
-    status: () => [...queryKeys.sync.all, 'status'] as const,
+  // Integrations
+  integrations: {
+    all: ['integrations'] as const,
+    google: {
+      all: () => [...queryKeys.integrations.all, 'google'] as const,
+      status: () => [...queryKeys.integrations.all, 'google', 'status'] as const,
+      events: (start: string, end: string) =>
+        [...queryKeys.integrations.all, 'google', 'events', start, end] as const,
+    },
   },
 
   // SMA (Smart Meeting Assistant)

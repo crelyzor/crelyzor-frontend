@@ -72,7 +72,8 @@ export type Meeting = {
   timezone: string;
   status: MeetingStatus;
   location?: string;
-  meetingLink?: string;
+  meetingLink?: string;        // legacy / manually set link
+  meetLink?: string | null;    // auto-generated Google Meet URL (Phase 1.3)
   meetingProvider?: MeetingProvider;
   googleEventId?: string;
   recordingLink?: string;
