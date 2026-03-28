@@ -33,15 +33,6 @@ export const settingsApi = {
     apiClient.post<{ url: string }>('/auth/google/calendar/connect', {
       redirectUrl,
     }),
-
-  /**
-   * PUT /settings/recall-api-key
-   * Saves the Recall.ai API key (encrypted at rest).
-   */
-  saveRecallApiKey: (apiKey: string) =>
-    apiClient.put<{ recallEnabled: boolean }>('/settings/recall-api-key', {
-      apiKey,
-    }),
 };
 
 export const eventTypesApi = {

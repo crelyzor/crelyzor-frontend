@@ -8,7 +8,7 @@ export interface UserSettings {
   googleCalendarSyncEnabled: boolean;
   googleCalendarEmail: string | null;
   recallEnabled: boolean;
-  hasRecallApiKey: boolean;
+  recallAvailable: boolean;
   autoTranscribe: boolean;
   autoAIProcess: boolean;
   defaultLanguage: string;

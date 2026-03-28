@@ -17,23 +17,6 @@ function getApiErrorMessage(err: unknown, fallback: string): string {
   return fallback;
 }
 
-export function useSaveRecallApiKey(onSuccess?: () => void) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (apiKey: string) => settingsApi.saveRecallApiKey(apiKey),
-    onSuccess: () => {
-      toast.success('Recall.ai API key saved');
-      onSuccess?.();
-    },
-    onError: (err) => {
-      toast.error(getApiErrorMessage(err, 'Failed to save API key'));
-    },
-    onSettled: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.settings.user() });
-    },
-  });
-}
-
 export function useUserSettings() {
   return useQuery({
     queryKey: queryKeys.settings.user(),

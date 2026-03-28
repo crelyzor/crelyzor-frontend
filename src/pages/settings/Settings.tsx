@@ -30,8 +30,6 @@ import {
   CalendarOff,
   CalendarDays,
   Bot,
-  Eye,
-  EyeOff,
   BookOpen,
   XCircle,
   Star,
@@ -77,7 +75,6 @@ import {
 import {
   useUserSettings,
   useUpdateUserSettings,
-  useSaveRecallApiKey,
 } from '@/hooks/queries/useSettingsQueries';
 import { settingsApi } from '@/services/settingsService';
 import {
@@ -1824,11 +1821,6 @@ function IntegrationsSection() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isConnecting, setIsConnecting] = useState(false);
 
-  // Recall.ai API key state
-  const [recallApiKey, setRecallApiKey] = useState('');
-  const [showRecallKey, setShowRecallKey] = useState(false);
-  const saveRecallApiKey = useSaveRecallApiKey(() => setRecallApiKey(''));
-
   const { data: gcalStatus } = useGoogleCalendarStatus();
   const disconnect = useDisconnectGoogleCalendar();
 
@@ -1969,7 +1961,7 @@ function IntegrationsSection() {
         </CardContent>
       </Card>
 
-      {/* Recall.ai */}
+      {/* Auto-record online meetings */}
       <Card className="border-neutral-200 dark:border-neutral-800">
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
@@ -1978,92 +1970,32 @@ function IntegrationsSection() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-0.5">
-                Recall.ai
+                Meeting Recording Bot
               </p>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
-                Automatically join your online meetings and begin transcribing
-                in real time
+                A bot will automatically join your scheduled online meetings to record and transcribe them
               </p>
 
               {isLoading ? (
                 <div className="space-y-4 animate-pulse">
                   <div className="h-4 w-48 bg-neutral-200 dark:bg-neutral-800 rounded" />
-                  <div className="h-4 w-36 bg-neutral-100 dark:bg-neutral-700 rounded" />
                 </div>
+              ) : settings?.recallAvailable ? (
+                <SettingRow
+                  label="Auto-record online meetings"
+                  description="Bot joins your Google Meet, Zoom, or Teams calls automatically"
+                >
+                  <Switch
+                    checked={settings?.recallEnabled ?? false}
+                    onCheckedChange={(v) =>
+                      updateSettings.mutate({ recallEnabled: v })
+                    }
+                  />
+                </SettingRow>
               ) : (
-                <div className="space-y-4">
-                  {/* API key input */}
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                      API Key
-                    </Label>
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <Input
-                          type={showRecallKey ? 'text' : 'password'}
-                          value={recallApiKey}
-                          onChange={(e) => {
-                            setRecallApiKey(e.target.value);
-                            setRecallKeySaved(false);
-                          }}
-                          placeholder="Paste your Recall.ai API key"
-                          className="pr-9 text-sm font-mono"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowRecallKey((v) => !v)}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-                        >
-                          {showRecallKey ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={
-                          !recallApiKey.trim() || saveRecallApiKey.isPending
-                        }
-                        onClick={() =>
-                          saveRecallApiKey.mutate(recallApiKey.trim())
-                        }
-                        className="shrink-0"
-                      >
-                        {saveRecallApiKey.isPending ? 'Saving…' : 'Save key'}
-                      </Button>
-                    </div>
-                    {settings?.hasRecallApiKey ? (
-                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
-                        <Check className="w-3 h-3" />
-                        API key saved — paste a new key to replace it
-                      </p>
-                    ) : (
-                      <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
-                        Get your key at{' '}
-                        <span className="font-mono">
-                          app.recall.ai → Settings → API Keys
-                        </span>
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="border-t border-neutral-100 dark:border-neutral-800 pt-4">
-                    <SettingRow
-                      label="Enable Recall.ai bot"
-                      description="Bot joins scheduled online meetings and transcribes automatically"
-                    >
-                      <Switch
-                        checked={settings?.recallEnabled ?? false}
-                        onCheckedChange={(v) =>
-                          updateSettings.mutate({ recallEnabled: v })
-                        }
-                      />
-                    </SettingRow>
-                  </div>
-                </div>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                  Recording bot is not available on this instance
+                </p>
               )}
             </div>
           </div>
