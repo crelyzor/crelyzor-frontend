@@ -191,9 +191,7 @@ export default function Tasks() {
   const [priority, setPriority] = useState<
     'LOW' | 'MEDIUM' | 'HIGH' | undefined
   >();
-  const [source, setSource] = useState<
-    'AI_EXTRACTED' | 'MANUAL' | undefined
-  >();
+  const [source, setSource] = useState<'AI_EXTRACTED' | 'MANUAL' | undefined>();
   const [sortBy, setSortBy] = useState<'createdAt' | 'dueDate' | 'priority'>(
     'createdAt'
   );
@@ -490,8 +488,7 @@ export default function Tasks() {
 
         {/* Task list */}
         <div className="space-y-1.5 pb-24">
-          {isLoading &&
-            [...Array(5)].map((_, i) => <RowSkeleton key={i} />)}
+          {isLoading && [...Array(5)].map((_, i) => <RowSkeleton key={i} />)}
 
           {isError && (
             <div className="text-center py-20">
@@ -516,7 +513,10 @@ export default function Tasks() {
               className="text-center py-20"
             >
               <CheckSquare className="w-9 h-9 mx-auto text-neutral-200 dark:text-neutral-700 mb-3" />
-              {status !== 'all' || priority || source || selectedTagIds.size > 0 ? (
+              {status !== 'all' ||
+              priority ||
+              source ||
+              selectedTagIds.size > 0 ? (
                 <>
                   <p className="text-sm text-neutral-400 dark:text-neutral-500">
                     No tasks match the current filters

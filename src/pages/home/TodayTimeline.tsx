@@ -1,4 +1,10 @@
-import { CalendarDays, Clock, ArrowUpRight, CheckSquare, Square } from 'lucide-react';
+import {
+  CalendarDays,
+  Clock,
+  ArrowUpRight,
+  CheckSquare,
+  Square,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
@@ -102,7 +108,13 @@ const MOTION_PROPS = (i: number) => ({
   },
 });
 
-export function TodayTimeline({ meetings, tasks, isLoading, isTasksLoading, isError }: Props) {
+export function TodayTimeline({
+  meetings,
+  tasks,
+  isLoading,
+  isTasksLoading,
+  isError,
+}: Props) {
   const navigate = useNavigate();
   const updateTask = useUpdateTask('');
 

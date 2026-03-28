@@ -114,9 +114,7 @@ export const smaApi = {
     return unwrap<SMAAISummary>(result);
   },
 
-  getAllTasks: async (
-    params?: TaskListParams
-  ): Promise<TaskListResponse> => {
+  getAllTasks: async (params?: TaskListParams): Promise<TaskListResponse> => {
     const query = params ? buildTaskQuery(params) : '';
     const result = await apiClient.get<TaskListResponse>(
       `/sma/tasks${query ? `?${query}` : ''}`

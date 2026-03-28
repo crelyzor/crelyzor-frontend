@@ -1,5 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, CalendarDays, CheckSquare, CreditCard, Settings } from 'lucide-react';
+import {
+  Home,
+  CalendarDays,
+  CheckSquare,
+  CreditCard,
+  Settings,
+} from 'lucide-react';
 import { motion } from 'motion/react';
 
 const NAV_ITEMS = [
