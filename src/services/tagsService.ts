@@ -65,4 +65,21 @@ export const tagsApi = {
   detachTagFromCard: async (cardId: string, tagId: string): Promise<void> => {
     await apiClient.delete(`/cards/${cardId}/tags/${tagId}`);
   },
+
+  // ── Task tags ───────────────────────────────────────────────
+
+  getTaskTags: async (taskId: string): Promise<Tag[]> => {
+    const result = await apiClient.get<{ tags: Tag[] }>(
+      `/sma/tasks/${taskId}/tags`
+    );
+    return result.tags;
+  },
+
+  attachTagToTask: async (taskId: string, tagId: string): Promise<void> => {
+    await apiClient.post(`/sma/tasks/${taskId}/tags/${tagId}`);
+  },
+
+  detachTagFromTask: async (taskId: string, tagId: string): Promise<void> => {
+    await apiClient.delete(`/sma/tasks/${taskId}/tags/${tagId}`);
+  },
 };

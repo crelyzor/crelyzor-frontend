@@ -1,11 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, CalendarDays, CreditCard, Mic, Settings } from 'lucide-react';
+import { Home, CalendarDays, CheckSquare, CreditCard, Settings } from 'lucide-react';
 import { motion } from 'motion/react';
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Home', icon: Home, path: '/' },
   { id: 'meetings', label: 'Meetings', icon: CalendarDays, path: '/meetings' },
-  { id: 'voice-notes', label: 'Voice', icon: Mic, path: '/voice-notes' },
+  { id: 'tasks', label: 'Tasks', icon: CheckSquare, path: '/tasks' },
   { id: 'cards', label: 'Cards', icon: CreditCard, path: '/cards' },
   { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
 ] as const;

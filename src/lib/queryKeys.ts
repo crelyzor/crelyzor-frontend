@@ -89,7 +89,12 @@ export const queryKeys = {
       [...queryKeys.sma.all, 'generated', meetingId] as const,
     share: (meetingId: string) =>
       [...queryKeys.sma.all, 'share', meetingId] as const,
-    allTasks: () => [...queryKeys.sma.all, 'allTasks'] as const,
+    allTasks: (filters?: Record<string, unknown>) =>
+      [
+        ...queryKeys.sma.all,
+        'allTasks',
+        ...(filters ? [filters] : []),
+      ] as const,
   },
 
   // Tags
@@ -100,6 +105,8 @@ export const queryKeys = {
       [...queryKeys.tags.all, 'meeting', meetingId] as const,
     byCard: (cardId: string) =>
       [...queryKeys.tags.all, 'card', cardId] as const,
+    byTask: (taskId: string) =>
+      [...queryKeys.tags.all, 'task', taskId] as const,
   },
 
   // Attachments

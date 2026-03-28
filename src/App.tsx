@@ -17,6 +17,7 @@ const {
   Meetings,
   MeetingDetail,
   VoiceNotes,
+  Tasks,
   Bookings,
   Settings,
   SignIn,
@@ -86,6 +87,16 @@ function App() {
                     <AuthGuard>
                       <Layout>
                         <VoiceNotes />
+                      </Layout>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/tasks"
+                  element={
+                    <AuthGuard>
+                      <Layout>
+                        <Tasks />
                       </Layout>
                     </AuthGuard>
                   }

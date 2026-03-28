@@ -4,6 +4,7 @@ import {
   Settings,
   CreditCard,
   Mic,
+  CheckSquare,
   CalendarClock,
 } from 'lucide-react';
 import type { ToolbarItem, ToolbarItemGroup } from '@/types';
@@ -13,6 +14,7 @@ export const TOOLBAR_STORAGE_KEY = 'toolbar-pinned-items';
 export const DEFAULT_PINNED_IDS = [
   'home',
   'meetings',
+  'tasks',
   'bookings',
   'cards',
   'settings',
@@ -46,6 +48,15 @@ export const TOOLBAR_ITEMS: ToolbarItem[] = [
     path: '/voice-notes',
     group: 'navigation',
     description: 'Quick audio recordings',
+  },
+  {
+    id: 'tasks',
+    label: 'Tasks',
+    icon: CheckSquare,
+    action: 'navigate',
+    path: '/tasks',
+    group: 'navigation',
+    description: 'All your tasks',
   },
   {
     id: 'bookings',

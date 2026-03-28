@@ -74,6 +74,35 @@ function unwrap<T>(result: unknown): T {
   return result as T;
 }
 
+export type TaskWithMeeting = Task & {
+  meeting: { id: string; title: string; type: string } | null;
+  tags: { id: string; name: string; color: string }[];
+};
+
+export type TaskListParams = {
+  status?: 'all' | 'completed' | 'pending';
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+  source?: 'AI_EXTRACTED' | 'MANUAL';
+  sortBy?: 'createdAt' | 'dueDate' | 'priority';
+  sortOrder?: 'asc' | 'desc';
+  limit?: number;
+  offset?: number;
+};
+
+export type TaskListResponse = {
+  tasks: TaskWithMeeting[];
+  pagination: { total: number; limit: number; offset: number };
+};
+
+function buildTaskQuery(params: TaskListParams): string {
+  const entries = Object.entries(params).filter(
+    ([, v]) => v !== undefined && v !== ''
+  );
+  return new URLSearchParams(
+    entries.map(([k, v]) => [k, String(v)])
+  ).toString();
+}
+
 export const smaApi = {
   getTranscript: async (meetingId: string): Promise<SMATranscript> => {
     const result = await apiClient.get(`/sma/meetings/${meetingId}/transcript`);
@@ -85,13 +114,25 @@ export const smaApi = {
     return unwrap<SMAAISummary>(result);
   },
 
-  getAllTasks: async (): Promise<
-    (Task & { meeting: { id: string; title: string } | null })[]
-  > => {
-    const result = await apiClient.get<{
-      tasks: (Task & { meeting: { id: string; title: string } | null })[];
-    }>(`/sma/tasks`);
-    return result.tasks;
+  getAllTasks: async (
+    params?: TaskListParams
+  ): Promise<TaskListResponse> => {
+    const query = params ? buildTaskQuery(params) : '';
+    const result = await apiClient.get<TaskListResponse>(
+      `/sma/tasks${query ? `?${query}` : ''}`
+    );
+    return result;
+  },
+
+  createStandaloneTask: async (data: {
+    title: string;
+    description?: string;
+    dueDate?: string;
+    priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+    meetingId?: string;
+  }): Promise<Task> => {
+    const result = await apiClient.post<{ task: Task }>('/sma/tasks', data);
+    return result.task;
   },
 
   getTasks: async (meetingId: string): Promise<Task[]> => {

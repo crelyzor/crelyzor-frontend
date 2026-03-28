@@ -1,24 +1,29 @@
-import { CalendarDays, Clock, ArrowUpRight } from 'lucide-react';
+import { CalendarDays, Clock, ArrowUpRight, CheckSquare, Square } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import type { DisplayMeeting } from '@/lib/meetingHelpers';
 import type { CalendarEvent } from '@/services/integrationsService';
+import type { TaskWithMeeting } from '@/services/smaService';
 import { getStatusStyle, getStatusLabel } from '@/types';
 import {
   useGoogleCalendarStatus,
   useGoogleCalendarEvents,
 } from '@/hooks/queries/useIntegrationQueries';
+import { useUpdateTask } from '@/hooks/queries/useSMAQueries';
 
 type Props = {
   meetings: DisplayMeeting[];
+  tasks: TaskWithMeeting[];
   isLoading?: boolean;
+  isTasksLoading?: boolean;
   isError?: boolean;
 };
 
 type TimelineItem =
   | { kind: 'crelyzor'; meeting: DisplayMeeting; sortKey: number }
-  | { kind: 'gcal'; event: CalendarEvent; sortKey: number };
+  | { kind: 'gcal'; event: CalendarEvent; sortKey: number }
+  | { kind: 'task'; task: TaskWithMeeting; sortKey: number };
 
 function RowSkeleton() {
   return (
@@ -84,6 +89,9 @@ function GCalEventContent({ event }: { event: CalendarEvent }) {
 const GCAL_BASE =
   'bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800 rounded-xl';
 
+const TASK_BASE =
+  'bg-white dark:bg-neutral-900 border border-dashed border-neutral-200 dark:border-neutral-700 rounded-xl';
+
 const MOTION_PROPS = (i: number) => ({
   initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
@@ -94,11 +102,10 @@ const MOTION_PROPS = (i: number) => ({
   },
 });
 
-export function TodayTimeline({ meetings, isLoading, isError }: Props) {
+export function TodayTimeline({ meetings, tasks, isLoading, isTasksLoading, isError }: Props) {
   const navigate = useNavigate();
+  const updateTask = useUpdateTask('');
 
-  // Compute today's date bounds once on mount.
-  // Note: midnight edge-case — if the page stays open overnight, these dates are stale.
   const today = new Date().toISOString().split('T')[0];
   const start = (() => {
     const d = new Date();
@@ -114,12 +121,23 @@ export function TodayTimeline({ meetings, isLoading, isError }: Props) {
   const { data: gcalStatus } = useGoogleCalendarStatus();
   const isGCalConnected = gcalStatus?.connected === true;
 
-  // Gate the events query — pass empty strings to disable the query when not connected
   const { data: gcalEvents = [], isLoading: gcalLoading } =
     useGoogleCalendarEvents(
       isGCalConnected ? start : '',
       isGCalConnected ? end : ''
     );
+
+  // Split tasks: scheduled today (timed) vs due today only (all-day)
+  const isToday = (iso: string) => iso.split('T')[0] === today;
+  const scheduledTodayTasks = tasks.filter(
+    (t) => t.scheduledTime && isToday(t.scheduledTime)
+  );
+  const dueTodayTasks = tasks.filter(
+    (t) =>
+      t.dueDate &&
+      isToday(t.dueDate) &&
+      (!t.scheduledTime || !isToday(t.scheduledTime))
+  );
 
   const todayMeetings = meetings.filter((m) => m.date === today);
 
@@ -127,7 +145,6 @@ export function TodayTimeline({ meetings, isLoading, isError }: Props) {
     ...todayMeetings.map((m) => ({
       kind: 'crelyzor' as const,
       meeting: m,
-      // Fallback to date string when startTime is absent (defensive)
       sortKey: Date.parse(m._raw.startTime ?? m.date),
     })),
     ...gcalEvents.map((e) => ({
@@ -135,9 +152,31 @@ export function TodayTimeline({ meetings, isLoading, isError }: Props) {
       event: e,
       sortKey: Date.parse(e.startTime),
     })),
+    ...scheduledTodayTasks.map((t) => ({
+      kind: 'task' as const,
+      task: t,
+      sortKey: Date.parse(t.scheduledTime!),
+    })),
   ].sort((a, b) => a.sortKey - b.sortKey);
 
-  const isLoadingAny = isLoading || gcalLoading;
+  const totalCount = items.length + dueTodayTasks.length;
+  const isLoadingAny = isLoading || gcalLoading || isTasksLoading;
+
+  function handleToggleTask(task: TaskWithMeeting, e: React.MouseEvent) {
+    e.stopPropagation();
+    updateTask.mutate({
+      taskId: task.id,
+      data: { isCompleted: !task.isCompleted },
+    });
+  }
+
+  function handleTaskClick(task: TaskWithMeeting) {
+    if (task.meetingId) {
+      navigate(`/meetings/${task.meetingId}`);
+    } else {
+      navigate('/tasks');
+    }
+  }
 
   return (
     <div>
@@ -147,9 +186,9 @@ export function TodayTimeline({ meetings, isLoading, isError }: Props) {
           <h2 className="text-[11px] tracking-[0.15em] text-neutral-400 dark:text-neutral-500 font-medium uppercase">
             Today
           </h2>
-          {!isLoadingAny && items.length > 0 && (
+          {!isLoadingAny && totalCount > 0 && (
             <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900">
-              {items.length}
+              {totalCount}
             </span>
           )}
         </div>
@@ -173,13 +212,49 @@ export function TodayTimeline({ meetings, isLoading, isError }: Props) {
           </div>
         )}
 
-        {!isLoadingAny && !isError && items.length === 0 && (
+        {!isLoadingAny && !isError && totalCount === 0 && (
           <div className="text-center py-8 text-neutral-400 dark:text-neutral-600">
             <Clock className="w-7 h-7 mx-auto mb-2 opacity-40" />
             <p className="text-xs">No events today</p>
           </div>
         )}
 
+        {/* Due Today tasks — all-day section at top */}
+        {!isLoadingAny && !isError && dueTodayTasks.length > 0 && (
+          <div className="mb-1">
+            <p className="text-[10px] tracking-[0.1em] text-neutral-400 dark:text-neutral-500 font-medium uppercase mb-1.5 px-1">
+              Due today
+            </p>
+            <div className="space-y-1.5">
+              {dueTodayTasks.map((task, i) => (
+                <motion.div
+                  key={`dt-${task.id}`}
+                  {...MOTION_PROPS(i)}
+                  onClick={() => handleTaskClick(task)}
+                  className={`group flex items-center gap-3 px-4 py-2.5 ${TASK_BASE} hover:border-neutral-300 dark:hover:border-neutral-600 cursor-pointer transition-[border-color,box-shadow] duration-200`}
+                >
+                  <button
+                    type="button"
+                    onClick={(e) => handleToggleTask(task, e)}
+                    className="shrink-0 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                  >
+                    <Square className="w-3.5 h-3.5" />
+                  </button>
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300 truncate flex-1">
+                    {task.title}
+                  </p>
+                  {task.priority && (
+                    <span className="text-[9px] font-semibold tracking-wider text-neutral-400 dark:text-neutral-500 uppercase shrink-0">
+                      {task.priority}
+                    </span>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Timed items — meetings, GCal events, scheduled tasks */}
         {!isLoadingAny &&
           !isError &&
           items.map((item, i) => {
@@ -187,7 +262,7 @@ export function TodayTimeline({ meetings, isLoading, isError }: Props) {
               return (
                 <motion.div
                   key={`c-${item.meeting.id}`}
-                  {...MOTION_PROPS(i)}
+                  {...MOTION_PROPS(i + dueTodayTasks.length)}
                   onClick={() => navigate(`/meetings/${item.meeting.id}`)}
                   className="group flex items-center gap-3 px-4 py-3
                              bg-white dark:bg-neutral-900
@@ -223,6 +298,54 @@ export function TodayTimeline({ meetings, isLoading, isError }: Props) {
               );
             }
 
+            if (item.kind === 'task') {
+              return (
+                <motion.div
+                  key={`t-${item.task.id}`}
+                  {...MOTION_PROPS(i + dueTodayTasks.length)}
+                  onClick={() => handleTaskClick(item.task)}
+                  className={`group flex items-center gap-3 px-4 py-3 ${TASK_BASE} hover:border-neutral-300 dark:hover:border-neutral-600 hover:shadow-sm cursor-pointer transition-[border-color,box-shadow] duration-200`}
+                >
+                  <div className="shrink-0 text-right w-14">
+                    <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                      {formatTime(item.task.scheduledTime!)}
+                    </p>
+                  </div>
+
+                  <div className="w-px h-7 bg-neutral-200 dark:bg-neutral-700 shrink-0" />
+
+                  <button
+                    type="button"
+                    onClick={(e) => handleToggleTask(item.task, e)}
+                    className="shrink-0 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                  >
+                    {item.task.isCompleted ? (
+                      <CheckSquare className="w-3.5 h-3.5" />
+                    ) : (
+                      <Square className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 truncate">
+                      {item.task.title}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <CheckSquare className="w-2.5 h-2.5 text-neutral-400" />
+                      <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                        Task
+                      </span>
+                      {item.task.priority && (
+                        <span className="text-[9px] font-semibold tracking-wider text-neutral-400 dark:text-neutral-500 uppercase ml-1">
+                          {item.task.priority}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            }
+
             // GCal event — interactive only when meetLink is present
             if (item.event.meetLink) {
               return (
@@ -231,7 +354,7 @@ export function TodayTimeline({ meetings, isLoading, isError }: Props) {
                   href={item.event.meetLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  {...MOTION_PROPS(i)}
+                  {...MOTION_PROPS(i + dueTodayTasks.length)}
                   className={`group block ${GCAL_BASE} hover:border-neutral-200 dark:hover:border-neutral-700 hover:shadow-sm cursor-pointer transition-[border-color,box-shadow] duration-200`}
                 >
                   <GCalEventContent event={item.event} />
@@ -242,7 +365,7 @@ export function TodayTimeline({ meetings, isLoading, isError }: Props) {
             return (
               <motion.div
                 key={`g-${item.event.id}`}
-                {...MOTION_PROPS(i)}
+                {...MOTION_PROPS(i + dueTodayTasks.length)}
                 className={GCAL_BASE}
               >
                 <GCalEventContent event={item.event} />

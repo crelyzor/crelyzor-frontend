@@ -150,6 +150,7 @@ export type Task = {
   isCompleted: boolean;
   completedAt?: string | null;
   dueDate?: string | null;
+  scheduledTime?: string | null;
   priority?: 'LOW' | 'MEDIUM' | 'HIGH' | null;
   source: 'AI_EXTRACTED' | 'MANUAL';
   createdAt: string;

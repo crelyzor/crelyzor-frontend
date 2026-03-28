@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useScroll, useTransform, motion } from 'motion/react';
 import { useGreeting } from '@/hooks';
 import { useMeetingsAll } from '@/hooks/queries/useMeetingQueries';
+import { useAllTasks } from '@/hooks/queries/useSMAQueries';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { CompactStickyBar } from './CompactStickyBar';
@@ -34,6 +35,27 @@ export default function Home() {
         .map(toDisplayMeeting),
     [allMeetingsData]
   );
+
+  // Single task query shared by TodayTimeline + PendingTasksWidget
+  const { data: taskData, isLoading: tasksLoading } = useAllTasks({
+    status: 'pending',
+    limit: 100,
+  });
+  const allPendingTasks = useMemo(() => taskData?.tasks ?? [], [taskData]);
+
+  // Split: today's tasks (for timeline) vs rest (for sidebar widget)
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const { todayTasks, otherTasks } = useMemo(() => {
+    const isToday = (iso: string) => iso.split('T')[0] === todayStr;
+    const today = allPendingTasks.filter(
+      (t) =>
+        (t.scheduledTime && isToday(t.scheduledTime)) ||
+        (t.dueDate && isToday(t.dueDate))
+    );
+    const todayIds = new Set(today.map((t) => t.id));
+    const other = allPendingTasks.filter((t) => !todayIds.has(t.id));
+    return { todayTasks: today, otherTasks: other };
+  }, [allPendingTasks, todayStr]);
 
   // Greeting dissolves
   const greetingOpacity = useTransform(scrollY, [0, 80], [1, 0]);
@@ -107,7 +129,9 @@ export default function Home() {
                 ?.filter((m) => m.type !== 'VOICE_NOTE')
                 .map(toDisplayMeeting) ?? []
             }
+            tasks={todayTasks}
             isLoading={meetingsLoading}
+            isTasksLoading={tasksLoading}
             isError={meetingsError}
           />
           <RecentMeetings
@@ -121,7 +145,7 @@ export default function Home() {
         <div className="lg:col-span-1 space-y-6">
           <PublicLinksWidget />
           <DefaultCardWidget />
-          <PendingTasksWidget />
+          <PendingTasksWidget tasks={otherTasks} isLoading={tasksLoading} />
           <RecentVoiceNotes />
         </div>
       </motion.div>

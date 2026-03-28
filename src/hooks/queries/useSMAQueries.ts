@@ -6,6 +6,7 @@ import type {
   AIContentType,
   GeneratedContent,
   MeetingShare,
+  TaskListParams,
 } from '@/services/smaService';
 
 export function useTranscript(meetingId: string, enabled = true) {
@@ -28,11 +29,28 @@ export function useSummary(meetingId: string, enabled = true) {
   });
 }
 
-export function useAllTasks() {
+export function useAllTasks(params?: TaskListParams) {
   return useQuery({
-    queryKey: queryKeys.sma.allTasks(),
-    queryFn: () => smaApi.getAllTasks(),
+    queryKey: queryKeys.sma.allTasks(params as Record<string, unknown>),
+    queryFn: () => smaApi.getAllTasks(params),
     staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useCreateStandaloneTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      title: string;
+      description?: string;
+      dueDate?: string;
+      priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+      meetingId?: string;
+    }) => smaApi.createStandaloneTask(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.sma.all });
+    },
+    onError: () => toast.error('Failed to create task'),
   });
 }
 

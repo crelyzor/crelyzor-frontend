@@ -1,10 +1,10 @@
 import { CheckSquare, ArrowUpRight, Circle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { useAllTasks } from '@/hooks/queries/useSMAQueries';
 import { useUpdateTask } from '@/hooks/queries/useSMAQueries';
 import { queryKeys } from '@/lib/queryKeys';
 import { useQueryClient } from '@tanstack/react-query';
+import type { TaskWithMeeting } from '@/services/smaService';
 
 const PRIORITY_DOT: Record<string, string> = {
   HIGH: 'bg-red-400',
@@ -24,10 +24,14 @@ function RowSkeleton() {
   );
 }
 
-export function PendingTasksWidget() {
+type Props = {
+  tasks: TaskWithMeeting[];
+  isLoading?: boolean;
+};
+
+export function PendingTasksWidget({ tasks, isLoading }: Props) {
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const { data: tasks, isLoading } = useAllTasks();
 
   const updateTask = useUpdateTask('');
 
@@ -45,7 +49,7 @@ export function PendingTasksWidget() {
     );
   };
 
-  const visible = (tasks ?? []).slice(0, 5);
+  const visible = tasks.slice(0, 5);
 
   return (
     <div>
@@ -55,15 +59,15 @@ export function PendingTasksWidget() {
           <h2 className="text-[11px] tracking-[0.15em] text-neutral-400 dark:text-neutral-500 font-medium uppercase">
             Pending Tasks
           </h2>
-          {!isLoading && (tasks?.length ?? 0) > 0 && (
+          {!isLoading && tasks.length > 0 && (
             <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900">
-              {tasks!.length}
+              {tasks.length}
             </span>
           )}
         </div>
-        {(tasks?.length ?? 0) > 5 && (
+        {tasks.length > 5 && (
           <button
-            onClick={() => navigate('/meetings')}
+            onClick={() => navigate('/tasks')}
             className="flex items-center gap-1 text-[11px] text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors font-medium cursor-pointer group"
           >
             See all
@@ -112,7 +116,9 @@ export function PendingTasksWidget() {
               <div
                 className="flex-1 min-w-0 cursor-pointer"
                 onClick={() =>
-                  task.meetingId && navigate(`/meetings/${task.meetingId}`)
+                  task.meetingId
+                    ? navigate(`/meetings/${task.meetingId}`)
+                    : navigate('/tasks')
                 }
               >
                 <p className="text-sm text-neutral-900 dark:text-neutral-100 leading-snug">

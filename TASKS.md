@@ -390,16 +390,17 @@ Simplify Settings > Integrations — remove API key management, keep toggle.
 
 ## Phase 2 — Standalone Tasks
 
-- [ ] Standalone Tasks page (Todoist-style — `GET /tasks`, all tasks not scoped to a meeting)
-- [ ] Task filters: by status, priority, due date, meeting source
-- [ ] Tags on Tasks (extends universal Tag system)
+- [x] Standalone Tasks page (Todoist-style — filter chips, sort bar, inline create, toggle complete)
+- [x] Task filters: by status, priority, source + sort by createdAt/dueDate/priority
+- [x] Tags on Tasks (tag chips on task rows + tag filter bar, extends universal Tag system)
 
 ---
 
 ## Phase 3 — Calendar View + Tasks on Calendar
 
-- [ ] Tasks with `scheduledTime` appear on `TodayTimeline` as time blocks (block style, not list item)
-- [ ] Tasks with only `dueDate` appear as all-day markers at top of timeline
+- [x] Tasks with `scheduledTime` appear on `TodayTimeline` as timed items (dashed border, checkbox, "Task" label)
+- [x] Tasks with only `dueDate` appear as "Due today" section at top of timeline
+- [x] Toggle task complete directly from timeline
 - [ ] Click empty time slot in timeline → quick-create menu (New Meeting | New Task)
 - [ ] Drag task to time slot → sets `scheduledTime` via `PATCH /tasks/:id`
 - [ ] Full calendar page (`/calendar`) — week/day view, same data sources as `TodayTimeline` but full-page
