@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-28 (Phase 1.4 complete)
+Last updated: 2026-03-28 (Phase 2 complete — Phase 3 Calendar in progress)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -407,6 +407,6 @@ Simplify Settings > Integrations — remove API key management, keep toggle.
 
 ---
 
-## Phase 3 — Big Brain
+## Phase 4 — Big Brain
 
-- [ ] Global Ask AI / Big Brain chat interface
+- [ ] Global Ask AI / Big Brain chat interface (RAG — requires vector infra first)
