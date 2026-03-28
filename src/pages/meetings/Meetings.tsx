@@ -188,7 +188,6 @@ const FILTER_TABS = [
 
 type FilterTab = (typeof FILTER_TABS)[number]['id'];
 
-
 function matchesFilter(status: MeetingStatus, filter: FilterTab): boolean {
   if (filter === 'all') return true;
   if (filter === 'upcoming')
