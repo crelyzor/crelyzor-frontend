@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-28 (Phase 1.4 — Recall.ai platform integration)
+Last updated: 2026-03-28 (Phase 1.4 complete)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -365,7 +365,7 @@ Design doc: `docs/dev-notes/phase-1.3-gcal.md`
 
 ---
 
-## Phase 1.4 — Recall.ai Platform Integration ← current
+## Phase 1.4 — Recall.ai Platform Integration ✅ Complete
 
 Design doc: `docs/dev-notes/phase-1.4-recall-platform.md`
 
@@ -373,18 +373,18 @@ Simplify Settings > Integrations — remove API key management, keep toggle.
 
 ### P0 — Types + services cleanup
 
-- [ ] Remove `hasRecallApiKey` from `UserSettings` type in `src/types/settings.ts`
-- [ ] Add `recallAvailable: boolean` to `UserSettings` type
-- [ ] Remove `settingsApi.saveRecallApiKey()` from `src/services/settingsService.ts`
-- [ ] Remove `useSaveRecallApiKey` hook from `src/hooks/queries/useSettingsQueries.ts`
+- [x] Replace `hasRecallApiKey` with `recallAvailable: boolean` in `UserSettings` type
+- [x] Remove `settingsApi.saveRecallApiKey()` from `settingsService.ts`
+- [x] Remove `useSaveRecallApiKey` hook from `useSettingsQueries.ts`
 
 ### P1 — Settings UI simplification
 
-- [ ] Remove API key input, save button, show/hide toggle, "API key saved" badge from Settings > Integrations > Recall section
-- [ ] Toggle shown only when `settings.recallAvailable === true`
-- [ ] Disabled state with message when `!recallAvailable`: "Recording bot not available on this instance"
-- [ ] Label change: "Enable Recall.ai bot" → "Auto-record online meetings"
-- [ ] Description: "A bot will automatically join your scheduled online meetings to record and transcribe them."
+- [x] Remove API key input, save button, show/hide toggle, "API key saved" badge
+- [x] Toggle shown only when `settings.recallAvailable === true`
+- [x] Disabled state: "Recording bot not available on this instance" when `!recallAvailable`
+- [x] Label: "Auto-record online meetings" (vendor name hidden)
+- [x] Card title: "Meeting Recording Bot"
+- [x] Removed unused `Eye`/`EyeOff` icon imports
 
 ---
 
