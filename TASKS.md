@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-27 (Phase 1.3 complete — GCal timeline, meet link UX, settings integrations wired)
+Last updated: 2026-03-28 (Phase 1.4 — Recall.ai platform integration)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -362,6 +362,29 @@ Design doc: `docs/dev-notes/phase-1.3-gcal.md`
 - [x] **Connect flow:** "Connect Google Calendar" button already wired from Phase 1.2. On OAuth return, `queryKeys.integrations.google.status()` + `queryKeys.settings.all` both invalidated so UI refreshes.
 - [x] **Disconnect:** `useDisconnectGoogleCalendar` mutation wired. Ghost "Disconnect" button next to email badge. Calls `DELETE /integrations/google/disconnect`, invalidates status + settings caches, shows toast.
 - [x] **Sync toggle:** `googleCalendarSyncEnabled` wired via `PATCH /settings/user`. Inline `onSuccess`/`onError` toast feedback added.
+
+---
+
+## Phase 1.4 — Recall.ai Platform Integration ← current
+
+Design doc: `docs/dev-notes/phase-1.4-recall-platform.md`
+
+Simplify Settings > Integrations — remove API key management, keep toggle.
+
+### P0 — Types + services cleanup
+
+- [ ] Remove `hasRecallApiKey` from `UserSettings` type in `src/types/settings.ts`
+- [ ] Add `recallAvailable: boolean` to `UserSettings` type
+- [ ] Remove `settingsApi.saveRecallApiKey()` from `src/services/settingsService.ts`
+- [ ] Remove `useSaveRecallApiKey` hook from `src/hooks/queries/useSettingsQueries.ts`
+
+### P1 — Settings UI simplification
+
+- [ ] Remove API key input, save button, show/hide toggle, "API key saved" badge from Settings > Integrations > Recall section
+- [ ] Toggle shown only when `settings.recallAvailable === true`
+- [ ] Disabled state with message when `!recallAvailable`: "Recording bot not available on this instance"
+- [ ] Label change: "Enable Recall.ai bot" → "Auto-record online meetings"
+- [ ] Description: "A bot will automatically join your scheduled online meetings to record and transcribe them."
 
 ---
 

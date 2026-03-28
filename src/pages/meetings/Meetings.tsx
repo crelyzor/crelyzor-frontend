@@ -17,7 +17,6 @@ import {
   ThumbsDown,
   ExternalLink,
   Video,
-  Globe,
   Tag,
   Trash2,
   X,
@@ -189,14 +188,6 @@ const FILTER_TABS = [
 
 type FilterTab = (typeof FILTER_TABS)[number]['id'];
 
-function isOnlineMeeting(
-  location?: string | null,
-  meetingProvider?: string | null
-): boolean {
-  if (meetingProvider) return true;
-  if (!location) return false;
-  return location.startsWith('http');
-}
 
 function matchesFilter(status: MeetingStatus, filter: FilterTab): boolean {
   if (filter === 'all') return true;
@@ -506,9 +497,9 @@ export default function Meetings() {
           )
             return false;
           if (typeTab === 'scheduled')
-            return m.type === 'SCHEDULED' && m.status === 'CREATED';
+            return m.type === 'SCHEDULED' && !m.booking;
           if (typeTab === 'recorded') return m.type === 'RECORDED';
-          if (typeTab === 'bookings') return m.status === 'ACCEPTED';
+          if (typeTab === 'bookings') return !!m.booking;
           return true;
         })
         .map(toDisplayMeeting),
@@ -789,35 +780,21 @@ export default function Meetings() {
                                 </div>
                               )}
                               {meeting.meetingType === 'SCHEDULED' &&
-                                meeting.status === 'ACCEPTED' && (
+                                meeting.isFromBooking && (
                                   <div
-                                    title="Confirmed booking"
+                                    title="Booking"
                                     className="shrink-0 w-5 h-5 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
                                   >
                                     <CalendarClock className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
                                   </div>
                                 )}
                               {meeting.meetingType === 'SCHEDULED' &&
-                                meeting.status === 'CREATED' && (
+                                !meeting.isFromBooking && (
                                   <div
                                     title="Meeting"
                                     className="shrink-0 w-5 h-5 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
                                   >
                                     <CalendarDays className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
-                                  </div>
-                                )}
-                              {meeting.meetingType === 'SCHEDULED' &&
-                                meeting.status !== 'ACCEPTED' &&
-                                meeting.status !== 'CREATED' &&
-                                isOnlineMeeting(
-                                  meeting.location,
-                                  meeting.meetingProvider
-                                ) && (
-                                  <div
-                                    title="Online meeting"
-                                    className="shrink-0 w-5 h-5 rounded-md bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center"
-                                  >
-                                    <Globe className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
                                   </div>
                                 )}
                               <h3 className="text-sm font-medium text-neutral-950 dark:text-neutral-50 truncate">

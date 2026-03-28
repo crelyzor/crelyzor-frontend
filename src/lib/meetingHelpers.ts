@@ -30,6 +30,7 @@ export type DisplayMeeting = {
   hasTasks: boolean;
   meetingProvider?: Meeting['meetingProvider'];
   tags: Array<{ id: string; name: string; color: string }>;
+  isFromBooking: boolean;
   // Keep original for detailed views
   _raw: Meeting;
 };
@@ -54,6 +55,7 @@ export function toDisplayMeeting(m: Meeting): DisplayMeeting {
     hasTasks: (m.tasks?.length ?? 0) > 0,
     meetingProvider: m.meetingProvider,
     tags: (m.tags ?? []).map((mt) => mt.tag),
+    isFromBooking: !!m.booking,
     _raw: m,
   };
 }

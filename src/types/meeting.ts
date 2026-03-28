@@ -108,6 +108,10 @@ export type Meeting = {
     email: string;
     avatarUrl?: string;
   };
+  booking?: {
+    id: string;
+    status: string;
+  } | null;
 };
 
 // Simplified meeting for list views (same shape, just aliased)

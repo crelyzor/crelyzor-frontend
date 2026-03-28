@@ -13,7 +13,6 @@ import { DefaultCardWidget } from './DefaultCardWidget';
 import { RecentVoiceNotes } from './RecentVoiceNotes';
 import { PublicLinksWidget } from './PublicLinksWidget';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
-import { QuickStatsRow } from './QuickStatsRow';
 
 export default function Home() {
   const { scrollY } = useScroll();
@@ -93,8 +92,6 @@ export default function Home() {
         bubblesOpacity={bubblesOpacity}
         bubbleTransforms={bubbleTransforms}
       />
-
-      <QuickStatsRow />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

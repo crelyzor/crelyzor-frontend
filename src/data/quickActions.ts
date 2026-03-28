@@ -1,4 +1,4 @@
-import { CalendarDays, CreditCard, Mic } from 'lucide-react';
+import { CalendarDays, CalendarClock, CreditCard, Mic } from 'lucide-react';
 import type { QuickAction } from '@/types';
 
 export const quickActions: QuickAction[] = [
@@ -7,6 +7,13 @@ export const quickActions: QuickAction[] = [
     label: 'Meetings',
     desc: 'View all your meetings',
     path: '/meetings',
+    actionType: 'navigate',
+  },
+  {
+    icon: CalendarClock,
+    label: 'Bookings',
+    desc: 'View your bookings',
+    path: '/bookings',
     actionType: 'navigate',
   },
   {
