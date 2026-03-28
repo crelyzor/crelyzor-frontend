@@ -1973,7 +1973,8 @@ function IntegrationsSection() {
                 Meeting Recording Bot
               </p>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
-                A bot will automatically join your scheduled online meetings to record and transcribe them
+                A bot will automatically join your scheduled online meetings to
+                record and transcribe them
               </p>
 
               {isLoading ? (
