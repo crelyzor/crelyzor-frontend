@@ -403,6 +403,7 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 ### P0 — Backend schema done ✅ (crelyzor-backend)
 
 ### P1 — Task Detail Panel + Row Redesign ✅
+
 - [x] Task detail slide-over panel (right side, stays open alongside list)
   - Inline-editable title, description
   - Due date picker
@@ -416,22 +417,26 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
   - Click row → opens detail panel
 
 ### P2 — Sidebar Nav + Views ✅
+
 - [x] Sidebar nav within /tasks: Inbox · Today · Upcoming · All · From Meetings
 - [x] Today view — overdue at top + due today below, section headers
 - [x] Upcoming view — 7 days, grouped under date headers
 - [x] From Meetings view — tasks grouped by meeting name
 
 ### P3 — Board View + Drag and Drop
+
 - [ ] View toggle: List / Board / Grouped
 - [ ] Board view — 3 Kanban columns (Todo / In Progress / Done), drag between columns
 - [ ] List drag-to-reorder — dnd-kit, persists via PATCH /tasks/reorder
 - [ ] Grouped view — Overdue / Today / Tomorrow / This Week / Later
 
 ### P4 — Global Quick-Add
+
 - [ ] Cmd+K quick-add from anywhere — natural language parsing (priority, due date, tags)
 - [ ] Contact-linked tasks on Card detail page
 
 ### P5 — Calendar Page
+
 - [x] Tasks with `scheduledTime` appear on `TodayTimeline` as timed items
 - [x] Tasks with only `dueDate` appear as "Due today" section at top of timeline
 - [x] Toggle task complete directly from timeline

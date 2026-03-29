@@ -20,27 +20,33 @@ import {
   useSubtasks,
   useCreateSubtask,
 } from '@/hooks/queries/useSMAQueries';
-import { useTaskTags, useDetachTagFromTask, useAttachTagToTask, useUserTags } from '@/hooks/queries/useTagQueries';
+import {
+  useTaskTags,
+  useDetachTagFromTask,
+  useAttachTagToTask,
+  useUserTags,
+} from '@/hooks/queries/useTagQueries';
 import type { TaskWithMeeting } from '@/services/smaService';
 import type { TaskStatus } from '@/types/meeting';
 
-const STATUS_CONFIG: Record<TaskStatus, { label: string; className: string }> = {
-  TODO: {
-    label: 'To Do',
-    className:
-      'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400',
-  },
-  IN_PROGRESS: {
-    label: 'In Progress',
-    className:
-      'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900',
-  },
-  DONE: {
-    label: 'Done',
-    className:
-      'bg-neutral-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400',
-  },
-};
+const STATUS_CONFIG: Record<TaskStatus, { label: string; className: string }> =
+  {
+    TODO: {
+      label: 'To Do',
+      className:
+        'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400',
+    },
+    IN_PROGRESS: {
+      label: 'In Progress',
+      className:
+        'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900',
+    },
+    DONE: {
+      label: 'Done',
+      className:
+        'bg-neutral-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400',
+    },
+  };
 
 const PRIORITY_BORDER: Record<string, string> = {
   HIGH: 'border-l-red-400',
@@ -166,9 +172,7 @@ export function TaskDetailPanel({ task, onClose }: Props) {
 
   const currentStatus: TaskStatus = (task?.status as TaskStatus) ?? 'TODO';
   const isOverdue =
-    task?.dueDate &&
-    !task.isCompleted &&
-    new Date(task.dueDate) < new Date();
+    task?.dueDate && !task.isCompleted && new Date(task.dueDate) < new Date();
 
   return (
     <AnimatePresence>
@@ -215,28 +219,34 @@ export function TaskDetailPanel({ task, onClose }: Props) {
                         initial={{ opacity: 0, scale: 0.94, y: -4 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.94, y: -4 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                        transition={{
+                          type: 'spring',
+                          damping: 25,
+                          stiffness: 350,
+                        }}
                         className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-[130px]"
                       >
-                        {(Object.keys(STATUS_CONFIG) as TaskStatus[]).map((s) => (
-                          <button
-                            key={s}
-                            onClick={() => handleStatusChange(s)}
-                            className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors ${
-                              currentStatus === s
-                                ? 'text-neutral-900 dark:text-neutral-100 font-medium'
-                                : 'text-neutral-600 dark:text-neutral-400'
-                            }`}
-                          >
-                            {currentStatus === s && (
-                              <Check className="w-3 h-3 shrink-0" />
-                            )}
-                            {currentStatus !== s && (
-                              <span className="w-3 shrink-0" />
-                            )}
-                            {STATUS_CONFIG[s].label}
-                          </button>
-                        ))}
+                        {(Object.keys(STATUS_CONFIG) as TaskStatus[]).map(
+                          (s) => (
+                            <button
+                              key={s}
+                              onClick={() => handleStatusChange(s)}
+                              className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors ${
+                                currentStatus === s
+                                  ? 'text-neutral-900 dark:text-neutral-100 font-medium'
+                                  : 'text-neutral-600 dark:text-neutral-400'
+                              }`}
+                            >
+                              {currentStatus === s && (
+                                <Check className="w-3 h-3 shrink-0" />
+                              )}
+                              {currentStatus !== s && (
+                                <span className="w-3 shrink-0" />
+                              )}
+                              {STATUS_CONFIG[s].label}
+                            </button>
+                          )
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -300,9 +310,10 @@ export function TaskDetailPanel({ task, onClose }: Props) {
                 {/* Due date */}
                 <label
                   className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs cursor-pointer transition-colors
-                    ${isOverdue
-                      ? 'bg-red-50 dark:bg-red-950/30 text-red-500 dark:text-red-400'
-                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                    ${
+                      isOverdue
+                        ? 'bg-red-50 dark:bg-red-950/30 text-red-500 dark:text-red-400'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                     }`}
                 >
                   <CalendarDays className="w-3 h-3 shrink-0" />
@@ -349,7 +360,11 @@ export function TaskDetailPanel({ task, onClose }: Props) {
                         initial={{ opacity: 0, scale: 0.94, y: -4 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.94, y: -4 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                        transition={{
+                          type: 'spring',
+                          damping: 25,
+                          stiffness: 350,
+                        }}
                         className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-[120px]"
                       >
                         {(['HIGH', 'MEDIUM', 'LOW'] as const).map((p) => (
@@ -426,13 +441,19 @@ export function TaskDetailPanel({ task, onClose }: Props) {
                           initial={{ opacity: 0, scale: 0.94, y: -4 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.94, y: -4 }}
-                          transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                          transition={{
+                            type: 'spring',
+                            damping: 25,
+                            stiffness: 350,
+                          }}
                           className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-[160px] max-h-48 overflow-y-auto"
                         >
                           {userTags.map((tag) => {
-                            const attached = (taskTagsData ?? task.tags ?? []).some(
-                              (t) => t.id === tag.id
-                            );
+                            const attached = (
+                              taskTagsData ??
+                              task.tags ??
+                              []
+                            ).some((t) => t.id === tag.id);
                             return (
                               <button
                                 key={tag.id}
@@ -542,7 +563,9 @@ export function TaskDetailPanel({ task, onClose }: Props) {
                         <Button
                           size="xs"
                           onClick={handleAddSubtask}
-                          disabled={!newSubtaskTitle.trim() || createSubtask.isPending}
+                          disabled={
+                            !newSubtaskTitle.trim() || createSubtask.isPending
+                          }
                         >
                           Add
                         </Button>

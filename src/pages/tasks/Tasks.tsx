@@ -22,7 +22,11 @@ import {
 import { useUserTags } from '@/hooks/queries/useTagQueries';
 import { TaskDetailPanel } from './components/TaskDetailPanel';
 import { TaskSidebar } from './components/TaskSidebar';
-import type { TaskListParams, TaskWithMeeting, TaskView } from '@/services/smaService';
+import type {
+  TaskListParams,
+  TaskWithMeeting,
+  TaskView,
+} from '@/services/smaService';
 
 const PRIORITY_DOT: Record<string, string> = {
   HIGH: 'bg-red-400',
@@ -112,7 +116,11 @@ function TaskRow({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -4, transition: { duration: 0.15 } }}
-      transition={{ duration: 0.22, delay: index * 0.02, ease: [0.25, 0.1, 0.25, 1] }}
+      transition={{
+        duration: 0.22,
+        delay: index * 0.02,
+        ease: [0.25, 0.1, 0.25, 1],
+      }}
       onClick={() => onSelect(task)}
       className={`group flex items-start gap-3 px-4 py-3.5 cursor-pointer
                  bg-white dark:bg-neutral-900
@@ -123,7 +131,10 @@ function TaskRow({
                  ${isSelected ? 'ring-1 ring-neutral-300 dark:ring-neutral-600 border-neutral-200 dark:border-neutral-700' : ''}`}
     >
       <button
-        onClick={(e) => { e.stopPropagation(); onToggle(task.id, !task.isCompleted); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle(task.id, !task.isCompleted);
+        }}
         className={`mt-0.5 shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
           task.isCompleted
             ? 'bg-neutral-900 dark:bg-neutral-100 border-neutral-900 dark:border-neutral-100'
@@ -137,24 +148,31 @@ function TaskRow({
       </button>
 
       <div className="flex-1 min-w-0">
-        <p className={`text-sm leading-snug ${
-          task.isCompleted
-            ? 'text-neutral-400 dark:text-neutral-500 line-through'
-            : 'text-neutral-900 dark:text-neutral-100'
-        }`}>
+        <p
+          className={`text-sm leading-snug ${
+            task.isCompleted
+              ? 'text-neutral-400 dark:text-neutral-500 line-through'
+              : 'text-neutral-900 dark:text-neutral-100'
+          }`}
+        >
           {task.title}
         </p>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           {task.meeting && (
             <button
-              onClick={(e) => { e.stopPropagation(); onNavigate(task.meeting!.id); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onNavigate(task.meeting!.id);
+              }}
               className="text-[10px] text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 truncate max-w-[160px] transition-colors"
             >
               {task.meeting.title}
             </button>
           )}
           {!task.meeting && task.source === 'MANUAL' && (
-            <span className="text-[10px] text-neutral-300 dark:text-neutral-600">Standalone</span>
+            <span className="text-[10px] text-neutral-300 dark:text-neutral-600">
+              Standalone
+            </span>
           )}
           {task.source === 'AI_EXTRACTED' && (
             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 font-medium">
@@ -162,7 +180,9 @@ function TaskRow({
             </span>
           )}
           {task.priority && (
-            <span className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${PRIORITY_DOT[task.priority] ?? ''}`} />
+            <span
+              className={`inline-block w-1.5 h-1.5 rounded-full shrink-0 ${PRIORITY_DOT[task.priority] ?? ''}`}
+            />
           )}
           {isOverdue && (
             <span className="flex items-center gap-0.5 text-[10px] text-red-400 dark:text-red-500">
@@ -173,7 +193,10 @@ function TaskRow({
           {task.dueDate && !isOverdue && (
             <span className="flex items-center gap-0.5 text-[10px] text-neutral-400 dark:text-neutral-500">
               <CalendarDays className="w-2.5 h-2.5" />
-              {new Date(task.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              {new Date(task.dueDate).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+              })}
             </span>
           )}
           {task.tags?.map((tag) => (
@@ -181,7 +204,10 @@ function TaskRow({
               key={tag.id}
               className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400"
             >
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: tag.color }} />
+              <span
+                className="w-1.5 h-1.5 rounded-full shrink-0"
+                style={{ backgroundColor: tag.color }}
+              />
               {tag.name}
             </span>
           ))}
@@ -189,7 +215,10 @@ function TaskRow({
       </div>
 
       <button
-        onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(task.id);
+        }}
         className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md"
         aria-label="Delete task"
       >
@@ -219,7 +248,11 @@ function formatDateHeader(dateStr: string): string {
 
   if (date.getTime() === today.getTime()) return 'Today';
   if (date.getTime() === tomorrow.getTime()) return 'Tomorrow';
-  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+  });
 }
 
 export default function Tasks() {
@@ -228,22 +261,33 @@ export default function Tasks() {
 
   const view = (searchParams.get('view') as TaskView | null) ?? 'all';
 
-  const [status, setStatus] = useState<'all' | 'completed' | 'pending'>('pending');
-  const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH' | undefined>();
+  const [status, setStatus] = useState<'all' | 'completed' | 'pending'>(
+    'pending'
+  );
+  const [priority, setPriority] = useState<
+    'LOW' | 'MEDIUM' | 'HIGH' | undefined
+  >();
   const [source, setSource] = useState<'AI_EXTRACTED' | 'MANUAL' | undefined>();
-  const [sortBy, setSortBy] = useState<'createdAt' | 'dueDate' | 'priority'>('createdAt');
+  const [sortBy, setSortBy] = useState<'createdAt' | 'dueDate' | 'priority'>(
+    'createdAt'
+  );
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [showCreate, setShowCreate] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<TaskWithMeeting | null>(null);
+  const [selectedTask, setSelectedTask] = useState<TaskWithMeeting | null>(
+    null
+  );
 
   const { data: userTags } = useUserTags();
 
-  const handleViewChange = useCallback((newView: TaskView) => {
-    setSearchParams({ view: newView });
-    setSelectedTask(null);
-  }, [setSearchParams]);
+  const handleViewChange = useCallback(
+    (newView: TaskView) => {
+      setSearchParams({ view: newView });
+      setSelectedTask(null);
+    },
+    [setSearchParams]
+  );
 
   // Derive query params from active view
   const params: TaskListParams = useMemo(() => {
@@ -251,9 +295,19 @@ export default function Tasks() {
       case 'inbox':
         return { view: 'inbox', limit: 100 };
       case 'today':
-        return { view: 'today', sortBy: 'dueDate', sortOrder: 'asc', limit: 100 };
+        return {
+          view: 'today',
+          sortBy: 'dueDate',
+          sortOrder: 'asc',
+          limit: 100,
+        };
       case 'upcoming':
-        return { view: 'upcoming', sortBy: 'dueDate', sortOrder: 'asc', limit: 100 };
+        return {
+          view: 'upcoming',
+          sortBy: 'dueDate',
+          sortOrder: 'asc',
+          limit: 100,
+        };
       case 'from_meetings':
         return { view: 'from_meetings', limit: 100 };
       case 'all':
@@ -280,7 +334,9 @@ export default function Tasks() {
   const tasks = useMemo(() => {
     const flat = data?.tasks ?? [];
     if (selectedTagIds.size === 0) return flat;
-    return flat.filter((t) => t.tags?.some((tag) => selectedTagIds.has(tag.id)));
+    return flat.filter((t) =>
+      t.tags?.some((tag) => selectedTagIds.has(tag.id))
+    );
   }, [data?.tasks, selectedTagIds]);
 
   // Keep selected task in sync — search flat list AND grouped data
@@ -300,27 +356,37 @@ export default function Tasks() {
   const handleCreate = useCallback(() => {
     const title = newTaskTitle.trim();
     if (!title) return;
-    createTask.mutate({ title }, {
-      onSuccess: () => {
-        setNewTaskTitle('');
-        setShowCreate(false);
-      },
-    });
+    createTask.mutate(
+      { title },
+      {
+        onSuccess: () => {
+          setNewTaskTitle('');
+          setShowCreate(false);
+        },
+      }
+    );
   }, [newTaskTitle, createTask]);
 
-  const handleToggle = useCallback((taskId: string, isCompleted: boolean) => {
-    updateTask.mutate({ taskId, data: { isCompleted } });
-  }, [updateTask]);
+  const handleToggle = useCallback(
+    (taskId: string, isCompleted: boolean) => {
+      updateTask.mutate({ taskId, data: { isCompleted } });
+    },
+    [updateTask]
+  );
 
-  const handleDelete = useCallback((taskId: string) => {
-    deleteTask.mutate(taskId, {
-      onSuccess: () => {
-        if (selectedTask?.id === taskId) setSelectedTask(null);
-      },
-    });
-  }, [deleteTask, selectedTask]);
+  const handleDelete = useCallback(
+    (taskId: string) => {
+      deleteTask.mutate(taskId, {
+        onSuccess: () => {
+          if (selectedTask?.id === taskId) setSelectedTask(null);
+        },
+      });
+    },
+    [deleteTask, selectedTask]
+  );
 
-  const toggleSortOrder = () => setSortOrder((o) => (o === 'desc' ? 'asc' : 'desc'));
+  const toggleSortOrder = () =>
+    setSortOrder((o) => (o === 'desc' ? 'asc' : 'desc'));
 
   const showFilterBar = FILTERABLE_VIEWS.includes(view);
 
@@ -353,7 +419,10 @@ export default function Tasks() {
   // From Meetings: group by meeting
   const meetingGroups = useMemo(() => {
     if (view !== 'from_meetings') return [];
-    const map = new Map<string, { meetingId: string; title: string; tasks: TaskWithMeeting[] }>();
+    const map = new Map<
+      string,
+      { meetingId: string; title: string; tasks: TaskWithMeeting[] }
+    >();
     for (const t of tasks) {
       if (!t.meeting) continue; // guard: backend guarantees meetingId != null for this view, but relation may not be populated
       const key = t.meeting.id;
@@ -369,7 +438,9 @@ export default function Tasks() {
 
   return (
     <PageMotion>
-      <div className={`flex gap-8 transition-[padding] duration-200 ${isPanelOpen ? 'pr-[416px]' : ''}`}>
+      <div
+        className={`flex gap-8 transition-[padding] duration-200 ${isPanelOpen ? 'pr-[416px]' : ''}`}
+      >
         {/* Sidebar */}
         <TaskSidebar activeView={view} onViewChange={handleViewChange} />
 
@@ -385,7 +456,11 @@ export default function Tasks() {
                 {isLoading ? '—' : `${total} task${total !== 1 ? 's' : ''}`}
               </p>
             </div>
-            <Button size="sm" onClick={() => setShowCreate(true)} className="gap-1.5">
+            <Button
+              size="sm"
+              onClick={() => setShowCreate(true)}
+              className="gap-1.5"
+            >
               <Plus className="w-3.5 h-3.5" />
               New task
             </Button>
@@ -417,7 +492,9 @@ export default function Tasks() {
                     <Button
                       key={f.value ?? 'any-p'}
                       variant="ghost"
-                      onClick={() => setPriority(priority === f.value ? undefined : f.value)}
+                      onClick={() =>
+                        setPriority(priority === f.value ? undefined : f.value)
+                      }
                       className={`px-2.5 py-1.5 h-auto rounded-full text-[11px] font-medium transition-all duration-150 ${
                         priority === f.value
                           ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-900 dark:hover:bg-neutral-100'
@@ -425,7 +502,9 @@ export default function Tasks() {
                       }`}
                     >
                       {f.value && (
-                        <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1 ${PRIORITY_DOT[f.value] ?? ''}`} />
+                        <span
+                          className={`inline-block w-1.5 h-1.5 rounded-full mr-1 ${PRIORITY_DOT[f.value] ?? ''}`}
+                        />
                       )}
                       {f.label}
                     </Button>
@@ -447,7 +526,9 @@ export default function Tasks() {
                     <Button
                       key={f.value ?? 'any-s'}
                       variant="ghost"
-                      onClick={() => setSource(source === f.value ? undefined : f.value)}
+                      onClick={() =>
+                        setSource(source === f.value ? undefined : f.value)
+                      }
                       className={`px-2.5 py-1.5 h-auto rounded-full text-[11px] font-medium transition-all duration-150 ${
                         source === f.value
                           ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-900 dark:hover:bg-neutral-100'
@@ -477,7 +558,10 @@ export default function Tasks() {
                     key={opt.value}
                     onClick={() => {
                       if (sortBy === opt.value) toggleSortOrder();
-                      else { setSortBy(opt.value); setSortOrder('desc'); }
+                      else {
+                        setSortBy(opt.value);
+                        setSortOrder('desc');
+                      }
                     }}
                     className={`text-[11px] font-medium transition-colors ${
                       sortBy === opt.value
@@ -487,7 +571,9 @@ export default function Tasks() {
                   >
                     {opt.label}
                     {sortBy === opt.value && (
-                      <span className="ml-0.5">{sortOrder === 'desc' ? '↓' : '↑'}</span>
+                      <span className="ml-0.5">
+                        {sortOrder === 'desc' ? '↓' : '↑'}
+                      </span>
                     )}
                   </button>
                 ))}
@@ -503,14 +589,18 @@ export default function Tasks() {
                   <Button
                     key={f.value}
                     variant="ghost"
-                    onClick={() => setPriority(priority === f.value ? undefined : f.value)}
+                    onClick={() =>
+                      setPriority(priority === f.value ? undefined : f.value)
+                    }
                     className={`px-2.5 py-1.5 h-auto rounded-full text-[11px] font-medium transition-all duration-150 ${
                       priority === f.value
                         ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-900 dark:hover:bg-neutral-100'
                         : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                     }`}
                   >
-                    <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1 ${PRIORITY_DOT[f.value] ?? ''}`} />
+                    <span
+                      className={`inline-block w-1.5 h-1.5 rounded-full mr-1 ${PRIORITY_DOT[f.value] ?? ''}`}
+                    />
                     {f.label}
                   </Button>
                 )
@@ -542,7 +632,10 @@ export default function Tasks() {
                         : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                     }`}
                   >
-                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: tag.color }} />
+                    <span
+                      className="w-1.5 h-1.5 rounded-full shrink-0"
+                      style={{ backgroundColor: tag.color }}
+                    />
                     {tag.name}
                   </Button>
                 );
@@ -575,16 +668,30 @@ export default function Tasks() {
                     onChange={(e) => setNewTaskTitle(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleCreate();
-                      if (e.key === 'Escape') { setShowCreate(false); setNewTaskTitle(''); }
+                      if (e.key === 'Escape') {
+                        setShowCreate(false);
+                        setNewTaskTitle('');
+                      }
                     }}
                     placeholder="What needs to be done?"
                     className="flex-1 bg-transparent text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 outline-none"
                     autoFocus
                   />
-                  <Button size="xs" onClick={handleCreate} disabled={!newTaskTitle.trim() || createTask.isPending}>
+                  <Button
+                    size="xs"
+                    onClick={handleCreate}
+                    disabled={!newTaskTitle.trim() || createTask.isPending}
+                  >
                     {createTask.isPending ? 'Adding...' : 'Add'}
                   </Button>
-                  <Button size="xs" variant="ghost" onClick={() => { setShowCreate(false); setNewTaskTitle(''); }}>
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    onClick={() => {
+                      setShowCreate(false);
+                      setNewTaskTitle('');
+                    }}
+                  >
                     Cancel
                   </Button>
                 </div>
@@ -598,8 +705,15 @@ export default function Tasks() {
 
             {isError && (
               <div className="text-center py-20">
-                <p className="text-sm text-neutral-400 dark:text-neutral-500">Failed to load tasks</p>
-                <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
+                <p className="text-sm text-neutral-400 dark:text-neutral-500">
+                  Failed to load tasks
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-3"
+                  onClick={() => refetch()}
+                >
                   Try again
                 </Button>
               </div>
@@ -609,7 +723,10 @@ export default function Tasks() {
             {!isLoading && !isError && view === 'today' && (
               <AnimatePresence mode="popLayout">
                 {overdueTasks.length === 0 && dueTodayTasks.length === 0 && (
-                  <EmptyState view="today" onShowCreate={() => setShowCreate(true)} />
+                  <EmptyState
+                    view="today"
+                    onShowCreate={() => setShowCreate(true)}
+                  />
                 )}
                 {overdueTasks.length > 0 && (
                   <>
@@ -652,7 +769,10 @@ export default function Tasks() {
             {!isLoading && !isError && view === 'upcoming' && (
               <AnimatePresence mode="popLayout">
                 {(!data?.grouped || data.grouped.length === 0) && (
-                  <EmptyState view="upcoming" onShowCreate={() => setShowCreate(true)} />
+                  <EmptyState
+                    view="upcoming"
+                    onShowCreate={() => setShowCreate(true)}
+                  />
                 )}
                 {data?.grouped?.map((group) => (
                   <div key={group.date}>
@@ -678,7 +798,10 @@ export default function Tasks() {
             {!isLoading && !isError && view === 'from_meetings' && (
               <AnimatePresence mode="popLayout">
                 {meetingGroups.length === 0 && (
-                  <EmptyState view="from_meetings" onShowCreate={() => setShowCreate(true)} />
+                  <EmptyState
+                    view="from_meetings"
+                    onShowCreate={() => setShowCreate(true)}
+                  />
                 )}
                 {meetingGroups.map((group) => (
                   <div key={group.meetingId}>
@@ -706,7 +829,12 @@ export default function Tasks() {
                 {tasks.length === 0 && (
                   <EmptyState
                     view={view}
-                    hasFilters={!!(priority || (view === 'all' && (source || selectedTagIds.size > 0)))}
+                    hasFilters={
+                      !!(
+                        priority ||
+                        (view === 'all' && (source || selectedTagIds.size > 0))
+                      )
+                    }
                     onClearFilters={() => {
                       setStatus('all');
                       setPriority(undefined);
@@ -737,7 +865,10 @@ export default function Tasks() {
       </div>
 
       {/* Detail panel */}
-      <TaskDetailPanel task={liveSelectedTask} onClose={() => setSelectedTask(null)} />
+      <TaskDetailPanel
+        task={liveSelectedTask}
+        onClose={() => setSelectedTask(null)}
+      />
     </PageMotion>
   );
 }
@@ -754,20 +885,38 @@ function EmptyState({
   onShowCreate: () => void;
 }) {
   const messages: Record<TaskView, { title: string; sub: string }> = {
-    inbox: { title: 'Inbox is clear', sub: 'Tasks without a due date live here' },
+    inbox: {
+      title: 'Inbox is clear',
+      sub: 'Tasks without a due date live here',
+    },
     today: { title: 'Nothing due today', sub: 'Enjoy the clear schedule' },
-    upcoming: { title: 'Nothing coming up', sub: 'Tasks due in the next 7 days will appear here' },
-    all: { title: 'No tasks yet', sub: 'Create your first task to get started' },
-    from_meetings: { title: 'No tasks from meetings', sub: 'AI-extracted and manual tasks linked to meetings will appear here' },
+    upcoming: {
+      title: 'Nothing coming up',
+      sub: 'Tasks due in the next 7 days will appear here',
+    },
+    all: {
+      title: 'No tasks yet',
+      sub: 'Create your first task to get started',
+    },
+    from_meetings: {
+      title: 'No tasks from meetings',
+      sub: 'AI-extracted and manual tasks linked to meetings will appear here',
+    },
   };
 
   const { title, sub } = messages[view];
 
   if (hasFilters) {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="text-center py-20"
+      >
         <CheckSquare className="w-9 h-9 mx-auto text-neutral-200 dark:text-neutral-700 mb-3" />
-        <p className="text-sm text-neutral-400 dark:text-neutral-500">No tasks match the current filters</p>
+        <p className="text-sm text-neutral-400 dark:text-neutral-500">
+          No tasks match the current filters
+        </p>
         <button
           onClick={onClearFilters}
           className="text-xs text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 mt-2 transition-colors"
@@ -779,10 +928,16 @@ function EmptyState({
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="text-center py-20"
+    >
       <CheckSquare className="w-9 h-9 mx-auto text-neutral-200 dark:text-neutral-700 mb-3" />
       <p className="text-sm text-neutral-400 dark:text-neutral-500">{title}</p>
-      <p className="text-xs text-neutral-300 dark:text-neutral-600 mt-1">{sub}</p>
+      <p className="text-xs text-neutral-300 dark:text-neutral-600 mt-1">
+        {sub}
+      </p>
       {(view === 'all' || view === 'inbox') && (
         <Button size="sm" className="mt-4" onClick={onShowCreate}>
           <Plus className="w-3.5 h-3.5 mr-1.5" />
