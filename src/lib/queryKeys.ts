@@ -95,6 +95,8 @@ export const queryKeys = {
         'allTasks',
         ...(filters ? [filters] : []),
       ] as const,
+    subtasks: (taskId: string) =>
+      [...queryKeys.sma.all, 'subtasks', taskId] as const,
   },
 
   // Tags

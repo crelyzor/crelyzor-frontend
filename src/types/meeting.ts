@@ -141,6 +141,8 @@ export type Attachment = {
   updatedAt: string;
 };
 
+export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
+
 export type Task = {
   id: string;
   userId: string;
@@ -152,6 +154,11 @@ export type Task = {
   dueDate?: string | null;
   scheduledTime?: string | null;
   priority?: 'LOW' | 'MEDIUM' | 'HIGH' | null;
+  status: TaskStatus;
+  sortOrder: number;
+  parentTaskId?: string | null;
+  cardId?: string | null;
+  transcriptContext?: string | null;
   source: 'AI_EXTRACTED' | 'MANUAL';
   createdAt: string;
   updatedAt: string;

@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-28 (Phase 2 complete — Phase 3 Calendar in progress)
+Last updated: 2026-03-29 (Phase 3 P1+P2 complete — P3 Board View next)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -396,14 +396,48 @@ Simplify Settings > Integrations — remove API key management, keep toggle.
 
 ---
 
-## Phase 3 — Calendar View + Tasks on Calendar
+## Phase 3 — Todoist-Level Tasks + Calendar View
 
-- [x] Tasks with `scheduledTime` appear on `TodayTimeline` as timed items (dashed border, checkbox, "Task" label)
+Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
+
+### P0 — Backend schema done ✅ (crelyzor-backend)
+
+### P1 — Task Detail Panel + Row Redesign ✅
+- [x] Task detail slide-over panel (right side, stays open alongside list)
+  - Inline-editable title, description
+  - Due date picker
+  - Priority selector, status toggle (TODO/IN_PROGRESS/DONE)
+  - Tags multi-select, linked meeting chip
+  - Subtasks list with inline add
+- [x] Task row redesign
+  - Left priority border (red HIGH, amber MEDIUM)
+  - Due date turns red + "Overdue" when past due
+  - Meeting chip (click → navigate)
+  - Click row → opens detail panel
+
+### P2 — Sidebar Nav + Views ✅
+- [x] Sidebar nav within /tasks: Inbox · Today · Upcoming · All · From Meetings
+- [x] Today view — overdue at top + due today below, section headers
+- [x] Upcoming view — 7 days, grouped under date headers
+- [x] From Meetings view — tasks grouped by meeting name
+
+### P3 — Board View + Drag and Drop
+- [ ] View toggle: List / Board / Grouped
+- [ ] Board view — 3 Kanban columns (Todo / In Progress / Done), drag between columns
+- [ ] List drag-to-reorder — dnd-kit, persists via PATCH /tasks/reorder
+- [ ] Grouped view — Overdue / Today / Tomorrow / This Week / Later
+
+### P4 — Global Quick-Add
+- [ ] Cmd+K quick-add from anywhere — natural language parsing (priority, due date, tags)
+- [ ] Contact-linked tasks on Card detail page
+
+### P5 — Calendar Page
+- [x] Tasks with `scheduledTime` appear on `TodayTimeline` as timed items
 - [x] Tasks with only `dueDate` appear as "Due today" section at top of timeline
 - [x] Toggle task complete directly from timeline
-- [ ] Click empty time slot in timeline → quick-create menu (New Meeting | New Task)
-- [ ] Drag task to time slot → sets `scheduledTime` via `PATCH /tasks/:id`
-- [ ] Full calendar page (`/calendar`) — week/day view, same data sources as `TodayTimeline` but full-page
+- [ ] /calendar page — week/day view (GCal events + Crelyzor meetings + Tasks)
+- [ ] All-day task markers for dueDate-only tasks
+- [ ] Drag task to calendar time slot → sets scheduledTime
 
 ---
 

@@ -80,7 +80,7 @@ export function useCreateTask(meetingId: string) {
   });
 }
 
-export function useUpdateTask(meetingId: string) {
+export function useUpdateTask(meetingId?: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
@@ -93,26 +93,70 @@ export function useUpdateTask(meetingId: string) {
         description?: string | null;
         isCompleted?: boolean;
         dueDate?: string | null;
+        scheduledTime?: string | null;
         priority?: 'LOW' | 'MEDIUM' | 'HIGH' | null;
+        status?: 'TODO' | 'IN_PROGRESS' | 'DONE';
+        cardId?: string | null;
+        transcriptContext?: string | null;
       };
     }) => smaApi.updateTask(taskId, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
+      if (meetingId) {
+        qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
+      }
       qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
     },
     onError: () => toast.error('Failed to update task'),
   });
 }
 
-export function useDeleteTask(meetingId: string) {
+export function useDeleteTask(meetingId?: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (taskId: string) => smaApi.deleteTask(taskId),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
+      if (meetingId) {
+        qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
+      }
       qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
     },
     onError: () => toast.error('Failed to delete task'),
+  });
+}
+
+export function useReorderTasks() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (taskIds: string[]) => smaApi.reorderTasks(taskIds),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
+    },
+    onError: () => toast.error('Failed to reorder tasks'),
+  });
+}
+
+export function useSubtasks(taskId: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.sma.subtasks(taskId),
+    queryFn: () => smaApi.getSubtasks(taskId),
+    enabled: !!taskId && enabled,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useCreateSubtask(taskId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      title: string;
+      description?: string;
+      dueDate?: string;
+      priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+    }) => smaApi.createSubtask(taskId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.sma.subtasks(taskId) });
+    },
+    onError: () => toast.error('Failed to create subtask'),
   });
 }
 

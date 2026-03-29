@@ -77,20 +77,27 @@ function unwrap<T>(result: unknown): T {
 export type TaskWithMeeting = Task & {
   meeting: { id: string; title: string; type: string } | null;
   tags: { id: string; name: string; color: string }[];
+  card: { id: string; displayName: string; slug: string } | null;
 };
+
+export type TaskView = 'inbox' | 'today' | 'upcoming' | 'all' | 'from_meetings';
 
 export type TaskListParams = {
   status?: 'all' | 'completed' | 'pending';
+  view?: TaskView;
   priority?: 'LOW' | 'MEDIUM' | 'HIGH';
   source?: 'AI_EXTRACTED' | 'MANUAL';
-  sortBy?: 'createdAt' | 'dueDate' | 'priority';
+  meetingId?: string;
+  hasMeeting?: boolean;
+  sortBy?: 'createdAt' | 'dueDate' | 'priority' | 'sortOrder';
   sortOrder?: 'asc' | 'desc';
   limit?: number;
   offset?: number;
 };
 
 export type TaskListResponse = {
-  tasks: TaskWithMeeting[];
+  tasks?: TaskWithMeeting[];
+  grouped?: { date: string; tasks: TaskWithMeeting[] }[];
   pagination: { total: number; limit: number; offset: number };
 };
 
@@ -163,7 +170,11 @@ export const smaApi = {
       description?: string | null;
       isCompleted?: boolean;
       dueDate?: string | null;
+      scheduledTime?: string | null;
       priority?: 'LOW' | 'MEDIUM' | 'HIGH' | null;
+      status?: 'TODO' | 'IN_PROGRESS' | 'DONE';
+      cardId?: string | null;
+      transcriptContext?: string | null;
     }
   ): Promise<Task> => {
     const result = await apiClient.patch<{ task: Task }>(
@@ -173,8 +184,35 @@ export const smaApi = {
     return result.task;
   },
 
+  reorderTasks: async (taskIds: string[]): Promise<void> => {
+    await apiClient.patch('/sma/tasks/reorder', { taskIds });
+  },
+
   deleteTask: async (taskId: string): Promise<void> => {
     await apiClient.delete(`/sma/tasks/${taskId}`);
+  },
+
+  getSubtasks: async (taskId: string): Promise<TaskWithMeeting[]> => {
+    const result = await apiClient.get<{ subtasks: TaskWithMeeting[] }>(
+      `/sma/tasks/${taskId}/subtasks`
+    );
+    return result.subtasks;
+  },
+
+  createSubtask: async (
+    taskId: string,
+    data: {
+      title: string;
+      description?: string;
+      dueDate?: string;
+      priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+    }
+  ): Promise<Task> => {
+    const result = await apiClient.post<{ task: Task }>(
+      `/sma/tasks/${taskId}/subtasks`,
+      data
+    );
+    return result.task;
   },
 
   getNotes: async (meetingId: string): Promise<MeetingNote[]> => {
