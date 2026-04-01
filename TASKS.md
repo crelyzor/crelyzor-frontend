@@ -442,7 +442,7 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 - [x] Toggle task complete directly from timeline
 - [x] /calendar page — week/day view (GCal events + Crelyzor meetings + Tasks)
 - [x] All-day task markers for dueDate-only tasks
-- [ ] Drag task to calendar time slot → sets scheduledTime
+- [x] Drag task to calendar time slot → sets scheduledTime
 
 ---
 
