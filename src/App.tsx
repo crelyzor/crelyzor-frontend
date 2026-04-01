@@ -18,6 +18,7 @@ const {
   MeetingDetail,
   VoiceNotes,
   Tasks,
+  Calendar,
   Bookings,
   Settings,
   SignIn,
@@ -97,6 +98,16 @@ function App() {
                     <AuthGuard>
                       <Layout>
                         <Tasks />
+                      </Layout>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/calendar"
+                  element={
+                    <AuthGuard>
+                      <Layout>
+                        <Calendar />
                       </Layout>
                     </AuthGuard>
                   }

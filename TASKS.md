@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-03-29 (Phase 3 P1+P2 complete — P3 Board View next)
+Last updated: 2026-04-01 (Phase 3 complete — P3 Board/Grouped, P4 Cmd+K, P5 Calendar all done)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -425,14 +425,14 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 
 ### P3 — Board View + Drag and Drop
 
-- [ ] View toggle: List / Board / Grouped
-- [ ] Board view — 3 Kanban columns (Todo / In Progress / Done), drag between columns
-- [ ] List drag-to-reorder — dnd-kit, persists via PATCH /tasks/reorder
-- [ ] Grouped view — Overdue / Today / Tomorrow / This Week / Later
+- [x] View toggle: List / Board (inbox + all views)
+- [x] Board view — 3 Kanban columns (Todo / In Progress / Done), drag between columns
+- [x] List drag-to-reorder — dnd-kit, persists via PATCH /sma/tasks/reorder (inbox view only)
+- [x] Grouped view — Overdue / Today / Tomorrow / This Week / Later / No Date
 
 ### P4 — Global Quick-Add
 
-- [ ] Cmd+K quick-add from anywhere — natural language parsing (priority, due date, tags)
+- [x] Cmd+K quick-add from anywhere — natural language parsing (priority, due date, tags)
 - [ ] Contact-linked tasks on Card detail page
 
 ### P5 — Calendar Page
@@ -440,8 +440,8 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 - [x] Tasks with `scheduledTime` appear on `TodayTimeline` as timed items
 - [x] Tasks with only `dueDate` appear as "Due today" section at top of timeline
 - [x] Toggle task complete directly from timeline
-- [ ] /calendar page — week/day view (GCal events + Crelyzor meetings + Tasks)
-- [ ] All-day task markers for dueDate-only tasks
+- [x] /calendar page — week/day view (GCal events + Crelyzor meetings + Tasks)
+- [x] All-day task markers for dueDate-only tasks
 - [ ] Drag task to calendar time slot → sets scheduledTime
 
 ---

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   CommandDialog,
@@ -10,20 +10,42 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from '@/components/ui/command';
-import { LogOut, Plus, ArrowRight } from 'lucide-react';
+import { LogOut, Plus, ArrowRight, CheckSquare } from 'lucide-react';
+import { toast } from 'sonner';
 import { useUIStore } from '@/stores';
 import { TOOLBAR_ITEMS } from '@/constants/toolbar';
+import { useCreateStandaloneTask } from '@/hooks/queries/useSMAQueries';
+import { parseTaskInput } from '@/lib/parseTaskInput';
 
 // Navigation items are derived from TOOLBAR_ITEMS — single source of truth
 const NAV_ITEMS = TOOLBAR_ITEMS.filter((item) => item.action === 'navigate');
 
+const PRIORITY_LABELS: Record<string, string> = {
+  HIGH: 'High',
+  MEDIUM: 'Med',
+  LOW: 'Low',
+};
+
+const PRIORITY_STYLES: Record<string, string> = {
+  HIGH: 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400',
+  MEDIUM: 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400',
+  LOW: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400',
+};
+
 export function CommandPalette() {
   const open = useUIStore((s) => s.commandPaletteOpen);
-  const setOpen = (v: boolean) => {
-    if (v) useUIStore.getState().openCommandPalette();
-    else useUIStore.getState().closeCommandPalette();
-  };
+  const [search, setSearch] = useState('');
   const navigate = useNavigate();
+  const createTask = useCreateStandaloneTask();
+
+  const handleOpenChange = (v: boolean) => {
+    if (v) {
+      useUIStore.getState().openCommandPalette();
+    } else {
+      useUIStore.getState().closeCommandPalette();
+      setSearch('');
+    }
+  };
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -39,13 +61,35 @@ export function CommandPalette() {
 
   const runCommand = (command: () => void) => {
     useUIStore.getState().closeCommandPalette();
+    setSearch('');
     command();
   };
 
+  const handleCreateTask = () => {
+    const trimmed = search.trim();
+    if (!trimmed) return;
+    const parsed = parseTaskInput(trimmed);
+    createTask.mutate(parsed, {
+      onSuccess: () => {
+        toast.success(`Task created: ${parsed.title}`);
+      },
+    });
+    useUIStore.getState().closeCommandPalette();
+    setSearch('');
+  };
+
+  const parsed = search.trim() ? parseTaskInput(search.trim()) : null;
+
   return (
-    <CommandDialog open={open} onOpenChange={setOpen} className="cmd-spring">
+    <CommandDialog
+      open={open}
+      onOpenChange={handleOpenChange}
+      className="cmd-spring"
+    >
       <CommandInput
-        placeholder="Search anything..."
+        placeholder="Search or type a task to create…"
+        value={search}
+        onValueChange={setSearch}
         className="focus-visible:ring-0 focus:ring-0 focus:outline-none"
       />
       <CommandList className="max-h-[360px] py-2">
@@ -56,6 +100,34 @@ export function CommandPalette() {
         </CommandEmpty>
 
         <CommandGroup heading="Quick Actions">
+          {/* Create Task — shown when there's search text; value=search so cmdk always matches it */}
+          {search.trim() && (
+            <CommandItem
+              value={search}
+              onSelect={handleCreateTask}
+              className="gap-2"
+            >
+              <CheckSquare className="w-4 h-4 text-neutral-500 dark:text-neutral-400 shrink-0" />
+              <span className="flex-1 truncate">
+                Create: <span className="font-medium">{parsed?.title}</span>
+              </span>
+              <span className="flex items-center gap-1 shrink-0">
+                {parsed?.priority && (
+                  <span
+                    className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${PRIORITY_STYLES[parsed.priority] ?? ''}`}
+                  >
+                    {PRIORITY_LABELS[parsed.priority]}
+                  </span>
+                )}
+                {parsed?.dueDateLabel && (
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
+                    {parsed.dueDateLabel}
+                  </span>
+                )}
+              </span>
+            </CommandItem>
+          )}
+
           <CommandItem onSelect={() => runCommand(() => navigate('/meetings'))}>
             <Plus className="text-neutral-500 dark:text-neutral-400" />
             <span>New Meeting</span>
@@ -123,6 +195,13 @@ export function CommandPalette() {
           </kbd>
           close
         </span>
+        {!search.trim() && (
+          <span className="ml-auto text-[10px] text-neutral-300 dark:text-neutral-600 hidden sm:block">
+            type a task · use <span className="font-medium">high</span> /
+            <span className="font-medium"> tomorrow</span> to set priority &amp;
+            date
+          </span>
+        )}
       </div>
     </CommandDialog>
   );

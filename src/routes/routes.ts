@@ -14,6 +14,7 @@ const CardContacts = lazy(() => import('@/pages/card-contacts'));
 const CardAnalytics = lazy(() => import('@/pages/card-analytics'));
 const VoiceNotes = lazy(() => import('@/pages/voice-notes'));
 const Tasks = lazy(() => import('@/pages/tasks'));
+const Calendar = lazy(() => import('@/pages/calendar'));
 const Bookings = lazy(() => import('@/pages/bookings'));
 
 export type RouteConfig = {
@@ -28,6 +29,7 @@ export const routes = {
   MeetingDetail,
   VoiceNotes,
   Tasks,
+  Calendar,
   Bookings,
   Settings,
   SignIn,

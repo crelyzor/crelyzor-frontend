@@ -10,6 +10,9 @@ import {
   ArrowUpDown,
   Tag,
   AlertCircle,
+  List,
+  LayoutGrid,
+  Rows3,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'motion/react';
@@ -18,10 +21,13 @@ import {
   useCreateStandaloneTask,
   useUpdateTask,
   useDeleteTask,
+  useReorderTasks,
 } from '@/hooks/queries/useSMAQueries';
 import { useUserTags } from '@/hooks/queries/useTagQueries';
 import { TaskDetailPanel } from './components/TaskDetailPanel';
 import { TaskSidebar } from './components/TaskSidebar';
+import { TaskBoardView } from './components/TaskBoardView';
+import { TaskListView } from './components/TaskListView';
 import type {
   TaskListParams,
   TaskWithMeeting,
@@ -278,6 +284,7 @@ export default function Tasks() {
   const [selectedTask, setSelectedTask] = useState<TaskWithMeeting | null>(
     null
   );
+  const [displayMode, setDisplayMode] = useState<'list' | 'board' | 'grouped'>('list');
 
   const { data: userTags } = useUserTags();
 
@@ -285,12 +292,22 @@ export default function Tasks() {
     (newView: TaskView) => {
       setSearchParams({ view: newView });
       setSelectedTask(null);
+      if (newView !== 'inbox' && newView !== 'all') setDisplayMode('list');
     },
     [setSearchParams]
   );
 
   // Derive query params from active view
   const params: TaskListParams = useMemo(() => {
+    // Board + grouped modes always fetch all statuses
+    if (displayMode === 'board' || displayMode === 'grouped') {
+      return {
+        status: 'all',
+        ...(priority && { priority }),
+        ...(source && { source }),
+        limit: 200,
+      };
+    }
     switch (view) {
       case 'inbox':
         return { view: 'inbox', limit: 100 };
@@ -321,12 +338,13 @@ export default function Tasks() {
           limit: 100,
         };
     }
-  }, [view, status, priority, source, sortBy, sortOrder]);
+  }, [view, status, priority, source, sortBy, sortOrder, displayMode]);
 
   const { data, isLoading, isError, refetch } = useAllTasks(params);
   const createTask = useCreateStandaloneTask();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
+  const reorderTasks = useReorderTasks();
 
   const total = data?.pagination?.total ?? 0;
 
@@ -434,6 +452,48 @@ export default function Tasks() {
     return Array.from(map.values());
   }, [view, tasks]);
 
+  // Grouped view: time-bucket sections sourced from tag-filtered `tasks`
+  const groupedBuckets = useMemo(() => {
+    if (displayMode !== 'grouped') return null;
+
+    const endOfToday = new Date(startOfToday);
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const startOfTomorrow = new Date(startOfToday);
+    startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+    const endOfTomorrow = new Date(startOfTomorrow);
+    endOfTomorrow.setHours(23, 59, 59, 999);
+
+    const endOfThisWeek = new Date(startOfToday);
+    endOfThisWeek.setDate(endOfThisWeek.getDate() + 7);
+    endOfThisWeek.setHours(23, 59, 59, 999);
+
+    const buckets: { label: string; tasks: TaskWithMeeting[] }[] = [
+      { label: 'Overdue', tasks: [] },
+      { label: 'Today', tasks: [] },
+      { label: 'Tomorrow', tasks: [] },
+      { label: 'This Week', tasks: [] },
+      { label: 'Later', tasks: [] },
+      { label: 'No Date', tasks: [] },
+    ];
+
+    for (const t of tasks) {
+      if (!t.dueDate) {
+        buckets[5].tasks.push(t);
+        continue;
+      }
+      const d = new Date(t.dueDate);
+      if (d < startOfToday) buckets[0].tasks.push(t);
+      else if (d <= endOfToday) buckets[1].tasks.push(t);
+      else if (d <= endOfTomorrow) buckets[2].tasks.push(t);
+      else if (d <= endOfThisWeek) buckets[3].tasks.push(t);
+      else buckets[4].tasks.push(t);
+    }
+
+    return buckets.filter((b) => b.tasks.length > 0);
+  }, [displayMode, tasks, startOfToday]);
+
   const isPanelOpen = !!liveSelectedTask;
 
   return (
@@ -456,18 +516,64 @@ export default function Tasks() {
                 {isLoading ? '—' : `${total} task${total !== 1 ? 's' : ''}`}
               </p>
             </div>
-            <Button
-              size="sm"
-              onClick={() => setShowCreate(true)}
-              className="gap-1.5"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              New task
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* View toggle — only for inbox + all views */}
+              {(view === 'inbox' || view === 'all') && (
+                <div className="flex items-center gap-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => setDisplayMode('list')}
+                    className={`transition-colors ${
+                      displayMode === 'list'
+                        ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm hover:bg-white dark:hover:bg-neutral-700'
+                        : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300'
+                    }`}
+                    aria-label="List view"
+                  >
+                    <List className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => setDisplayMode('board')}
+                    className={`transition-colors ${
+                      displayMode === 'board'
+                        ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm hover:bg-white dark:hover:bg-neutral-700'
+                        : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300'
+                    }`}
+                    aria-label="Board view"
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => setDisplayMode('grouped')}
+                    className={`transition-colors ${
+                      displayMode === 'grouped'
+                        ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm hover:bg-white dark:hover:bg-neutral-700'
+                        : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300'
+                    }`}
+                    aria-label="Grouped view"
+                  >
+                    <Rows3 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              )}
+              <Button
+                size="sm"
+                onClick={() => setShowCreate(true)}
+                className="gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                New task
+              </Button>
+            </div>
           </div>
 
-          {/* Filter bar — only for All view */}
-          {showFilterBar && (
+          {/* Filter bar — only for All view (hidden in board + grouped modes) */}
+          {showFilterBar && displayMode === 'list' && (
             <>
               <div className="flex items-center gap-1 mb-4 flex-wrap">
                 {STATUS_FILTERS.map((f) => (
@@ -823,8 +929,75 @@ export default function Tasks() {
               </AnimatePresence>
             )}
 
-            {/* INBOX / ALL VIEWS — flat list */}
-            {!isLoading && !isError && (view === 'inbox' || view === 'all') && (
+            {/* INBOX / ALL — GROUPED VIEW */}
+            {!isLoading && !isError && (view === 'inbox' || view === 'all') && displayMode === 'grouped' && (
+              <div className="space-y-1.5 pb-24">
+                {(!groupedBuckets || groupedBuckets.length === 0) && (
+                  <EmptyState
+                    view={view === 'inbox' ? 'inbox' : 'all'}
+                    onShowCreate={() => setShowCreate(true)}
+                  />
+                )}
+                {groupedBuckets?.map((bucket) => (
+                  <div key={bucket.label}>
+                    <SectionHeader label={bucket.label} />
+                    <AnimatePresence mode="popLayout">
+                      {bucket.tasks.map((task, i) => (
+                        <TaskRow
+                          key={task.id}
+                          task={task}
+                          index={i}
+                          onToggle={handleToggle}
+                          onDelete={handleDelete}
+                          onNavigate={(id) => navigate(`/meetings/${id}`)}
+                          onSelect={setSelectedTask}
+                          isSelected={selectedTask?.id === task.id}
+                        />
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* INBOX / ALL — BOARD VIEW */}
+            {!isLoading && !isError && (view === 'inbox' || view === 'all') && displayMode === 'board' && (
+              <TaskBoardView
+                tasks={tasks}
+                onToggle={handleToggle}
+                onDelete={handleDelete}
+                onNavigate={(id) => navigate(`/meetings/${id}`)}
+                onSelect={setSelectedTask}
+                selectedTaskId={selectedTask?.id ?? null}
+                updateTask={updateTask}
+              />
+            )}
+
+            {/* INBOX VIEW — sortable list */}
+            {!isLoading && !isError && view === 'inbox' && displayMode === 'list' && (
+              <>
+                {tasks.length === 0 && (
+                  <EmptyState
+                    view="inbox"
+                    onShowCreate={() => setShowCreate(true)}
+                  />
+                )}
+                {tasks.length > 0 && (
+                  <TaskListView
+                    tasks={tasks}
+                    onToggle={handleToggle}
+                    onDelete={handleDelete}
+                    onNavigate={(id) => navigate(`/meetings/${id}`)}
+                    onSelect={setSelectedTask}
+                    selectedTaskId={selectedTask?.id ?? null}
+                    reorderTasks={reorderTasks}
+                  />
+                )}
+              </>
+            )}
+
+            {/* ALL VIEW — non-sortable flat list */}
+            {!isLoading && !isError && view === 'all' && displayMode === 'list' && (
               <>
                 {tasks.length === 0 && (
                   <EmptyState
@@ -832,7 +1005,8 @@ export default function Tasks() {
                     hasFilters={
                       !!(
                         priority ||
-                        (view === 'all' && (source || selectedTagIds.size > 0))
+                        source ||
+                        selectedTagIds.size > 0
                       )
                     }
                     onClearFilters={() => {

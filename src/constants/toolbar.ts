@@ -6,6 +6,7 @@ import {
   Mic,
   CheckSquare,
   CalendarClock,
+  CalendarRange,
 } from 'lucide-react';
 import type { ToolbarItem, ToolbarItemGroup } from '@/types';
 
@@ -14,6 +15,7 @@ export const TOOLBAR_STORAGE_KEY = 'toolbar-pinned-items';
 export const DEFAULT_PINNED_IDS = [
   'home',
   'meetings',
+  'calendar',
   'tasks',
   'bookings',
   'cards',
@@ -39,6 +41,15 @@ export const TOOLBAR_ITEMS: ToolbarItem[] = [
     path: '/meetings',
     group: 'navigation',
     description: 'All your meetings',
+  },
+  {
+    id: 'calendar',
+    label: 'Calendar',
+    icon: CalendarRange,
+    action: 'navigate',
+    path: '/calendar',
+    group: 'navigation',
+    description: 'Unified calendar view',
   },
   {
     id: 'voice-notes',
