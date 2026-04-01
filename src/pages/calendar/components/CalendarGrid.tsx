@@ -157,7 +157,7 @@ function DayColumn({
     // getBoundingClientRect accounts for scroll, giving the correct absolute offset
     const rect = e.currentTarget.getBoundingClientRect();
     const offsetY = e.clientY - rect.top;
-    const totalMinutes = Math.round((offsetY / HOUR_HEIGHT) * 60 / 15) * 15;
+    const totalMinutes = Math.round(((offsetY / HOUR_HEIGHT) * 60) / 15) * 15;
     const clampedMinutes = Math.max(0, Math.min(totalMinutes, 23 * 60 + 45));
     const time = new Date(day);
     time.setHours(Math.floor(clampedMinutes / 60), clampedMinutes % 60, 0, 0);
