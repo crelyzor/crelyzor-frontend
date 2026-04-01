@@ -1,5 +1,16 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
 import type { CalendarEvent } from '@/services/integrationsService';
 import type { Meeting } from '@/types';
 import type { TaskWithMeeting } from '@/services/smaService';
@@ -66,6 +77,134 @@ function computeLayout(items: GridItem[]): Map<string, { index: number; total: n
   return layout;
 }
 
+function getChipPosition(item: GridItem, day: Date) {
+  const dayStart = new Date(day);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayStartMs = dayStart.getTime();
+  const dayEndMs = dayStartMs + 24 * 60 * 60 * 1000;
+
+  const clampedStart = Math.max(item.startMs, dayStartMs);
+  const clampedEnd = Math.min(item.endMs, dayEndMs);
+  const startMinutes = (clampedStart - dayStartMs) / 60_000;
+  const durationMinutes = (clampedEnd - clampedStart) / 60_000;
+
+  const top = (startMinutes / 60) * HOUR_HEIGHT;
+  const height = Math.max(MIN_EVENT_HEIGHT, (durationMinutes / 60) * HOUR_HEIGHT);
+  return { top, height };
+}
+
+// ── DraggableTaskChip ─────────────────────────────────────────────────────────
+
+interface DraggableTaskChipProps {
+  item: GridItem;
+  day: Date;
+}
+
+function DraggableTaskChip({ item, day }: DraggableTaskChipProps) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: item.id,
+    data: { startMs: item.startMs },
+  });
+  const pos = getChipPosition(item, day);
+
+  return (
+    <CalendarEventChip
+      id={item.id}
+      title={item.title}
+      type="task"
+      top={pos.top}
+      height={pos.height}
+      leftPct={0}
+      widthPct={100}
+      draggableProps={{ attributes, listeners, setNodeRef, isDragging }}
+    />
+  );
+}
+
+// ── DayColumn ─────────────────────────────────────────────────────────────────
+
+interface DayColumnProps {
+  day: Date;
+  items: GridItem[];
+  isToday: boolean;
+  currentMinutes: number;
+}
+
+function DayColumn({ day, items, isToday, currentMinutes }: DayColumnProps) {
+  const navigate = useNavigate();
+  const layout = useMemo(() => computeLayout(items), [items]);
+  const { setNodeRef, isOver } = useDroppable({ id: toLocalDateStr(day) });
+
+  const staticItems = items.filter((i) => i.type !== 'task');
+  const taskItems = items.filter((i) => i.type === 'task');
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`flex-1 border-l border-neutral-100 dark:border-neutral-800 relative transition-colors ${
+        isToday ? 'bg-neutral-50/40 dark:bg-neutral-900/20' : ''
+      } ${isOver ? 'bg-neutral-100/60 dark:bg-neutral-800/30' : ''}`}
+    >
+      {/* Hour grid lines */}
+      {HOURS.map((h) => (
+        <div
+          key={h}
+          className="absolute left-0 right-0 border-t border-neutral-100 dark:border-neutral-800/80"
+          style={{ top: `${h * HOUR_HEIGHT}px` }}
+        />
+      ))}
+
+      {/* Half-hour grid lines (subtle) */}
+      {HOURS.map((h) => (
+        <div
+          key={`half-${h}`}
+          className="absolute left-0 right-0 border-t border-neutral-50 dark:border-neutral-800/30"
+          style={{ top: `${h * HOUR_HEIGHT + HOUR_HEIGHT / 2}px` }}
+        />
+      ))}
+
+      {/* Current time indicator (only in today's column) */}
+      {isToday && (
+        <div
+          className="absolute left-0 right-0 z-20 flex items-center pointer-events-none"
+          style={{ top: `${(currentMinutes / 60) * HOUR_HEIGHT}px` }}
+        >
+          <div className="w-1.5 h-1.5 rounded-full bg-neutral-500 dark:bg-neutral-400 shrink-0 -ml-0.5" />
+          <div className="flex-1 h-px bg-neutral-400 dark:bg-neutral-500" />
+        </div>
+      )}
+
+      {/* Non-task chips (gcal, meeting) */}
+      {staticItems.map((item) => {
+        const pos = getChipPosition(item, day);
+        const ol = layout.get(item.id) ?? { index: 0, total: 1 };
+        return (
+          <CalendarEventChip
+            key={item.id}
+            id={item.id}
+            title={item.title}
+            type={item.type}
+            top={pos.top}
+            height={pos.height}
+            leftPct={(100 / ol.total) * ol.index}
+            widthPct={100 / ol.total}
+            onClick={
+              item.type === 'meeting' ? () => navigate(`/meetings/${item.id}`) : item.onClick
+            }
+          />
+        );
+      })}
+
+      {/* Draggable task chips */}
+      {taskItems.map((item) => (
+        <DraggableTaskChip key={item.id} item={item} day={day} />
+      ))}
+    </div>
+  );
+}
+
+// ── CalendarGrid ──────────────────────────────────────────────────────────────
+
 interface CalendarGridProps {
   days: Date[];
   gcalEvents: CalendarEvent[];
@@ -73,6 +212,7 @@ interface CalendarGridProps {
   scheduledTasks: TaskWithMeeting[];
   dueTasks: TaskWithMeeting[];
   today: Date;
+  onReschedule: (taskId: string, newTime: Date) => void;
 }
 
 export function CalendarGrid({
@@ -82,13 +222,14 @@ export function CalendarGrid({
   scheduledTasks,
   dueTasks,
   today,
+  onReschedule,
 }: CalendarGridProps) {
-  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentMinutes, setCurrentMinutes] = useState(() => {
     const now = new Date();
     return now.getHours() * 60 + now.getMinutes();
   });
+  const [activeDragItem, setActiveDragItem] = useState<GridItem | null>(null);
 
   // Scroll to VISIBLE_START_HOUR on mount
   useEffect(() => {
@@ -105,6 +246,10 @@ export function CalendarGrid({
     }, 60_000);
     return () => clearInterval(interval);
   }, []);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
+  );
 
   function getItemsForDay(day: Date): GridItem[] {
     const dayStart = new Date(day);
@@ -131,7 +276,6 @@ export function CalendarGrid({
           type: 'meeting',
           startMs: start,
           endMs: end,
-          onClick: () => navigate(`/meetings/${mtg.id}`),
         });
       }
     }
@@ -148,149 +292,136 @@ export function CalendarGrid({
     return items;
   }
 
-  function getChipPosition(item: GridItem, day: Date) {
-    const dayStart = new Date(day);
-    dayStart.setHours(0, 0, 0, 0);
-    const dayStartMs = dayStart.getTime();
-    const dayEndMs = dayStartMs + 24 * 60 * 60 * 1000;
+  function handleDragStart(event: DragStartEvent) {
+    const task = scheduledTasks.find((t) => t.id === event.active.id);
+    if (task?.scheduledTime) {
+      const startMs = new Date(task.scheduledTime).getTime();
+      setActiveDragItem({
+        id: task.id,
+        title: task.title,
+        type: 'task',
+        startMs,
+        endMs: startMs + 30 * 60 * 1000,
+      });
+    }
+  }
 
-    const clampedStart = Math.max(item.startMs, dayStartMs);
-    const clampedEnd = Math.min(item.endMs, dayEndMs);
-    const startMinutes = (clampedStart - dayStartMs) / 60_000;
-    const durationMinutes = (clampedEnd - clampedStart) / 60_000;
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over, delta } = event;
+    setActiveDragItem(null);
 
-    const top = (startMinutes / 60) * HOUR_HEIGHT;
-    const height = Math.max(MIN_EVENT_HEIGHT, (durationMinutes / 60) * HOUR_HEIGHT);
-    return { top, height };
+    if (!over || !active.data.current) return;
+
+    const { startMs } = active.data.current as { startMs: number };
+
+    // Derive original day start from startMs — avoids string parsing pitfalls
+    const originalDayStart = new Date(startMs);
+    originalDayStart.setHours(0, 0, 0, 0);
+    const originalOffsetMs = startMs - originalDayStart.getTime();
+
+    // Apply the drag delta (vertical movement only matters for time)
+    const newOffsetMs = originalOffsetMs + (delta.y / HOUR_HEIGHT) * 60 * 60 * 1000;
+    const totalMinutes = Math.round(newOffsetMs / 60_000 / 15) * 15; // snap to 15 min
+    const clampedMinutes = Math.max(0, Math.min(totalMinutes, 23 * 60 + 45));
+
+    // Build the new Date in the target day (over.id = "YYYY-MM-DD")
+    const [yr, mo, dy] = (over.id as string).split('-').map(Number);
+    const newTime = new Date(yr, mo - 1, dy);
+    newTime.setHours(Math.floor(clampedMinutes / 60), clampedMinutes % 60, 0, 0);
+
+    onReschedule(active.id as string, newTime);
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-      {/* Sticky day headers */}
-      <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white/90 dark:bg-neutral-950/90 backdrop-blur-sm shrink-0">
-        <div className="w-14 shrink-0" />
-        {days.map((day, i) => {
-          const isToday = isSameDay(day, today);
-          return (
-            <div
-              key={i}
-              className={`flex-1 border-l border-neutral-100 dark:border-neutral-800 py-2 text-center ${
-                isToday ? 'bg-neutral-50 dark:bg-neutral-900/60' : ''
-              }`}
-            >
-              <div
-                className={`text-[10px] uppercase tracking-wider font-medium ${
-                  isToday
-                    ? 'text-neutral-600 dark:text-neutral-300'
-                    : 'text-neutral-400 dark:text-neutral-600'
-                }`}
-              >
-                {day.toLocaleDateString('en-US', { weekday: 'short' })}
-              </div>
-              <div className="flex items-center justify-center mt-0.5">
-                {isToday ? (
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold">
-                    {day.getDate()}
-                  </span>
-                ) : (
-                  <span className="text-sm font-semibold text-neutral-600 dark:text-neutral-400">
-                    {day.getDate()}
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* All-day / due tasks row */}
-      <AllDayRow days={days} tasks={dueTasks} />
-
-      {/* Scrollable 24-hour time grid */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0">
-        <div className="flex relative" style={{ height: `${24 * HOUR_HEIGHT}px` }}>
-          {/* Time-label column */}
-          <div className="w-14 shrink-0 relative">
-            {HOURS.map((h) => (
-              <div
-                key={h}
-                className="absolute right-0 flex items-start pr-2"
-                style={{ top: `${h * HOUR_HEIGHT}px`, height: `${HOUR_HEIGHT}px` }}
-              >
-                {h > 0 && (
-                  <span className="text-[10px] text-neutral-400 dark:text-neutral-600 uppercase tracking-wider leading-none -translate-y-2">
-                    {formatHour(h)}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Day columns */}
-          {days.map((day, colIdx) => {
+    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+        {/* Sticky day headers */}
+        <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white/90 dark:bg-neutral-950/90 backdrop-blur-sm shrink-0">
+          <div className="w-14 shrink-0" />
+          {days.map((day, i) => {
             const isToday = isSameDay(day, today);
-            const items = getItemsForDay(day);
-            const layout = computeLayout(items);
-
             return (
               <div
-                key={colIdx}
-                className={`flex-1 border-l border-neutral-100 dark:border-neutral-800 relative ${
-                  isToday ? 'bg-neutral-50/40 dark:bg-neutral-900/20' : ''
+                key={i}
+                className={`flex-1 border-l border-neutral-100 dark:border-neutral-800 py-2 text-center ${
+                  isToday ? 'bg-neutral-50 dark:bg-neutral-900/60' : ''
                 }`}
               >
-                {/* Hour grid lines */}
-                {HOURS.map((h) => (
-                  <div
-                    key={h}
-                    className="absolute left-0 right-0 border-t border-neutral-100 dark:border-neutral-800/80"
-                    style={{ top: `${h * HOUR_HEIGHT}px` }}
-                  />
-                ))}
-
-                {/* Half-hour grid lines (subtle) */}
-                {HOURS.map((h) => (
-                  <div
-                    key={`half-${h}`}
-                    className="absolute left-0 right-0 border-t border-neutral-50 dark:border-neutral-800/30"
-                    style={{ top: `${h * HOUR_HEIGHT + HOUR_HEIGHT / 2}px` }}
-                  />
-                ))}
-
-                {/* Current time indicator (only in today's column) */}
-                {isToday && (
-                  <div
-                    className="absolute left-0 right-0 z-20 flex items-center pointer-events-none"
-                    style={{ top: `${(currentMinutes / 60) * HOUR_HEIGHT}px` }}
-                  >
-                    <div className="w-1.5 h-1.5 rounded-full bg-neutral-500 dark:bg-neutral-400 shrink-0 -ml-0.5" />
-                    <div className="flex-1 h-px bg-neutral-400 dark:bg-neutral-500" />
-                  </div>
-                )}
-
-                {/* Event chips */}
-                {items.map((item) => {
-                  const pos = getChipPosition(item, day);
-                  const ol = layout.get(item.id) ?? { index: 0, total: 1 };
-                  return (
-                    <CalendarEventChip
-                      key={item.id}
-                      id={item.id}
-                      title={item.title}
-                      type={item.type}
-                      top={pos.top}
-                      height={pos.height}
-                      leftPct={(100 / ol.total) * ol.index}
-                      widthPct={100 / ol.total}
-                      onClick={item.onClick}
-                    />
-                  );
-                })}
+                <div
+                  className={`text-[10px] uppercase tracking-wider font-medium ${
+                    isToday
+                      ? 'text-neutral-600 dark:text-neutral-300'
+                      : 'text-neutral-400 dark:text-neutral-600'
+                  }`}
+                >
+                  {day.toLocaleDateString('en-US', { weekday: 'short' })}
+                </div>
+                <div className="flex items-center justify-center mt-0.5">
+                  {isToday ? (
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-xs font-semibold">
+                      {day.getDate()}
+                    </span>
+                  ) : (
+                    <span className="text-sm font-semibold text-neutral-600 dark:text-neutral-400">
+                      {day.getDate()}
+                    </span>
+                  )}
+                </div>
               </div>
             );
           })}
         </div>
+
+        {/* All-day / due tasks row */}
+        <AllDayRow days={days} tasks={dueTasks} />
+
+        {/* Scrollable 24-hour time grid */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0">
+          <div className="flex relative" style={{ height: `${24 * HOUR_HEIGHT}px` }}>
+            {/* Time-label column */}
+            <div className="w-14 shrink-0 relative">
+              {HOURS.map((h) => (
+                <div
+                  key={h}
+                  className="absolute right-0 flex items-start pr-2"
+                  style={{ top: `${h * HOUR_HEIGHT}px`, height: `${HOUR_HEIGHT}px` }}
+                >
+                  {h > 0 && (
+                    <span className="text-[10px] text-neutral-400 dark:text-neutral-600 uppercase tracking-wider leading-none -translate-y-2">
+                      {formatHour(h)}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Day columns */}
+            {days.map((day, colIdx) => (
+              <DayColumn
+                key={colIdx}
+                day={day}
+                items={getItemsForDay(day)}
+                isToday={isSameDay(day, today)}
+                currentMinutes={currentMinutes}
+              />
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* Drag overlay — ghost chip that follows the cursor */}
+      <DragOverlay>
+        {activeDragItem ? (
+          <div
+            className="rounded-lg px-1.5 py-1 overflow-hidden border-l-2 border-l-neutral-400 dark:border-l-neutral-500 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 shadow-lg opacity-90 pointer-events-none"
+            style={{ width: 120, height: MIN_EVENT_HEIGHT }}
+          >
+            <span className="truncate leading-tight font-medium text-[10px]">
+              {activeDragItem.title}
+            </span>
+          </div>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 }

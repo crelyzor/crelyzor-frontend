@@ -1,8 +1,16 @@
 import type { ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { CalendarDays, CheckSquare } from 'lucide-react';
+import type { DraggableAttributes, SyntheticListenerMap } from '@dnd-kit/core';
 
 export type CalendarItemType = 'gcal' | 'meeting' | 'task';
+
+export interface DraggableChipProps {
+  attributes: DraggableAttributes;
+  listeners: SyntheticListenerMap | undefined;
+  setNodeRef: (node: HTMLElement | null) => void;
+  isDragging: boolean;
+}
 
 export interface CalendarEventChipProps {
   id: string;
@@ -13,6 +21,8 @@ export interface CalendarEventChipProps {
   leftPct: number;
   widthPct: number;
   onClick?: () => void;
+  /** Only provided for task chips that support drag-to-reschedule */
+  draggableProps?: DraggableChipProps;
 }
 
 export function CalendarEventChip({
@@ -23,6 +33,7 @@ export function CalendarEventChip({
   leftPct,
   widthPct,
   onClick,
+  draggableProps,
 }: CalendarEventChipProps) {
   let chipClass = '';
   let icon: ReactNode = null;
@@ -38,7 +49,9 @@ export function CalendarEventChip({
     );
   } else if (type === 'meeting') {
     chipClass = `bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 ${
-      onClick ? 'cursor-pointer hover:bg-neutral-300 dark:hover:bg-neutral-600' : ''
+      onClick
+        ? 'cursor-pointer hover:bg-neutral-300 dark:hover:bg-neutral-600'
+        : ''
     }`;
     icon = <CalendarDays className="w-2.5 h-2.5 shrink-0 opacity-60 mt-px" />;
   } else {
@@ -47,12 +60,17 @@ export function CalendarEventChip({
     icon = <CheckSquare className="w-2.5 h-2.5 shrink-0 opacity-60 mt-px" />;
   }
 
+  const isTaskDraggable = draggableProps !== undefined;
+
   return (
     <motion.div
+      ref={draggableProps?.setNodeRef}
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      animate={{ opacity: draggableProps?.isDragging ? 0.3 : 1 }}
       transition={{ duration: 0.12 }}
-      className={`absolute rounded-lg px-1.5 py-1 overflow-hidden select-none transition-colors ${chipClass}`}
+      className={`absolute rounded-lg px-1.5 py-1 overflow-hidden select-none transition-colors ${chipClass} ${
+        isTaskDraggable ? 'cursor-grab active:cursor-grabbing' : ''
+      }`}
       style={{
         top: `${top}px`,
         height: `${height}px`,
@@ -62,11 +80,15 @@ export function CalendarEventChip({
       }}
       onClick={onClick}
       title={title}
+      {...(draggableProps?.attributes ?? {})}
+      {...(draggableProps?.listeners ?? {})}
     >
       <div className="flex items-start gap-0.5 h-full overflow-hidden">
         {prefix}
         {icon && <span>{icon}</span>}
-        <span className="truncate leading-tight font-medium text-[10px]">{title}</span>
+        <span className="truncate leading-tight font-medium text-[10px]">
+          {title}
+        </span>
       </div>
     </motion.div>
   );

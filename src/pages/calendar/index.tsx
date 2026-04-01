@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import PageMotion from '@/components/PageMotion';
 import { CalendarGrid } from './components/CalendarGrid';
@@ -9,7 +10,12 @@ import {
   useGoogleCalendarStatus,
 } from '@/hooks/queries/useIntegrationQueries';
 import { useMeetingsAll } from '@/hooks/queries/useMeetingQueries';
-import { useAllTasks } from '@/hooks/queries/useSMAQueries';
+import { useAllTasks, useUpdateTask } from '@/hooks/queries/useSMAQueries';
+import { queryKeys } from '@/lib/queryKeys';
+import type { TaskListParams, TaskListResponse } from '@/services/smaService';
+
+// Constant filters used for the calendar task query — must match the setQueryData key exactly
+const TASK_FILTERS: TaskListParams = { status: 'all', limit: 200 };
 
 /** Returns the Monday of the week containing `date`. */
 function getWeekStart(date: Date): Date {
@@ -23,6 +29,8 @@ function getWeekStart(date: Date): Date {
 
 export default function CalendarPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const updateTask = useUpdateTask();
   const [viewMode, setViewMode] = useState<'week' | 'day'>('week');
 
   // Fixed "today" reference — never drifts within a render session
@@ -77,7 +85,7 @@ export default function CalendarPage() {
     startDate: rangeStart.toISOString(),
     endDate: rangeEnd.toISOString(),
   });
-  const { data: taskData } = useAllTasks({ status: 'all', limit: 200 });
+  const { data: taskData } = useAllTasks(TASK_FILTERS);
   const allTasks = taskData?.tasks ?? [];
 
   // Tasks that have a specific scheduledTime within the visible range
@@ -140,6 +148,38 @@ export default function CalendarPage() {
     });
     return `${startStr} – ${endStr}`;
   }, [viewMode, anchor, days, rangeStart]);
+
+  // ── Reschedule handler ───────────────────────────────────────────────────────
+
+  function handleReschedule(taskId: string, newTime: Date) {
+    const newScheduledTime = newTime.toISOString();
+
+    // Optimistic update — move chip immediately in the UI
+    queryClient.setQueryData(
+      queryKeys.sma.allTasks(TASK_FILTERS as Record<string, unknown>),
+      (old: TaskListResponse | undefined) => {
+        if (!old?.tasks) return old;
+        return {
+          ...old,
+          tasks: old.tasks.map((t) =>
+            t.id === taskId ? { ...t, scheduledTime: newScheduledTime } : t
+          ),
+        };
+      }
+    );
+
+    updateTask.mutate(
+      { taskId, data: { scheduledTime: newScheduledTime } },
+      {
+        onError: () => {
+          // Roll back optimistic update by refetching
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.sma.allTasks(TASK_FILTERS as Record<string, unknown>),
+          });
+        },
+      }
+    );
+  }
 
   const gcalConnected = gcalStatus?.connected;
 
@@ -235,6 +275,7 @@ export default function CalendarPage() {
           scheduledTasks={scheduledTasks}
           dueTasks={dueTasks}
           today={today}
+          onReschedule={handleReschedule}
         />
       </div>
     </PageMotion>
