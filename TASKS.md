@@ -433,7 +433,7 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 ### P4 — Global Quick-Add
 
 - [x] Cmd+K quick-add from anywhere — natural language parsing (priority, due date, tags)
-- [ ] Contact-linked tasks on Card detail page
+- [x] Contact-linked tasks on Card detail page
 
 ### P5 — Calendar Page
 
