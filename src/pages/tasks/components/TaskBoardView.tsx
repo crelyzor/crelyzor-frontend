@@ -11,12 +11,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { useState } from 'react';
-import {
-  Check,
-  CalendarDays,
-  Trash2,
-  AlertCircle,
-} from 'lucide-react';
+import { Check, CalendarDays, Trash2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { TaskWithMeeting } from '@/services/smaService';
 import type { useUpdateTask } from '@/hooks/queries/useSMAQueries';

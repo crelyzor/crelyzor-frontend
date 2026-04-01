@@ -96,7 +96,7 @@ export function parseTaskInput(input: string): ParsedTask {
       if (dayRe.test(text)) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const diff = ((i - today.getDay()) + 7) % 7 || 7;
+        const diff = (i - today.getDay() + 7) % 7 || 7;
         const d = daysFromToday(diff);
         dueDate = toISODate(d);
         dueDateLabel = day.charAt(0).toUpperCase() + day.slice(1);

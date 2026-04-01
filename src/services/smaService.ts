@@ -134,6 +134,7 @@ export const smaApi = {
     title: string;
     description?: string;
     dueDate?: string;
+    scheduledTime?: string;
     priority?: 'LOW' | 'MEDIUM' | 'HIGH';
     meetingId?: string;
     cardId?: string;

@@ -95,7 +95,11 @@ function SortableTaskRow({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: isDragging ? 0.4 : 1, y: 0 }}
       exit={{ opacity: 0, y: -4, transition: { duration: 0.15 } }}
-      transition={{ duration: 0.22, delay: index * 0.02, ease: [0.25, 0.1, 0.25, 1] }}
+      transition={{
+        duration: 0.22,
+        delay: index * 0.02,
+        ease: [0.25, 0.1, 0.25, 1],
+      }}
       onClick={() => onSelect(task)}
       className={`group flex items-start gap-2 px-4 py-3.5 cursor-pointer
         bg-white dark:bg-neutral-900

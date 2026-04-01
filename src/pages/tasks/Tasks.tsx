@@ -284,7 +284,9 @@ export default function Tasks() {
   const [selectedTask, setSelectedTask] = useState<TaskWithMeeting | null>(
     null
   );
-  const [displayMode, setDisplayMode] = useState<'list' | 'board' | 'grouped'>('list');
+  const [displayMode, setDisplayMode] = useState<'list' | 'board' | 'grouped'>(
+    'list'
+  );
 
   const { data: userTags } = useUserTags();
 
@@ -930,110 +932,118 @@ export default function Tasks() {
             )}
 
             {/* INBOX / ALL — GROUPED VIEW */}
-            {!isLoading && !isError && (view === 'inbox' || view === 'all') && displayMode === 'grouped' && (
-              <div className="space-y-1.5 pb-24">
-                {(!groupedBuckets || groupedBuckets.length === 0) && (
-                  <EmptyState
-                    view={view === 'inbox' ? 'inbox' : 'all'}
-                    onShowCreate={() => setShowCreate(true)}
-                  />
-                )}
-                {groupedBuckets?.map((bucket) => (
-                  <div key={bucket.label}>
-                    <SectionHeader label={bucket.label} />
-                    <AnimatePresence mode="popLayout">
-                      {bucket.tasks.map((task, i) => (
-                        <TaskRow
-                          key={task.id}
-                          task={task}
-                          index={i}
-                          onToggle={handleToggle}
-                          onDelete={handleDelete}
-                          onNavigate={(id) => navigate(`/meetings/${id}`)}
-                          onSelect={setSelectedTask}
-                          isSelected={selectedTask?.id === task.id}
-                        />
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                ))}
-              </div>
-            )}
+            {!isLoading &&
+              !isError &&
+              (view === 'inbox' || view === 'all') &&
+              displayMode === 'grouped' && (
+                <div className="space-y-1.5 pb-24">
+                  {(!groupedBuckets || groupedBuckets.length === 0) && (
+                    <EmptyState
+                      view={view === 'inbox' ? 'inbox' : 'all'}
+                      onShowCreate={() => setShowCreate(true)}
+                    />
+                  )}
+                  {groupedBuckets?.map((bucket) => (
+                    <div key={bucket.label}>
+                      <SectionHeader label={bucket.label} />
+                      <AnimatePresence mode="popLayout">
+                        {bucket.tasks.map((task, i) => (
+                          <TaskRow
+                            key={task.id}
+                            task={task}
+                            index={i}
+                            onToggle={handleToggle}
+                            onDelete={handleDelete}
+                            onNavigate={(id) => navigate(`/meetings/${id}`)}
+                            onSelect={setSelectedTask}
+                            isSelected={selectedTask?.id === task.id}
+                          />
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  ))}
+                </div>
+              )}
 
             {/* INBOX / ALL — BOARD VIEW */}
-            {!isLoading && !isError && (view === 'inbox' || view === 'all') && displayMode === 'board' && (
-              <TaskBoardView
-                tasks={tasks}
-                onToggle={handleToggle}
-                onDelete={handleDelete}
-                onNavigate={(id) => navigate(`/meetings/${id}`)}
-                onSelect={setSelectedTask}
-                selectedTaskId={selectedTask?.id ?? null}
-                updateTask={updateTask}
-              />
-            )}
+            {!isLoading &&
+              !isError &&
+              (view === 'inbox' || view === 'all') &&
+              displayMode === 'board' && (
+                <TaskBoardView
+                  tasks={tasks}
+                  onToggle={handleToggle}
+                  onDelete={handleDelete}
+                  onNavigate={(id) => navigate(`/meetings/${id}`)}
+                  onSelect={setSelectedTask}
+                  selectedTaskId={selectedTask?.id ?? null}
+                  updateTask={updateTask}
+                />
+              )}
 
             {/* INBOX VIEW — sortable list */}
-            {!isLoading && !isError && view === 'inbox' && displayMode === 'list' && (
-              <>
-                {tasks.length === 0 && (
-                  <EmptyState
-                    view="inbox"
-                    onShowCreate={() => setShowCreate(true)}
-                  />
-                )}
-                {tasks.length > 0 && (
-                  <TaskListView
-                    tasks={tasks}
-                    onToggle={handleToggle}
-                    onDelete={handleDelete}
-                    onNavigate={(id) => navigate(`/meetings/${id}`)}
-                    onSelect={setSelectedTask}
-                    selectedTaskId={selectedTask?.id ?? null}
-                    reorderTasks={reorderTasks}
-                  />
-                )}
-              </>
-            )}
-
-            {/* ALL VIEW — non-sortable flat list */}
-            {!isLoading && !isError && view === 'all' && displayMode === 'list' && (
-              <>
-                {tasks.length === 0 && (
-                  <EmptyState
-                    view={view}
-                    hasFilters={
-                      !!(
-                        priority ||
-                        source ||
-                        selectedTagIds.size > 0
-                      )
-                    }
-                    onClearFilters={() => {
-                      setStatus('all');
-                      setPriority(undefined);
-                      setSource(undefined);
-                      setSelectedTagIds(new Set());
-                    }}
-                    onShowCreate={() => setShowCreate(true)}
-                  />
-                )}
-                <AnimatePresence mode="popLayout">
-                  {tasks.map((task, i) => (
-                    <TaskRow
-                      key={task.id}
-                      task={task}
-                      index={i}
+            {!isLoading &&
+              !isError &&
+              view === 'inbox' &&
+              displayMode === 'list' && (
+                <>
+                  {tasks.length === 0 && (
+                    <EmptyState
+                      view="inbox"
+                      onShowCreate={() => setShowCreate(true)}
+                    />
+                  )}
+                  {tasks.length > 0 && (
+                    <TaskListView
+                      tasks={tasks}
                       onToggle={handleToggle}
                       onDelete={handleDelete}
                       onNavigate={(id) => navigate(`/meetings/${id}`)}
                       onSelect={setSelectedTask}
-                      isSelected={selectedTask?.id === task.id}
+                      selectedTaskId={selectedTask?.id ?? null}
+                      reorderTasks={reorderTasks}
                     />
-                  ))}
-                </AnimatePresence>
-              </>
-            )}
+                  )}
+                </>
+              )}
+
+            {/* ALL VIEW — non-sortable flat list */}
+            {!isLoading &&
+              !isError &&
+              view === 'all' &&
+              displayMode === 'list' && (
+                <>
+                  {tasks.length === 0 && (
+                    <EmptyState
+                      view={view}
+                      hasFilters={
+                        !!(priority || source || selectedTagIds.size > 0)
+                      }
+                      onClearFilters={() => {
+                        setStatus('all');
+                        setPriority(undefined);
+                        setSource(undefined);
+                        setSelectedTagIds(new Set());
+                      }}
+                      onShowCreate={() => setShowCreate(true)}
+                    />
+                  )}
+                  <AnimatePresence mode="popLayout">
+                    {tasks.map((task, i) => (
+                      <TaskRow
+                        key={task.id}
+                        task={task}
+                        index={i}
+                        onToggle={handleToggle}
+                        onDelete={handleDelete}
+                        onNavigate={(id) => navigate(`/meetings/${id}`)}
+                        onSelect={setSelectedTask}
+                        isSelected={selectedTask?.id === task.id}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </>
+              )}
           </div>
         </div>
       </div>

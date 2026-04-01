@@ -1,7 +1,11 @@
 import { useState, useRef } from 'react';
 import { CheckSquare, Square, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useCardTasks, useUpdateTask, useCreateStandaloneTask } from '@/hooks/queries/useSMAQueries';
+import {
+  useCardTasks,
+  useUpdateTask,
+  useCreateStandaloneTask,
+} from '@/hooks/queries/useSMAQueries';
 
 function SkeletonRows() {
   return (

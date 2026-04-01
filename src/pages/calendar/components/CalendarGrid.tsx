@@ -50,7 +50,9 @@ type GridItem = {
 };
 
 /** Groups overlapping items into clusters and assigns column positions. */
-function computeLayout(items: GridItem[]): Map<string, { index: number; total: number }> {
+function computeLayout(
+  items: GridItem[]
+): Map<string, { index: number; total: number }> {
   const sorted = [...items].sort((a, b) => a.startMs - b.startMs);
   const layout = new Map<string, { index: number; total: number }>();
   const clusters: GridItem[][] = [];
@@ -89,7 +91,10 @@ function getChipPosition(item: GridItem, day: Date) {
   const durationMinutes = (clampedEnd - clampedStart) / 60_000;
 
   const top = (startMinutes / 60) * HOUR_HEIGHT;
-  const height = Math.max(MIN_EVENT_HEIGHT, (durationMinutes / 60) * HOUR_HEIGHT);
+  const height = Math.max(
+    MIN_EVENT_HEIGHT,
+    (durationMinutes / 60) * HOUR_HEIGHT
+  );
   return { top, height };
 }
 
@@ -108,16 +113,19 @@ function DraggableTaskChip({ item, day }: DraggableTaskChipProps) {
   const pos = getChipPosition(item, day);
 
   return (
-    <CalendarEventChip
-      id={item.id}
-      title={item.title}
-      type="task"
-      top={pos.top}
-      height={pos.height}
-      leftPct={0}
-      widthPct={100}
-      draggableProps={{ attributes, listeners, setNodeRef, isDragging }}
-    />
+    // Stop propagation so clicking a task chip doesn't also fire the column slot-click
+    <span onClick={(e) => e.stopPropagation()}>
+      <CalendarEventChip
+        id={item.id}
+        title={item.title}
+        type="task"
+        top={pos.top}
+        height={pos.height}
+        leftPct={0}
+        widthPct={100}
+        draggableProps={{ attributes, listeners, setNodeRef, isDragging }}
+      />
+    </span>
   );
 }
 
@@ -128,9 +136,16 @@ interface DayColumnProps {
   items: GridItem[];
   isToday: boolean;
   currentMinutes: number;
+  onSlotClick: (time: Date, x: number, y: number) => void;
 }
 
-function DayColumn({ day, items, isToday, currentMinutes }: DayColumnProps) {
+function DayColumn({
+  day,
+  items,
+  isToday,
+  currentMinutes,
+  onSlotClick,
+}: DayColumnProps) {
   const navigate = useNavigate();
   const layout = useMemo(() => computeLayout(items), [items]);
   const { setNodeRef, isOver } = useDroppable({ id: toLocalDateStr(day) });
@@ -138,10 +153,22 @@ function DayColumn({ day, items, isToday, currentMinutes }: DayColumnProps) {
   const staticItems = items.filter((i) => i.type !== 'task');
   const taskItems = items.filter((i) => i.type === 'task');
 
+  function handleColumnClick(e: React.MouseEvent<HTMLDivElement>) {
+    // getBoundingClientRect accounts for scroll, giving the correct absolute offset
+    const rect = e.currentTarget.getBoundingClientRect();
+    const offsetY = e.clientY - rect.top;
+    const totalMinutes = Math.round((offsetY / HOUR_HEIGHT) * 60 / 15) * 15;
+    const clampedMinutes = Math.max(0, Math.min(totalMinutes, 23 * 60 + 45));
+    const time = new Date(day);
+    time.setHours(Math.floor(clampedMinutes / 60), clampedMinutes % 60, 0, 0);
+    onSlotClick(time, e.clientX, e.clientY);
+  }
+
   return (
     <div
       ref={setNodeRef}
-      className={`flex-1 border-l border-neutral-100 dark:border-neutral-800 relative transition-colors ${
+      onClick={handleColumnClick}
+      className={`flex-1 border-l border-neutral-100 dark:border-neutral-800 relative transition-colors cursor-pointer ${
         isToday ? 'bg-neutral-50/40 dark:bg-neutral-900/20' : ''
       } ${isOver ? 'bg-neutral-100/60 dark:bg-neutral-800/30' : ''}`}
     >
@@ -149,7 +176,7 @@ function DayColumn({ day, items, isToday, currentMinutes }: DayColumnProps) {
       {HOURS.map((h) => (
         <div
           key={h}
-          className="absolute left-0 right-0 border-t border-neutral-100 dark:border-neutral-800/80"
+          className="absolute left-0 right-0 border-t border-neutral-100 dark:border-neutral-800/80 pointer-events-none"
           style={{ top: `${h * HOUR_HEIGHT}px` }}
         />
       ))}
@@ -158,7 +185,7 @@ function DayColumn({ day, items, isToday, currentMinutes }: DayColumnProps) {
       {HOURS.map((h) => (
         <div
           key={`half-${h}`}
-          className="absolute left-0 right-0 border-t border-neutral-50 dark:border-neutral-800/30"
+          className="absolute left-0 right-0 border-t border-neutral-50 dark:border-neutral-800/30 pointer-events-none"
           style={{ top: `${h * HOUR_HEIGHT + HOUR_HEIGHT / 2}px` }}
         />
       ))}
@@ -174,24 +201,27 @@ function DayColumn({ day, items, isToday, currentMinutes }: DayColumnProps) {
         </div>
       )}
 
-      {/* Non-task chips (gcal, meeting) */}
+      {/* Non-task chips (gcal, meeting) — stop propagation so they don't trigger slot-click */}
       {staticItems.map((item) => {
         const pos = getChipPosition(item, day);
         const ol = layout.get(item.id) ?? { index: 0, total: 1 };
         return (
-          <CalendarEventChip
-            key={item.id}
-            id={item.id}
-            title={item.title}
-            type={item.type}
-            top={pos.top}
-            height={pos.height}
-            leftPct={(100 / ol.total) * ol.index}
-            widthPct={100 / ol.total}
-            onClick={
-              item.type === 'meeting' ? () => navigate(`/meetings/${item.id}`) : item.onClick
-            }
-          />
+          <span key={item.id} onClick={(e) => e.stopPropagation()}>
+            <CalendarEventChip
+              id={item.id}
+              title={item.title}
+              type={item.type}
+              top={pos.top}
+              height={pos.height}
+              leftPct={(100 / ol.total) * ol.index}
+              widthPct={100 / ol.total}
+              onClick={
+                item.type === 'meeting'
+                  ? () => navigate(`/meetings/${item.id}`)
+                  : item.onClick
+              }
+            />
+          </span>
         );
       })}
 
@@ -213,6 +243,7 @@ interface CalendarGridProps {
   dueTasks: TaskWithMeeting[];
   today: Date;
   onReschedule: (taskId: string, newTime: Date) => void;
+  onSlotClick: (time: Date, x: number, y: number) => void;
 }
 
 export function CalendarGrid({
@@ -223,6 +254,7 @@ export function CalendarGrid({
   dueTasks,
   today,
   onReschedule,
+  onSlotClick,
 }: CalendarGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentMinutes, setCurrentMinutes] = useState(() => {
@@ -262,7 +294,13 @@ export function CalendarGrid({
       const start = new Date(evt.startTime).getTime();
       const end = new Date(evt.endTime).getTime();
       if (start < dayEnd.getTime() && end > dayStart.getTime()) {
-        items.push({ id: evt.id, title: evt.title, type: 'gcal', startMs: start, endMs: end });
+        items.push({
+          id: evt.id,
+          title: evt.title,
+          type: 'gcal',
+          startMs: start,
+          endMs: end,
+        });
       }
     }
 
@@ -285,7 +323,13 @@ export function CalendarGrid({
       const start = new Date(task.scheduledTime).getTime();
       const end = start + 30 * 60 * 1000; // default 30 min duration for tasks
       if (start < dayEnd.getTime() && end > dayStart.getTime()) {
-        items.push({ id: task.id, title: task.title, type: 'task', startMs: start, endMs: end });
+        items.push({
+          id: task.id,
+          title: task.title,
+          type: 'task',
+          startMs: start,
+          endMs: end,
+        });
       }
     }
 
@@ -320,20 +364,30 @@ export function CalendarGrid({
     const originalOffsetMs = startMs - originalDayStart.getTime();
 
     // Apply the drag delta (vertical movement only matters for time)
-    const newOffsetMs = originalOffsetMs + (delta.y / HOUR_HEIGHT) * 60 * 60 * 1000;
+    const newOffsetMs =
+      originalOffsetMs + (delta.y / HOUR_HEIGHT) * 60 * 60 * 1000;
     const totalMinutes = Math.round(newOffsetMs / 60_000 / 15) * 15; // snap to 15 min
     const clampedMinutes = Math.max(0, Math.min(totalMinutes, 23 * 60 + 45));
 
     // Build the new Date in the target day (over.id = "YYYY-MM-DD")
     const [yr, mo, dy] = (over.id as string).split('-').map(Number);
     const newTime = new Date(yr, mo - 1, dy);
-    newTime.setHours(Math.floor(clampedMinutes / 60), clampedMinutes % 60, 0, 0);
+    newTime.setHours(
+      Math.floor(clampedMinutes / 60),
+      clampedMinutes % 60,
+      0,
+      0
+    );
 
     onReschedule(active.id as string, newTime);
   }
 
   return (
-    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
       <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
         {/* Sticky day headers */}
         <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-white/90 dark:bg-neutral-950/90 backdrop-blur-sm shrink-0">
@@ -377,14 +431,20 @@ export function CalendarGrid({
 
         {/* Scrollable 24-hour time grid */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0">
-          <div className="flex relative" style={{ height: `${24 * HOUR_HEIGHT}px` }}>
+          <div
+            className="flex relative"
+            style={{ height: `${24 * HOUR_HEIGHT}px` }}
+          >
             {/* Time-label column */}
             <div className="w-14 shrink-0 relative">
               {HOURS.map((h) => (
                 <div
                   key={h}
                   className="absolute right-0 flex items-start pr-2"
-                  style={{ top: `${h * HOUR_HEIGHT}px`, height: `${HOUR_HEIGHT}px` }}
+                  style={{
+                    top: `${h * HOUR_HEIGHT}px`,
+                    height: `${HOUR_HEIGHT}px`,
+                  }}
                 >
                   {h > 0 && (
                     <span className="text-[10px] text-neutral-400 dark:text-neutral-600 uppercase tracking-wider leading-none -translate-y-2">
@@ -403,6 +463,7 @@ export function CalendarGrid({
                 items={getItemsForDay(day)}
                 isToday={isSameDay(day, today)}
                 currentMinutes={currentMinutes}
+                onSlotClick={onSlotClick}
               />
             ))}
           </div>

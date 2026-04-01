@@ -2,9 +2,11 @@ import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { AnimatePresence } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import PageMotion from '@/components/PageMotion';
 import { CalendarGrid } from './components/CalendarGrid';
+import { QuickCreatePopover } from './components/QuickCreatePopover';
 import {
   useGoogleCalendarEvents,
   useGoogleCalendarStatus,
@@ -32,6 +34,11 @@ export default function CalendarPage() {
   const queryClient = useQueryClient();
   const updateTask = useUpdateTask();
   const [viewMode, setViewMode] = useState<'week' | 'day'>('week');
+  const [slotClick, setSlotClick] = useState<{
+    time: Date;
+    x: number;
+    y: number;
+  } | null>(null);
 
   // Fixed "today" reference — never drifts within a render session
   const today = useMemo(() => {
@@ -174,11 +181,17 @@ export default function CalendarPage() {
         onError: () => {
           // Roll back optimistic update by refetching
           queryClient.invalidateQueries({
-            queryKey: queryKeys.sma.allTasks(TASK_FILTERS as Record<string, unknown>),
+            queryKey: queryKeys.sma.allTasks(
+              TASK_FILTERS as Record<string, unknown>
+            ),
           });
         },
       }
     );
+  }
+
+  function handleSlotClick(time: Date, x: number, y: number) {
+    setSlotClick({ time, x, y });
   }
 
   const gcalConnected = gcalStatus?.connected;
@@ -276,8 +289,20 @@ export default function CalendarPage() {
           dueTasks={dueTasks}
           today={today}
           onReschedule={handleReschedule}
+          onSlotClick={handleSlotClick}
         />
       </div>
+
+      <AnimatePresence>
+        {slotClick && (
+          <QuickCreatePopover
+            time={slotClick.time}
+            x={slotClick.x}
+            y={slotClick.y}
+            onClose={() => setSlotClick(null)}
+          />
+        )}
+      </AnimatePresence>
     </PageMotion>
   );
 }
