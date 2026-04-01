@@ -88,6 +88,7 @@ export type TaskListParams = {
   priority?: 'LOW' | 'MEDIUM' | 'HIGH';
   source?: 'AI_EXTRACTED' | 'MANUAL';
   meetingId?: string;
+  cardId?: string;
   hasMeeting?: boolean;
   sortBy?: 'createdAt' | 'dueDate' | 'priority' | 'sortOrder';
   sortOrder?: 'asc' | 'desc';
@@ -135,6 +136,7 @@ export const smaApi = {
     dueDate?: string;
     priority?: 'LOW' | 'MEDIUM' | 'HIGH';
     meetingId?: string;
+    cardId?: string;
   }): Promise<Task> => {
     const result = await apiClient.post<{ task: Task }>('/sma/tasks', data);
     return result.task;

@@ -33,6 +33,7 @@ import {
   usePreviewCard,
 } from '@/hooks/queries/useCardQueries';
 import { CardTagsSection } from './CardTagsSection';
+import { CardTasksSection } from './CardTasksSection';
 import { toast } from 'sonner';
 import type { CardLink, CardContactFields } from '@/types';
 
@@ -704,6 +705,16 @@ export default function CardEditor() {
                   Tags
                 </h2>
                 <CardTagsSection cardId={id!} />
+              </section>
+            )}
+
+            {/* Tasks — only shown when editing an existing card */}
+            {isEditing && (
+              <section className="space-y-4">
+                <h2 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                  Tasks
+                </h2>
+                <CardTasksSection cardId={id!} />
               </section>
             )}
           </div>

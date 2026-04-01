@@ -46,12 +46,17 @@ export function useCreateStandaloneTask() {
       dueDate?: string;
       priority?: 'LOW' | 'MEDIUM' | 'HIGH';
       meetingId?: string;
+      cardId?: string;
     }) => smaApi.createStandaloneTask(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.sma.all });
     },
     onError: () => toast.error('Failed to create task'),
   });
+}
+
+export function useCardTasks(cardId: string) {
+  return useAllTasks({ cardId, status: 'all' });
 }
 
 export function useTasks(meetingId: string, enabled = true) {
