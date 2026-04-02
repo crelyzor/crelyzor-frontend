@@ -446,6 +446,74 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 
 ---
 
-## Phase 4 — Big Brain
+## Phase 3.2 — Polish, Enhancements & Power Features ← current
+
+### P0 — Bugs & Embarrassing Gaps
+
+- [ ] **Fix "Reschedule meeting" button** (`ScheduledDetail`) — currently fires `toast("coming soon")`. Implement: open an edit-time modal (reuse the existing EditMeetingModal, pre-focused on time fields). If no existing modal supports pure time edit, add a minimal reschedule dialog: date + start time + end time, calls `PATCH /meetings/:id`.
+- [ ] **Privacy Settings tab** — currently a placeholder. Two options: (A) implement data export (downloads JSON of meetings/tasks/cards) + delete account flow with confirmation, or (B) remove the tab from Settings nav entirely until it's ready. Do not leave an empty tab visible.
+
+---
+
+### P1 — Quick Wins
+
+- [ ] **Task count badges in sidebar nav** — show live count next to Inbox, Today, Upcoming labels. Counts derived from `useAllTasks` data already in cache: Inbox = tasks with no dueDate + no scheduledTime, Today = due today (not completed), Upcoming = has future dueDate. Update `TaskSidebar` component.
+
+- [ ] **Overdue tasks on home dashboard** — add an "Overdue" section above `TodayTimeline` on the home page. Uses `useAllTasks({ view: 'today' })` already fetched; filter for past-due tasks. Show count badge + up to 3 rows with quick-complete toggle. Collapsed if zero overdue. Visually distinct (subtle red-tinted left border).
+
+- [ ] **NL parsing in inline task create form** — the inline `<input>` in task list views currently saves the raw text as title. Wire the same NL parser used in Cmd+K (`parseTaskInput` utility) to run on submit before calling `createStandaloneTask`. Preview the parsed result (priority dot, due date chip) inline below the input as the user types, same as in command palette.
+
+- [ ] **Task duration picker in detail panel** — `TaskDetailPanel`: add a "Duration" field below Due Date. Options: 15 / 30 / 45 / 60 / 90 / 120 min (select or segmented control). On change calls `updateTask({ durationMinutes })`. Requires `durationMinutes` backend field (P1 backend task).
+
+- [ ] **Calendar renders task duration correctly** — `CalendarGrid.tsx`: change the hardcoded `30 * 60 * 1000` end time for tasks to use `task.durationMinutes ?? 30`. `getChipPosition` already uses `endMs` so height auto-adjusts.
+
+- [ ] **Jump-to-date on calendar** — clicking the `"Apr 2 – Apr 8"` / `"Wednesday, April 2"` header label opens a small date-picker popover. Selecting a date sets `anchor` to the Monday of that week (week mode) or that exact date (day mode). Use a simple `<input type="date">` inside a popover or the shadcn Popover + Calendar component.
+
+- [ ] **Email signature generator** — new tab/section in `CardEditor` (or a standalone modal triggered from the card actions menu). Renders an HTML email signature from the card data (name, title, email, phone, card URL + QR code as inline image). Two outputs: (1) Copy HTML button (for Gmail/Outlook paste), (2) Copy plain text fallback. No backend needed — pure client-side render.
+
+---
+
+### P2 — Meaningful Features
+
+- [ ] **"New tasks from meeting" badge on home dashboard** — after a meeting's AI processing completes (`transcriptionStatus = COMPLETED`), surface a callout on the home page: _"X new tasks extracted from [meeting title]"_ with a link to that meeting's tasks. Implementation: `useAllTasks({ source: 'AI_EXTRACTED', status: 'pending' })` — check for tasks created in the last 24h. Show as a dismissible banner above the timeline. Dismiss stores meeting IDs in `localStorage`.
+
+- [ ] **Task bulk actions** — in `TaskListView` (All Tasks view): add a checkbox on each task row (visible on hover / always-visible in select mode). A "Select" toggle button in the view header enters select mode. When tasks are selected, a floating action bar appears at bottom of screen: _"X selected · Mark complete · Set priority · Delete"_. Exit select mode on Escape or clicking deselect. Uses existing `updateTask` and `deleteTask` mutations in a `Promise.all`.
+
+- [ ] **Card analytics improvement** — `CardAnalytics` page: replace bare counts with (1) a sparkline chart of daily views over the last 30 days (use `recharts` or a simple SVG path — no new deps if recharts already installed), (2) a breakdown of views by source (QR scan / direct / shared link — if backend provides this), (3) top links clicked. If backend doesn't provide granular data yet, at minimum render the existing counts in a styled stat grid (large number + label) with trend indicators.
+
+- [ ] **Onboarding flow for new users** — detect first-time users (`!hasCompletedOnboarding` flag in `UserSettings` or localStorage). Show a 3-step overlay/modal on first home page load: Step 1 "Create your card" → navigates to `/cards/new`, Step 2 "Record or schedule a meeting" → FAB, Step 3 "Connect Google Calendar" → `/settings?tab=integrations`. Each step has a skip option. Mark complete after step 3 or explicit "I'm all set" dismiss. Minimal and skippable — not a blocker.
+
+---
+
+### P3 — Bigger Features
+
+- [ ] **Global search UI** — a search results page at `/search?q=`. Triggered from the header search bar (currently opens command palette on desktop — add a fallback: if user types and presses Enter, navigate to `/search?q=<query>`). Results page shows three sections (Meetings / Tasks / Cards) with 5–10 results each, skeleton while loading. Uses `GET /search?q=` backend endpoint (P3 backend task). Also update Cmd+K to show search results when query doesn't match a command.
+
+- [ ] **Calendar month view** — add "Month" to the week/day toggle. Month view shows a 5–6 row grid of days. Each day cell shows: dot indicators for GCal events, meeting chips (abbreviated), task count badge. Clicking a day switches to day view for that date. No drag-and-drop needed in month view — display only.
+
+- [ ] **Keyboard shortcuts** — implement global keyboard handling in the tasks page and detail panel:
+  - `J` / `K` — move focus up/down through task list
+  - `Enter` — open detail panel for focused task
+  - `E` — edit title of focused task inline
+  - `D` — open due date picker for focused task
+  - `P` — cycle priority (null → LOW → MEDIUM → HIGH → null)
+  - `Space` — toggle complete on focused task
+  - `Backspace` / `Delete` — delete focused task (with confirm)
+  - `Escape` — close detail panel / deselect
+  - Show shortcuts in a `?` tooltip or footer hint in the tasks page
+
+- [ ] **Schedule task → create GCal block** — in `TaskDetailPanel`: when `scheduledTime` is set and user has GCal connected, show a toggle _"Block time in Google Calendar"_ (default off). When enabled, calls `updateTask({ scheduledTime, blockInCalendar: true })`. Backend creates a GCal event. Show the GCal event ID as a small chip "Blocked in calendar ✓" when set. Requires backend P3 task.
+
+- [ ] **Meeting ↔ Card contact chips** — in `ScheduledDetail` participants section: when a participant's `card` field is populated (from backend auto-linking), show their card chip (avatar + name, clickable → `/cards/:cardId/edit`). On `CardEditor` contacts section: show a "Meetings" count chip per contact that opens a meeting list filtered by that contact. Requires backend P3 task.
+
+---
+
+### P4 — Major Feature
+
+- [ ] **Recurring task UI** — in `TaskDetailPanel`: add a "Repeat" field (below Due Date). Options: None / Daily / Weekly / Monthly / Custom. For Weekly: show day-of-week selector. Stores as RRULE string via `updateTask({ recurringRule })`. Completed recurring tasks show "Next occurrence: [date]" instead of disappearing. Requires backend P4 task.
+
+---
+
+## Phase 4 — Big Brain ⛔ BLOCKED
 
 - [ ] Global Ask AI / Big Brain chat interface (RAG — requires vector infra first)
