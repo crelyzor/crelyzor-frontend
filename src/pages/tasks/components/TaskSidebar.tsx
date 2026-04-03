@@ -12,7 +12,12 @@ const NAV_ITEMS: {
 }[] = [
   { view: 'inbox', label: 'Inbox', Icon: Inbox, countKey: 'inbox' },
   { view: 'today', label: 'Today', Icon: CalendarDays, countKey: 'today' },
-  { view: 'upcoming', label: 'Upcoming', Icon: CalendarRange, countKey: 'upcoming' },
+  {
+    view: 'upcoming',
+    label: 'Upcoming',
+    Icon: CalendarRange,
+    countKey: 'upcoming',
+  },
   { view: 'all', label: 'All Tasks', Icon: List },
   { view: 'from_meetings', label: 'From Meetings', Icon: Video },
 ];

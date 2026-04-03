@@ -410,7 +410,11 @@ export default function Tasks() {
   const handleCreate = useCallback(() => {
     if (!parsed) return;
     createTask.mutate(
-      { title: parsed.title, priority: parsed.priority, dueDate: parsed.dueDate },
+      {
+        title: parsed.title,
+        priority: parsed.priority,
+        dueDate: parsed.dueDate,
+      },
       {
         onSuccess: () => {
           setNewTaskTitle('');
@@ -537,7 +541,11 @@ export default function Tasks() {
         className={`flex gap-8 transition-[padding] duration-200 ${isPanelOpen ? 'pr-[416px]' : ''}`}
       >
         {/* Sidebar */}
-        <TaskSidebar activeView={view} onViewChange={handleViewChange} counts={navCounts} />
+        <TaskSidebar
+          activeView={view}
+          onViewChange={handleViewChange}
+          counts={navCounts}
+        />
 
         {/* Main content */}
         <div className="flex-1 min-w-0">
