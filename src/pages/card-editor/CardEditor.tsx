@@ -728,7 +728,8 @@ export default function CardEditor() {
                 </h2>
                 <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
-                    Generate an email-ready signature from your card details — paste it into Gmail, Outlook, or Apple Mail.
+                    Generate an email-ready signature from your card details —
+                    paste it into Gmail, Outlook, or Apple Mail.
                   </p>
                   <Button
                     variant="outline"

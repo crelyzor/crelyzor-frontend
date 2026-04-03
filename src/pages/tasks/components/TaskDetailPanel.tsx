@@ -151,7 +151,10 @@ export function TaskDetailPanel({ task, onClose }: Props) {
   const handleDurationChange = useCallback(
     (minutes: number) => {
       if (!task) return;
-      updateTask.mutate({ taskId: task.id, data: { durationMinutes: minutes } });
+      updateTask.mutate({
+        taskId: task.id,
+        data: { durationMinutes: minutes },
+      });
     },
     [task, updateTask]
   );

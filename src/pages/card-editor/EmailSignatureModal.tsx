@@ -86,7 +86,13 @@ export function EmailSignatureModal({
   onClose,
 }: EmailSignatureModalProps) {
   const htmlSig = buildHtmlSignature(displayName, title, email, phone, website);
-  const plainSig = buildPlainSignature(displayName, title, email, phone, website);
+  const plainSig = buildPlainSignature(
+    displayName,
+    title,
+    email,
+    phone,
+    website
+  );
 
   const copyHtml = () => {
     navigator.clipboard.writeText(htmlSig).then(() => {
@@ -159,7 +165,8 @@ export function EmailSignatureModal({
             Copy Plain Text
           </Button>
           <p className="text-[11px] text-neutral-400 dark:text-neutral-500 text-center mt-1">
-            In Gmail: Settings → Signature → paste. In Outlook: File → Options → Mail → Signatures.
+            In Gmail: Settings → Signature → paste. In Outlook: File → Options →
+            Mail → Signatures.
           </p>
         </div>
       </div>

@@ -85,7 +85,8 @@ export function NewAITasksBanner({ tasks }: Props) {
                     {group.meetingTitle}
                   </p>
                   <span className="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
-                    {group.tasks.length} task{group.tasks.length !== 1 ? 's' : ''} from AI
+                    {group.tasks.length} task
+                    {group.tasks.length !== 1 ? 's' : ''} from AI
                   </span>
                 </div>
 
