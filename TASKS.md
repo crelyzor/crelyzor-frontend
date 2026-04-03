@@ -450,18 +450,18 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 
 ### P0 — Bugs & Embarrassing Gaps
 
-- [ ] **Fix "Reschedule meeting" button** (`ScheduledDetail`) — currently fires `toast("coming soon")`. Implement: open an edit-time modal (reuse the existing EditMeetingModal, pre-focused on time fields). If no existing modal supports pure time edit, add a minimal reschedule dialog: date + start time + end time, calls `PATCH /meetings/:id`.
-- [ ] **Privacy Settings tab** — currently a placeholder. Two options: (A) implement data export (downloads JSON of meetings/tasks/cards) + delete account flow with confirmation, or (B) remove the tab from Settings nav entirely until it's ready. Do not leave an empty tab visible.
+- [x] **Fix "Reschedule meeting" button** (`ScheduledDetail`) — `RescheduleMeetingModal` with start + end datetime-local inputs, calls `PATCH /meetings/:id`, handles 409 conflict.
+- [x] **Privacy Settings tab** — removed from Settings nav (was an empty placeholder). Rebuild properly in a future phase.
 
 ---
 
 ### P1 — Quick Wins
 
-- [ ] **Task count badges in sidebar nav** — show live count next to Inbox, Today, Upcoming labels. Counts derived from `useAllTasks` data already in cache: Inbox = tasks with no dueDate + no scheduledTime, Today = due today (not completed), Upcoming = has future dueDate. Update `TaskSidebar` component.
+- [x] **Task count badges in sidebar nav** — live counts next to Inbox · Today · Upcoming. Badge query: `{ status: 'pending', limit: 500 }`, counts derived client-side. Upcoming capped to 7-day window to match backend view.
 
-- [ ] **Overdue tasks on home dashboard** — add an "Overdue" section above `TodayTimeline` on the home page. Uses `useAllTasks({ view: 'today' })` already fetched; filter for past-due tasks. Show count badge + up to 3 rows with quick-complete toggle. Collapsed if zero overdue. Visually distinct (subtle red-tinted left border).
+- [x] **Overdue tasks on home dashboard** — `OverdueTasksSection` above TodayTimeline. Shows up to 3 rows with neutral left border + count badge. Hidden when zero overdue. Overdue tasks excluded from todayTasks and otherTasks buckets.
 
-- [ ] **NL parsing in inline task create form** — the inline `<input>` in task list views currently saves the raw text as title. Wire the same NL parser used in Cmd+K (`parseTaskInput` utility) to run on submit before calling `createStandaloneTask`. Preview the parsed result (priority dot, due date chip) inline below the input as the user types, same as in command palette.
+- [x] **NL parsing in inline task create form** — `parseTaskInput` wired into handleCreate and live preview chips shown below input. PRIORITY_STYLES + PRIORITY_LABELS extracted to `src/constants/task.ts` (shared with CommandPalette).
 
 - [ ] **Task duration picker in detail panel** — `TaskDetailPanel`: add a "Duration" field below Due Date. Options: 15 / 30 / 45 / 60 / 90 / 120 min (select or segmented control). On change calls `updateTask({ durationMinutes })`. Requires `durationMinutes` backend field (P1 backend task).
 

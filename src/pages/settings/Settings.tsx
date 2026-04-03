@@ -22,7 +22,6 @@ import {
   Clock,
   Puzzle,
   Sparkles,
-  Lock,
   Video,
   MapPin,
   Link2,
@@ -162,7 +161,6 @@ const SETTINGS_SECTIONS = [
   },
   { id: 'tags', label: 'Tags', icon: Tag, group: 'features' },
   { id: 'security', label: 'Security', icon: Shield, group: 'other' },
-  { id: 'privacy', label: 'Privacy', icon: Lock, group: 'other' },
 ] as const;
 
 type SettingsSection = (typeof SETTINGS_SECTIONS)[number]['id'];
@@ -297,7 +295,6 @@ export default function Settings() {
             {activeSection === 'integrations' && <IntegrationsSection />}
             {activeSection === 'tags' && <TagsSection />}
             {activeSection === 'security' && <SecuritySection />}
-            {activeSection === 'privacy' && <PrivacySection />}
           </div>
         </div>
       </div>
@@ -2006,23 +2003,6 @@ function IntegrationsSection() {
   );
 }
 
-// ── Privacy (placeholder) ──
-function PrivacySection() {
-  return (
-    <div className="space-y-6">
-      <SectionHeader
-        title="Privacy"
-        description="Control your data and privacy preferences"
-      />
-      <PlaceholderCard
-        icon={Lock}
-        message="Privacy settings are coming soon"
-        hint="Data export, account deletion, and visibility controls"
-      />
-    </div>
-  );
-}
-
 // ── Profile ──
 function ProfileSection() {
   const { data: profile } = useCurrentUser();
@@ -3114,31 +3094,5 @@ function BookingsSection() {
         </DialogContent>
       </Dialog>
     </div>
-  );
-}
-
-function PlaceholderCard({
-  icon: Icon,
-  message,
-  hint,
-}: {
-  icon: typeof Clock;
-  message: string;
-  hint: string;
-}) {
-  return (
-    <Card className="border-neutral-200 dark:border-neutral-800">
-      <CardContent className="p-6">
-        <div className="flex flex-col items-center justify-center py-10 text-center">
-          <Icon className="w-10 h-10 text-neutral-200 dark:text-neutral-700 mb-3" />
-          <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-            {message}
-          </p>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1 max-w-xs">
-            {hint}
-          </p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

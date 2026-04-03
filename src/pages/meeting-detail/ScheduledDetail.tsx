@@ -47,6 +47,7 @@ import {
   GenerateTab,
 } from './SharedTabs';
 import { EditMeetingModal } from './EditMeetingModal';
+import { RescheduleMeetingModal } from './RescheduleMeetingModal';
 import { ShareSheet } from './ShareSheet';
 import {
   useRegenerateTitle,
@@ -97,6 +98,7 @@ export function ScheduledDetail({
   const [activeTab, setActiveTab] = useState<ScheduledTab>('overview');
   const [moreOpen, setMoreOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
 
   const accept = useAcceptMeeting();
@@ -484,7 +486,7 @@ export function ScheduledDetail({
                   variant="outline"
                   size="sm"
                   className="text-xs gap-1.5 h-8 border-neutral-200 dark:border-neutral-700"
-                  onClick={() => toast.info('Reschedule coming soon')}
+                  onClick={() => setRescheduleOpen(true)}
                 >
                   <RefreshCcw className="w-3.5 h-3.5" />
                   Reschedule
@@ -627,6 +629,11 @@ export function ScheduledDetail({
         meeting={rawMeeting}
         open={editOpen}
         onOpenChange={setEditOpen}
+      />
+      <RescheduleMeetingModal
+        meeting={rawMeeting}
+        open={rescheduleOpen}
+        onOpenChange={setRescheduleOpen}
       />
       <ChangeLanguageDialog
         meetingId={rawMeeting.id}

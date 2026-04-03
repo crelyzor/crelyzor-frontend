@@ -94,7 +94,7 @@ export function TaskDetailPanel({ task, onClose }: Props) {
       setTitle(task.title);
       setDescription(task.description ?? '');
     }
-  }, [task?.id]);
+  }, [task]);
 
   const handleTitleBlur = useCallback(() => {
     if (!task) return;

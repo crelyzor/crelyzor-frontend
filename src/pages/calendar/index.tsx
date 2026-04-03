@@ -93,7 +93,7 @@ export default function CalendarPage() {
     endDate: rangeEnd.toISOString(),
   });
   const { data: taskData } = useAllTasks(TASK_FILTERS);
-  const allTasks = taskData?.tasks ?? [];
+  const allTasks = useMemo(() => taskData?.tasks ?? [], [taskData]);
 
   // Tasks that have a specific scheduledTime within the visible range
   const scheduledTasks = useMemo(

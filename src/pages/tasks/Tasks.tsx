@@ -28,6 +28,8 @@ import { TaskDetailPanel } from './components/TaskDetailPanel';
 import { TaskSidebar } from './components/TaskSidebar';
 import { TaskBoardView } from './components/TaskBoardView';
 import { TaskListView } from './components/TaskListView';
+import { parseTaskInput } from '@/lib/parseTaskInput';
+import { PRIORITY_LABELS, PRIORITY_STYLES } from '@/constants/task';
 import type {
   TaskListParams,
   TaskWithMeeting,
@@ -343,6 +345,32 @@ export default function Tasks() {
   }, [view, status, priority, source, sortBy, sortOrder, displayMode]);
 
   const { data, isLoading, isError, refetch } = useAllTasks(params);
+
+  // Badge counts — one separate query for all pending tasks, computed client-side
+  const { data: badgeData } = useAllTasks({ status: 'pending', limit: 500 });
+  const navCounts = useMemo(() => {
+    const allPending = badgeData?.tasks ?? [];
+    const endOfToday = new Date(startOfToday);
+    endOfToday.setHours(23, 59, 59, 999);
+    const sevenDaysFromNow = new Date(startOfToday);
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+    sevenDaysFromNow.setHours(23, 59, 59, 999);
+
+    let inbox = 0;
+    let today = 0;
+    let upcoming = 0;
+    for (const t of allPending) {
+      if (!t.dueDate && !t.scheduledTime) {
+        inbox++;
+      } else if (t.dueDate) {
+        const d = new Date(t.dueDate);
+        if (d <= endOfToday) today++;
+        else if (d <= sevenDaysFromNow) upcoming++;
+      }
+    }
+    return { inbox, today, upcoming };
+  }, [badgeData?.tasks, startOfToday]);
+
   const createTask = useCreateStandaloneTask();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
@@ -373,11 +401,16 @@ export default function Tasks() {
     return selectedTask;
   }, [tasks, data?.grouped, selectedTask]);
 
+  // NL parse — derived live from the inline create input
+  const parsed = useMemo(
+    () => (newTaskTitle.trim() ? parseTaskInput(newTaskTitle.trim()) : null),
+    [newTaskTitle]
+  );
+
   const handleCreate = useCallback(() => {
-    const title = newTaskTitle.trim();
-    if (!title) return;
+    if (!parsed) return;
     createTask.mutate(
-      { title },
+      { title: parsed.title, priority: parsed.priority, dueDate: parsed.dueDate },
       {
         onSuccess: () => {
           setNewTaskTitle('');
@@ -385,7 +418,7 @@ export default function Tasks() {
         },
       }
     );
-  }, [newTaskTitle, createTask]);
+  }, [parsed, createTask]);
 
   const handleToggle = useCallback(
     (taskId: string, isCompleted: boolean) => {
@@ -504,7 +537,7 @@ export default function Tasks() {
         className={`flex gap-8 transition-[padding] duration-200 ${isPanelOpen ? 'pr-[416px]' : ''}`}
       >
         {/* Sidebar */}
-        <TaskSidebar activeView={view} onViewChange={handleViewChange} />
+        <TaskSidebar activeView={view} onViewChange={handleViewChange} counts={navCounts} />
 
         {/* Main content */}
         <div className="flex-1 min-w-0">
@@ -803,6 +836,26 @@ export default function Tasks() {
                     Cancel
                   </Button>
                 </div>
+                {/* NL parse preview */}
+                {(parsed?.priority || parsed?.dueDateLabel) && (
+                  <div className="flex items-center gap-1.5 px-4 pt-1.5 pb-1">
+                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                      Will create:
+                    </span>
+                    {parsed.priority && (
+                      <span
+                        className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${PRIORITY_STYLES[parsed.priority] ?? ''}`}
+                      >
+                        {PRIORITY_LABELS[parsed.priority]}
+                      </span>
+                    )}
+                    {parsed.dueDateLabel && (
+                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
+                        {parsed.dueDateLabel}
+                      </span>
+                    )}
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

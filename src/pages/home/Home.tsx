@@ -9,6 +9,7 @@ import { CompactStickyBar } from './CompactStickyBar';
 import { HeroSection } from './HeroSection';
 import { RecentMeetings } from './RecentMeetings';
 import { TodayTimeline } from './TodayTimeline';
+import { OverdueTasksSection } from './OverdueTasksSection';
 import { PendingTasksWidget } from './PendingTasksWidget';
 import { DefaultCardWidget } from './DefaultCardWidget';
 import { RecentVoiceNotes } from './RecentVoiceNotes';
@@ -43,18 +44,35 @@ export default function Home() {
   });
   const allPendingTasks = useMemo(() => taskData?.tasks ?? [], [taskData]);
 
-  // Split: today's tasks (for timeline) vs rest (for sidebar widget)
+  // Split tasks into three buckets: overdue / today / other
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
-  const { todayTasks, otherTasks } = useMemo(() => {
+  const { overdueTasks, todayTasks, otherTasks } = useMemo(() => {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
     const isToday = (iso: string) => iso.split('T')[0] === todayStr;
+
+    // Overdue: has dueDate strictly before start of today
+    const overdue = allPendingTasks.filter(
+      (t) => t.dueDate && new Date(t.dueDate) < startOfToday
+    );
+    const overdueIds = new Set(overdue.map((t) => t.id));
+
+    // Today: scheduled today or due today — exclude anything already in overdue
     const today = allPendingTasks.filter(
       (t) =>
-        (t.scheduledTime && isToday(t.scheduledTime)) ||
-        (t.dueDate && isToday(t.dueDate))
+        !overdueIds.has(t.id) &&
+        ((t.scheduledTime && isToday(t.scheduledTime)) ||
+          (t.dueDate && isToday(t.dueDate)))
     );
     const todayIds = new Set(today.map((t) => t.id));
-    const other = allPendingTasks.filter((t) => !todayIds.has(t.id));
-    return { todayTasks: today, otherTasks: other };
+
+    // Other: everything not in overdue or today
+    const other = allPendingTasks.filter(
+      (t) => !overdueIds.has(t.id) && !todayIds.has(t.id)
+    );
+
+    return { overdueTasks: overdue, todayTasks: today, otherTasks: other };
   }, [allPendingTasks, todayStr]);
 
   // Greeting dissolves
@@ -123,6 +141,7 @@ export default function Home() {
       >
         {/* Left — today + recent meetings (2/3) */}
         <div className="lg:col-span-2 space-y-8">
+          <OverdueTasksSection tasks={overdueTasks} />
           <TodayTimeline
             meetings={
               allMeetingsData

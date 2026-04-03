@@ -14,23 +14,12 @@ import { LogOut, Plus, ArrowRight, CheckSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUIStore } from '@/stores';
 import { TOOLBAR_ITEMS } from '@/constants/toolbar';
+import { PRIORITY_LABELS, PRIORITY_STYLES } from '@/constants/task';
 import { useCreateStandaloneTask } from '@/hooks/queries/useSMAQueries';
 import { parseTaskInput } from '@/lib/parseTaskInput';
 
 // Navigation items are derived from TOOLBAR_ITEMS — single source of truth
 const NAV_ITEMS = TOOLBAR_ITEMS.filter((item) => item.action === 'navigate');
-
-const PRIORITY_LABELS: Record<string, string> = {
-  HIGH: 'High',
-  MEDIUM: 'Med',
-  LOW: 'Low',
-};
-
-const PRIORITY_STYLES: Record<string, string> = {
-  HIGH: 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400',
-  MEDIUM: 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400',
-  LOW: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400',
-};
 
 export function CommandPalette() {
   const open = useUIStore((s) => s.commandPaletteOpen);
