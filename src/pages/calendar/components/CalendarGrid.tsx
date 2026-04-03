@@ -321,7 +321,7 @@ export function CalendarGrid({
     for (const task of scheduledTasks) {
       if (!task.scheduledTime) continue;
       const start = new Date(task.scheduledTime).getTime();
-      const end = start + 30 * 60 * 1000; // default 30 min duration for tasks
+      const end = start + (task.durationMinutes ?? 30) * 60 * 1000;
       if (start < dayEnd.getTime() && end > dayStart.getTime()) {
         items.push({
           id: task.id,
@@ -345,7 +345,7 @@ export function CalendarGrid({
         title: task.title,
         type: 'task',
         startMs,
-        endMs: startMs + 30 * 60 * 1000,
+        endMs: startMs + (task.durationMinutes ?? 30) * 60 * 1000,
       });
     }
   }

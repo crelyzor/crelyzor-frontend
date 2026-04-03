@@ -159,6 +159,7 @@ export type Task = {
   parentTaskId?: string | null;
   cardId?: string | null;
   transcriptContext?: string | null;
+  durationMinutes?: number | null;
   source: 'AI_EXTRACTED' | 'MANUAL';
   createdAt: string;
   updatedAt: string;

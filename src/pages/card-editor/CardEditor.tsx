@@ -34,6 +34,7 @@ import {
 } from '@/hooks/queries/useCardQueries';
 import { CardTagsSection } from './CardTagsSection';
 import { CardTasksSection } from './CardTasksSection';
+import { EmailSignatureModal } from './EmailSignatureModal';
 import { toast } from 'sonner';
 import type { CardLink, CardContactFields } from '@/types';
 
@@ -82,6 +83,7 @@ export default function CardEditor() {
   const [previewFace, setPreviewFace] = useState<'front' | 'back'>('front');
   const [show3DModal, setShow3DModal] = useState(false);
   const [modalFlipped, setModalFlipped] = useState(false);
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
 
   // Preview HTML state
   const [previewHtml, setPreviewHtml] = useState<{
@@ -717,6 +719,29 @@ export default function CardEditor() {
                 <CardTasksSection cardId={id!} />
               </section>
             )}
+
+            {/* Email Signature — only shown when editing an existing card */}
+            {isEditing && (
+              <section className="space-y-4">
+                <h2 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+                  Email Signature
+                </h2>
+                <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
+                    Generate an email-ready signature from your card details — paste it into Gmail, Outlook, or Apple Mail.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-8 gap-1.5"
+                    onClick={() => setShowSignatureModal(true)}
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    Generate Email Signature
+                  </Button>
+                </div>
+              </section>
+            )}
           </div>
 
           {/* Right column — Preview (desktop only) */}
@@ -867,6 +892,18 @@ export default function CardEditor() {
               </p>
             </div>
           </div>
+        )}
+
+        {/* Email Signature Modal */}
+        {showSignatureModal && (
+          <EmailSignatureModal
+            displayName={displayName}
+            title={title || undefined}
+            email={contactFields.email}
+            phone={contactFields.phone}
+            website={contactFields.website}
+            onClose={() => setShowSignatureModal(false)}
+          />
         )}
 
         {/* Sticky footer */}

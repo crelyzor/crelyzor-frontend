@@ -10,6 +10,7 @@ import { HeroSection } from './HeroSection';
 import { RecentMeetings } from './RecentMeetings';
 import { TodayTimeline } from './TodayTimeline';
 import { OverdueTasksSection } from './OverdueTasksSection';
+import { NewAITasksBanner } from './NewAITasksBanner';
 import { PendingTasksWidget } from './PendingTasksWidget';
 import { DefaultCardWidget } from './DefaultCardWidget';
 import { RecentVoiceNotes } from './RecentVoiceNotes';
@@ -74,6 +75,17 @@ export default function Home() {
 
     return { overdueTasks: overdue, todayTasks: today, otherTasks: other };
   }, [allPendingTasks, todayStr]);
+
+  // AI-extracted tasks from meetings processed in the last 48h — shown in NewAITasksBanner
+  const newAITasks = useMemo(() => {
+    const cutoff = Date.now() - 48 * 60 * 60 * 1000;
+    return allPendingTasks.filter(
+      (t) =>
+        t.source === 'AI_EXTRACTED' &&
+        t.meetingId !== null &&
+        new Date(t.createdAt).getTime() > cutoff
+    );
+  }, [allPendingTasks]);
 
   // Greeting dissolves
   const greetingOpacity = useTransform(scrollY, [0, 80], [1, 0]);
@@ -142,6 +154,7 @@ export default function Home() {
         {/* Left — today + recent meetings (2/3) */}
         <div className="lg:col-span-2 space-y-8">
           <OverdueTasksSection tasks={overdueTasks} />
+          <NewAITasksBanner tasks={newAITasks} />
           <TodayTimeline
             meetings={
               allMeetingsData

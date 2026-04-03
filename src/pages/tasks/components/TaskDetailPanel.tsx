@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   X,
   CalendarDays,
+  Clock,
   Flag,
   ChevronDown,
   Minus,
@@ -75,6 +76,7 @@ export function TaskDetailPanel({ task, onClose }: Props) {
   const [showPriorityMenu, setShowPriorityMenu] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [showTagMenu, setShowTagMenu] = useState(false);
+  const [showDurationMenu, setShowDurationMenu] = useState(false);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
   const [showAddSubtask, setShowAddSubtask] = useState(false);
 
@@ -142,6 +144,14 @@ export function TaskDetailPanel({ task, onClose }: Props) {
         taskId: task.id,
         data: { dueDate: val ? new Date(val).toISOString() : null },
       });
+    },
+    [task, updateTask]
+  );
+
+  const handleDurationChange = useCallback(
+    (minutes: number) => {
+      if (!task) return;
+      updateTask.mutate({ taskId: task.id, data: { durationMinutes: minutes } });
     },
     [task, updateTask]
   );
@@ -394,6 +404,50 @@ export function TaskDetailPanel({ task, onClose }: Props) {
                             </button>
                           </>
                         )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Duration */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowDurationMenu((v) => !v)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                  >
+                    <Clock className="w-3 h-3 shrink-0" />
+                    {task.durationMinutes
+                      ? `${task.durationMinutes} min`
+                      : 'Duration'}
+                  </button>
+                  <AnimatePresence>
+                    {showDurationMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.94, y: -4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.94, y: -4 }}
+                        transition={{
+                          type: 'spring',
+                          damping: 25,
+                          stiffness: 350,
+                        }}
+                        className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-[120px]"
+                      >
+                        {([15, 30, 45, 60, 90, 120] as const).map((mins) => (
+                          <button
+                            key={mins}
+                            onClick={() => {
+                              handleDurationChange(mins);
+                              setShowDurationMenu(false);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors text-neutral-700 dark:text-neutral-300"
+                          >
+                            {mins} min
+                            {(task.durationMinutes ?? 30) === mins && (
+                              <Check className="w-3 h-3 ml-auto" />
+                            )}
+                          </button>
+                        ))}
                       </motion.div>
                     )}
                   </AnimatePresence>

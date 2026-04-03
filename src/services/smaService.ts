@@ -178,6 +178,7 @@ export const smaApi = {
       status?: 'TODO' | 'IN_PROGRESS' | 'DONE';
       cardId?: string | null;
       transcriptContext?: string | null;
+      durationMinutes?: number | null;
     }
   ): Promise<Task> => {
     const result = await apiClient.patch<{ task: Task }>(

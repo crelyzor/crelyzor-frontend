@@ -463,13 +463,13 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 
 - [x] **NL parsing in inline task create form** — `parseTaskInput` wired into handleCreate and live preview chips shown below input. PRIORITY_STYLES + PRIORITY_LABELS extracted to `src/constants/task.ts` (shared with CommandPalette).
 
-- [ ] **Task duration picker in detail panel** — `TaskDetailPanel`: add a "Duration" field below Due Date. Options: 15 / 30 / 45 / 60 / 90 / 120 min (select or segmented control). On change calls `updateTask({ durationMinutes })`. Requires `durationMinutes` backend field (P1 backend task).
+- [x] **Task duration picker in detail panel** — `TaskDetailPanel`: add a "Duration" field below Due Date. Options: 15 / 30 / 45 / 60 / 90 / 120 min (select or segmented control). On change calls `updateTask({ durationMinutes })`. Requires `durationMinutes` backend field (P1 backend task).
 
-- [ ] **Calendar renders task duration correctly** — `CalendarGrid.tsx`: change the hardcoded `30 * 60 * 1000` end time for tasks to use `task.durationMinutes ?? 30`. `getChipPosition` already uses `endMs` so height auto-adjusts.
+- [x] **Calendar renders task duration correctly** — `CalendarGrid.tsx`: change the hardcoded `30 * 60 * 1000` end time for tasks to use `task.durationMinutes ?? 30`. `getChipPosition` already uses `endMs` so height auto-adjusts.
 
-- [ ] **Jump-to-date on calendar** — clicking the `"Apr 2 – Apr 8"` / `"Wednesday, April 2"` header label opens a small date-picker popover. Selecting a date sets `anchor` to the Monday of that week (week mode) or that exact date (day mode). Use a simple `<input type="date">` inside a popover or the shadcn Popover + Calendar component.
+- [x] **Jump-to-date on calendar** — clicking the `"Apr 2 – Apr 8"` / `"Wednesday, April 2"` header label opens a small date-picker popover. Selecting a date sets `anchor` to the Monday of that week (week mode) or that exact date (day mode). Use a simple `<input type="date">` inside a popover or the shadcn Popover + Calendar component.
 
-- [ ] **Email signature generator** — new tab/section in `CardEditor` (or a standalone modal triggered from the card actions menu). Renders an HTML email signature from the card data (name, title, email, phone, card URL + QR code as inline image). Two outputs: (1) Copy HTML button (for Gmail/Outlook paste), (2) Copy plain text fallback. No backend needed — pure client-side render.
+- [x] **Email signature generator** — new tab/section in `CardEditor` (or a standalone modal triggered from the card actions menu). Renders an HTML email signature from the card data (name, title, email, phone, card URL + QR code as inline image). Two outputs: (1) Copy HTML button (for Gmail/Outlook paste), (2) Copy plain text fallback. No backend needed — pure client-side render.
 
 ---
 

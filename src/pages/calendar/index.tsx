@@ -132,6 +132,23 @@ export default function CalendarPage() {
     }
   };
 
+  const handleJumpToDate = (dateStr: string) => {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // local midnight — no UTC offset shift
+    if (viewMode === 'week') {
+      setAnchor(getWeekStart(date));
+    } else {
+      setAnchor(date);
+    }
+  };
+
+  // Derive "YYYY-MM-DD" from anchor using local fields to avoid UTC offset drift
+  const anchorDateStr = [
+    anchor.getFullYear(),
+    String(anchor.getMonth() + 1).padStart(2, '0'),
+    String(anchor.getDate()).padStart(2, '0'),
+  ].join('-');
+
   // ── Header label ─────────────────────────────────────────────────────────────
 
   const headerLabel = useMemo(() => {
@@ -209,9 +226,17 @@ export default function CalendarPage() {
         {/* ── Calendar header ────────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-neutral-200/70 dark:border-neutral-800/70 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl shrink-0">
           <div className="flex items-center gap-3">
-            <h1 className="text-sm font-semibold text-neutral-900 dark:text-white">
+            <label className="text-sm font-semibold text-neutral-900 dark:text-white cursor-pointer hover:opacity-70 transition-opacity select-none">
               {headerLabel}
-            </h1>
+              <input
+                type="date"
+                className="sr-only"
+                value={anchorDateStr}
+                onChange={(e) =>
+                  e.target.value && handleJumpToDate(e.target.value)
+                }
+              />
+            </label>
             <div className="flex items-center gap-0.5">
               <Button
                 variant="ghost"
