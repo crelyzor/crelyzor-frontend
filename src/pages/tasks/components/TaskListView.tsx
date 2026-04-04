@@ -109,7 +109,7 @@ function SortableTaskRow({
         delay: index * 0.02,
         ease: [0.25, 0.1, 0.25, 1],
       }}
-      onClick={() => selectMode ? onCheck?.(task.id) : onSelect(task)}
+      onClick={() => (selectMode ? onCheck?.(task.id) : onSelect(task))}
       className={`group flex items-start gap-2 px-4 py-3.5 cursor-pointer
         bg-white dark:bg-neutral-900
         border border-neutral-100 dark:border-neutral-800

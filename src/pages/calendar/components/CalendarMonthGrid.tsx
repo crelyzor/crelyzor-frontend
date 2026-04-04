@@ -93,9 +93,10 @@ export function CalendarMonthGrid({
               <div className="flex items-center justify-between">
                 <span
                   className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold leading-none
-                    ${isToday
-                      ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
-                      : 'text-neutral-700 dark:text-neutral-300'
+                    ${
+                      isToday
+                        ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
+                        : 'text-neutral-700 dark:text-neutral-300'
                     }`}
                 >
                   {day.getDate()}

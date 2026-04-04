@@ -78,7 +78,12 @@ const SORT_OPTIONS = [
   { value: 'priority', label: 'Priority' },
 ] as const;
 
-const PRIORITY_CYCLE: Array<'LOW' | 'MEDIUM' | 'HIGH' | null> = [null, 'LOW', 'MEDIUM', 'HIGH'];
+const PRIORITY_CYCLE: Array<'LOW' | 'MEDIUM' | 'HIGH' | null> = [
+  null,
+  'LOW',
+  'MEDIUM',
+  'HIGH',
+];
 
 const VIEW_LABELS: Record<TaskView, string> = {
   inbox: 'Inbox',
@@ -144,7 +149,7 @@ function TaskRow({
         delay: index * 0.02,
         ease: [0.25, 0.1, 0.25, 1],
       }}
-      onClick={() => selectMode ? onCheck?.(task.id) : onSelect(task)}
+      onClick={() => (selectMode ? onCheck?.(task.id) : onSelect(task))}
       className={`group flex items-start gap-3 px-4 py-3.5 cursor-pointer
                  bg-white dark:bg-neutral-900
                  border border-neutral-100 dark:border-neutral-800
@@ -337,7 +342,9 @@ export default function Tasks() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkPending, setBulkPending] = useState(false);
   const [focusedTaskIndex, setFocusedTaskIndex] = useState<number | null>(null);
-  const [autoFocusField, setAutoFocusField] = useState<'title' | 'dueDate' | undefined>(undefined);
+  const [autoFocusField, setAutoFocusField] = useState<
+    'title' | 'dueDate' | undefined
+  >(undefined);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
   const qc = useQueryClient();
@@ -553,36 +560,46 @@ export default function Tasks() {
         setSelectedTask(null);
         setFocusedTaskIndex((i) => (i === null ? 0 : Math.max(i - 1, 0)));
       } else if (e.key === 'Enter') {
-        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex]) return;
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
+          return;
         e.preventDefault();
         setSelectedTask(flatVisibleTasks[focusedTaskIndex]);
         setFocusedTaskIndex(null);
       } else if (e.key === 'e') {
-        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex]) return;
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
+          return;
         e.preventDefault();
         setSelectedTask(flatVisibleTasks[focusedTaskIndex]);
         setAutoFocusField('title');
         setFocusedTaskIndex(null);
       } else if (e.key === 'd') {
-        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex]) return;
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
+          return;
         e.preventDefault();
         setSelectedTask(flatVisibleTasks[focusedTaskIndex]);
         setAutoFocusField('dueDate');
         setFocusedTaskIndex(null);
       } else if (e.key === 'p') {
-        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex]) return;
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
+          return;
         e.preventDefault();
         const task = flatVisibleTasks[focusedTaskIndex];
         const currentIdx = PRIORITY_CYCLE.indexOf(task.priority ?? null);
-        const nextPriority = PRIORITY_CYCLE[(currentIdx + 1) % PRIORITY_CYCLE.length];
-        updateTask.mutate({ taskId: task.id, data: { priority: nextPriority } });
+        const nextPriority =
+          PRIORITY_CYCLE[(currentIdx + 1) % PRIORITY_CYCLE.length];
+        updateTask.mutate({
+          taskId: task.id,
+          data: { priority: nextPriority },
+        });
       } else if (e.key === ' ') {
-        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex]) return;
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
+          return;
         e.preventDefault();
         const task = flatVisibleTasks[focusedTaskIndex];
         handleToggle(task.id, !task.isCompleted);
       } else if (e.key === 'Backspace' || e.key === 'Delete') {
-        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex]) return;
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
+          return;
         e.preventDefault();
         const task = flatVisibleTasks[focusedTaskIndex];
         setFocusedTaskIndex(null);
@@ -600,17 +617,30 @@ export default function Tasks() {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [selectMode, showCreate, flatVisibleTasks, focusedTaskIndex, liveSelectedTask, handleToggle, handleDelete, updateTask]);
+  }, [
+    selectMode,
+    showCreate,
+    flatVisibleTasks,
+    focusedTaskIndex,
+    liveSelectedTask,
+    handleToggle,
+    handleDelete,
+    updateTask,
+  ]);
 
   const handleBulkComplete = useCallback(async () => {
     setBulkPending(true);
     try {
       await Promise.all(
-        [...selectedIds].map((id) => smaApi.updateTask(id, { isCompleted: true }))
+        [...selectedIds].map((id) =>
+          smaApi.updateTask(id, { isCompleted: true })
+        )
       );
       qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
       exitSelectMode();
-      toast.success(`${selectedIds.size} task${selectedIds.size !== 1 ? 's' : ''} completed`);
+      toast.success(
+        `${selectedIds.size} task${selectedIds.size !== 1 ? 's' : ''} completed`
+      );
     } catch {
       toast.error('Some tasks could not be updated');
     } finally {
@@ -624,7 +654,9 @@ export default function Tasks() {
       await Promise.all([...selectedIds].map((id) => smaApi.deleteTask(id)));
       qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
       exitSelectMode();
-      toast.success(`${selectedIds.size} task${selectedIds.size !== 1 ? 's' : ''} deleted`);
+      toast.success(
+        `${selectedIds.size} task${selectedIds.size !== 1 ? 's' : ''} deleted`
+      );
     } catch {
       toast.error('Some tasks could not be deleted');
     } finally {
@@ -641,7 +673,9 @@ export default function Tasks() {
         );
         qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
         exitSelectMode();
-        toast.success(`Priority set for ${selectedIds.size} task${selectedIds.size !== 1 ? 's' : ''}`);
+        toast.success(
+          `Priority set for ${selectedIds.size} task${selectedIds.size !== 1 ? 's' : ''}`
+        );
       } catch {
         toast.error('Some tasks could not be updated');
       } finally {
@@ -741,13 +775,26 @@ export default function Tasks() {
   const flatVisibleTasks = useMemo<TaskWithMeeting[]>(() => {
     if (isLoading || isError) return [];
     if (view === 'today') return [...overdueTasks, ...dueTodayTasks];
-    if (view === 'upcoming') return data?.grouped?.flatMap((g) => g.tasks) ?? [];
+    if (view === 'upcoming')
+      return data?.grouped?.flatMap((g) => g.tasks) ?? [];
     if (view === 'from_meetings') return meetingGroups.flatMap((g) => g.tasks);
     if (view === 'inbox' && displayMode === 'list') return []; // DnD conflict
     if (displayMode === 'board') return [];
-    if (displayMode === 'grouped') return groupedBuckets?.flatMap((b) => b.tasks) ?? [];
+    if (displayMode === 'grouped')
+      return groupedBuckets?.flatMap((b) => b.tasks) ?? [];
     return tasks; // all + list
-  }, [view, displayMode, tasks, overdueTasks, dueTodayTasks, data?.grouped, meetingGroups, groupedBuckets, isLoading, isError]);
+  }, [
+    view,
+    displayMode,
+    tasks,
+    overdueTasks,
+    dueTodayTasks,
+    data?.grouped,
+    meetingGroups,
+    groupedBuckets,
+    isLoading,
+    isError,
+  ]);
 
   const isPanelOpen = !!liveSelectedTask;
 
@@ -782,7 +829,9 @@ export default function Tasks() {
                   variant={selectMode ? 'default' : 'ghost'}
                   size="sm"
                   onClick={selectMode ? exitSelectMode : enterSelectMode}
-                  className={selectMode ? '' : 'text-neutral-500 dark:text-neutral-400'}
+                  className={
+                    selectMode ? '' : 'text-neutral-500 dark:text-neutral-400'
+                  }
                 >
                   {selectMode ? 'Cancel' : 'Select'}
                 </Button>
@@ -807,7 +856,10 @@ export default function Tasks() {
                   <Button
                     variant="ghost"
                     size="icon-xs"
-                    onClick={() => { setDisplayMode('board'); exitSelectMode(); }}
+                    onClick={() => {
+                      setDisplayMode('board');
+                      exitSelectMode();
+                    }}
                     className={`transition-colors ${
                       displayMode === 'board'
                         ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm hover:bg-white dark:hover:bg-neutral-700'
@@ -1138,7 +1190,10 @@ export default function Tasks() {
                         onNavigate={(id) => navigate(`/meetings/${id}`)}
                         onSelect={setSelectedTask}
                         isSelected={selectedTask?.id === task.id}
-                        isFocused={focusedTaskIndex !== null && flatVisibleTasks[focusedTaskIndex]?.id === task.id}
+                        isFocused={
+                          focusedTaskIndex !== null &&
+                          flatVisibleTasks[focusedTaskIndex]?.id === task.id
+                        }
                         selectMode={selectMode}
                         isChecked={selectedIds.has(task.id)}
                         onCheck={toggleSelect}
@@ -1159,7 +1214,10 @@ export default function Tasks() {
                         onNavigate={(id) => navigate(`/meetings/${id}`)}
                         onSelect={setSelectedTask}
                         isSelected={selectedTask?.id === task.id}
-                        isFocused={focusedTaskIndex !== null && flatVisibleTasks[focusedTaskIndex]?.id === task.id}
+                        isFocused={
+                          focusedTaskIndex !== null &&
+                          flatVisibleTasks[focusedTaskIndex]?.id === task.id
+                        }
                         selectMode={selectMode}
                         isChecked={selectedIds.has(task.id)}
                         onCheck={toggleSelect}
@@ -1192,7 +1250,10 @@ export default function Tasks() {
                         onNavigate={(id) => navigate(`/meetings/${id}`)}
                         onSelect={setSelectedTask}
                         isSelected={selectedTask?.id === task.id}
-                        isFocused={focusedTaskIndex !== null && flatVisibleTasks[focusedTaskIndex]?.id === task.id}
+                        isFocused={
+                          focusedTaskIndex !== null &&
+                          flatVisibleTasks[focusedTaskIndex]?.id === task.id
+                        }
                         selectMode={selectMode}
                         isChecked={selectedIds.has(task.id)}
                         onCheck={toggleSelect}
@@ -1225,7 +1286,10 @@ export default function Tasks() {
                         onNavigate={(id) => navigate(`/meetings/${id}`)}
                         onSelect={setSelectedTask}
                         isSelected={selectedTask?.id === task.id}
-                        isFocused={focusedTaskIndex !== null && flatVisibleTasks[focusedTaskIndex]?.id === task.id}
+                        isFocused={
+                          focusedTaskIndex !== null &&
+                          flatVisibleTasks[focusedTaskIndex]?.id === task.id
+                        }
                         selectMode={selectMode}
                         isChecked={selectedIds.has(task.id)}
                         onCheck={toggleSelect}
@@ -1262,7 +1326,10 @@ export default function Tasks() {
                             onNavigate={(id) => navigate(`/meetings/${id}`)}
                             onSelect={setSelectedTask}
                             isSelected={selectedTask?.id === task.id}
-                            isFocused={focusedTaskIndex !== null && flatVisibleTasks[focusedTaskIndex]?.id === task.id}
+                            isFocused={
+                              focusedTaskIndex !== null &&
+                              flatVisibleTasks[focusedTaskIndex]?.id === task.id
+                            }
                           />
                         ))}
                       </AnimatePresence>
@@ -1348,7 +1415,10 @@ export default function Tasks() {
                         onNavigate={(id) => navigate(`/meetings/${id}`)}
                         onSelect={setSelectedTask}
                         isSelected={selectedTask?.id === task.id}
-                        isFocused={focusedTaskIndex !== null && flatVisibleTasks[focusedTaskIndex]?.id === task.id}
+                        isFocused={
+                          focusedTaskIndex !== null &&
+                          flatVisibleTasks[focusedTaskIndex]?.id === task.id
+                        }
                         selectMode={selectMode}
                         isChecked={selectedIds.has(task.id)}
                         onCheck={toggleSelect}

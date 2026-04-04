@@ -14,14 +14,16 @@ const STEPS = [
   {
     icon: Mic,
     title: 'Record or schedule a meeting',
-    description: 'Upload a recording or start a live voice note to get AI summaries and tasks.',
+    description:
+      'Upload a recording or start a live voice note to get AI summaries and tasks.',
     cta: 'Go to meetings',
     route: '/meetings',
   },
   {
     icon: Calendar,
     title: 'Connect Google Calendar',
-    description: 'Sync your schedule so Crelyzor can surface the right meetings at the right time.',
+    description:
+      'Sync your schedule so Crelyzor can surface the right meetings at the right time.',
     cta: 'Connect calendar',
     route: '/settings?tab=integrations',
   },

@@ -1,7 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { PageMotion } from '@/components/PageMotion';
-import { Search as SearchIcon, Calendar, CheckSquare, CreditCard, Users, ArrowRight } from 'lucide-react';
+import {
+  Search as SearchIcon,
+  Calendar,
+  CheckSquare,
+  CreditCard,
+  Users,
+  ArrowRight,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSearch } from '@/hooks/queries/useSearchQueries';
 
@@ -20,7 +27,10 @@ function SkeletonRows({ count = 3 }: { count?: number }) {
   return (
     <div className="space-y-2">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="h-14 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
+        <div
+          key={i}
+          className="h-14 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse"
+        />
       ))}
     </div>
   );
@@ -69,9 +79,13 @@ function ResultRow({
         text-left transition-[border-color] duration-150 group"
     >
       <div className="min-w-0">
-        <p className="text-sm text-neutral-900 dark:text-neutral-100 truncate">{title}</p>
+        <p className="text-sm text-neutral-900 dark:text-neutral-100 truncate">
+          {title}
+        </p>
         {subtitle && (
-          <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate mt-0.5">{subtitle}</p>
+          <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate mt-0.5">
+            {subtitle}
+          </p>
         )}
       </div>
       <ArrowRight className="w-3.5 h-3.5 text-neutral-300 dark:text-neutral-600 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -157,7 +171,11 @@ export default function Search() {
         {showEmpty && (
           <div className="text-center py-16">
             <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              No results for &ldquo;<span className="font-medium text-neutral-700 dark:text-neutral-300">{debouncedQ}</span>&rdquo;
+              No results for &ldquo;
+              <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                {debouncedQ}
+              </span>
+              &rdquo;
             </p>
           </div>
         )}
@@ -171,11 +189,14 @@ export default function Search() {
                   <ResultRow
                     key={m.id}
                     title={m.title}
-                    subtitle={new Date(m.startTime).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
+                    subtitle={new Date(m.startTime).toLocaleDateString(
+                      'en-US',
+                      {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      }
+                    )}
                     onClick={() => navigate(`/meetings/${m.id}`)}
                   />
                 ))}
@@ -190,13 +211,15 @@ export default function Search() {
                     title={t.title}
                     subtitle={
                       t.dueDate
-                        ? `Due ${new Date(t.dueDate + 'T00:00:00').toLocaleDateString('en-US', {
+                        ? `Due ${new Date(
+                            t.dueDate + 'T00:00:00'
+                          ).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                           })}`
                         : t.isCompleted
-                        ? 'Completed'
-                        : undefined
+                          ? 'Completed'
+                          : undefined
                     }
                     onClick={() => navigate('/tasks')}
                   />

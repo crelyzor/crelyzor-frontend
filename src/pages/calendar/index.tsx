@@ -71,7 +71,10 @@ export default function CalendarPage() {
 
   // Month grid start: Monday on or before the 1st of the anchor month
   const monthGridStart = useMemo(
-    () => (viewMode === 'month' ? getWeekStart(new Date(anchor.getFullYear(), anchor.getMonth(), 1)) : null),
+    () =>
+      viewMode === 'month'
+        ? getWeekStart(new Date(anchor.getFullYear(), anchor.getMonth(), 1))
+        : null,
     [viewMode, anchor]
   );
 
@@ -188,7 +191,10 @@ export default function CalendarPage() {
       });
     }
     if (viewMode === 'month') {
-      return anchor.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      return anchor.toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric',
+      });
     }
     const end = days[6];
     const startStr = rangeStart.toLocaleDateString('en-US', {

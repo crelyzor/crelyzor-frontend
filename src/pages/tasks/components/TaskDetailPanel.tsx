@@ -70,7 +70,12 @@ interface Props {
   onAutoFocusConsumed?: () => void;
 }
 
-export function TaskDetailPanel({ task, onClose, autoFocusField, onAutoFocusConsumed }: Props) {
+export function TaskDetailPanel({
+  task,
+  onClose,
+  autoFocusField,
+  onAutoFocusConsumed,
+}: Props) {
   const navigate = useNavigate();
   const updateTask = useUpdateTask(task?.meetingId ?? undefined);
   const deleteTaskMut = useDeleteTask(task?.meetingId ?? undefined);
@@ -495,38 +500,40 @@ export function TaskDetailPanel({ task, onClose, autoFocusField, onAutoFocusCons
               </div>
 
               {/* GCal block toggle — only when scheduledTime is set and GCal is connected */}
-              {task.scheduledTime && gcalStatus?.connected && gcalStatus.syncEnabled && (
-                <div>
-                  {task.googleEventId ? (
-                    <div className="flex items-center gap-2">
-                      <span className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
-                        <Check className="w-3 h-3 shrink-0" />
-                        Blocked in calendar
-                      </span>
+              {task.scheduledTime &&
+                gcalStatus?.connected &&
+                gcalStatus.syncEnabled && (
+                  <div>
+                    {task.googleEventId ? (
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                          <Check className="w-3 h-3 shrink-0" />
+                          Blocked in calendar
+                        </span>
+                        <Button
+                          size="xs"
+                          variant="ghost"
+                          onClick={handleRemoveCalendarBlock}
+                          disabled={updateTask.isPending}
+                          className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ) : (
                       <Button
-                        size="xs"
-                        variant="ghost"
-                        onClick={handleRemoveCalendarBlock}
+                        size="sm"
+                        variant="outline"
+                        onClick={handleBlockInCalendar}
                         disabled={updateTask.isPending}
-                        className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                        className="gap-1.5 text-xs"
                       >
-                        Remove
+                        <Calendar className="w-3 h-3" />
+                        Block time in Google Calendar
                       </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleBlockInCalendar}
-                      disabled={updateTask.isPending}
-                      className="gap-1.5 text-xs"
-                    >
-                      <Calendar className="w-3 h-3" />
-                      Block time in Google Calendar
-                    </Button>
-                  )}
-                </div>
-              )}
+                    )}
+                  </div>
+                )}
 
               {/* Tags */}
               <div>

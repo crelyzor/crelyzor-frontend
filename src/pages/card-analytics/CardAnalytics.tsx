@@ -22,7 +22,9 @@ const TIME_RANGES = [
 ];
 
 // Compute trend: compare sum of second half vs first half of viewsByDay
-function computeTrend(viewsByDay: { date: string; count: number }[]): number | null {
+function computeTrend(
+  viewsByDay: { date: string; count: number }[]
+): number | null {
   if (viewsByDay.length < 4) return null;
   const mid = Math.floor(viewsByDay.length / 2);
   const firstHalf = viewsByDay.slice(0, mid).reduce((s, d) => s + d.count, 0);
@@ -48,8 +50,21 @@ function Sparkline({ data }: { data: { date: string; count: number }[] }) {
     // Single point — flat line
     const y = H / 2;
     return (
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full" preserveAspectRatio="none">
-        <line x1={PAD} y1={y} x2={W - PAD} y2={y} stroke="currentColor" strokeWidth="1.5" className="text-neutral-300 dark:text-neutral-600" strokeLinecap="round" />
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="w-full h-full"
+        preserveAspectRatio="none"
+      >
+        <line
+          x1={PAD}
+          y1={y}
+          x2={W - PAD}
+          y2={y}
+          stroke="currentColor"
+          strokeWidth="1.5"
+          className="text-neutral-300 dark:text-neutral-600"
+          strokeLinecap="round"
+        />
       </svg>
     );
   }
@@ -70,9 +85,18 @@ function Sparkline({ data }: { data: { date: string; count: number }[] }) {
   ].join(' ');
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full" preserveAspectRatio="none">
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      className="w-full h-full"
+      preserveAspectRatio="none"
+    >
       {/* Area fill */}
-      <path d={areaPath} fill="currentColor" className="text-neutral-900 dark:text-neutral-100" opacity="0.06" />
+      <path
+        d={areaPath}
+        fill="currentColor"
+        className="text-neutral-900 dark:text-neutral-100"
+        opacity="0.06"
+      />
       {/* Line */}
       <polyline
         points={polylinePoints}
@@ -93,7 +117,11 @@ export default function CardAnalytics() {
   const [days, setDays] = useState(30);
 
   const { data: card } = useCard(id ?? '');
-  const { data: analytics, isLoading, isError } = useCardAnalytics(id ?? '', days);
+  const {
+    data: analytics,
+    isLoading,
+    isError,
+  } = useCardAnalytics(id ?? '', days);
 
   const trend = useMemo(
     () => (analytics?.viewsByDay ? computeTrend(analytics.viewsByDay) : null),
@@ -125,7 +153,10 @@ export default function CardAnalytics() {
         <div className="h-8 w-48 rounded bg-neutral-100 dark:bg-neutral-800 animate-pulse mb-8" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
+            <div
+              key={i}
+              className="h-24 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse"
+            />
           ))}
         </div>
         <div className="h-64 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
@@ -136,7 +167,9 @@ export default function CardAnalytics() {
   if (!analytics) {
     return (
       <div className="max-w-4xl mx-auto text-center py-20">
-        <p className="text-neutral-500 dark:text-neutral-400 text-sm">No analytics data available</p>
+        <p className="text-neutral-500 dark:text-neutral-400 text-sm">
+          No analytics data available
+        </p>
       </div>
     );
   }
@@ -201,8 +234,8 @@ export default function CardAnalytics() {
                     trend > 0
                       ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'
                       : trend < 0
-                      ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
-                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500'
+                        ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500'
                   }`}
                 >
                   {trend > 0 ? (
@@ -212,14 +245,17 @@ export default function CardAnalytics() {
                   ) : (
                     <Minus className="w-2.5 h-2.5" />
                   )}
-                  {trend > 0 ? '+' : ''}{trend.toFixed(1)}%
+                  {trend > 0 ? '+' : ''}
+                  {trend.toFixed(1)}%
                 </span>
               )}
             </div>
             <p className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
               {analytics.totalViews}
             </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Total Views</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              Total Views
+            </p>
           </Card>
 
           {/* Unique Visitors */}
@@ -232,7 +268,9 @@ export default function CardAnalytics() {
             <p className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
               {analytics.uniqueViews}
             </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Unique Visitors</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              Unique Visitors
+            </p>
           </Card>
 
           {/* Contacts */}
@@ -245,7 +283,9 @@ export default function CardAnalytics() {
             <p className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
               {analytics.totalContacts}
             </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Contacts</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              Contacts
+            </p>
           </Card>
 
           {/* Conversion Rate */}
@@ -258,7 +298,9 @@ export default function CardAnalytics() {
             <p className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
               {(analytics.conversionRate ?? 0).toFixed(1)}%
             </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Conversion Rate</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              Conversion Rate
+            </p>
           </Card>
         </div>
 
@@ -283,13 +325,24 @@ export default function CardAnalytics() {
             {analytics.viewsByDay.length <= 14 && (
               <div className="flex justify-between mt-2">
                 {analytics.viewsByDay
-                  .filter((_, i, arr) => i === 0 || i === arr.length - 1 || (arr.length <= 7 && true))
+                  .filter(
+                    (_, i, arr) =>
+                      i === 0 ||
+                      i === arr.length - 1 ||
+                      (arr.length <= 7 && true)
+                  )
                   .map((day, i) => (
-                    <span key={i} className="text-[9px] text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
-                      {new Date(day.date + 'T00:00:00').toLocaleDateString('en', {
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                    <span
+                      key={i}
+                      className="text-[9px] text-neutral-400 dark:text-neutral-500 whitespace-nowrap"
+                    >
+                      {new Date(day.date + 'T00:00:00').toLocaleDateString(
+                        'en',
+                        {
+                          month: 'short',
+                          day: 'numeric',
+                        }
+                      )}
                     </span>
                   ))}
               </div>
@@ -299,15 +352,21 @@ export default function CardAnalytics() {
             {analytics.viewsByDay.length > 14 && (
               <div className="flex justify-between mt-2">
                 <span className="text-[9px] text-neutral-400 dark:text-neutral-500">
-                  {new Date(analytics.viewsByDay[0].date + 'T00:00:00').toLocaleDateString('en', {
+                  {new Date(
+                    analytics.viewsByDay[0].date + 'T00:00:00'
+                  ).toLocaleDateString('en', {
                     month: 'short',
                     day: 'numeric',
                   })}
                 </span>
                 <span className="text-[9px] text-neutral-400 dark:text-neutral-500">
                   {new Date(
-                    analytics.viewsByDay[analytics.viewsByDay.length - 1].date + 'T00:00:00'
-                  ).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+                    analytics.viewsByDay[analytics.viewsByDay.length - 1].date +
+                      'T00:00:00'
+                  ).toLocaleDateString('en', {
+                    month: 'short',
+                    day: 'numeric',
+                  })}
                 </span>
               </div>
             )}
