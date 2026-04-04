@@ -179,6 +179,7 @@ export const smaApi = {
       cardId?: string | null;
       transcriptContext?: string | null;
       durationMinutes?: number | null;
+      blockInCalendar?: boolean;
     }
   ): Promise<Task> => {
     const result = await apiClient.patch<{ task: Task }>(

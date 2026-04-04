@@ -50,6 +50,9 @@ interface TaskListViewProps {
   onSelect: (task: TaskWithMeeting) => void;
   selectedTaskId: string | null;
   reorderTasks: ReturnType<typeof useReorderTasks>;
+  selectMode?: boolean;
+  selectedIds?: Set<string>;
+  onCheck?: (id: string) => void;
 }
 
 function SortableTaskRow({
@@ -60,6 +63,9 @@ function SortableTaskRow({
   onSelect,
   isSelected,
   index,
+  selectMode,
+  isChecked,
+  onCheck,
 }: {
   task: TaskWithMeeting;
   onToggle: (id: string, completed: boolean) => void;
@@ -68,6 +74,9 @@ function SortableTaskRow({
   onSelect: (task: TaskWithMeeting) => void;
   isSelected: boolean;
   index: number;
+  selectMode?: boolean;
+  isChecked?: boolean;
+  onCheck?: (id: string) => void;
 }) {
   const {
     attributes,
@@ -100,46 +109,73 @@ function SortableTaskRow({
         delay: index * 0.02,
         ease: [0.25, 0.1, 0.25, 1],
       }}
-      onClick={() => onSelect(task)}
+      onClick={() => selectMode ? onCheck?.(task.id) : onSelect(task)}
       className={`group flex items-start gap-2 px-4 py-3.5 cursor-pointer
         bg-white dark:bg-neutral-900
         border border-neutral-100 dark:border-neutral-800
         hover:border-neutral-200 dark:hover:border-neutral-700
         rounded-xl transition-[border-color,box-shadow] duration-200
         ${task.priority ? (PRIORITY_BORDER[task.priority] ?? '') : ''}
-        ${isSelected ? 'ring-1 ring-neutral-300 dark:ring-neutral-600 border-neutral-200 dark:border-neutral-700' : ''}
+        ${isSelected && !selectMode ? 'ring-1 ring-neutral-300 dark:ring-neutral-600 border-neutral-200 dark:border-neutral-700' : ''}
+        ${isChecked ? 'ring-1 ring-neutral-400 dark:ring-neutral-500 border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800' : ''}
         ${isDragging ? 'shadow-lg shadow-black/10 dark:shadow-black/30' : ''}`}
     >
-      {/* Drag handle */}
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        {...attributes}
-        {...listeners}
-        onClick={(e) => e.stopPropagation()}
-        className="shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing touch-none"
-        aria-label="Drag to reorder"
-      >
-        <GripVertical className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500" />
-      </Button>
+      {selectMode ? (
+        /* Bulk selection checkbox (square) */
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={(e) => {
+            e.stopPropagation();
+            onCheck?.(task.id);
+          }}
+          className={`mt-0.5 shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors p-0 ${
+            isChecked
+              ? 'bg-neutral-900 dark:bg-neutral-100 border-neutral-900 dark:border-neutral-100 hover:bg-neutral-800 dark:hover:bg-neutral-200'
+              : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-500 dark:hover:border-neutral-400'
+          }`}
+          aria-label={isChecked ? 'Deselect' : 'Select'}
+        >
+          {isChecked && (
+            <Check className="w-2.5 h-2.5 text-white dark:text-neutral-900" />
+          )}
+        </Button>
+      ) : (
+        <>
+          {/* Drag handle */}
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            {...attributes}
+            {...listeners}
+            onClick={(e) => e.stopPropagation()}
+            className="shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing touch-none"
+            aria-label="Drag to reorder"
+          >
+            <GripVertical className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500" />
+          </Button>
 
-      {/* Checkbox */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggle(task.id, !task.isCompleted);
-        }}
-        className={`mt-0.5 shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
-          task.isCompleted
-            ? 'bg-neutral-900 dark:bg-neutral-100 border-neutral-900 dark:border-neutral-100'
-            : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-500 dark:hover:border-neutral-400'
-        }`}
-        aria-label={task.isCompleted ? 'Mark incomplete' : 'Mark complete'}
-      >
-        {task.isCompleted && (
-          <Check className="w-2.5 h-2.5 text-white dark:text-neutral-900" />
-        )}
-      </button>
+          {/* Complete checkbox */}
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle(task.id, !task.isCompleted);
+            }}
+            className={`mt-0.5 shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors p-0 ${
+              task.isCompleted
+                ? 'bg-neutral-900 dark:bg-neutral-100 border-neutral-900 dark:border-neutral-100 hover:bg-neutral-800 dark:hover:bg-neutral-200'
+                : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-500 dark:hover:border-neutral-400'
+            }`}
+            aria-label={task.isCompleted ? 'Mark incomplete' : 'Mark complete'}
+          >
+            {task.isCompleted && (
+              <Check className="w-2.5 h-2.5 text-white dark:text-neutral-900" />
+            )}
+          </Button>
+        </>
+      )}
 
       <div className="flex-1 min-w-0">
         <p
@@ -210,18 +246,20 @@ function SortableTaskRow({
         </div>
       </div>
 
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete(task.id);
-        }}
-        className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-        aria-label="Delete task"
-      >
-        <Trash2 className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500" />
-      </Button>
+      {!selectMode && (
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(task.id);
+          }}
+          className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+          aria-label="Delete task"
+        >
+          <Trash2 className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500" />
+        </Button>
+      )}
     </motion.div>
   );
 }
@@ -234,6 +272,9 @@ export function TaskListView({
   onSelect,
   selectedTaskId,
   reorderTasks,
+  selectMode,
+  selectedIds,
+  onCheck,
 }: TaskListViewProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -287,6 +328,9 @@ export function TaskListView({
                 onNavigate={onNavigate}
                 onSelect={onSelect}
                 isSelected={selectedTaskId === task.id}
+                selectMode={selectMode}
+                isChecked={selectedIds?.has(task.id) ?? false}
+                onCheck={onCheck}
               />
             ))}
           </AnimatePresence>

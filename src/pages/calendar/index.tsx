@@ -6,6 +6,7 @@ import { AnimatePresence } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import PageMotion from '@/components/PageMotion';
 import { CalendarGrid } from './components/CalendarGrid';
+import { CalendarMonthGrid } from './components/CalendarMonthGrid';
 import { QuickCreatePopover } from './components/QuickCreatePopover';
 import {
   useGoogleCalendarEvents,
@@ -33,7 +34,7 @@ export default function CalendarPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const updateTask = useUpdateTask();
-  const [viewMode, setViewMode] = useState<'week' | 'day'>('week');
+  const [viewMode, setViewMode] = useState<'week' | 'day' | 'month'>('week');
   const [slotClick, setSlotClick] = useState<{
     time: Date;
     x: number;
@@ -52,27 +53,45 @@ export default function CalendarPage() {
   //   day  mode → the specific day being viewed
   const [anchor, setAnchor] = useState<Date>(() => getWeekStart(new Date()));
 
-  const handleViewMode = (mode: 'week' | 'day') => {
+  const handleViewMode = (mode: 'week' | 'day' | 'month') => {
     if (mode === 'week') {
       // Switch to the week containing the current anchor
       setAnchor(getWeekStart(anchor));
-    } else {
+    } else if (mode === 'day') {
       // Switch to today
       const d = new Date();
       d.setHours(0, 0, 0, 0);
       setAnchor(d);
+    } else {
+      // Switch to the month containing the current anchor (preserve context)
+      setAnchor(new Date(anchor.getFullYear(), anchor.getMonth(), 1));
     }
     setViewMode(mode);
   };
 
+  // Month grid start: Monday on or before the 1st of the anchor month
+  const monthGridStart = useMemo(
+    () => (viewMode === 'month' ? getWeekStart(new Date(anchor.getFullYear(), anchor.getMonth(), 1)) : null),
+    [viewMode, anchor]
+  );
+
   const days = useMemo(() => {
     if (viewMode === 'day') return [anchor];
+    if (viewMode === 'month' && monthGridStart) {
+      // 5 or 6 weeks: use 35 days unless the last row is needed
+      // Always use 42 to be safe (6 weeks)
+      return Array.from({ length: 42 }, (_, i) => {
+        const d = new Date(monthGridStart);
+        d.setDate(d.getDate() + i);
+        return d;
+      });
+    }
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(anchor);
       d.setDate(d.getDate() + i);
       return d;
     });
-  }, [viewMode, anchor]);
+  }, [viewMode, anchor, monthGridStart]);
 
   const rangeStart = days[0];
   const rangeEnd = useMemo(() => {
@@ -116,6 +135,9 @@ export default function CalendarPage() {
 
   const shiftCalendar = (dir: -1 | 1) => {
     setAnchor((prev) => {
+      if (viewMode === 'month') {
+        return new Date(prev.getFullYear(), prev.getMonth() + dir, 1);
+      }
       const d = new Date(prev);
       d.setDate(d.getDate() + dir * (viewMode === 'week' ? 7 : 1));
       return d;
@@ -125,6 +147,9 @@ export default function CalendarPage() {
   const goToday = () => {
     if (viewMode === 'week') {
       setAnchor(getWeekStart(new Date()));
+    } else if (viewMode === 'month') {
+      const now = new Date();
+      setAnchor(new Date(now.getFullYear(), now.getMonth(), 1));
     } else {
       const d = new Date();
       d.setHours(0, 0, 0, 0);
@@ -137,6 +162,8 @@ export default function CalendarPage() {
     const date = new Date(year, month - 1, day); // local midnight — no UTC offset shift
     if (viewMode === 'week') {
       setAnchor(getWeekStart(date));
+    } else if (viewMode === 'month') {
+      setAnchor(new Date(year, month - 1, 1)); // snap to first of selected month
     } else {
       setAnchor(date);
     }
@@ -159,6 +186,9 @@ export default function CalendarPage() {
         day: 'numeric',
         year: 'numeric',
       });
+    }
+    if (viewMode === 'month') {
+      return anchor.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     }
     const end = days[6];
     const startStr = rangeStart.toLocaleDateString('en-US', {
@@ -209,6 +239,11 @@ export default function CalendarPage() {
 
   function handleSlotClick(time: Date, x: number, y: number) {
     setSlotClick({ time, x, y });
+  }
+
+  function handleDayClick(date: Date) {
+    setAnchor(date);
+    setViewMode('day');
   }
 
   const gcalConnected = gcalStatus?.connected;
@@ -265,9 +300,9 @@ export default function CalendarPage() {
             </div>
           </div>
 
-          {/* Week / Day toggle */}
+          {/* Week / Day / Month toggle */}
           <div className="flex items-center gap-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
-            {(['week', 'day'] as const).map((mode) => (
+            {(['month', 'week', 'day'] as const).map((mode) => (
               <Button
                 key={mode}
                 variant="ghost"
@@ -306,16 +341,29 @@ export default function CalendarPage() {
         )}
 
         {/* ── Calendar grid ───────────────────────────────────────────────── */}
-        <CalendarGrid
-          days={days}
-          gcalEvents={gcalEvents}
-          meetings={meetings ?? []}
-          scheduledTasks={scheduledTasks}
-          dueTasks={dueTasks}
-          today={today}
-          onReschedule={handleReschedule}
-          onSlotClick={handleSlotClick}
-        />
+        {viewMode === 'month' ? (
+          <CalendarMonthGrid
+            days={days}
+            gcalEvents={gcalEvents}
+            meetings={meetings ?? []}
+            allTasks={allTasks}
+            today={today}
+            anchorMonth={anchor.getMonth()}
+            anchorYear={anchor.getFullYear()}
+            onDayClick={handleDayClick}
+          />
+        ) : (
+          <CalendarGrid
+            days={days}
+            gcalEvents={gcalEvents}
+            meetings={meetings ?? []}
+            scheduledTasks={scheduledTasks}
+            dueTasks={dueTasks}
+            today={today}
+            onReschedule={handleReschedule}
+            onSlotClick={handleSlotClick}
+          />
+        )}
       </div>
 
       <AnimatePresence>

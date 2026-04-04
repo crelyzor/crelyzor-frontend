@@ -160,6 +160,7 @@ export type Task = {
   cardId?: string | null;
   transcriptContext?: string | null;
   durationMinutes?: number | null;
+  googleEventId?: string | null;
   source: 'AI_EXTRACTED' | 'MANUAL';
   createdAt: string;
   updatedAt: string;

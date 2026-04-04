@@ -28,6 +28,7 @@ const {
   CardEditor,
   CardContacts,
   CardAnalytics,
+  Search,
 } = routes;
 
 function App() {
@@ -179,6 +180,16 @@ function App() {
                     <AuthGuard>
                       <Layout>
                         <CardAnalytics />
+                      </Layout>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/search"
+                  element={
+                    <AuthGuard>
+                      <Layout>
+                        <Search />
                       </Layout>
                     </AuthGuard>
                   }

@@ -12,6 +12,7 @@ import {
   Plus,
   Trash2,
   ExternalLink,
+  Calendar,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -27,6 +28,7 @@ import {
   useAttachTagToTask,
   useUserTags,
 } from '@/hooks/queries/useTagQueries';
+import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
 import type { TaskWithMeeting } from '@/services/smaService';
 import type { TaskStatus } from '@/types/meeting';
 
@@ -64,9 +66,11 @@ const PRIORITY_DOT: Record<string, string> = {
 interface Props {
   task: TaskWithMeeting | null;
   onClose: () => void;
+  autoFocusField?: 'title' | 'dueDate';
+  onAutoFocusConsumed?: () => void;
 }
 
-export function TaskDetailPanel({ task, onClose }: Props) {
+export function TaskDetailPanel({ task, onClose, autoFocusField, onAutoFocusConsumed }: Props) {
   const navigate = useNavigate();
   const updateTask = useUpdateTask(task?.meetingId ?? undefined);
   const deleteTaskMut = useDeleteTask(task?.meetingId ?? undefined);
@@ -82,7 +86,23 @@ export function TaskDetailPanel({ task, onClose }: Props) {
 
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
+  const dueDateLabelRef = useRef<HTMLLabelElement>(null);
 
+  // Auto-focus title or open due-date picker when triggered by keyboard shortcut
+  useEffect(() => {
+    if (!autoFocusField || !task) return;
+    const timer = setTimeout(() => {
+      if (autoFocusField === 'title') {
+        titleRef.current?.focus();
+      } else if (autoFocusField === 'dueDate') {
+        dueDateLabelRef.current?.click();
+      }
+      onAutoFocusConsumed?.();
+    }, 60);
+    return () => clearTimeout(timer);
+  }, [autoFocusField, task, onAutoFocusConsumed]);
+
+  const { data: gcalStatus } = useGoogleCalendarStatus();
   const { data: subtasks } = useSubtasks(task?.id ?? '', !!task);
   const createSubtask = useCreateSubtask(task?.id ?? '');
   const { data: taskTagsData } = useTaskTags(task?.id ?? '');
@@ -158,6 +178,22 @@ export function TaskDetailPanel({ task, onClose }: Props) {
     },
     [task, updateTask]
   );
+
+  const handleBlockInCalendar = useCallback(() => {
+    if (!task) return;
+    updateTask.mutate(
+      { taskId: task.id, data: { blockInCalendar: true } },
+      { onSuccess: () => toast.success('Time blocked in Google Calendar') }
+    );
+  }, [task, updateTask]);
+
+  const handleRemoveCalendarBlock = useCallback(() => {
+    if (!task) return;
+    updateTask.mutate(
+      { taskId: task.id, data: { blockInCalendar: false } },
+      { onSuccess: () => toast.success('Calendar block removed') }
+    );
+  }, [task, updateTask]);
 
   const handleDelete = useCallback(() => {
     if (!task) return;
@@ -322,6 +358,7 @@ export function TaskDetailPanel({ task, onClose }: Props) {
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 {/* Due date */}
                 <label
+                  ref={dueDateLabelRef}
                   className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs cursor-pointer transition-colors
                     ${
                       isOverdue
@@ -456,6 +493,40 @@ export function TaskDetailPanel({ task, onClose }: Props) {
                   </AnimatePresence>
                 </div>
               </div>
+
+              {/* GCal block toggle — only when scheduledTime is set and GCal is connected */}
+              {task.scheduledTime && gcalStatus?.connected && gcalStatus.syncEnabled && (
+                <div>
+                  {task.googleEventId ? (
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                        <Check className="w-3 h-3 shrink-0" />
+                        Blocked in calendar
+                      </span>
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        onClick={handleRemoveCalendarBlock}
+                        disabled={updateTask.isPending}
+                        className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleBlockInCalendar}
+                      disabled={updateTask.isPending}
+                      className="gap-1.5 text-xs"
+                    >
+                      <Calendar className="w-3 h-3" />
+                      Block time in Google Calendar
+                    </Button>
+                  )}
+                </div>
+              )}
 
               {/* Tags */}
               <div>

@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useScroll, useTransform, motion } from 'motion/react';
 import { useGreeting } from '@/hooks';
 import { useMeetingsAll } from '@/hooks/queries/useMeetingQueries';
 import { useAllTasks } from '@/hooks/queries/useSMAQueries';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
+import { useCards } from '@/hooks/queries/useCardQueries';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { CompactStickyBar } from './CompactStickyBar';
 import { HeroSection } from './HeroSection';
@@ -11,6 +12,7 @@ import { RecentMeetings } from './RecentMeetings';
 import { TodayTimeline } from './TodayTimeline';
 import { OverdueTasksSection } from './OverdueTasksSection';
 import { NewAITasksBanner } from './NewAITasksBanner';
+import { OnboardingOverlay } from './OnboardingOverlay';
 import { PendingTasksWidget } from './PendingTasksWidget';
 import { DefaultCardWidget } from './DefaultCardWidget';
 import { RecentVoiceNotes } from './RecentVoiceNotes';
@@ -22,12 +24,19 @@ export default function Home() {
   const { greeting, dayName, monthDay, tip } = useGreeting();
   const { data: currentUser } = useCurrentUser();
 
+  // Onboarding overlay — shown to new users with no cards and no meetings
+  const [onboardingDismissed, setOnboardingDismissed] = useState(
+    () => !!localStorage.getItem('crelyzor_onboarding_done')
+  );
+
   // Use same query key as /meetings page → shared cache, no duplicate fetch
   const {
     data: allMeetingsData,
     isLoading: meetingsLoading,
     isError: meetingsError,
   } = useMeetingsAll();
+
+  const { data: cards, isLoading: cardsLoading } = useCards();
 
   const recentMeetings = useMemo(
     () =>
@@ -86,6 +95,14 @@ export default function Home() {
         new Date(t.createdAt).getTime() > cutoff
     );
   }, [allPendingTasks]);
+
+  // Show onboarding overlay for brand-new users (no cards, no meetings, not dismissed)
+  const showOnboarding =
+    !meetingsLoading &&
+    !cardsLoading &&
+    !onboardingDismissed &&
+    (cards?.length ?? 0) === 0 &&
+    (allMeetingsData?.length ?? 0) === 0;
 
   // Greeting dissolves
   const greetingOpacity = useTransform(scrollY, [0, 80], [1, 0]);
@@ -183,6 +200,14 @@ export default function Home() {
       </motion.div>
 
       <StartMeetingFab />
+
+      <OnboardingOverlay
+        show={showOnboarding}
+        onDismiss={() => {
+          localStorage.setItem('crelyzor_onboarding_done', '1');
+          setOnboardingDismissed(true);
+        }}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { PageMotion } from '@/components/PageMotion';
 import {
   CheckSquare,
@@ -28,8 +29,12 @@ import { TaskDetailPanel } from './components/TaskDetailPanel';
 import { TaskSidebar } from './components/TaskSidebar';
 import { TaskBoardView } from './components/TaskBoardView';
 import { TaskListView } from './components/TaskListView';
+import { BulkActionBar } from './components/BulkActionBar';
+import { toast } from 'sonner';
 import { parseTaskInput } from '@/lib/parseTaskInput';
 import { PRIORITY_LABELS, PRIORITY_STYLES } from '@/constants/task';
+import { smaApi } from '@/services/smaService';
+import { queryKeys } from '@/lib/queryKeys';
 import type {
   TaskListParams,
   TaskWithMeeting,
@@ -73,6 +78,8 @@ const SORT_OPTIONS = [
   { value: 'priority', label: 'Priority' },
 ] as const;
 
+const PRIORITY_CYCLE: Array<'LOW' | 'MEDIUM' | 'HIGH' | null> = [null, 'LOW', 'MEDIUM', 'HIGH'];
+
 const VIEW_LABELS: Record<TaskView, string> = {
   inbox: 'Inbox',
   today: 'Today',
@@ -104,6 +111,10 @@ function TaskRow({
   onNavigate,
   onSelect,
   isSelected,
+  isFocused,
+  selectMode,
+  isChecked,
+  onCheck,
 }: {
   task: TaskWithMeeting;
   index: number;
@@ -112,6 +123,10 @@ function TaskRow({
   onNavigate: (meetingId: string) => void;
   onSelect: (task: TaskWithMeeting) => void;
   isSelected: boolean;
+  isFocused?: boolean;
+  selectMode?: boolean;
+  isChecked?: boolean;
+  onCheck?: (id: string) => void;
 }) {
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
@@ -129,31 +144,58 @@ function TaskRow({
         delay: index * 0.02,
         ease: [0.25, 0.1, 0.25, 1],
       }}
-      onClick={() => onSelect(task)}
+      onClick={() => selectMode ? onCheck?.(task.id) : onSelect(task)}
       className={`group flex items-start gap-3 px-4 py-3.5 cursor-pointer
                  bg-white dark:bg-neutral-900
                  border border-neutral-100 dark:border-neutral-800
                  hover:border-neutral-200 dark:hover:border-neutral-700
                  rounded-xl transition-[border-color,box-shadow] duration-200
                  ${task.priority ? (PRIORITY_BORDER[task.priority] ?? '') : ''}
-                 ${isSelected ? 'ring-1 ring-neutral-300 dark:ring-neutral-600 border-neutral-200 dark:border-neutral-700' : ''}`}
+                 ${isSelected && !selectMode ? 'ring-1 ring-neutral-300 dark:ring-neutral-600 border-neutral-200 dark:border-neutral-700' : ''}
+                 ${isFocused ? 'ring-2 ring-neutral-400 dark:ring-neutral-500 border-neutral-200 dark:border-neutral-700' : ''}
+                 ${isChecked ? 'ring-1 ring-neutral-400 dark:ring-neutral-500 border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800' : ''}`}
     >
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggle(task.id, !task.isCompleted);
-        }}
-        className={`mt-0.5 shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
-          task.isCompleted
-            ? 'bg-neutral-900 dark:bg-neutral-100 border-neutral-900 dark:border-neutral-100'
-            : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-500 dark:hover:border-neutral-400'
-        }`}
-        aria-label={task.isCompleted ? 'Mark incomplete' : 'Mark complete'}
-      >
-        {task.isCompleted && (
-          <Check className="w-2.5 h-2.5 text-white dark:text-neutral-900" />
-        )}
-      </button>
+      {selectMode ? (
+        /* Bulk selection checkbox (square) */
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={(e) => {
+            e.stopPropagation();
+            onCheck?.(task.id);
+          }}
+          className={`mt-0.5 shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors p-0 ${
+            isChecked
+              ? 'bg-neutral-900 dark:bg-neutral-100 border-neutral-900 dark:border-neutral-100 hover:bg-neutral-800 dark:hover:bg-neutral-200'
+              : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-500 dark:hover:border-neutral-400'
+          }`}
+          aria-label={isChecked ? 'Deselect' : 'Select'}
+        >
+          {isChecked && (
+            <Check className="w-2.5 h-2.5 text-white dark:text-neutral-900" />
+          )}
+        </Button>
+      ) : (
+        /* Complete checkbox (circle) */
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggle(task.id, !task.isCompleted);
+          }}
+          className={`mt-0.5 shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors p-0 ${
+            task.isCompleted
+              ? 'bg-neutral-900 dark:bg-neutral-100 border-neutral-900 dark:border-neutral-100 hover:bg-neutral-800 dark:hover:bg-neutral-200'
+              : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-500 dark:hover:border-neutral-400'
+          }`}
+          aria-label={task.isCompleted ? 'Mark incomplete' : 'Mark complete'}
+        >
+          {task.isCompleted && (
+            <Check className="w-2.5 h-2.5 text-white dark:text-neutral-900" />
+          )}
+        </Button>
+      )}
 
       <div className="flex-1 min-w-0">
         <p
@@ -222,16 +264,18 @@ function TaskRow({
         </div>
       </div>
 
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete(task.id);
-        }}
-        className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md"
-        aria-label="Delete task"
-      >
-        <Trash2 className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500" />
-      </button>
+      {!selectMode && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(task.id);
+          }}
+          className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-md"
+          aria-label="Delete task"
+        >
+          <Trash2 className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500" />
+        </button>
+      )}
     </motion.div>
   );
 }
@@ -289,6 +333,14 @@ export default function Tasks() {
   const [displayMode, setDisplayMode] = useState<'list' | 'board' | 'grouped'>(
     'list'
   );
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkPending, setBulkPending] = useState(false);
+  const [focusedTaskIndex, setFocusedTaskIndex] = useState<number | null>(null);
+  const [autoFocusField, setAutoFocusField] = useState<'title' | 'dueDate' | undefined>(undefined);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+
+  const qc = useQueryClient();
 
   const { data: userTags } = useUserTags();
 
@@ -296,6 +348,9 @@ export default function Tasks() {
     (newView: TaskView) => {
       setSearchParams({ view: newView });
       setSelectedTask(null);
+      setSelectMode(false);
+      setSelectedIds(new Set());
+      setFocusedTaskIndex(null);
       if (newView !== 'inbox' && newView !== 'all') setDisplayMode('list');
     },
     [setSearchParams]
@@ -345,6 +400,13 @@ export default function Tasks() {
   }, [view, status, priority, source, sortBy, sortOrder, displayMode]);
 
   const { data, isLoading, isError, refetch } = useAllTasks(params);
+
+  // Stable start-of-today date (used by navCounts and today view)
+  const startOfToday = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
 
   // Badge counts — one separate query for all pending tasks, computed client-side
   const { data: badgeData } = useAllTasks({ status: 'pending', limit: 500 });
@@ -442,18 +504,159 @@ export default function Tasks() {
     [deleteTask, selectedTask]
   );
 
+  const exitSelectMode = useCallback(() => {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  }, []);
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const enterSelectMode = useCallback(() => {
+    setSelectMode(true);
+    setSelectedTask(null);
+    setSelectedIds(new Set());
+  }, []);
+
+  // Escape exits select mode (guard: don't fire when inline create is open)
+  useEffect(() => {
+    if (!selectMode) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !showCreate) exitSelectMode();
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [selectMode, showCreate, exitSelectMode]);
+
+  // Keyboard shortcuts for task list navigation
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Skip when select mode, inline create, or focus is on an interactive element
+      if (selectMode || showCreate) return;
+      const tag = (document.activeElement?.tagName ?? '').toLowerCase();
+      if (['input', 'textarea', 'select', 'button', 'a'].includes(tag)) return;
+
+      const len = flatVisibleTasks.length;
+
+      if (e.key === 'j' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedTask(null);
+        setFocusedTaskIndex((i) => (i === null ? 0 : Math.min(i + 1, len - 1)));
+      } else if (e.key === 'k' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedTask(null);
+        setFocusedTaskIndex((i) => (i === null ? 0 : Math.max(i - 1, 0)));
+      } else if (e.key === 'Enter') {
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex]) return;
+        e.preventDefault();
+        setSelectedTask(flatVisibleTasks[focusedTaskIndex]);
+        setFocusedTaskIndex(null);
+      } else if (e.key === 'e') {
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex]) return;
+        e.preventDefault();
+        setSelectedTask(flatVisibleTasks[focusedTaskIndex]);
+        setAutoFocusField('title');
+        setFocusedTaskIndex(null);
+      } else if (e.key === 'd') {
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex]) return;
+        e.preventDefault();
+        setSelectedTask(flatVisibleTasks[focusedTaskIndex]);
+        setAutoFocusField('dueDate');
+        setFocusedTaskIndex(null);
+      } else if (e.key === 'p') {
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex]) return;
+        e.preventDefault();
+        const task = flatVisibleTasks[focusedTaskIndex];
+        const currentIdx = PRIORITY_CYCLE.indexOf(task.priority ?? null);
+        const nextPriority = PRIORITY_CYCLE[(currentIdx + 1) % PRIORITY_CYCLE.length];
+        updateTask.mutate({ taskId: task.id, data: { priority: nextPriority } });
+      } else if (e.key === ' ') {
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex]) return;
+        e.preventDefault();
+        const task = flatVisibleTasks[focusedTaskIndex];
+        handleToggle(task.id, !task.isCompleted);
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex]) return;
+        e.preventDefault();
+        const task = flatVisibleTasks[focusedTaskIndex];
+        setFocusedTaskIndex(null);
+        handleDelete(task.id);
+      } else if (e.key === 'Escape') {
+        if (liveSelectedTask) {
+          setSelectedTask(null);
+        } else if (focusedTaskIndex !== null) {
+          setFocusedTaskIndex(null);
+        }
+      } else if (e.key === '?') {
+        e.preventDefault();
+        setShowShortcuts((v) => !v);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [selectMode, showCreate, flatVisibleTasks, focusedTaskIndex, liveSelectedTask, handleToggle, handleDelete, updateTask]);
+
+  const handleBulkComplete = useCallback(async () => {
+    setBulkPending(true);
+    try {
+      await Promise.all(
+        [...selectedIds].map((id) => smaApi.updateTask(id, { isCompleted: true }))
+      );
+      qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
+      exitSelectMode();
+      toast.success(`${selectedIds.size} task${selectedIds.size !== 1 ? 's' : ''} completed`);
+    } catch {
+      toast.error('Some tasks could not be updated');
+    } finally {
+      setBulkPending(false);
+    }
+  }, [selectedIds, qc, exitSelectMode]);
+
+  const handleBulkDelete = useCallback(async () => {
+    setBulkPending(true);
+    try {
+      await Promise.all([...selectedIds].map((id) => smaApi.deleteTask(id)));
+      qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
+      exitSelectMode();
+      toast.success(`${selectedIds.size} task${selectedIds.size !== 1 ? 's' : ''} deleted`);
+    } catch {
+      toast.error('Some tasks could not be deleted');
+    } finally {
+      setBulkPending(false);
+    }
+  }, [selectedIds, qc, exitSelectMode]);
+
+  const handleBulkPriority = useCallback(
+    async (priority: 'HIGH' | 'MEDIUM' | 'LOW') => {
+      setBulkPending(true);
+      try {
+        await Promise.all(
+          [...selectedIds].map((id) => smaApi.updateTask(id, { priority }))
+        );
+        qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
+        exitSelectMode();
+        toast.success(`Priority set for ${selectedIds.size} task${selectedIds.size !== 1 ? 's' : ''}`);
+      } catch {
+        toast.error('Some tasks could not be updated');
+      } finally {
+        setBulkPending(false);
+      }
+    },
+    [selectedIds, qc, exitSelectMode]
+  );
+
   const toggleSortOrder = () =>
     setSortOrder((o) => (o === 'desc' ? 'asc' : 'desc'));
 
   const showFilterBar = FILTERABLE_VIEWS.includes(view);
 
   // Today view: split into overdue + due today
-  const startOfToday = useMemo(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }, []);
-
   const endOfToday = useMemo(() => {
     const d = new Date();
     d.setHours(23, 59, 59, 999);
@@ -533,6 +736,19 @@ export default function Tasks() {
     return buckets.filter((b) => b.tasks.length > 0);
   }, [displayMode, tasks, startOfToday]);
 
+  // Flat list of visible tasks for keyboard navigation.
+  // Inbox+list excluded — DnD keyboard sensor would conflict with J/K.
+  const flatVisibleTasks = useMemo<TaskWithMeeting[]>(() => {
+    if (isLoading || isError) return [];
+    if (view === 'today') return [...overdueTasks, ...dueTodayTasks];
+    if (view === 'upcoming') return data?.grouped?.flatMap((g) => g.tasks) ?? [];
+    if (view === 'from_meetings') return meetingGroups.flatMap((g) => g.tasks);
+    if (view === 'inbox' && displayMode === 'list') return []; // DnD conflict
+    if (displayMode === 'board') return [];
+    if (displayMode === 'grouped') return groupedBuckets?.flatMap((b) => b.tasks) ?? [];
+    return tasks; // all + list
+  }, [view, displayMode, tasks, overdueTasks, dueTodayTasks, data?.grouped, meetingGroups, groupedBuckets, isLoading, isError]);
+
   const isPanelOpen = !!liveSelectedTask;
 
   return (
@@ -560,6 +776,18 @@ export default function Tasks() {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              {/* Select toggle — list mode only (not board or grouped) */}
+              {displayMode === 'list' && (
+                <Button
+                  variant={selectMode ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={selectMode ? exitSelectMode : enterSelectMode}
+                  className={selectMode ? '' : 'text-neutral-500 dark:text-neutral-400'}
+                >
+                  {selectMode ? 'Cancel' : 'Select'}
+                </Button>
+              )}
+
               {/* View toggle — only for inbox + all views */}
               {(view === 'inbox' || view === 'all') && (
                 <div className="flex items-center gap-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
@@ -579,7 +807,7 @@ export default function Tasks() {
                   <Button
                     variant="ghost"
                     size="icon-xs"
-                    onClick={() => setDisplayMode('board')}
+                    onClick={() => { setDisplayMode('board'); exitSelectMode(); }}
                     className={`transition-colors ${
                       displayMode === 'board'
                         ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm hover:bg-white dark:hover:bg-neutral-700'
@@ -910,6 +1138,10 @@ export default function Tasks() {
                         onNavigate={(id) => navigate(`/meetings/${id}`)}
                         onSelect={setSelectedTask}
                         isSelected={selectedTask?.id === task.id}
+                        isFocused={focusedTaskIndex !== null && flatVisibleTasks[focusedTaskIndex]?.id === task.id}
+                        selectMode={selectMode}
+                        isChecked={selectedIds.has(task.id)}
+                        onCheck={toggleSelect}
                       />
                     ))}
                   </>
@@ -927,6 +1159,10 @@ export default function Tasks() {
                         onNavigate={(id) => navigate(`/meetings/${id}`)}
                         onSelect={setSelectedTask}
                         isSelected={selectedTask?.id === task.id}
+                        isFocused={focusedTaskIndex !== null && flatVisibleTasks[focusedTaskIndex]?.id === task.id}
+                        selectMode={selectMode}
+                        isChecked={selectedIds.has(task.id)}
+                        onCheck={toggleSelect}
                       />
                     ))}
                   </>
@@ -956,6 +1192,10 @@ export default function Tasks() {
                         onNavigate={(id) => navigate(`/meetings/${id}`)}
                         onSelect={setSelectedTask}
                         isSelected={selectedTask?.id === task.id}
+                        isFocused={focusedTaskIndex !== null && flatVisibleTasks[focusedTaskIndex]?.id === task.id}
+                        selectMode={selectMode}
+                        isChecked={selectedIds.has(task.id)}
+                        onCheck={toggleSelect}
                       />
                     ))}
                   </div>
@@ -985,6 +1225,10 @@ export default function Tasks() {
                         onNavigate={(id) => navigate(`/meetings/${id}`)}
                         onSelect={setSelectedTask}
                         isSelected={selectedTask?.id === task.id}
+                        isFocused={focusedTaskIndex !== null && flatVisibleTasks[focusedTaskIndex]?.id === task.id}
+                        selectMode={selectMode}
+                        isChecked={selectedIds.has(task.id)}
+                        onCheck={toggleSelect}
                       />
                     ))}
                   </div>
@@ -1018,6 +1262,7 @@ export default function Tasks() {
                             onNavigate={(id) => navigate(`/meetings/${id}`)}
                             onSelect={setSelectedTask}
                             isSelected={selectedTask?.id === task.id}
+                            isFocused={focusedTaskIndex !== null && flatVisibleTasks[focusedTaskIndex]?.id === task.id}
                           />
                         ))}
                       </AnimatePresence>
@@ -1063,6 +1308,9 @@ export default function Tasks() {
                       onSelect={setSelectedTask}
                       selectedTaskId={selectedTask?.id ?? null}
                       reorderTasks={reorderTasks}
+                      selectMode={selectMode}
+                      selectedIds={selectedIds}
+                      onCheck={toggleSelect}
                     />
                   )}
                 </>
@@ -1100,12 +1348,64 @@ export default function Tasks() {
                         onNavigate={(id) => navigate(`/meetings/${id}`)}
                         onSelect={setSelectedTask}
                         isSelected={selectedTask?.id === task.id}
+                        isFocused={focusedTaskIndex !== null && flatVisibleTasks[focusedTaskIndex]?.id === task.id}
+                        selectMode={selectMode}
+                        isChecked={selectedIds.has(task.id)}
+                        onCheck={toggleSelect}
                       />
                     ))}
                   </AnimatePresence>
                 </>
               )}
           </div>
+
+          {/* Keyboard shortcuts hint */}
+          <div className="flex items-center justify-end pb-6">
+            <button
+              onClick={() => setShowShortcuts((v) => !v)}
+              className="text-[10px] text-neutral-400 dark:text-neutral-600 hover:text-neutral-500 dark:hover:text-neutral-400 transition-colors select-none"
+            >
+              ? shortcuts
+            </button>
+          </div>
+          <AnimatePresence>
+            {showShortcuts && (
+              <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 4 }}
+                transition={{ duration: 0.15 }}
+                className="fixed bottom-6 right-6 z-40 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl p-4 min-w-[260px]"
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-3">
+                  Keyboard shortcuts
+                </p>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                  {[
+                    { key: 'J / ↓', label: 'Move down' },
+                    { key: 'K / ↑', label: 'Move up' },
+                    { key: 'Enter', label: 'Open detail' },
+                    { key: 'E', label: 'Edit title' },
+                    { key: 'D', label: 'Set due date' },
+                    { key: 'P', label: 'Cycle priority' },
+                    { key: 'Space', label: 'Toggle complete' },
+                    { key: 'Del', label: 'Delete task' },
+                    { key: 'Esc', label: 'Close / deselect' },
+                    { key: '?', label: 'Toggle this panel' },
+                  ].map(({ key, label }) => (
+                    <div key={key} className="flex items-center gap-2">
+                      <kbd className="inline-flex items-center px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-[10px] font-mono text-neutral-600 dark:text-neutral-400 shrink-0">
+                        {key}
+                      </kbd>
+                      <span className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate">
+                        {label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -1113,6 +1413,18 @@ export default function Tasks() {
       <TaskDetailPanel
         task={liveSelectedTask}
         onClose={() => setSelectedTask(null)}
+        autoFocusField={autoFocusField}
+        onAutoFocusConsumed={() => setAutoFocusField(undefined)}
+      />
+
+      {/* Bulk action bar */}
+      <BulkActionBar
+        count={selectedIds.size}
+        onComplete={handleBulkComplete}
+        onDelete={handleBulkDelete}
+        onPriority={handleBulkPriority}
+        onExit={exitSelectMode}
+        isPending={bulkPending}
       />
     </PageMotion>
   );

@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-04-01 (Phase 3 complete — P3 Board/Grouped, P4 Cmd+K, P5 Calendar all done)
+Last updated: 2026-04-04 (Phase 3.2 P3 — keyboard shortcuts done)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -475,32 +475,23 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 
 ### P2 — Meaningful Features
 
-- [ ] **"New tasks from meeting" badge on home dashboard** — after a meeting's AI processing completes (`transcriptionStatus = COMPLETED`), surface a callout on the home page: _"X new tasks extracted from [meeting title]"_ with a link to that meeting's tasks. Implementation: `useAllTasks({ source: 'AI_EXTRACTED', status: 'pending' })` — check for tasks created in the last 24h. Show as a dismissible banner above the timeline. Dismiss stores meeting IDs in `localStorage`.
+- [x] **"New tasks from meeting" badge on home dashboard** — after a meeting's AI processing completes (`transcriptionStatus = COMPLETED`), surface a callout on the home page: _"X new tasks extracted from [meeting title]"_ with a link to that meeting's tasks. Implementation: `useAllTasks({ source: 'AI_EXTRACTED', status: 'pending' })` — check for tasks created in the last 24h. Show as a dismissible banner above the timeline. Dismiss stores meeting IDs in `localStorage`.
 
-- [ ] **Task bulk actions** — in `TaskListView` (All Tasks view): add a checkbox on each task row (visible on hover / always-visible in select mode). A "Select" toggle button in the view header enters select mode. When tasks are selected, a floating action bar appears at bottom of screen: _"X selected · Mark complete · Set priority · Delete"_. Exit select mode on Escape or clicking deselect. Uses existing `updateTask` and `deleteTask` mutations in a `Promise.all`.
+- [x] **Task bulk actions** — "Select" toggle in header (list mode only), checkbox on each task row in select mode, floating `BulkActionBar` with bulk complete / priority / delete. Escape or Cancel button exits. Uses `smaApi` in `Promise.all` with single `invalidateQueries` after.
 
-- [ ] **Card analytics improvement** — `CardAnalytics` page: replace bare counts with (1) a sparkline chart of daily views over the last 30 days (use `recharts` or a simple SVG path — no new deps if recharts already installed), (2) a breakdown of views by source (QR scan / direct / shared link — if backend provides this), (3) top links clicked. If backend doesn't provide granular data yet, at minimum render the existing counts in a styled stat grid (large number + label) with trend indicators.
+- [x] **Card analytics improvement** — `CardAnalytics` page: pure SVG sparkline of daily views, trend indicator (TrendingUp/Down/Minus) on Total Views KPI, link click breakdown with progress bars, top countries with progress bars. No external chart deps. All colors neutral palette only.
 
-- [ ] **Onboarding flow for new users** — detect first-time users (`!hasCompletedOnboarding` flag in `UserSettings` or localStorage). Show a 3-step overlay/modal on first home page load: Step 1 "Create your card" → navigates to `/cards/new`, Step 2 "Record or schedule a meeting" → FAB, Step 3 "Connect Google Calendar" → `/settings?tab=integrations`. Each step has a skip option. Mark complete after step 3 or explicit "I'm all set" dismiss. Minimal and skippable — not a blocker.
+- [x] **Onboarding flow for new users** — localStorage-gated overlay on Home for users with 0 cards + 0 meetings. Shows 3 action rows (Create card / Go to meetings / Connect calendar) with individual navigate buttons. "I'm all set" dismisses permanently. No wizard — single-view checklist. Guards against flash via loading state checks.
 
 ---
 
 ### P3 — Bigger Features
 
-- [ ] **Global search UI** — a search results page at `/search?q=`. Triggered from the header search bar (currently opens command palette on desktop — add a fallback: if user types and presses Enter, navigate to `/search?q=<query>`). Results page shows three sections (Meetings / Tasks / Cards) with 5–10 results each, skeleton while loading. Uses `GET /search?q=` backend endpoint (P3 backend task). Also update Cmd+K to show search results when query doesn't match a command.
+- [x] **Global search UI** — `/search?q=` page with 4 result sections (Meetings / Tasks / Cards / Contacts), 300ms debounce, `keepPreviousData`, skeleton + empty state. Route registered in App.tsx.
 
-- [ ] **Calendar month view** — add "Month" to the week/day toggle. Month view shows a 5–6 row grid of days. Each day cell shows: dot indicators for GCal events, meeting chips (abbreviated), task count badge. Clicking a day switches to day view for that date. No drag-and-drop needed in month view — display only.
+- [x] **Calendar month view** — "Month" added to toggle (left of Week/Day). 6-week grid, Monday-first. Each cell: day number (today highlighted), meeting chips (up to 2 + overflow), GCal dots (up to 3), task count badge. Clicking any cell switches to day view. Out-of-month days dimmed.
 
-- [ ] **Keyboard shortcuts** — implement global keyboard handling in the tasks page and detail panel:
-  - `J` / `K` — move focus up/down through task list
-  - `Enter` — open detail panel for focused task
-  - `E` — edit title of focused task inline
-  - `D` — open due date picker for focused task
-  - `P` — cycle priority (null → LOW → MEDIUM → HIGH → null)
-  - `Space` — toggle complete on focused task
-  - `Backspace` / `Delete` — delete focused task (with confirm)
-  - `Escape` — close detail panel / deselect
-  - Show shortcuts in a `?` tooltip or footer hint in the tasks page
+- [x] **Keyboard shortcuts** — J/K navigate, Enter opens panel, E edits title, D opens due-date picker, P cycles priority, Space toggles complete, Del deletes, Esc closes/deselects. `?` shortcut + footer button toggles a fixed-position shortcuts cheatsheet panel. Inbox+list excluded (DnD keyboard sensor conflict). `autoFocusField` prop on `TaskDetailPanel` triggers title focus or label `.click()` for due date.
 
 - [ ] **Schedule task → create GCal block** — in `TaskDetailPanel`: when `scheduledTime` is set and user has GCal connected, show a toggle _"Block time in Google Calendar"_ (default off). When enabled, calls `updateTask({ scheduledTime, blockInCalendar: true })`. Backend creates a GCal event. Show the GCal event ID as a small chip "Blocked in calendar ✓" when set. Requires backend P3 task.
 

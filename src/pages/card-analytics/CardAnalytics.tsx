@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PageMotion } from '@/components/PageMotion';
 import {
@@ -8,6 +8,8 @@ import {
   MousePointerClick,
   TrendingUp,
   Globe,
+  TrendingDown,
+  Minus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -19,17 +21,93 @@ const TIME_RANGES = [
   { value: 90, label: '90d' },
 ];
 
+// Compute trend: compare sum of second half vs first half of viewsByDay
+function computeTrend(viewsByDay: { date: string; count: number }[]): number | null {
+  if (viewsByDay.length < 4) return null;
+  const mid = Math.floor(viewsByDay.length / 2);
+  const firstHalf = viewsByDay.slice(0, mid).reduce((s, d) => s + d.count, 0);
+  const secondHalf = viewsByDay.slice(mid).reduce((s, d) => s + d.count, 0);
+  if (firstHalf === 0) return null;
+  const pct = ((secondHalf - firstHalf) / firstHalf) * 100;
+  // Cap at ±999% to avoid absurd numbers
+  return Math.max(-999, Math.min(999, pct));
+}
+
+// Pure SVG sparkline — no external deps
+function Sparkline({ data }: { data: { date: string; count: number }[] }) {
+  const W = 600;
+  const H = 100;
+  const PAD = 4;
+
+  const counts = data.map((d) => d.count);
+  const maxVal = Math.max(...counts, 1);
+
+  if (data.length === 0) return null;
+
+  if (data.length === 1) {
+    // Single point — flat line
+    const y = H / 2;
+    return (
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full" preserveAspectRatio="none">
+        <line x1={PAD} y1={y} x2={W - PAD} y2={y} stroke="currentColor" strokeWidth="1.5" className="text-neutral-300 dark:text-neutral-600" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  const pts = data.map((d, i) => {
+    const x = PAD + (i / (data.length - 1)) * (W - PAD * 2);
+    const y = H - PAD - (d.count / maxVal) * (H - PAD * 2);
+    return { x, y };
+  });
+
+  const polylinePoints = pts.map((p) => `${p.x},${p.y}`).join(' ');
+  const areaPath = [
+    `M ${pts[0].x},${pts[0].y}`,
+    ...pts.slice(1).map((p) => `L ${p.x},${p.y}`),
+    `L ${pts[pts.length - 1].x},${H}`,
+    `L ${pts[0].x},${H}`,
+    'Z',
+  ].join(' ');
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full" preserveAspectRatio="none">
+      {/* Area fill */}
+      <path d={areaPath} fill="currentColor" className="text-neutral-900 dark:text-neutral-100" opacity="0.06" />
+      {/* Line */}
+      <polyline
+        points={polylinePoints}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        className="text-neutral-600 dark:text-neutral-400"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export default function CardAnalytics() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [days, setDays] = useState(30);
 
   const { data: card } = useCard(id ?? '');
-  const {
-    data: analytics,
-    isLoading,
-    isError,
-  } = useCardAnalytics(id ?? '', days);
+  const { data: analytics, isLoading, isError } = useCardAnalytics(id ?? '', days);
+
+  const trend = useMemo(
+    () => (analytics?.viewsByDay ? computeTrend(analytics.viewsByDay) : null),
+    [analytics?.viewsByDay]
+  );
+
+  const maxClicks = useMemo(
+    () => Math.max(...(analytics?.linkClicks?.map((d) => d.count) ?? [1]), 1),
+    [analytics?.linkClicks]
+  );
+  const maxCountry = useMemo(
+    () => Math.max(...(analytics?.topCountries?.map((d) => d.count) ?? [1]), 1),
+    [analytics?.topCountries]
+  );
 
   if (isError) {
     return (
@@ -47,10 +125,7 @@ export default function CardAnalytics() {
         <div className="h-8 w-48 rounded bg-neutral-100 dark:bg-neutral-800 animate-pulse mb-8" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="h-24 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse"
-            />
+            <div key={i} className="h-24 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
           ))}
         </div>
         <div className="h-64 rounded-xl bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
@@ -61,23 +136,10 @@ export default function CardAnalytics() {
   if (!analytics) {
     return (
       <div className="max-w-4xl mx-auto text-center py-20">
-        <p className="text-neutral-500 text-sm">No analytics data available</p>
+        <p className="text-neutral-500 dark:text-neutral-400 text-sm">No analytics data available</p>
       </div>
     );
   }
-
-  const maxViews = Math.max(
-    ...(analytics.viewsByDay?.map((d) => d.count) ?? [1]),
-    1
-  );
-  const maxClicks = Math.max(
-    ...(analytics.linkClicks?.map((d) => d.count) ?? [1]),
-    1
-  );
-  const maxCountry = Math.max(
-    ...(analytics.topCountries?.map((d) => d.count) ?? [1]),
-    1
-  );
 
   return (
     <PageMotion>
@@ -105,110 +167,150 @@ export default function CardAnalytics() {
             </div>
           </div>
 
-          {/* Time range */}
-          <div className="flex items-center gap-1 p-1 rounded-lg bg-neutral-100 dark:bg-neutral-800">
+          {/* Time range toggle */}
+          <div className="flex items-center gap-0.5 p-1 rounded-lg bg-neutral-100 dark:bg-neutral-800">
             {TIME_RANGES.map((range) => (
-              <button
+              <Button
                 key={range.value}
+                variant="ghost"
+                size="sm"
                 onClick={() => setDays(range.value)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                className={`px-3 py-1.5 h-auto text-xs font-medium transition-colors ${
                   days === range.value
-                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                    ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 shadow-sm hover:bg-white dark:hover:bg-neutral-700'
                     : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300'
                 }`}
               >
                 {range.label}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {/* Total Views — with trend */}
           <Card className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center">
-                <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                <Eye className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
               </div>
+              {trend !== null && (
+                <span
+                  className={`flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                    trend > 0
+                      ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'
+                      : trend < 0
+                      ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
+                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500'
+                  }`}
+                >
+                  {trend > 0 ? (
+                    <TrendingUp className="w-2.5 h-2.5" />
+                  ) : trend < 0 ? (
+                    <TrendingDown className="w-2.5 h-2.5" />
+                  ) : (
+                    <Minus className="w-2.5 h-2.5" />
+                  )}
+                  {trend > 0 ? '+' : ''}{trend.toFixed(1)}%
+                </span>
+              )}
             </div>
             <p className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
               {analytics.totalViews}
             </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-              Total Views
-            </p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Total Views</p>
           </Card>
 
+          {/* Unique Visitors */}
           <Card className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
-                <Users className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <div className="mb-3">
+              <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                <Users className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
               </div>
             </div>
             <p className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
               {analytics.uniqueViews}
             </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-              Unique Visitors
-            </p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Unique Visitors</p>
           </Card>
 
+          {/* Contacts */}
           <Card className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center">
-                <MousePointerClick className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+            <div className="mb-3">
+              <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                <MousePointerClick className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
               </div>
             </div>
             <p className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
               {analytics.totalContacts}
             </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-              Contacts
-            </p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Contacts</p>
           </Card>
 
+          {/* Conversion Rate */}
           <Card className="p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <div className="mb-3">
+              <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
               </div>
             </div>
             <p className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50">
-              {analytics.conversionRate.toFixed(1)}%
+              {(analytics.conversionRate ?? 0).toFixed(1)}%
             </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-              Conversion Rate
-            </p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">Conversion Rate</p>
           </Card>
         </div>
 
-        {/* Views by Day Chart */}
+        {/* SVG Sparkline — Views Over Time */}
         {analytics.viewsByDay?.length > 0 && (
           <Card className="p-5 mb-6">
-            <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-4">
-              Views Over Time
-            </h3>
-            <div className="flex items-end gap-1 h-40">
-              {analytics.viewsByDay.map((day, i) => (
-                <div
-                  key={i}
-                  className="flex-1 flex flex-col items-center gap-1"
-                >
-                  <div
-                    className="w-full rounded-t bg-blue-500/80 dark:bg-blue-400/60 transition-all min-h-[2px]"
-                    style={{ height: `${(day.count / maxViews) * 100}%` }}
-                  />
-                  {analytics.viewsByDay.length <= 14 && (
-                    <span className="text-[9px] text-neutral-400 whitespace-nowrap">
-                      {new Date(day.date).toLocaleDateString('en', {
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+                Views Over Time
+              </h3>
+              <span className="text-xs text-neutral-400 dark:text-neutral-500">
+                {analytics.viewsByDay.length} days
+              </span>
+            </div>
+
+            {/* Sparkline */}
+            <div className="h-28 w-full">
+              <Sparkline data={analytics.viewsByDay} />
+            </div>
+
+            {/* Date labels — only when ≤14 days */}
+            {analytics.viewsByDay.length <= 14 && (
+              <div className="flex justify-between mt-2">
+                {analytics.viewsByDay
+                  .filter((_, i, arr) => i === 0 || i === arr.length - 1 || (arr.length <= 7 && true))
+                  .map((day, i) => (
+                    <span key={i} className="text-[9px] text-neutral-400 dark:text-neutral-500 whitespace-nowrap">
+                      {new Date(day.date + 'T00:00:00').toLocaleDateString('en', {
                         month: 'short',
                         day: 'numeric',
                       })}
                     </span>
-                  )}
-                </div>
-              ))}
-            </div>
+                  ))}
+              </div>
+            )}
+
+            {/* Start / End labels for longer ranges */}
+            {analytics.viewsByDay.length > 14 && (
+              <div className="flex justify-between mt-2">
+                <span className="text-[9px] text-neutral-400 dark:text-neutral-500">
+                  {new Date(analytics.viewsByDay[0].date + 'T00:00:00').toLocaleDateString('en', {
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </span>
+                <span className="text-[9px] text-neutral-400 dark:text-neutral-500">
+                  {new Date(
+                    analytics.viewsByDay[analytics.viewsByDay.length - 1].date + 'T00:00:00'
+                  ).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+                </span>
+              </div>
+            )}
           </Card>
         )}
 
@@ -226,13 +328,13 @@ export default function CardAnalytics() {
                       <span className="text-xs text-neutral-700 dark:text-neutral-300 truncate max-w-[200px]">
                         {item.link}
                       </span>
-                      <span className="text-xs font-medium text-neutral-500 ml-2">
+                      <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 ml-2 shrink-0">
                         {item.count}
                       </span>
                     </div>
-                    <div className="h-2 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-violet-500/70 dark:bg-violet-400/50 transition-all"
+                        className="h-full rounded-full bg-neutral-400 dark:bg-neutral-500 transition-all"
                         style={{ width: `${(item.count / maxClicks) * 100}%` }}
                       />
                     </div>
@@ -256,13 +358,13 @@ export default function CardAnalytics() {
                       <span className="text-xs text-neutral-700 dark:text-neutral-300">
                         {item.country || 'Unknown'}
                       </span>
-                      <span className="text-xs font-medium text-neutral-500">
+                      <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
                         {item.count}
                       </span>
                     </div>
-                    <div className="h-2 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-emerald-500/70 dark:bg-emerald-400/50 transition-all"
+                        className="h-full rounded-full bg-neutral-400 dark:bg-neutral-500 transition-all"
                         style={{ width: `${(item.count / maxCountry) * 100}%` }}
                       />
                     </div>
