@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-04-04 (Phase 3.2 P3 — keyboard shortcuts done)
+Last updated: 2026-04-04 (Phase 3.3 product gaps written down)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -502,6 +502,57 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 ### P4 — Major Feature
 
 - [ ] **Recurring task UI** — in `TaskDetailPanel`: add a "Repeat" field (below Due Date). Options: None / Daily / Weekly / Monthly / Custom. For Weekly: show day-of-week selector. Stores as RRULE string via `updateTask({ recurringRule })`. Completed recurring tasks show "Next occurrence: [date]" instead of disappearing. Requires backend P4 task.
+
+---
+
+## Phase 3.3 — Close the Product Gaps
+
+> Identified via full user-perspective product review (2026-04-04).
+
+---
+
+### P1 — Email Notification Preferences (Settings UI)
+
+- [ ] **Settings > Notifications tab** — new tab in Settings page (after Integrations). Show toggles for:
+  - Email notifications master toggle (`emailNotificationsEnabled`)
+  - Booking emails (`bookingEmailsEnabled`) — "Get an email when someone books you"
+  - Meeting ready (`meetingReadyEmailEnabled`) — "Get an email when AI finishes processing"
+  - Daily task digest (`dailyDigestEnabled`) — "Daily summary of tasks at 8am" (off by default)
+- [ ] Wire to `PATCH /settings/user` — same pattern as existing settings toggles
+
+---
+
+### P2 — Scheduling Completeness (EventType Editor)
+
+The backend already supports these fields — we just need to expose them in the UI.
+
+- [ ] **EventType editor: Minimum notice** — add "Minimum notice" field (hours before booking). Dropdown: None / 1h / 2h / 4h / 12h / 24h / 48h. Maps to `minNoticeHours` on EventType.
+- [ ] **EventType editor: Buffer time** — add "Buffer before" + "Buffer after" dropdowns (0 / 5 / 10 / 15 / 30 min). Maps to `bufferBefore` / `bufferAfter` on EventType.
+- [ ] **EventType editor: Max bookings/day** — add "Max per day" number input (blank = unlimited). Maps to `maxPerDay` on EventType.
+- [ ] **Bookings list: Cancelled state** — show cancelled bookings with a strikethrough + "Cancelled" badge. Currently only active bookings shown.
+
+---
+
+### P3 — Connection Features
+
+- [ ] **Ask AI — meeting list shortcut** — add a small "Ask AI" ghost button on each meeting row in the meetings list (appears on hover). Clicking navigates to `/meetings/:id#ask-ai` and auto-opens the Ask AI panel. Makes the feature discoverable without drilling into the meeting.
+- [ ] **Ask AI — home dashboard** — add "Ask about your meetings" as an action in the home quick-actions or a subtle prompt on the TodayTimeline when meetings exist with transcripts.
+- [ ] **Meeting ↔ Card contact chips** — in `ScheduledDetail` participants section: when participant has `card` populated from backend, show card chip (avatar + name, clickable → `/cards/:cardId/edit`). In `CardEditor` contacts section: show "N meetings" count chip per contact. (Requires backend P3.3 auto-linking to be built first.)
+
+---
+
+### P4 — Recurring Tasks UI
+
+_(Already in Phase 3.2 P4 — carry forward)_
+
+- [ ] **`TaskDetailPanel`:** Add "Repeat" field below Due Date. Dropdown: None / Daily / Weekly / Monthly / Custom. For Weekly: show day-of-week chip selector. Stores as RRULE string via `updateTask({ recurringRule })`. When task has recurringRule + isCompleted: show "Next occurrence: [date]" instead of struck-through title.
+
+---
+
+### P5 — Data Import UI
+
+- [ ] **Contacts CSV import** — button in `CardEditor` contacts section: "Import from CSV". File picker → uploads to `POST /cards/:cardId/contacts/import`. Shows progress + result summary (`N contacts added, N skipped`).
+- [ ] **Calendar .ics import** — button in Meetings page header: "Import from calendar". File picker → uploads to `POST /meetings/import/ics`. Shows how many meetings were created. Each imported meeting is a SCHEDULED type with no recording.
 
 ---
 
