@@ -118,10 +118,16 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Better focus rings */
-:focus-visible {
+/* Better focus rings — buttons/links only, not inputs/textareas */
+:focus-visible:not(input):not(textarea):not(select) {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
 }
 
 /* Suppress outline on cmdk search input — it has its own container styling */

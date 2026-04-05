@@ -29,7 +29,7 @@ import {
   CalendarOff,
   CalendarDays,
   Bot,
-  BookOpen,
+
   XCircle,
   Star,
   CheckCircle2,
@@ -146,12 +146,7 @@ const SETTINGS_SECTIONS = [
     icon: Clock,
     group: 'scheduling',
   },
-  {
-    id: 'bookings',
-    label: 'Bookings',
-    icon: BookOpen,
-    group: 'scheduling',
-  },
+
   { id: 'ai', label: 'AI & Transcription', icon: Sparkles, group: 'features' },
   {
     id: 'integrations',

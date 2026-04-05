@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { format, parseISO } from 'date-fns';
 import {
@@ -12,6 +13,8 @@ import {
   Video,
   MapPin,
   Phone,
+  LayoutList,
+  ArrowUpRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageMotion } from '@/components/PageMotion';
@@ -276,6 +279,7 @@ function EmptyState({ filter }: { filter: FilterStatus }) {
 
 export default function Bookings() {
   const [activeFilter, setActiveFilter] = useState<FilterStatus>('all');
+  const navigate = useNavigate();
 
   const params = activeFilter !== 'all' ? { status: activeFilter } : {};
   const { data, isLoading, isError } = useBookings(params);
@@ -292,6 +296,30 @@ export default function Bookings() {
         <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
           Manage requests from your scheduling page
         </p>
+      </div>
+
+      {/* Setup CTAs */}
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <button
+          onClick={() => navigate('/settings?tab=event-types')}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-all group"
+        >
+          <div className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+            <LayoutList className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
+          </div>
+          <span className="text-[12px] font-medium text-neutral-700 dark:text-neutral-300">Event Types</span>
+          <ArrowUpRight className="w-3 h-3 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors" />
+        </button>
+        <button
+          onClick={() => navigate('/settings?tab=availability')}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-all group"
+        >
+          <div className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+            <Clock className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
+          </div>
+          <span className="text-[12px] font-medium text-neutral-700 dark:text-neutral-300">Availability</span>
+          <ArrowUpRight className="w-3 h-3 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors" />
+        </button>
       </div>
 
       {/* Filter tabs */}

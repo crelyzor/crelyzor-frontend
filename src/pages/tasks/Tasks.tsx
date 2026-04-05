@@ -19,7 +19,6 @@ import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   useAllTasks,
-  useCreateStandaloneTask,
   useUpdateTask,
   useDeleteTask,
   useReorderTasks,
@@ -30,9 +29,8 @@ import { TaskSidebar } from './components/TaskSidebar';
 import { TaskBoardView } from './components/TaskBoardView';
 import { TaskListView } from './components/TaskListView';
 import { BulkActionBar } from './components/BulkActionBar';
+import { CreateTaskModal } from './components/CreateTaskModal';
 import { toast } from 'sonner';
-import { parseTaskInput } from '@/lib/parseTaskInput';
-import { PRIORITY_LABELS, PRIORITY_STYLES } from '@/constants/task';
 import { smaApi } from '@/services/smaService';
 import { queryKeys } from '@/lib/queryKeys';
 import type {
@@ -330,8 +328,9 @@ export default function Tasks() {
   );
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
-  const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [showCreate, setShowCreate] = useState(false);
+  const [showCreate, setShowCreate] = useState(
+    () => searchParams.get('create') === '1'
+  );
   const [selectedTask, setSelectedTask] = useState<TaskWithMeeting | null>(
     null
   );
@@ -440,7 +439,6 @@ export default function Tasks() {
     return { inbox, today, upcoming };
   }, [badgeData?.tasks, startOfToday]);
 
-  const createTask = useCreateStandaloneTask();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
   const reorderTasks = useReorderTasks();
@@ -470,28 +468,20 @@ export default function Tasks() {
     return selectedTask;
   }, [tasks, data?.grouped, selectedTask]);
 
-  // NL parse — derived live from the inline create input
-  const parsed = useMemo(
-    () => (newTaskTitle.trim() ? parseTaskInput(newTaskTitle.trim()) : null),
-    [newTaskTitle]
-  );
-
-  const handleCreate = useCallback(() => {
-    if (!parsed) return;
-    createTask.mutate(
-      {
-        title: parsed.title,
-        priority: parsed.priority,
-        dueDate: parsed.dueDate,
-      },
-      {
-        onSuccess: () => {
-          setNewTaskTitle('');
-          setShowCreate(false);
-        },
-      }
-    );
-  }, [parsed, createTask]);
+  // Auto-select task when navigated here with ?selected=<id> (e.g. after FAB creation)
+  useEffect(() => {
+    const selectedId = searchParams.get('selected');
+    if (!selectedId || !data) return;
+    const allTasks = [
+      ...(data.tasks ?? []),
+      ...(data.grouped?.flatMap((g) => g.tasks) ?? []),
+    ];
+    const task = allTasks.find((t) => t.id === selectedId);
+    if (task) {
+      setSelectedTask(task);
+      setSearchParams((prev) => { prev.delete('selected'); return prev; }, { replace: true });
+    }
+  }, [searchParams, data, setSearchParams]);
 
   const handleToggle = useCallback(
     (taskId: string, isCompleted: boolean) => {
@@ -1081,73 +1071,10 @@ export default function Tasks() {
             </div>
           )}
 
-          {/* Inline create */}
-          <AnimatePresence>
-            {showCreate && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden mb-3"
-              >
-                <div className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl">
-                  <Plus className="w-4 h-4 text-neutral-400 shrink-0" />
-                  <input
-                    type="text"
-                    value={newTaskTitle}
-                    onChange={(e) => setNewTaskTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleCreate();
-                      if (e.key === 'Escape') {
-                        setShowCreate(false);
-                        setNewTaskTitle('');
-                      }
-                    }}
-                    placeholder="What needs to be done?"
-                    className="flex-1 bg-transparent text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 outline-none"
-                    autoFocus
-                  />
-                  <Button
-                    size="xs"
-                    onClick={handleCreate}
-                    disabled={!newTaskTitle.trim() || createTask.isPending}
-                  >
-                    {createTask.isPending ? 'Adding...' : 'Add'}
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="ghost"
-                    onClick={() => {
-                      setShowCreate(false);
-                      setNewTaskTitle('');
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-                {/* NL parse preview */}
-                {(parsed?.priority || parsed?.dueDateLabel) && (
-                  <div className="flex items-center gap-1.5 px-4 pt-1.5 pb-1">
-                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                      Will create:
-                    </span>
-                    {parsed.priority && (
-                      <span
-                        className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${PRIORITY_STYLES[parsed.priority] ?? ''}`}
-                      >
-                        {PRIORITY_LABELS[parsed.priority]}
-                      </span>
-                    )}
-                    {parsed.dueDateLabel && (
-                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
-                        {parsed.dueDateLabel}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <CreateTaskModal
+            open={showCreate}
+            onClose={() => setShowCreate(false)}
+          />
 
           {/* Task list */}
           <div className="space-y-1.5 pb-24">
