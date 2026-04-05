@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-04-06 (Phase 3.4 — Global Tags planned)
+Last updated: 2026-04-06 (Phase 3.4 planned + Phase 3.2/3.3 audit)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -493,7 +493,7 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 
 - [x] **Keyboard shortcuts** — J/K navigate, Enter opens panel, E edits title, D opens due-date picker, P cycles priority, Space toggles complete, Del deletes, Esc closes/deselects. `?` shortcut + footer button toggles a fixed-position shortcuts cheatsheet panel. Inbox+list excluded (DnD keyboard sensor conflict). `autoFocusField` prop on `TaskDetailPanel` triggers title focus or label `.click()` for due date.
 
-- [ ] **Schedule task → create GCal block** — in `TaskDetailPanel`: when `scheduledTime` is set and user has GCal connected, show a toggle _"Block time in Google Calendar"_ (default off). When enabled, calls `updateTask({ scheduledTime, blockInCalendar: true })`. Backend creates a GCal event. Show the GCal event ID as a small chip "Blocked in calendar ✓" when set. Requires backend P3 task.
+- [x] **Schedule task → create GCal block** — in `TaskDetailPanel`: when `scheduledTime` is set and user has GCal connected, show a toggle _"Block time in Google Calendar"_ (default off). When enabled, calls `updateTask({ scheduledTime, blockInCalendar: true })`. Backend creates a GCal event. Show the GCal event ID as a small chip "Blocked in calendar ✓" when set.
 
 - [ ] **Meeting ↔ Card contact chips** — in `ScheduledDetail` participants section: when a participant's `card` field is populated (from backend auto-linking), show their card chip (avatar + name, clickable → `/cards/:cardId/edit`). On `CardEditor` contacts section: show a "Meetings" count chip per contact that opens a meeting list filtered by that contact. Requires backend P3 task.
 
@@ -526,10 +526,10 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 
 The backend already supports these fields — we just need to expose them in the UI.
 
-- [ ] **EventType editor: Minimum notice** — add "Minimum notice" field (hours before booking). Dropdown: None / 1h / 2h / 4h / 12h / 24h / 48h. Maps to `minNoticeHours` on EventType.
-- [ ] **EventType editor: Buffer time** — add "Buffer before" + "Buffer after" dropdowns (0 / 5 / 10 / 15 / 30 min). Maps to `bufferBefore` / `bufferAfter` on EventType.
-- [ ] **EventType editor: Max bookings/day** — add "Max per day" number input (blank = unlimited). Maps to `maxPerDay` on EventType.
-- [ ] **Bookings list: Cancelled state** — show cancelled bookings with a strikethrough + "Cancelled" badge. Currently only active bookings shown.
+- [x] **EventType editor: Minimum notice** — add "Minimum notice" field (hours before booking). Dropdown: None / 1h / 2h / 4h / 12h / 24h / 48h. Maps to `minNoticeHours` on EventType.
+- [x] **EventType editor: Buffer time** — add "Buffer before" + "Buffer after" dropdowns (0 / 5 / 10 / 15 / 30 min). Maps to `bufferBefore` / `bufferAfter` on EventType.
+- [x] **EventType editor: Max bookings/day** — add "Max per day" number input (blank = unlimited). Maps to `maxPerDay` on EventType.
+- [x] **Bookings list: Cancelled state** — show cancelled bookings with a strikethrough + "Cancelled" badge. Currently only active bookings shown.
 
 ---
 
