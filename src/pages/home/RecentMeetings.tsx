@@ -86,7 +86,9 @@ export function RecentMeetings({ meetings, isLoading, isError }: Props) {
         </div>
 
         <button
-          onClick={() => navigate(tab === 'meetings' ? '/meetings' : '/voice-notes')}
+          onClick={() =>
+            navigate(tab === 'meetings' ? '/meetings' : '/voice-notes')
+          }
           className="flex items-center gap-0.5 text-[10px] font-medium text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors group"
         >
           See all
@@ -108,7 +110,9 @@ export function RecentMeetings({ meetings, isLoading, isError }: Props) {
 
             {isError && (
               <div className="py-10 text-center">
-                <p className="text-xs text-neutral-400">Failed to load meetings</p>
+                <p className="text-xs text-neutral-400">
+                  Failed to load meetings
+                </p>
               </div>
             )}
 
@@ -237,7 +241,9 @@ export function RecentMeetings({ meetings, isLoading, isError }: Props) {
                       </span>
                       {note.endTime && (
                         <>
-                          <span className="text-[9px] text-neutral-200 dark:text-neutral-700">·</span>
+                          <span className="text-[9px] text-neutral-200 dark:text-neutral-700">
+                            ·
+                          </span>
                           <Clock className="w-2 h-2 text-neutral-300 dark:text-neutral-600" />
                           <span className="text-[9px] text-neutral-400 dark:text-neutral-500">
                             {formatMeetingDuration(note)}

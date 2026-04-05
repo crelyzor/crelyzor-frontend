@@ -22,7 +22,11 @@ export function PendingTasksWidget({ tasks, isLoading }: Props) {
   const qc = useQueryClient();
   const updateTask = useUpdateTask('');
 
-  const handleComplete = (e: React.MouseEvent, taskId: string, meetingId: string | null) => {
+  const handleComplete = (
+    e: React.MouseEvent,
+    taskId: string,
+    meetingId: string | null
+  ) => {
     e.stopPropagation();
     updateTask.mutate(
       { taskId, data: { isCompleted: true } },
@@ -77,7 +81,9 @@ export function PendingTasksWidget({ tasks, isLoading }: Props) {
         {!isLoading && visible.length === 0 && (
           <div className="py-10 text-center">
             <CheckSquare className="w-6 h-6 mx-auto mb-2 text-neutral-200 dark:text-neutral-700" />
-            <p className="text-xs text-neutral-400 dark:text-neutral-600">All caught up</p>
+            <p className="text-xs text-neutral-400 dark:text-neutral-600">
+              All caught up
+            </p>
           </div>
         )}
 
@@ -87,7 +93,11 @@ export function PendingTasksWidget({ tasks, isLoading }: Props) {
               key={task.id}
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2, delay: i * 0.04, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{
+                duration: 0.2,
+                delay: i * 0.04,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
               onClick={() =>
                 task.meetingId
                   ? navigate(`/meetings/${task.meetingId}`)

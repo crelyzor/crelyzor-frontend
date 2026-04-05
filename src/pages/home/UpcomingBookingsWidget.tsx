@@ -88,7 +88,9 @@ export function UpcomingBookingsWidget() {
         {!isLoading && upcoming.length === 0 && (
           <div className="px-3 py-4 text-center">
             <p className="text-[12px] text-neutral-400 dark:text-neutral-500">
-              {pendingCount > 0 ? `${pendingCount} request${pendingCount > 1 ? 's' : ''} awaiting your response` : 'No upcoming bookings'}
+              {pendingCount > 0
+                ? `${pendingCount} request${pendingCount > 1 ? 's' : ''} awaiting your response`
+                : 'No upcoming bookings'}
             </p>
             {pendingCount > 0 && (
               <button

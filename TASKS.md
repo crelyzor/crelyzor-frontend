@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-04-04 (Phase 3.3 product gaps written down)
+Last updated: 2026-04-06 (Phase 3.4 — Global Tags planned)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -553,6 +553,76 @@ _(Already in Phase 3.2 P4 — carry forward)_
 
 - [ ] **Contacts CSV import** — button in `CardEditor` contacts section: "Import from CSV". File picker → uploads to `POST /cards/:cardId/contacts/import`. Shows progress + result summary (`N contacts added, N skipped`).
 - [ ] **Calendar .ics import** — button in Meetings page header: "Import from calendar". File picker → uploads to `POST /meetings/import/ics`. Shows how many meetings were created. Each imported meeting is a SCHEDULED type with no recording.
+
+---
+
+## Phase 3.4 — Global Tags ← next
+
+> Builds the tag index page, tag detail page, and contact tagging. Depends on backend Phase 3.4 being done first.
+
+---
+
+### P0 — Service + Types + Query Keys
+
+- [ ] **Types** — add to `src/types/` or service file:
+  - `TagWithCounts` — `Tag & { counts: { meetings: number, cards: number, tasks: number, contacts: number } }`
+  - `TagItems` — `{ tag: Tag, meetings: MeetingItem[], cards: CardItem[], tasks: TaskItem[], contacts: ContactItem[], counts: {..., total: number } }`
+  - `ContactItem` — `{ id, name, email, company, cardId }`
+- [ ] **`tagsService.ts`** — add:
+  - `getTagsWithCounts(): TagWithCounts[]` — calls `GET /tags` (backend now returns counts)
+  - `getTagItems(tagId): TagItems` — calls `GET /tags/:tagId/items`
+  - `getContactTags(cardId, contactId): Tag[]` — calls `GET /cards/:cardId/contacts/:contactId/tags`
+  - `attachTagToContact(cardId, contactId, tagId): void`
+  - `detachTagFromContact(cardId, contactId, tagId): void`
+- [ ] **`queryKeys.ts`** — add:
+  - `queryKeys.tags.withCounts()`
+  - `queryKeys.tags.items(tagId)`
+  - `queryKeys.tags.byContact(cardId, contactId)`
+
+---
+
+### P1 — Tags Index Page (`/tags`)
+
+- [ ] **New page:** `src/pages/tags/TagsPage.tsx` — wrapped in `<PageMotion>`
+- [ ] **Tag grid** — each tag as a card: color dot + name, counts row (`N meetings · N cards · N tasks · N contacts`), ⋯ menu (Rename / Delete)
+- [ ] **Empty state** — "No tags yet. Create one to start organizing." with inline create
+- [ ] **Inline create** — "New tag" button opens a small inline form: name input + color swatch picker (same 8 preset colors as existing tag editor). Calls `createTag`. Invalidates `tags.withCounts`.
+- [ ] **Rename** — inline input on the card or a small popover. Calls `updateTag`. Optimistic.
+- [ ] **Delete** — confirm dialog ("Delete #tag-name? It will be removed from all items."). Calls `deleteTag`. Optimistic.
+- [ ] **Skeleton** — grid of placeholder cards while loading
+- [ ] **Register route** in `App.tsx`: `/tags`
+- [ ] **Add "Tags" to sidebar/toolbar nav** — between Tasks and Cards (or after Cards). Tag icon (`Tag` from lucide).
+
+---
+
+### P2 — Tag Detail Page (`/tags/:tagId`)
+
+- [ ] **New page:** `src/pages/tags/TagDetailPage.tsx` — wrapped in `<PageMotion>`
+- [ ] **Header** — color dot + tag name + total count badge + back button
+- [ ] **4 sections** (show only if count > 0, always show with empty state if count = 0):
+  - **Meetings** — rows: title + date + type icon. Click → `/meetings/:id`
+  - **Cards** — rows: avatar + displayName + title. Click → `/cards/:cardId/edit`
+  - **Tasks** — rows: checkbox + title + status chip + due date. Inline complete toggle (calls `updateTask`, invalidates tag items).
+  - **Contacts** — rows: name + company + card name. Click → `/cards/:cardId/edit` (contacts tab)
+- [ ] **Section empty state** — only shown if that section has 0 items and total > 0 (i.e. other sections have items)
+- [ ] **Full empty state** — if tag has 0 items total: "Nothing tagged with #name yet."
+- [ ] **Skeleton** — section placeholder rows while loading
+- [ ] **Register route** in `App.tsx`: `/tags/:tagId`
+
+---
+
+### P3 — Tags on Contacts
+
+- [ ] **Tag chips on contact rows** — in the contacts table/list on `CardEditor` (or contacts page): render tag chips per contact (same `TagChip` component). Fetch via `useContactTags(cardId, contactId)`.
+- [ ] **Tag editor on contact** — popover tag editor on each contact row (same `TagsPopover` pattern used on meetings/cards). Add / remove tags. Calls `attachTagToContact` / `detachTagFromContact`.
+- [ ] **Tag filter on contacts list** — tag filter chips above the contacts table. Filter client-side (same pattern as meetings/voice notes).
+- [ ] **Query hook** — `useContactTags(cardId, contactId)` in `src/hooks/queries/useTagQueries.ts`
+
+---
+
+### P4 — Tag Chip Navigation
+
+- [ ] **`TagChip` component** — make every tag chip in the app a link to `/tags/:tagId`. Currently chips are display-only. Wrap in `<Link to={/tags/${tag.id}}>` (or `useNavigate` on click) with `stopPropagation`. Apply to: meeting detail, meeting list rows, voice note rows, card list rows, card editor, task detail panel, task rows, contact rows.
 
 ---
 
