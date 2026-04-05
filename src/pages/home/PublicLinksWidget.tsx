@@ -6,6 +6,7 @@ import {
   ExternalLink,
   CalendarDays,
   CreditCard,
+  ArrowUpRight,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -33,20 +34,19 @@ function LinkRow({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Show just the path segment so it stays compact
   const displayPath = url.replace(/^https?:\/\/[^/]+/, '');
 
   return (
-    <div className="group flex items-center gap-3 px-4 py-3">
+    <div className="group flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors duration-150">
       <div className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
-        <Icon className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
+        <Icon className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">
+        <p className="text-[9px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">
           {label}
         </p>
-        <p className="text-[11px] text-neutral-700 dark:text-neutral-300 font-mono truncate">
+        <p className="text-[11px] text-neutral-600 dark:text-neutral-400 font-mono truncate">
           {displayPath}
         </p>
       </div>
@@ -57,15 +57,15 @@ function LinkRow({
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
-          aria-label={`Open ${label} link`}
+          className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
+          aria-label={`Open ${label}`}
         >
           <ExternalLink className="w-3 h-3" />
         </a>
         <button
           onClick={handleCopy}
-          className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
-          aria-label={`Copy ${label} link`}
+          className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
+          aria-label={`Copy ${label}`}
         >
           {copied ? (
             <Check className="w-3 h-3 text-neutral-600 dark:text-neutral-300" />
@@ -85,8 +85,8 @@ export function PublicLinksWidget() {
   if (isLoading) {
     return (
       <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 animate-pulse">
-        <div className="h-3 w-16 bg-neutral-100 dark:bg-neutral-800 rounded mb-3" />
-        <div className="space-y-3">
+        <div className="h-2.5 w-14 bg-neutral-100 dark:bg-neutral-800 rounded mb-3" />
+        <div className="space-y-2">
           <div className="h-8 bg-neutral-100 dark:bg-neutral-800 rounded-xl" />
           <div className="h-8 bg-neutral-100 dark:bg-neutral-800 rounded-xl" />
         </div>
@@ -98,19 +98,20 @@ export function PublicLinksWidget() {
     return (
       <button
         onClick={() => navigate('/settings?tab=profile')}
-        className="w-full rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 flex items-center gap-3 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors text-left"
+        className="w-full rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 flex items-center gap-3 hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors text-left group"
       >
-        <div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
-          <Link2 className="w-4 h-4 text-neutral-400" />
+        <div className="w-7 h-7 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+          <Link2 className="w-3.5 h-3.5 text-neutral-400" />
         </div>
-        <div>
-          <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+        <div className="flex-1">
+          <p className="text-[12px] font-medium text-neutral-700 dark:text-neutral-300">
             Set a username
           </p>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+          <p className="text-[10px] text-neutral-400 dark:text-neutral-500">
             to get your public links
           </p>
         </div>
+        <ArrowUpRight className="w-3.5 h-3.5 text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-500 dark:group-hover:text-neutral-400 transition-colors" />
       </button>
     );
   }
@@ -120,12 +121,12 @@ export function PublicLinksWidget() {
 
   return (
     <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden">
-      <div className="px-4 pt-3 pb-2">
-        <h3 className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+      <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
+        <span className="text-[10px] tracking-[0.18em] text-neutral-400 dark:text-neutral-500 uppercase font-medium">
           Your Links
-        </h3>
+        </span>
       </div>
-      <div className="divide-y divide-neutral-100 dark:divide-neutral-800 pb-1">
+      <div className="divide-y divide-neutral-50 dark:divide-neutral-800/50">
         <LinkRow label="Card" url={cardUrl} icon={CreditCard} />
         <LinkRow label="Schedule" url={scheduleUrl} icon={CalendarDays} />
       </div>

@@ -16,3 +16,5 @@ export function PageMotion({ children }: { children: ReactNode }) {
     </motion.div>
   );
 }
+
+export default PageMotion;

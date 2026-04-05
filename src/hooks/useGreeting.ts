@@ -14,12 +14,5 @@ export function useGreeting() {
     day: 'numeric',
   });
 
-  const tips = [
-    'You have 3 meetings today — your first is at 2:00 PM',
-    'Consider blocking focus time this afternoon',
-    'Your busiest day this week is Wednesday',
-  ];
-  const tip = tips[now.getDay() % tips.length];
-
-  return { greeting, dayName, monthDay, tip };
+  return { greeting, dayName, monthDay };
 }

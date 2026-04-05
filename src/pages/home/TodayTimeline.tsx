@@ -7,11 +7,10 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Button } from '@/components/ui/button';
 import type { DisplayMeeting } from '@/lib/meetingHelpers';
 import type { CalendarEvent } from '@/services/integrationsService';
 import type { TaskWithMeeting } from '@/services/smaService';
-import { getStatusStyle, getStatusLabel } from '@/types';
+import { getStatusLabel, getStatusStyle } from '@/types';
 import {
   useGoogleCalendarStatus,
   useGoogleCalendarEvents,
@@ -31,82 +30,37 @@ type TimelineItem =
   | { kind: 'gcal'; event: CalendarEvent; sortKey: number }
   | { kind: 'task'; task: TaskWithMeeting; sortKey: number };
 
-function RowSkeleton() {
-  return (
-    <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-xl animate-pulse">
-      <div className="shrink-0 w-14 space-y-1.5">
-        <div className="h-3 bg-neutral-100 dark:bg-neutral-800 rounded w-10 ml-auto" />
-        <div className="h-2.5 bg-neutral-100 dark:bg-neutral-800 rounded w-8 ml-auto" />
-      </div>
-      <div className="w-px h-7 bg-neutral-100 dark:bg-neutral-800 shrink-0" />
-      <div className="flex-1 space-y-1.5">
-        <div className="h-3.5 bg-neutral-100 dark:bg-neutral-800 rounded w-2/3" />
-        <div className="h-2.5 bg-neutral-100 dark:bg-neutral-800 rounded w-1/4" />
-      </div>
-    </div>
-  );
-}
-
-function formatTime(isoString: string): string {
-  return new Date(isoString).toLocaleTimeString('en-US', {
+function fmt(iso: string) {
+  return new Date(iso).toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
   });
 }
 
-function formatDuration(startIso: string, endIso: string): string {
+function dur(startIso: string, endIso: string) {
   const mins = Math.round((Date.parse(endIso) - Date.parse(startIso)) / 60000);
-  if (mins < 60) return `${mins} min`;
-  const hrs = Math.floor(mins / 60);
-  const rem = mins % 60;
-  return rem > 0 ? `${hrs}h ${rem}m` : `${hrs}h`;
+  if (mins < 60) return `${mins}m`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-function GCalEventContent({ event }: { event: CalendarEvent }) {
+function RowSkeleton() {
   return (
-    <div className="flex items-center gap-3 px-4 py-3">
-      <div className="shrink-0 text-right w-14">
-        <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-          {formatTime(event.startTime)}
-        </p>
-        <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-0.5">
-          {formatDuration(event.startTime, event.endTime)}
-        </p>
+    <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-800/40 animate-pulse border border-neutral-100 dark:border-neutral-800">
+      <div className="w-10 space-y-1.5 shrink-0">
+        <div className="h-2.5 bg-neutral-200 dark:bg-neutral-700 rounded w-8 ml-auto" />
+        <div className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded w-5 ml-auto" />
       </div>
-
-      <div className="w-px h-7 bg-neutral-200 dark:bg-neutral-700 shrink-0" />
-
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 truncate">
-          {event.title}
-        </p>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <CalendarDays className="w-2.5 h-2.5 text-neutral-400" />
-          <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
-            Google Calendar
-          </span>
-        </div>
+      <div className="w-px h-6 bg-neutral-200 dark:bg-neutral-700" />
+      <div className="flex-1 space-y-1.5">
+        <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-3/4" />
+        <div className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded w-1/4" />
       </div>
     </div>
   );
 }
-
-const GCAL_BASE =
-  'bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800 rounded-xl';
-
-const TASK_BASE =
-  'bg-white dark:bg-neutral-900 border border-dashed border-neutral-200 dark:border-neutral-700 rounded-xl';
-
-const MOTION_PROPS = (i: number) => ({
-  initial: { opacity: 0, y: 8 },
-  animate: { opacity: 1, y: 0 },
-  transition: {
-    duration: 0.25,
-    delay: i * 0.04,
-    ease: [0.25, 0.1, 0.25, 1] as const,
-  },
-});
 
 export function TodayTimeline({
   meetings,
@@ -119,12 +73,12 @@ export function TodayTimeline({
   const updateTask = useUpdateTask('');
 
   const today = new Date().toISOString().split('T')[0];
-  const start = (() => {
+  const startISO = (() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
     return d.toISOString();
   })();
-  const end = (() => {
+  const endISO = (() => {
     const d = new Date();
     d.setHours(23, 59, 59, 999);
     return d.toISOString();
@@ -132,28 +86,19 @@ export function TodayTimeline({
 
   const { data: gcalStatus } = useGoogleCalendarStatus();
   const isGCalConnected = gcalStatus?.connected === true;
+  const { data: gcalEvents = [], isLoading: gcalLoading } = useGoogleCalendarEvents(
+    isGCalConnected ? startISO : '',
+    isGCalConnected ? endISO : ''
+  );
 
-  const { data: gcalEvents = [], isLoading: gcalLoading } =
-    useGoogleCalendarEvents(
-      isGCalConnected ? start : '',
-      isGCalConnected ? end : ''
-    );
-
-  // Split tasks: scheduled today (timed) vs due today only (all-day)
   const isToday = (iso: string) => iso.split('T')[0] === today;
-  const scheduledTodayTasks = tasks.filter(
-    (t) => t.scheduledTime && isToday(t.scheduledTime)
-  );
+  const scheduledTasks = tasks.filter((t) => t.scheduledTime && isToday(t.scheduledTime));
   const dueTodayTasks = tasks.filter(
-    (t) =>
-      t.dueDate &&
-      isToday(t.dueDate) &&
-      (!t.scheduledTime || !isToday(t.scheduledTime))
+    (t) => t.dueDate && isToday(t.dueDate) && (!t.scheduledTime || !isToday(t.scheduledTime))
   );
-
   const todayMeetings = meetings.filter((m) => m.date === today);
 
-  const items: TimelineItem[] = [
+  const timedItems: TimelineItem[] = [
     ...todayMeetings.map((m) => ({
       kind: 'crelyzor' as const,
       meeting: m,
@@ -164,148 +109,142 @@ export function TodayTimeline({
       event: e,
       sortKey: Date.parse(e.startTime),
     })),
-    ...scheduledTodayTasks.map((t) => ({
+    ...scheduledTasks.map((t) => ({
       kind: 'task' as const,
       task: t,
       sortKey: Date.parse(t.scheduledTime!),
     })),
   ].sort((a, b) => a.sortKey - b.sortKey);
 
-  const totalCount = items.length + dueTodayTasks.length;
+  const totalCount = timedItems.length + dueTodayTasks.length;
   const isLoadingAny = isLoading || gcalLoading || isTasksLoading;
 
-  function handleToggleTask(task: TaskWithMeeting, e: React.MouseEvent) {
+  function toggleTask(task: TaskWithMeeting, e: React.MouseEvent) {
     e.stopPropagation();
-    updateTask.mutate({
-      taskId: task.id,
-      data: { isCompleted: !task.isCompleted },
-    });
-  }
-
-  function handleTaskClick(task: TaskWithMeeting) {
-    if (task.meetingId) {
-      navigate(`/meetings/${task.meetingId}`);
-    } else {
-      navigate('/tasks');
-    }
+    updateTask.mutate({ taskId: task.id, data: { isCompleted: !task.isCompleted } });
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
         <div className="flex items-center gap-2">
           <CalendarDays className="w-3.5 h-3.5 text-neutral-400" />
-          <h2 className="text-[11px] tracking-[0.15em] text-neutral-400 dark:text-neutral-500 font-medium uppercase">
+          <span className="text-[10px] tracking-[0.18em] text-neutral-400 dark:text-neutral-500 uppercase font-medium">
             Today
-          </h2>
+          </span>
           {!isLoadingAny && totalCount > 0 && (
-            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900">
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900">
               {totalCount}
             </span>
           )}
         </div>
-        <Button
-          variant="ghost"
-          size="xs"
+        <button
           onClick={() => navigate('/meetings')}
-          className="text-[11px] text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 font-medium h-auto gap-1 px-0"
+          className="flex items-center gap-0.5 text-[10px] font-medium text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors group"
         >
           See all
-          <ArrowUpRight className="w-3 h-3" />
-        </Button>
+          <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+        </button>
       </div>
 
-      <div className="space-y-2">
-        {isLoadingAny && [1, 2].map((i) => <RowSkeleton key={i} />)}
+      <div className="p-3 space-y-1.5">
+        {/* Loading */}
+        {isLoadingAny && [1, 2, 3].map((i) => <RowSkeleton key={i} />)}
 
+        {/* Error */}
         {!isLoadingAny && isError && (
-          <div className="text-center py-8 text-neutral-400 dark:text-neutral-600">
-            <p className="text-xs">Failed to load meetings</p>
+          <div className="py-8 text-center">
+            <p className="text-xs text-neutral-400">Failed to load</p>
           </div>
         )}
 
+        {/* Empty */}
         {!isLoadingAny && !isError && totalCount === 0 && (
-          <div className="text-center py-8 text-neutral-400 dark:text-neutral-600">
-            <Clock className="w-7 h-7 mx-auto mb-2 opacity-40" />
-            <p className="text-xs">No events today</p>
+          <div className="py-10 text-center">
+            <Clock className="w-6 h-6 mx-auto mb-2 text-neutral-300 dark:text-neutral-700" />
+            <p className="text-xs text-neutral-400 dark:text-neutral-600">Nothing on the calendar</p>
           </div>
         )}
 
-        {/* Due Today tasks — all-day section at top */}
+        {/* Due Today strip */}
         {!isLoadingAny && !isError && dueTodayTasks.length > 0 && (
-          <div className="mb-1">
-            <p className="text-[10px] tracking-[0.1em] text-neutral-400 dark:text-neutral-500 font-medium uppercase mb-1.5 px-1">
-              Due today
+          <div className="pb-1">
+            <p className="text-[9px] tracking-[0.15em] text-neutral-400 dark:text-neutral-600 uppercase font-medium px-2 mb-1.5">
+              Due Today
             </p>
-            <div className="space-y-1.5">
-              {dueTodayTasks.map((task, i) => (
-                <motion.div
-                  key={`dt-${task.id}`}
-                  {...MOTION_PROPS(i)}
-                  onClick={() => handleTaskClick(task)}
-                  className={`group flex items-center gap-3 px-4 py-2.5 ${TASK_BASE} hover:border-neutral-300 dark:hover:border-neutral-600 cursor-pointer transition-[border-color,box-shadow] duration-200`}
+            {dueTodayTasks.map((task, i) => (
+              <motion.div
+                key={`dt-${task.id}`}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: i * 0.04 }}
+                onClick={() => (task.meetingId ? navigate(`/meetings/${task.meetingId}`) : navigate('/tasks'))}
+                className="group flex items-center gap-3 px-3 py-2.5 rounded-xl
+                           border border-dashed border-neutral-200 dark:border-neutral-700
+                           hover:border-neutral-300 dark:hover:border-neutral-600
+                           hover:bg-neutral-50 dark:hover:bg-neutral-800/50
+                           cursor-pointer transition-all duration-150"
+              >
+                <button
+                  type="button"
+                  onClick={(e) => toggleTask(task, e)}
+                  className="shrink-0 text-neutral-300 dark:text-neutral-600 hover:text-neutral-500 dark:hover:text-neutral-400 transition-colors"
                 >
-                  <button
-                    type="button"
-                    onClick={(e) => handleToggleTask(task, e)}
-                    className="shrink-0 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-                  >
-                    <Square className="w-3.5 h-3.5" />
-                  </button>
-                  <p className="text-sm text-neutral-700 dark:text-neutral-300 truncate flex-1">
-                    {task.title}
-                  </p>
-                  {task.priority && (
-                    <span className="text-[9px] font-semibold tracking-wider text-neutral-400 dark:text-neutral-500 uppercase shrink-0">
-                      {task.priority}
-                    </span>
-                  )}
-                </motion.div>
-              ))}
-            </div>
+                  <Square className="w-3.5 h-3.5" />
+                </button>
+                <p className="text-[13px] text-neutral-700 dark:text-neutral-300 flex-1 truncate">
+                  {task.title}
+                </p>
+                {task.priority && (
+                  <span className="text-[9px] tracking-wider text-neutral-400 dark:text-neutral-600 uppercase shrink-0 font-medium">
+                    {task.priority}
+                  </span>
+                )}
+              </motion.div>
+            ))}
           </div>
         )}
 
-        {/* Timed items — meetings, GCal events, scheduled tasks */}
+        {/* Timed items */}
         {!isLoadingAny &&
           !isError &&
-          items.map((item, i) => {
+          timedItems.map((item, i) => {
             if (item.kind === 'crelyzor') {
               return (
                 <motion.div
                   key={`c-${item.meeting.id}`}
-                  {...MOTION_PROPS(i + dueTodayTasks.length)}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.22, delay: i * 0.04 }}
                   onClick={() => navigate(`/meetings/${item.meeting.id}`)}
-                  className="group flex items-center gap-3 px-4 py-3
-                             bg-white dark:bg-neutral-900
+                  className="group flex items-center gap-3 px-3 py-3 rounded-xl
+                             bg-white dark:bg-neutral-800/40
                              border border-neutral-100 dark:border-neutral-800
                              hover:border-neutral-200 dark:hover:border-neutral-700
-                             hover:shadow-sm rounded-xl cursor-pointer
-                             transition-[border-color,box-shadow] duration-200"
+                             hover:bg-neutral-50 dark:hover:bg-neutral-800
+                             cursor-pointer transition-all duration-150"
                 >
-                  <div className="shrink-0 text-right w-14">
+                  <div className="shrink-0 text-right w-11">
                     <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
                       {item.meeting.time}
                     </p>
-                    <p className="text-[10px] text-neutral-400 dark:text-neutral-600 mt-0.5">
+                    <p className="text-[9px] text-neutral-300 dark:text-neutral-600 mt-0.5">
                       {item.meeting.duration}
                     </p>
                   </div>
-
-                  <div className="w-px h-7 bg-neutral-200 dark:bg-neutral-700 shrink-0" />
-
+                  <div className="w-px h-6 bg-neutral-150 dark:bg-neutral-700 shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
+                    <p className="text-[13px] font-medium text-neutral-900 dark:text-neutral-100 truncate">
                       {item.meeting.title}
                     </p>
                     <span
-                      className={`inline-block mt-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${getStatusStyle(item.meeting.status)}`}
+                      className={`inline-block mt-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${getStatusStyle(item.meeting.status)}`}
                     >
                       {getStatusLabel(item.meeting.status)}
                     </span>
                   </div>
-
-                  <ArrowUpRight className="w-3.5 h-3.5 text-neutral-300 dark:text-neutral-600 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all duration-200 shrink-0" />
+                  <ArrowUpRight className="w-3 h-3 text-neutral-300 dark:text-neutral-600 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all duration-150 shrink-0" />
                 </motion.div>
               );
             }
@@ -314,22 +253,26 @@ export function TodayTimeline({
               return (
                 <motion.div
                   key={`t-${item.task.id}`}
-                  {...MOTION_PROPS(i + dueTodayTasks.length)}
-                  onClick={() => handleTaskClick(item.task)}
-                  className={`group flex items-center gap-3 px-4 py-3 ${TASK_BASE} hover:border-neutral-300 dark:hover:border-neutral-600 hover:shadow-sm cursor-pointer transition-[border-color,box-shadow] duration-200`}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.22, delay: i * 0.04 }}
+                  onClick={() => (item.task.meetingId ? navigate(`/meetings/${item.task.meetingId}`) : navigate('/tasks'))}
+                  className="group flex items-center gap-3 px-3 py-3 rounded-xl
+                             border border-dashed border-neutral-200 dark:border-neutral-700
+                             hover:border-neutral-300 dark:hover:border-neutral-600
+                             hover:bg-neutral-50 dark:hover:bg-neutral-800/50
+                             cursor-pointer transition-all duration-150"
                 >
-                  <div className="shrink-0 text-right w-14">
+                  <div className="shrink-0 text-right w-11">
                     <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-                      {formatTime(item.task.scheduledTime!)}
+                      {fmt(item.task.scheduledTime!)}
                     </p>
                   </div>
-
-                  <div className="w-px h-7 bg-neutral-200 dark:bg-neutral-700 shrink-0" />
-
+                  <div className="w-px h-6 bg-neutral-150 dark:bg-neutral-700 shrink-0" />
                   <button
                     type="button"
-                    onClick={(e) => handleToggleTask(item.task, e)}
-                    className="shrink-0 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                    onClick={(e) => toggleTask(item.task, e)}
+                    className="shrink-0 text-neutral-300 dark:text-neutral-600 hover:text-neutral-500 dark:hover:text-neutral-400 transition-colors"
                   >
                     {item.task.isCompleted ? (
                       <CheckSquare className="w-3.5 h-3.5" />
@@ -337,28 +280,36 @@ export function TodayTimeline({
                       <Square className="w-3.5 h-3.5" />
                     )}
                   </button>
-
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 truncate">
-                      {item.task.title}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <CheckSquare className="w-2.5 h-2.5 text-neutral-400" />
-                      <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                        Task
-                      </span>
-                      {item.task.priority && (
-                        <span className="text-[9px] font-semibold tracking-wider text-neutral-400 dark:text-neutral-500 uppercase ml-1">
-                          {item.task.priority}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                  <p className="text-[13px] text-neutral-700 dark:text-neutral-300 flex-1 truncate">
+                    {item.task.title}
+                  </p>
                 </motion.div>
               );
             }
 
-            // GCal event — interactive only when meetLink is present
+            // GCal event
+            const el = (
+              <div className="flex items-center gap-3 px-3 py-3">
+                <div className="shrink-0 text-right w-11">
+                  <p className="text-[11px] font-medium text-neutral-400 dark:text-neutral-500">
+                    {fmt(item.event.startTime)}
+                  </p>
+                  <p className="text-[9px] text-neutral-300 dark:text-neutral-600 mt-0.5">
+                    {dur(item.event.startTime, item.event.endTime)}
+                  </p>
+                </div>
+                <div className="w-px h-6 bg-neutral-150 dark:bg-neutral-700 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] text-neutral-600 dark:text-neutral-400 truncate">
+                    {item.event.title}
+                  </p>
+                  <p className="text-[9px] text-neutral-300 dark:text-neutral-600 mt-0.5">
+                    Google Calendar
+                  </p>
+                </div>
+              </div>
+            );
+
             if (item.event.meetLink) {
               return (
                 <motion.a
@@ -366,10 +317,12 @@ export function TodayTimeline({
                   href={item.event.meetLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  {...MOTION_PROPS(i + dueTodayTasks.length)}
-                  className={`group block ${GCAL_BASE} hover:border-neutral-200 dark:hover:border-neutral-700 hover:shadow-sm cursor-pointer transition-[border-color,box-shadow] duration-200`}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.22, delay: i * 0.04 }}
+                  className="block rounded-xl bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-100 dark:border-neutral-800 hover:border-neutral-200 dark:hover:border-neutral-700 transition-all duration-150"
                 >
-                  <GCalEventContent event={item.event} />
+                  {el}
                 </motion.a>
               );
             }
@@ -377,10 +330,12 @@ export function TodayTimeline({
             return (
               <motion.div
                 key={`g-${item.event.id}`}
-                {...MOTION_PROPS(i + dueTodayTasks.length)}
-                className={GCAL_BASE}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.22, delay: i * 0.04 }}
+                className="rounded-xl bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-100 dark:border-neutral-800"
               >
-                <GCalEventContent event={item.event} />
+                {el}
               </motion.div>
             );
           })}

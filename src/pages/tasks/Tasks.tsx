@@ -541,93 +541,6 @@ export default function Tasks() {
     return () => document.removeEventListener('keydown', handler);
   }, [selectMode, showCreate, exitSelectMode]);
 
-  // Keyboard shortcuts for task list navigation
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      // Skip when select mode, inline create, or focus is on an interactive element
-      if (selectMode || showCreate) return;
-      const tag = (document.activeElement?.tagName ?? '').toLowerCase();
-      if (['input', 'textarea', 'select', 'button', 'a'].includes(tag)) return;
-
-      const len = flatVisibleTasks.length;
-
-      if (e.key === 'j' || e.key === 'ArrowDown') {
-        e.preventDefault();
-        setSelectedTask(null);
-        setFocusedTaskIndex((i) => (i === null ? 0 : Math.min(i + 1, len - 1)));
-      } else if (e.key === 'k' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        setSelectedTask(null);
-        setFocusedTaskIndex((i) => (i === null ? 0 : Math.max(i - 1, 0)));
-      } else if (e.key === 'Enter') {
-        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
-          return;
-        e.preventDefault();
-        setSelectedTask(flatVisibleTasks[focusedTaskIndex]);
-        setFocusedTaskIndex(null);
-      } else if (e.key === 'e') {
-        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
-          return;
-        e.preventDefault();
-        setSelectedTask(flatVisibleTasks[focusedTaskIndex]);
-        setAutoFocusField('title');
-        setFocusedTaskIndex(null);
-      } else if (e.key === 'd') {
-        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
-          return;
-        e.preventDefault();
-        setSelectedTask(flatVisibleTasks[focusedTaskIndex]);
-        setAutoFocusField('dueDate');
-        setFocusedTaskIndex(null);
-      } else if (e.key === 'p') {
-        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
-          return;
-        e.preventDefault();
-        const task = flatVisibleTasks[focusedTaskIndex];
-        const currentIdx = PRIORITY_CYCLE.indexOf(task.priority ?? null);
-        const nextPriority =
-          PRIORITY_CYCLE[(currentIdx + 1) % PRIORITY_CYCLE.length];
-        updateTask.mutate({
-          taskId: task.id,
-          data: { priority: nextPriority },
-        });
-      } else if (e.key === ' ') {
-        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
-          return;
-        e.preventDefault();
-        const task = flatVisibleTasks[focusedTaskIndex];
-        handleToggle(task.id, !task.isCompleted);
-      } else if (e.key === 'Backspace' || e.key === 'Delete') {
-        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
-          return;
-        e.preventDefault();
-        const task = flatVisibleTasks[focusedTaskIndex];
-        setFocusedTaskIndex(null);
-        handleDelete(task.id);
-      } else if (e.key === 'Escape') {
-        if (liveSelectedTask) {
-          setSelectedTask(null);
-        } else if (focusedTaskIndex !== null) {
-          setFocusedTaskIndex(null);
-        }
-      } else if (e.key === '?') {
-        e.preventDefault();
-        setShowShortcuts((v) => !v);
-      }
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [
-    selectMode,
-    showCreate,
-    flatVisibleTasks,
-    focusedTaskIndex,
-    liveSelectedTask,
-    handleToggle,
-    handleDelete,
-    updateTask,
-  ]);
-
   const handleBulkComplete = useCallback(async () => {
     setBulkPending(true);
     try {
@@ -794,6 +707,94 @@ export default function Tasks() {
     groupedBuckets,
     isLoading,
     isError,
+  ]);
+
+  // Keyboard shortcuts for task list navigation
+  // NOTE: must live after flatVisibleTasks — dep array is evaluated during render (TDZ)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Skip when select mode, inline create, or focus is on an interactive element
+      if (selectMode || showCreate) return;
+      const tag = (document.activeElement?.tagName ?? '').toLowerCase();
+      if (['input', 'textarea', 'select', 'button', 'a'].includes(tag)) return;
+
+      const len = flatVisibleTasks.length;
+
+      if (e.key === 'j' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedTask(null);
+        setFocusedTaskIndex((i) => (i === null ? 0 : Math.min(i + 1, len - 1)));
+      } else if (e.key === 'k' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedTask(null);
+        setFocusedTaskIndex((i) => (i === null ? 0 : Math.max(i - 1, 0)));
+      } else if (e.key === 'Enter') {
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
+          return;
+        e.preventDefault();
+        setSelectedTask(flatVisibleTasks[focusedTaskIndex]);
+        setFocusedTaskIndex(null);
+      } else if (e.key === 'e') {
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
+          return;
+        e.preventDefault();
+        setSelectedTask(flatVisibleTasks[focusedTaskIndex]);
+        setAutoFocusField('title');
+        setFocusedTaskIndex(null);
+      } else if (e.key === 'd') {
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
+          return;
+        e.preventDefault();
+        setSelectedTask(flatVisibleTasks[focusedTaskIndex]);
+        setAutoFocusField('dueDate');
+        setFocusedTaskIndex(null);
+      } else if (e.key === 'p') {
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
+          return;
+        e.preventDefault();
+        const task = flatVisibleTasks[focusedTaskIndex];
+        const currentIdx = PRIORITY_CYCLE.indexOf(task.priority ?? null);
+        const nextPriority =
+          PRIORITY_CYCLE[(currentIdx + 1) % PRIORITY_CYCLE.length];
+        updateTask.mutate({
+          taskId: task.id,
+          data: { priority: nextPriority },
+        });
+      } else if (e.key === ' ') {
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
+          return;
+        e.preventDefault();
+        const task = flatVisibleTasks[focusedTaskIndex];
+        handleToggle(task.id, !task.isCompleted);
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        if (focusedTaskIndex === null || !flatVisibleTasks[focusedTaskIndex])
+          return;
+        e.preventDefault();
+        const task = flatVisibleTasks[focusedTaskIndex];
+        setFocusedTaskIndex(null);
+        handleDelete(task.id);
+      } else if (e.key === 'Escape') {
+        if (liveSelectedTask) {
+          setSelectedTask(null);
+        } else if (focusedTaskIndex !== null) {
+          setFocusedTaskIndex(null);
+        }
+      } else if (e.key === '?') {
+        e.preventDefault();
+        setShowShortcuts((v) => !v);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [
+    selectMode,
+    showCreate,
+    flatVisibleTasks,
+    focusedTaskIndex,
+    liveSelectedTask,
+    handleToggle,
+    handleDelete,
+    updateTask,
   ]);
 
   const isPanelOpen = !!liveSelectedTask;

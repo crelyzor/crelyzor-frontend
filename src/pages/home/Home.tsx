@@ -8,28 +8,28 @@ import { useCards } from '@/hooks/queries/useCardQueries';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { CompactStickyBar } from './CompactStickyBar';
 import { HeroSection } from './HeroSection';
-import { RecentMeetings } from './RecentMeetings';
+import { QuickStatsRow } from './QuickStatsRow';
 import { TodayTimeline } from './TodayTimeline';
+import { RecentMeetings } from './RecentMeetings';
 import { OverdueTasksSection } from './OverdueTasksSection';
 import { NewAITasksBanner } from './NewAITasksBanner';
-import { OnboardingOverlay } from './OnboardingOverlay';
 import { PendingTasksWidget } from './PendingTasksWidget';
-import { DefaultCardWidget } from './DefaultCardWidget';
+import { UpcomingBookingsWidget } from './UpcomingBookingsWidget';
 import { RecentVoiceNotes } from './RecentVoiceNotes';
 import { PublicLinksWidget } from './PublicLinksWidget';
+import { DefaultCardWidget } from './DefaultCardWidget';
+import { OnboardingOverlay } from './OnboardingOverlay';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
 
 export default function Home() {
   const { scrollY } = useScroll();
-  const { greeting, dayName, monthDay, tip } = useGreeting();
+  const { greeting, dayName, monthDay } = useGreeting();
   const { data: currentUser } = useCurrentUser();
 
-  // Onboarding overlay — shown to new users with no cards and no meetings
   const [onboardingDismissed, setOnboardingDismissed] = useState(
     () => !!localStorage.getItem('crelyzor_onboarding_done')
   );
 
-  // Use same query key as /meetings page → shared cache, no duplicate fetch
   const {
     data: allMeetingsData,
     isLoading: meetingsLoading,
@@ -47,28 +47,40 @@ export default function Home() {
     [allMeetingsData]
   );
 
-  // Single task query shared by TodayTimeline + PendingTasksWidget
   const { data: taskData, isLoading: tasksLoading } = useAllTasks({
     status: 'pending',
     limit: 100,
   });
   const allPendingTasks = useMemo(() => taskData?.tasks ?? [], [taskData]);
 
-  // Split tasks into three buckets: overdue / today / other
+  // Tip — count today's meetings
+  const tip = useMemo(() => {
+    const todayDateStr = new Date().toISOString().split('T')[0];
+    const todayMeetings = (allMeetingsData ?? [])
+      .filter((m) => m.type !== 'VOICE_NOTE' && m.startTime.split('T')[0] === todayDateStr)
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
+    const count = todayMeetings.length;
+    if (count === 0) return 'No meetings scheduled today';
+    const timeStr = new Date(todayMeetings[0].startTime).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+    const label = count === 1 ? '1 meeting today' : `${count} meetings today`;
+    return `${label} — first at ${timeStr}`;
+  }, [allMeetingsData]);
+
+  // Task buckets
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
   const { overdueTasks, todayTasks, otherTasks } = useMemo(() => {
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
-
     const isToday = (iso: string) => iso.split('T')[0] === todayStr;
 
-    // Overdue: has dueDate strictly before start of today
     const overdue = allPendingTasks.filter(
       (t) => t.dueDate && new Date(t.dueDate) < startOfToday
     );
     const overdueIds = new Set(overdue.map((t) => t.id));
 
-    // Today: scheduled today or due today — exclude anything already in overdue
     const today = allPendingTasks.filter(
       (t) =>
         !overdueIds.has(t.id) &&
@@ -77,7 +89,6 @@ export default function Home() {
     );
     const todayIds = new Set(today.map((t) => t.id));
 
-    // Other: everything not in overdue or today
     const other = allPendingTasks.filter(
       (t) => !overdueIds.has(t.id) && !todayIds.has(t.id)
     );
@@ -85,7 +96,7 @@ export default function Home() {
     return { overdueTasks: overdue, todayTasks: today, otherTasks: other };
   }, [allPendingTasks, todayStr]);
 
-  // AI-extracted tasks from meetings processed in the last 48h — shown in NewAITasksBanner
+  // AI tasks banner
   const newAITasks = useMemo(() => {
     const cutoff = Date.now() - 48 * 60 * 60 * 1000;
     return allPendingTasks.filter(
@@ -96,7 +107,7 @@ export default function Home() {
     );
   }, [allPendingTasks]);
 
-  // Show onboarding overlay for brand-new users (no cards, no meetings, not dismissed)
+  // Onboarding
   const showOnboarding =
     !meetingsLoading &&
     !cardsLoading &&
@@ -104,30 +115,7 @@ export default function Home() {
     (cards?.length ?? 0) === 0 &&
     (allMeetingsData?.length ?? 0) === 0;
 
-  // Greeting dissolves
-  const greetingOpacity = useTransform(scrollY, [0, 80], [1, 0]);
-  const greetingY = useTransform(scrollY, [0, 80], [0, -12]);
-  const greetingScale = useTransform(scrollY, [0, 80], [1, 0.97]);
-  const tipOpacity = useTransform(scrollY, [0, 50], [1, 0]);
-
-  // Bubbles dissolve + individual stagger
-  const bubblesOpacity = useTransform(scrollY, [40, 160], [1, 0]);
-  const bubble0Y = useTransform(scrollY, [30, 140], [0, -18]);
-  const bubble1Y = useTransform(scrollY, [40, 150], [0, -18]);
-  const bubble2Y = useTransform(scrollY, [50, 160], [0, -18]);
-  const bubble3Y = useTransform(scrollY, [60, 170], [0, -18]);
-  const bubble0Scale = useTransform(scrollY, [30, 140], [1, 0.85]);
-  const bubble1Scale = useTransform(scrollY, [40, 150], [1, 0.85]);
-  const bubble2Scale = useTransform(scrollY, [50, 160], [1, 0.85]);
-  const bubble3Scale = useTransform(scrollY, [60, 170], [1, 0.85]);
-  const bubbleTransforms = [
-    { y: bubble0Y, scale: bubble0Scale },
-    { y: bubble1Y, scale: bubble1Scale },
-    { y: bubble2Y, scale: bubble2Scale },
-    { y: bubble3Y, scale: bubble3Scale },
-  ];
-
-  // Compact sticky bar fades IN
+  // Compact sticky bar scroll values
   const barOpacity = useTransform(scrollY, [120, 170], [0, 1]);
   const barY = useTransform(scrollY, [120, 170], [-6, 0]);
   const barDateX = useTransform(scrollY, [130, 180], [-8, 0]);
@@ -136,8 +124,39 @@ export default function Home() {
     v > 0.3 ? ('auto' as string) : ('none' as string)
   );
 
+  // Hero scroll transforms
+  const greetingOpacity = useTransform(scrollY, [0, 80], [1, 0]);
+  const greetingY = useTransform(scrollY, [0, 80], [0, -12]);
+  const greetingScale = useTransform(scrollY, [0, 80], [1, 0.97]);
+  const tipOpacity = useTransform(scrollY, [0, 50], [1, 0]);
+  const bubblesOpacity = useTransform(scrollY, [40, 160], [1, 0]);
+
+  // Bubble parallax transforms (6 items)
+  const bubble0Y = useTransform(scrollY, [0, 200], [0, -18]);
+  const bubble0Scale = useTransform(scrollY, [0, 200], [1, 0.9]);
+  const bubble1Y = useTransform(scrollY, [0, 200], [0, -28]);
+  const bubble1Scale = useTransform(scrollY, [0, 200], [1, 0.88]);
+  const bubble2Y = useTransform(scrollY, [0, 200], [0, -12]);
+  const bubble2Scale = useTransform(scrollY, [0, 200], [1, 0.92]);
+  const bubble3Y = useTransform(scrollY, [0, 200], [0, -22]);
+  const bubble3Scale = useTransform(scrollY, [0, 200], [1, 0.89]);
+  const bubble4Y = useTransform(scrollY, [0, 200], [0, -16]);
+  const bubble4Scale = useTransform(scrollY, [0, 200], [1, 0.91]);
+  const bubble5Y = useTransform(scrollY, [0, 200], [0, -24]);
+  const bubble5Scale = useTransform(scrollY, [0, 200], [1, 0.87]);
+
+  const bubbleTransforms = [
+    { y: bubble0Y, scale: bubble0Scale },
+    { y: bubble1Y, scale: bubble1Scale },
+    { y: bubble2Y, scale: bubble2Scale },
+    { y: bubble3Y, scale: bubble3Scale },
+    { y: bubble4Y, scale: bubble4Scale },
+    { y: bubble5Y, scale: bubble5Scale },
+  ];
+
   return (
-    <div>
+    <div className="space-y-3 pb-10">
+      {/* Compact sticky header (appears on scroll) */}
       <CompactStickyBar
         barOpacity={barOpacity}
         barY={barY}
@@ -148,6 +167,7 @@ export default function Home() {
         monthDay={monthDay}
       />
 
+      {/* Hero */}
       <HeroSection
         greeting={greeting}
         dayName={dayName}
@@ -162,14 +182,18 @@ export default function Home() {
         bubbleTransforms={bubbleTransforms}
       />
 
+      {/* Stats row */}
+      <QuickStatsRow />
+
+      {/* Main bento grid */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+        transition={{ duration: 0.45, delay: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-3"
       >
-        {/* Left — today + recent meetings (2/3) */}
-        <div className="lg:col-span-2 space-y-8">
+        {/* Left column — timeline focus (2/3) */}
+        <div className="lg:col-span-2 space-y-3">
           <OverdueTasksSection tasks={overdueTasks} />
           <NewAITasksBanner tasks={newAITasks} />
           <TodayTimeline
@@ -190,11 +214,12 @@ export default function Home() {
           />
         </div>
 
-        {/* Right — identity (links + card) then work (tasks + voice notes) (1/3) */}
-        <div className="lg:col-span-1 space-y-6">
-          <PublicLinksWidget />
-          <DefaultCardWidget />
+        {/* Right column — work + identity (1/3) */}
+        <div className="lg:col-span-1 space-y-3">
           <PendingTasksWidget tasks={otherTasks} isLoading={tasksLoading} />
+          <UpcomingBookingsWidget />
+          <DefaultCardWidget />
+          <PublicLinksWidget />
           <RecentVoiceNotes />
         </div>
       </motion.div>

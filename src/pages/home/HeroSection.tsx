@@ -41,11 +41,7 @@ export function HeroSection({
     <div className="text-center">
       {/* Greeting — dissolves with scroll */}
       <motion.div
-        style={{
-          opacity: greetingOpacity,
-          y: greetingY,
-          scale: greetingScale,
-        }}
+        style={{ opacity: greetingOpacity, y: greetingY, scale: greetingScale }}
         className="mb-6 sm:mb-10 origin-top"
       >
         <p className="text-[11px] tracking-[0.18em] text-neutral-400 dark:text-neutral-500 mb-3 uppercase">
@@ -62,10 +58,10 @@ export function HeroSection({
         </motion.div>
       </motion.div>
 
-      {/* Quick action bubbles — staggered scroll */}
+      {/* Quick action bubbles — staggered scroll parallax */}
       <motion.div
         style={{ opacity: bubblesOpacity }}
-        className="flex items-start gap-6 sm:gap-10 justify-center mb-8 sm:mb-14"
+        className="flex flex-wrap items-start gap-5 sm:gap-8 justify-center mb-8 sm:mb-14"
       >
         {quickActions.map((action, i) => (
           <motion.button
@@ -79,20 +75,20 @@ export function HeroSection({
           >
             <div
               className="w-14 h-14 rounded-2xl flex items-center justify-center
-                            bg-white dark:bg-neutral-800/80
-                            border border-neutral-200/80 dark:border-neutral-700/50
-                            text-neutral-500 dark:text-neutral-400
-                            group-hover:bg-neutral-950 group-hover:text-white group-hover:border-neutral-950
-                            dark:group-hover:bg-neutral-100 dark:group-hover:text-neutral-900 dark:group-hover:border-neutral-100
-                            group-hover:-translate-y-1.5 group-hover:shadow-xl group-hover:shadow-neutral-900/15
-                            dark:group-hover:shadow-neutral-100/10
-                            transition-all duration-200 ease-out"
+                         bg-white dark:bg-neutral-800/80
+                         border border-neutral-200/80 dark:border-neutral-700/50
+                         text-neutral-500 dark:text-neutral-400
+                         group-hover:bg-neutral-950 group-hover:text-white group-hover:border-neutral-950
+                         dark:group-hover:bg-neutral-100 dark:group-hover:text-neutral-900 dark:group-hover:border-neutral-100
+                         group-hover:-translate-y-1.5 group-hover:shadow-xl group-hover:shadow-neutral-900/15
+                         dark:group-hover:shadow-neutral-100/10
+                         transition-all duration-200 ease-out"
             >
               <action.icon className="w-5 h-5" />
             </div>
             <span
               className="text-[11px] font-medium tracking-wide text-neutral-500 dark:text-neutral-400
-                             group-hover:text-neutral-900 dark:group-hover:text-neutral-100 transition-colors"
+                         group-hover:text-neutral-900 dark:group-hover:text-neutral-100 transition-colors"
             >
               {action.label}
             </span>
