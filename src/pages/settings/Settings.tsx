@@ -29,7 +29,6 @@ import {
   CalendarOff,
   CalendarDays,
   Bot,
-
   XCircle,
   Star,
   CheckCircle2,

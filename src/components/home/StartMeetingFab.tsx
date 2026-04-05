@@ -32,8 +32,12 @@ interface RecordingResult {
 }
 
 function formatDuration(seconds: number) {
-  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-  const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+  const m = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, '0');
+  const s = Math.floor(seconds % 60)
+    .toString()
+    .padStart(2, '0');
   return `${m}:${s}`;
 }
 
@@ -63,7 +67,11 @@ function ActionRow({
     <motion.button
       initial={{ opacity: 0, x: -8 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.2, delay: delay ?? 0, ease: [0.25, 0.1, 0.25, 1] }}
+      transition={{
+        duration: 0.2,
+        delay: delay ?? 0,
+        ease: [0.25, 0.1, 0.25, 1],
+      }}
       onClick={onClick}
       className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98] text-left group ${
         highlight
@@ -77,13 +85,19 @@ function ActionRow({
           highlight ? 'bg-neutral-900' : 'bg-white/10'
         }`}
       >
-        <Icon className={`w-5 h-5 ${highlight ? 'text-white' : 'text-neutral-300'}`} />
+        <Icon
+          className={`w-5 h-5 ${highlight ? 'text-white' : 'text-neutral-300'}`}
+        />
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-[14px] font-semibold leading-tight ${highlight ? 'text-neutral-900' : 'text-white'}`}>
+        <p
+          className={`text-[14px] font-semibold leading-tight ${highlight ? 'text-neutral-900' : 'text-white'}`}
+        >
           {label}
         </p>
-        <p className={`text-[11px] mt-0.5 leading-tight ${highlight ? 'text-neutral-500' : 'text-neutral-500'}`}>
+        <p
+          className={`text-[11px] mt-0.5 leading-tight ${highlight ? 'text-neutral-500' : 'text-neutral-500'}`}
+        >
           {description}
         </p>
       </div>
@@ -169,7 +183,9 @@ export function StartMeetingFab() {
     if (!recording) return;
     setState('saving');
     const now = new Date();
-    const startTime = new Date(now.getTime() - recording.durationSeconds * 1000);
+    const startTime = new Date(
+      now.getTime() - recording.durationSeconds * 1000
+    );
     const endTime = now;
     try {
       const meeting = await meetingsApi.create({
@@ -179,7 +195,11 @@ export function StartMeetingFab() {
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
       try {
-        await meetingsApi.uploadRecording(meeting.id, recording.blob, recording.durationSeconds);
+        await meetingsApi.uploadRecording(
+          meeting.id,
+          recording.blob,
+          recording.durationSeconds
+        );
         toast.success('Recording saved — transcription started');
       } catch {
         toast.error('Meeting saved but upload failed. Try uploading manually.');
@@ -196,7 +216,8 @@ export function StartMeetingFab() {
 
   const dismiss = () => setState('idle');
 
-  const recordingTypeLabel = recordingType === 'VOICE_NOTE' ? 'Voice note' : 'Meeting';
+  const recordingTypeLabel =
+    recordingType === 'VOICE_NOTE' ? 'Voice note' : 'Meeting';
 
   // ── Sheet panel shared wrapper ────────────────────────────────────────────
 
@@ -227,7 +248,8 @@ export function StartMeetingFab() {
           style={{
             background: 'rgba(18, 18, 20, 0.97)',
             border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '0 -4px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)',
+            boxShadow:
+              '0 -4px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)',
           }}
         >
           {children}
@@ -262,7 +284,10 @@ export function StartMeetingFab() {
                 icon={Mic}
                 label="Voice Note"
                 description="Capture audio instantly, get AI summary"
-                onClick={() => { setState('idle'); startRecording('VOICE_NOTE'); }}
+                onClick={() => {
+                  setState('idle');
+                  startRecording('VOICE_NOTE');
+                }}
                 highlight
                 delay={0.04}
               />
@@ -280,7 +305,10 @@ export function StartMeetingFab() {
                 icon={CheckSquare}
                 label="Task"
                 description="Add something to your to-do list"
-                onClick={() => { dismiss(); setShowTaskModal(true); }}
+                onClick={() => {
+                  dismiss();
+                  setShowTaskModal(true);
+                }}
                 delay={0.11}
               />
             </div>
@@ -317,7 +345,10 @@ export function StartMeetingFab() {
                 icon={Mic}
                 label="Start Recording"
                 description="Record audio now, transcribe with AI"
-                onClick={() => { setState('idle'); startRecording('RECORDED'); }}
+                onClick={() => {
+                  setState('idle');
+                  startRecording('RECORDED');
+                }}
                 highlight
                 delay={0.04}
               />
@@ -325,7 +356,10 @@ export function StartMeetingFab() {
                 icon={CalendarPlus}
                 label="Schedule"
                 description="Plan a meeting for later"
-                onClick={() => { setState('idle'); navigate('/meetings?create=scheduled'); }}
+                onClick={() => {
+                  setState('idle');
+                  navigate('/meetings?create=scheduled');
+                }}
                 delay={0.08}
               />
             </div>
@@ -347,7 +381,9 @@ export function StartMeetingFab() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
               </span>
-              <span className="text-xs text-neutral-400">{recordingTypeLabel}</span>
+              <span className="text-xs text-neutral-400">
+                {recordingTypeLabel}
+              </span>
               <span className="text-sm font-mono text-white tabular-nums min-w-[40px]">
                 {formatDuration(elapsed)}
               </span>
@@ -447,7 +483,9 @@ export function StartMeetingFab() {
               className="flex items-center gap-2 h-11 px-5 rounded-full transition-all active:scale-95 shadow-lg bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-100 dark:text-neutral-900 border border-transparent dark:border-neutral-200/20"
             >
               <Plus className="w-4 h-4" />
-              <span className="text-[13px] font-semibold tracking-wide">Create</span>
+              <span className="text-[13px] font-semibold tracking-wide">
+                Create
+              </span>
             </button>
           </motion.div>
         )}

@@ -307,7 +307,9 @@ export default function Bookings() {
           <div className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
             <LayoutList className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
           </div>
-          <span className="text-[12px] font-medium text-neutral-700 dark:text-neutral-300">Event Types</span>
+          <span className="text-[12px] font-medium text-neutral-700 dark:text-neutral-300">
+            Event Types
+          </span>
           <ArrowUpRight className="w-3 h-3 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors" />
         </button>
         <button
@@ -317,7 +319,9 @@ export default function Bookings() {
           <div className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
             <Clock className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
           </div>
-          <span className="text-[12px] font-medium text-neutral-700 dark:text-neutral-300">Availability</span>
+          <span className="text-[12px] font-medium text-neutral-700 dark:text-neutral-300">
+            Availability
+          </span>
           <ArrowUpRight className="w-3 h-3 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors" />
         </button>
       </div>

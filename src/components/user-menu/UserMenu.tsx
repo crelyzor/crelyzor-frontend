@@ -50,7 +50,6 @@ export function UserMenu() {
       <AnimatePresence>
         {open && (
           <>
-
             {/* Menu panel */}
             <motion.div
               ref={menuRef}
@@ -134,7 +133,10 @@ export function UserMenu() {
         <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200 max-w-[110px] truncate">
           {user?.name ?? '…'}
         </span>
-        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
+        <motion.div
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
           <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
         </motion.div>
       </button>

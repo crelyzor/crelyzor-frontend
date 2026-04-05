@@ -479,7 +479,13 @@ export default function Tasks() {
     const task = allTasks.find((t) => t.id === selectedId);
     if (task) {
       setSelectedTask(task);
-      setSearchParams((prev) => { prev.delete('selected'); return prev; }, { replace: true });
+      setSearchParams(
+        (prev) => {
+          prev.delete('selected');
+          return prev;
+        },
+        { replace: true }
+      );
     }
   }, [searchParams, data, setSearchParams]);
 
