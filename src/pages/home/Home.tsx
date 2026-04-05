@@ -8,16 +8,15 @@ import { useCards } from '@/hooks/queries/useCardQueries';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { CompactStickyBar } from './CompactStickyBar';
 import { HeroSection } from './HeroSection';
-import { QuickStatsRow } from './QuickStatsRow';
 import { TodayTimeline } from './TodayTimeline';
 import { RecentMeetings } from './RecentMeetings';
 import { OverdueTasksSection } from './OverdueTasksSection';
 import { NewAITasksBanner } from './NewAITasksBanner';
 import { PendingTasksWidget } from './PendingTasksWidget';
 import { UpcomingBookingsWidget } from './UpcomingBookingsWidget';
-import { RecentVoiceNotes } from './RecentVoiceNotes';
 import { PublicLinksWidget } from './PublicLinksWidget';
 import { DefaultCardWidget } from './DefaultCardWidget';
+import { ThisWeekWidget } from './ThisWeekWidget';
 import { OnboardingOverlay } from './OnboardingOverlay';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
 
@@ -94,11 +93,9 @@ export default function Home() {
           (t.dueDate && isToday(t.dueDate)))
     );
     const todayIds = new Set(today.map((t) => t.id));
-
     const other = allPendingTasks.filter(
       (t) => !overdueIds.has(t.id) && !todayIds.has(t.id)
     );
-
     return { overdueTasks: overdue, todayTasks: today, otherTasks: other };
   }, [allPendingTasks, todayStr]);
 
@@ -135,30 +132,6 @@ export default function Home() {
   const greetingY = useTransform(scrollY, [0, 80], [0, -12]);
   const greetingScale = useTransform(scrollY, [0, 80], [1, 0.97]);
   const tipOpacity = useTransform(scrollY, [0, 50], [1, 0]);
-  const bubblesOpacity = useTransform(scrollY, [40, 160], [1, 0]);
-
-  // Bubble parallax transforms (6 items)
-  const bubble0Y = useTransform(scrollY, [0, 200], [0, -18]);
-  const bubble0Scale = useTransform(scrollY, [0, 200], [1, 0.9]);
-  const bubble1Y = useTransform(scrollY, [0, 200], [0, -28]);
-  const bubble1Scale = useTransform(scrollY, [0, 200], [1, 0.88]);
-  const bubble2Y = useTransform(scrollY, [0, 200], [0, -12]);
-  const bubble2Scale = useTransform(scrollY, [0, 200], [1, 0.92]);
-  const bubble3Y = useTransform(scrollY, [0, 200], [0, -22]);
-  const bubble3Scale = useTransform(scrollY, [0, 200], [1, 0.89]);
-  const bubble4Y = useTransform(scrollY, [0, 200], [0, -16]);
-  const bubble4Scale = useTransform(scrollY, [0, 200], [1, 0.91]);
-  const bubble5Y = useTransform(scrollY, [0, 200], [0, -24]);
-  const bubble5Scale = useTransform(scrollY, [0, 200], [1, 0.87]);
-
-  const bubbleTransforms = [
-    { y: bubble0Y, scale: bubble0Scale },
-    { y: bubble1Y, scale: bubble1Scale },
-    { y: bubble2Y, scale: bubble2Scale },
-    { y: bubble3Y, scale: bubble3Scale },
-    { y: bubble4Y, scale: bubble4Scale },
-    { y: bubble5Y, scale: bubble5Scale },
-  ];
 
   return (
     <div className="space-y-3 pb-10">
@@ -184,12 +157,7 @@ export default function Home() {
         greetingY={greetingY}
         greetingScale={greetingScale}
         tipOpacity={tipOpacity}
-        bubblesOpacity={bubblesOpacity}
-        bubbleTransforms={bubbleTransforms}
       />
-
-      {/* Stats row */}
-      <QuickStatsRow />
 
       {/* Main bento grid */}
       <motion.div
@@ -218,15 +186,18 @@ export default function Home() {
             isLoading={meetingsLoading}
             isError={meetingsError}
           />
+          <PendingTasksWidget tasks={otherTasks} isLoading={tasksLoading} />
         </div>
 
         {/* Right column — work + identity (1/3) */}
         <div className="lg:col-span-1 space-y-3">
-          <PendingTasksWidget tasks={otherTasks} isLoading={tasksLoading} />
-          <UpcomingBookingsWidget />
+          <ThisWeekWidget
+            meetings={(allMeetingsData ?? []).filter((m) => m.type !== 'VOICE_NOTE')}
+            isLoading={meetingsLoading}
+          />
           <DefaultCardWidget />
+          <UpcomingBookingsWidget />
           <PublicLinksWidget />
-          <RecentVoiceNotes />
         </div>
       </motion.div>
 

@@ -36,6 +36,7 @@ function fmtTime(iso: string): string {
 export function UpcomingBookingsWidget() {
   const navigate = useNavigate();
   const { data, isLoading } = useBookings({ status: 'CONFIRMED', limit: 5 });
+  const { data: pendingData } = useBookings({ status: 'PENDING' });
 
   const now = new Date();
   const upcoming = (data?.bookings ?? [])
@@ -46,7 +47,7 @@ export function UpcomingBookingsWidget() {
     )
     .slice(0, 4);
 
-  if (!isLoading && upcoming.length === 0) return null;
+  const pendingCount = pendingData?.bookings?.length ?? 0;
 
   return (
     <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden">
@@ -57,9 +58,9 @@ export function UpcomingBookingsWidget() {
           <span className="text-[10px] tracking-[0.18em] text-neutral-400 dark:text-neutral-500 uppercase font-medium">
             Upcoming Bookings
           </span>
-          {upcoming.length > 0 && (
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900">
-              {upcoming.length}
+          {pendingCount > 0 && (
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500 text-white">
+              {pendingCount} pending
             </span>
           )}
         </div>
@@ -81,6 +82,22 @@ export function UpcomingBookingsWidget() {
                 className="h-10 bg-neutral-100 dark:bg-neutral-800 rounded-xl"
               />
             ))}
+          </div>
+        )}
+
+        {!isLoading && upcoming.length === 0 && (
+          <div className="px-3 py-4 text-center">
+            <p className="text-[12px] text-neutral-400 dark:text-neutral-500">
+              {pendingCount > 0 ? `${pendingCount} request${pendingCount > 1 ? 's' : ''} awaiting your response` : 'No upcoming bookings'}
+            </p>
+            {pendingCount > 0 && (
+              <button
+                onClick={() => navigate('/bookings')}
+                className="mt-2 text-[11px] font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 underline underline-offset-2 transition-colors"
+              >
+                Review requests →
+              </button>
+            )}
           </div>
         )}
 

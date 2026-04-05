@@ -19,6 +19,7 @@ export const DEFAULT_PINNED_IDS = [
   'tasks',
   'bookings',
   'cards',
+  'voice-notes',
   'settings',
 ] as const;
 

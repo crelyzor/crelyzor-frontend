@@ -482,7 +482,7 @@ export default function Meetings() {
   const { data: pendingBookingsData } = useBookings({ status: 'PENDING' });
   const pendingCount = pendingBookingsData?.bookings?.length ?? 0;
 
-  // Exclude VOICE_NOTE (live in /voice-notes) and pending bookings (live in /bookings).
+  // Exclude VOICE_NOTE from the main meeting list — they live in /voice-notes.
   // PENDING_ACCEPTANCE + RESCHEDULING_REQUESTED are booking requests awaiting host action —
   // they show on the Bookings page, not here.
   const scopedMeetings = useMemo(
