@@ -689,7 +689,8 @@ export default function Tasks() {
     if (view === 'today') return [...overdueTasks, ...dueTodayTasks];
     if (view === 'upcoming')
       return data?.grouped?.flatMap((g) => g.tasks) ?? [];
-    if (view === 'from_meetings' || view === 'from_voice_notes') return meetingGroups.flatMap((g) => g.tasks);
+    if (view === 'from_meetings' || view === 'from_voice_notes')
+      return meetingGroups.flatMap((g) => g.tasks);
     if (view === 'inbox' && displayMode === 'list') return []; // DnD conflict
     if (displayMode === 'board') return [];
     if (displayMode === 'grouped')
@@ -1202,40 +1203,42 @@ export default function Tasks() {
             )}
 
             {/* FROM MEETINGS / FROM VOICE NOTES VIEW — grouped by meeting */}
-            {!isLoading && !isError && (view === 'from_meetings' || view === 'from_voice_notes') && (
-              <AnimatePresence mode="popLayout">
-                {meetingGroups.length === 0 && (
-                  <EmptyState
-                    view={view}
-                    onShowCreate={() => setShowCreate(true)}
-                  />
-                )}
-                {meetingGroups.map((group) => (
-                  <div key={group.meetingId}>
-                    <SectionHeader label={group.title} />
-                    {group.tasks.map((task, i) => (
-                      <TaskRow
-                        key={task.id}
-                        task={task}
-                        index={i}
-                        onToggle={handleToggle}
-                        onDelete={handleDelete}
-                        onNavigate={(id) => navigate(`/meetings/${id}`)}
-                        onSelect={setSelectedTask}
-                        isSelected={selectedTask?.id === task.id}
-                        isFocused={
-                          focusedTaskIndex !== null &&
-                          flatVisibleTasks[focusedTaskIndex]?.id === task.id
-                        }
-                        selectMode={selectMode}
-                        isChecked={selectedIds.has(task.id)}
-                        onCheck={toggleSelect}
-                      />
-                    ))}
-                  </div>
-                ))}
-              </AnimatePresence>
-            )}
+            {!isLoading &&
+              !isError &&
+              (view === 'from_meetings' || view === 'from_voice_notes') && (
+                <AnimatePresence mode="popLayout">
+                  {meetingGroups.length === 0 && (
+                    <EmptyState
+                      view={view}
+                      onShowCreate={() => setShowCreate(true)}
+                    />
+                  )}
+                  {meetingGroups.map((group) => (
+                    <div key={group.meetingId}>
+                      <SectionHeader label={group.title} />
+                      {group.tasks.map((task, i) => (
+                        <TaskRow
+                          key={task.id}
+                          task={task}
+                          index={i}
+                          onToggle={handleToggle}
+                          onDelete={handleDelete}
+                          onNavigate={(id) => navigate(`/meetings/${id}`)}
+                          onSelect={setSelectedTask}
+                          isSelected={selectedTask?.id === task.id}
+                          isFocused={
+                            focusedTaskIndex !== null &&
+                            flatVisibleTasks[focusedTaskIndex]?.id === task.id
+                          }
+                          selectMode={selectMode}
+                          isChecked={selectedIds.has(task.id)}
+                          onCheck={toggleSelect}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </AnimatePresence>
+              )}
 
             {/* INBOX / ALL — GROUPED VIEW */}
             {!isLoading &&

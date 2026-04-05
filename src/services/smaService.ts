@@ -80,7 +80,13 @@ export type TaskWithMeeting = Task & {
   card: { id: string; displayName: string; slug: string } | null;
 };
 
-export type TaskView = 'inbox' | 'today' | 'upcoming' | 'all' | 'from_meetings' | 'from_voice_notes';
+export type TaskView =
+  | 'inbox'
+  | 'today'
+  | 'upcoming'
+  | 'all'
+  | 'from_meetings'
+  | 'from_voice_notes';
 
 export type TaskListParams = {
   status?: 'all' | 'completed' | 'pending';

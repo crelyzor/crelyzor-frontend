@@ -1,4 +1,11 @@
-import { Inbox, CalendarDays, CalendarRange, List, Video, Mic } from 'lucide-react';
+import {
+  Inbox,
+  CalendarDays,
+  CalendarRange,
+  List,
+  Video,
+  Mic,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { TaskView } from '@/services/smaService';
 

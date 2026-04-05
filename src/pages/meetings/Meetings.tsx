@@ -555,10 +555,16 @@ export default function Meetings() {
           }`}
         >
           <div className="flex items-center gap-3">
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-              pendingCount > 0 ? 'bg-amber-100 dark:bg-amber-950/40' : 'bg-neutral-100 dark:bg-neutral-800'
-            }`}>
-              <CalendarClock className={`w-3.5 h-3.5 ${pendingCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-neutral-500 dark:text-neutral-400'}`} />
+            <div
+              className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                pendingCount > 0
+                  ? 'bg-amber-100 dark:bg-amber-950/40'
+                  : 'bg-neutral-100 dark:bg-neutral-800'
+              }`}
+            >
+              <CalendarClock
+                className={`w-3.5 h-3.5 ${pendingCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-neutral-500 dark:text-neutral-400'}`}
+              />
             </div>
             <div>
               <p className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
@@ -567,7 +573,9 @@ export default function Meetings() {
                   : 'Bookings'}
               </p>
               <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
-                {pendingCount > 0 ? 'Confirm or decline on the Bookings page' : 'Manage scheduling requests'}
+                {pendingCount > 0
+                  ? 'Confirm or decline on the Bookings page'
+                  : 'Manage scheduling requests'}
               </p>
             </div>
           </div>
