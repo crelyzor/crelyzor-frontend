@@ -21,14 +21,26 @@ type StatProps = {
   index: number;
 };
 
-function Stat({ icon: Icon, label, value, sub, href, alert, index }: StatProps) {
+function Stat({
+  icon: Icon,
+  label,
+  value,
+  sub,
+  href,
+  alert,
+  index,
+}: StatProps) {
   const navigate = useNavigate();
 
   return (
     <motion.button
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: 0.05 + index * 0.06, ease: [0.25, 0.1, 0.25, 1] }}
+      transition={{
+        duration: 0.3,
+        delay: 0.05 + index * 0.06,
+        ease: [0.25, 0.1, 0.25, 1],
+      }}
       onClick={() => navigate(href)}
       className={`group flex flex-col justify-between p-5 rounded-2xl border text-left w-full
         transition-[border-color,box-shadow,background-color] duration-200 cursor-pointer
@@ -57,12 +69,16 @@ function Stat({ icon: Icon, label, value, sub, href, alert, index }: StatProps) 
         >
           {value}
         </p>
-        <p className={`text-[10px] font-medium mt-1.5 tracking-[0.08em]
-            ${alert ? 'text-amber-600 dark:text-amber-500' : 'text-neutral-400 dark:text-neutral-500'}`}>
+        <p
+          className={`text-[10px] font-medium mt-1.5 tracking-[0.08em]
+            ${alert ? 'text-amber-600 dark:text-amber-500' : 'text-neutral-400 dark:text-neutral-500'}`}
+        >
           {label}
         </p>
-        <p className={`text-[9px] mt-0.5 tracking-wide
-            ${alert ? 'text-amber-500/70 dark:text-amber-600' : 'text-neutral-300 dark:text-neutral-600'}`}>
+        <p
+          className={`text-[9px] mt-0.5 tracking-wide
+            ${alert ? 'text-amber-500/70 dark:text-amber-600' : 'text-neutral-300 dark:text-neutral-600'}`}
+        >
           {sub}
         </p>
       </div>

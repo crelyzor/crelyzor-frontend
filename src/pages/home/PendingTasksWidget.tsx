@@ -34,7 +34,8 @@ export function PendingTasksWidget({ tasks, isLoading }: Props) {
       {
         onSuccess: () => {
           qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
-          if (meetingId) qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
+          if (meetingId)
+            qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
         },
       }
     );
@@ -73,7 +74,10 @@ export function PendingTasksWidget({ tasks, isLoading }: Props) {
         {isLoading && (
           <div className="space-y-1 p-2 animate-pulse">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-10 bg-neutral-100 dark:bg-neutral-800 rounded-xl" />
+              <div
+                key={i}
+                className="h-10 bg-neutral-100 dark:bg-neutral-800 rounded-xl"
+              />
             ))}
           </div>
         )}
@@ -82,7 +86,9 @@ export function PendingTasksWidget({ tasks, isLoading }: Props) {
         {!isLoading && visible.length === 0 && (
           <div className="py-8 text-center">
             <CheckSquare className="w-6 h-6 mx-auto mb-2 text-neutral-200 dark:text-neutral-700" />
-            <p className="text-xs text-neutral-400 dark:text-neutral-600">All caught up</p>
+            <p className="text-xs text-neutral-400 dark:text-neutral-600">
+              All caught up
+            </p>
           </div>
         )}
 
@@ -93,14 +99,18 @@ export function PendingTasksWidget({ tasks, isLoading }: Props) {
               key={task.id}
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2, delay: i * 0.04, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{
+                duration: 0.2,
+                delay: i * 0.04,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
               className={`group flex items-start gap-3 px-3 py-2.5
                          rounded-xl border-l-[2px]
                          border border-transparent
                          hover:bg-neutral-50 dark:hover:bg-neutral-800/60
                          hover:border-neutral-100 dark:hover:border-neutral-800
                          transition-all duration-150
-                         ${task.priority ? PRIORITY_BORDER[task.priority] ?? '' : 'border-l-neutral-100 dark:border-l-neutral-800'}`}
+                         ${task.priority ? (PRIORITY_BORDER[task.priority] ?? '') : 'border-l-neutral-100 dark:border-l-neutral-800'}`}
             >
               {/* Complete button */}
               <button
@@ -115,7 +125,9 @@ export function PendingTasksWidget({ tasks, isLoading }: Props) {
               <div
                 className="flex-1 min-w-0 cursor-pointer"
                 onClick={() =>
-                  task.meetingId ? navigate(`/meetings/${task.meetingId}`) : navigate('/tasks')
+                  task.meetingId
+                    ? navigate(`/meetings/${task.meetingId}`)
+                    : navigate('/tasks')
                 }
               >
                 <p className="text-[13px] text-neutral-900 dark:text-neutral-100 leading-snug truncate">

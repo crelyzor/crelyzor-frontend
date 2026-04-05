@@ -57,14 +57,20 @@ export default function Home() {
   const tip = useMemo(() => {
     const todayDateStr = new Date().toISOString().split('T')[0];
     const todayMeetings = (allMeetingsData ?? [])
-      .filter((m) => m.type !== 'VOICE_NOTE' && m.startTime.split('T')[0] === todayDateStr)
+      .filter(
+        (m) =>
+          m.type !== 'VOICE_NOTE' && m.startTime.split('T')[0] === todayDateStr
+      )
       .sort((a, b) => a.startTime.localeCompare(b.startTime));
     const count = todayMeetings.length;
     if (count === 0) return 'No meetings scheduled today';
-    const timeStr = new Date(todayMeetings[0].startTime).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-    });
+    const timeStr = new Date(todayMeetings[0].startTime).toLocaleTimeString(
+      'en-US',
+      {
+        hour: 'numeric',
+        minute: '2-digit',
+      }
+    );
     const label = count === 1 ? '1 meeting today' : `${count} meetings today`;
     return `${label} — first at ${timeStr}`;
   }, [allMeetingsData]);

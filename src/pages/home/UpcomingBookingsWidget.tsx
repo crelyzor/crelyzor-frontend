@@ -21,10 +21,16 @@ function fmtTime(iso: string): string {
   const isToday = d.toDateString() === today.toDateString();
   const isTomorrow = d.toDateString() === tomorrow.toDateString();
 
-  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const time = d.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
   if (isToday) return `Today · ${time}`;
   if (isTomorrow) return `Tomorrow · ${time}`;
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ` · ${time}`;
+  return (
+    d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+    ` · ${time}`
+  );
 }
 
 export function UpcomingBookingsWidget() {
@@ -34,7 +40,10 @@ export function UpcomingBookingsWidget() {
   const now = new Date();
   const upcoming = (data?.bookings ?? [])
     .filter((b) => new Date(b.startTime) > now)
-    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+    .sort(
+      (a, b) =>
+        new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+    )
     .slice(0, 4);
 
   if (!isLoading && upcoming.length === 0) return null;
@@ -67,7 +76,10 @@ export function UpcomingBookingsWidget() {
         {isLoading && (
           <div className="space-y-1 p-2 animate-pulse">
             {[1, 2].map((i) => (
-              <div key={i} className="h-10 bg-neutral-100 dark:bg-neutral-800 rounded-xl" />
+              <div
+                key={i}
+                className="h-10 bg-neutral-100 dark:bg-neutral-800 rounded-xl"
+              />
             ))}
           </div>
         )}
@@ -99,7 +111,9 @@ export function UpcomingBookingsWidget() {
                   <span className="text-[9px] text-neutral-400 dark:text-neutral-500 truncate">
                     {booking.eventType.title}
                   </span>
-                  <span className="text-[9px] text-neutral-200 dark:text-neutral-700">·</span>
+                  <span className="text-[9px] text-neutral-200 dark:text-neutral-700">
+                    ·
+                  </span>
                   <span className="text-[9px] text-neutral-400 dark:text-neutral-500 shrink-0">
                     {fmtTime(booking.startTime)}
                   </span>

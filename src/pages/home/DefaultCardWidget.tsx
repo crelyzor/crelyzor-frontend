@@ -129,14 +129,22 @@ export function DefaultCardWidget() {
                   transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
                 }}
               >
-                <div style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}>
+                <div
+                  style={{
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                  }}
+                >
                   <div
                     className="rounded-2xl overflow-hidden"
                     style={{
                       aspectRatio: '1.586 / 1',
-                      boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 8px 30px rgba(0,0,0,0.4)',
+                      boxShadow:
+                        '0 0 0 1px rgba(255,255,255,0.08), 0 8px 30px rgba(0,0,0,0.4)',
                     }}
-                    dangerouslySetInnerHTML={{ __html: defaultCard.htmlContent || '' }}
+                    dangerouslySetInnerHTML={{
+                      __html: defaultCard.htmlContent || '',
+                    }}
                   />
                 </div>
                 {hasBack && (
@@ -152,16 +160,21 @@ export function DefaultCardWidget() {
                       className="rounded-2xl overflow-hidden"
                       style={{
                         aspectRatio: '1.586 / 1',
-                        boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 8px 30px rgba(0,0,0,0.4)',
+                        boxShadow:
+                          '0 0 0 1px rgba(255,255,255,0.08), 0 8px 30px rgba(0,0,0,0.4)',
                       }}
-                      dangerouslySetInnerHTML={{ __html: defaultCard.htmlBackContent || '' }}
+                      dangerouslySetInnerHTML={{
+                        __html: defaultCard.htmlBackContent || '',
+                      }}
                     />
                   </div>
                 )}
               </div>
             </div>
             <p className="text-center text-white/40 text-[10px] mt-4">
-              {hasBack ? 'Click the card or "Flip" to rotate' : 'Click anywhere to close'}
+              {hasBack
+                ? 'Click the card or "Flip" to rotate'
+                : 'Click anywhere to close'}
             </p>
           </div>
         </div>

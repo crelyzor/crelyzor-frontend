@@ -86,15 +86,21 @@ export function TodayTimeline({
 
   const { data: gcalStatus } = useGoogleCalendarStatus();
   const isGCalConnected = gcalStatus?.connected === true;
-  const { data: gcalEvents = [], isLoading: gcalLoading } = useGoogleCalendarEvents(
-    isGCalConnected ? startISO : '',
-    isGCalConnected ? endISO : ''
-  );
+  const { data: gcalEvents = [], isLoading: gcalLoading } =
+    useGoogleCalendarEvents(
+      isGCalConnected ? startISO : '',
+      isGCalConnected ? endISO : ''
+    );
 
   const isToday = (iso: string) => iso.split('T')[0] === today;
-  const scheduledTasks = tasks.filter((t) => t.scheduledTime && isToday(t.scheduledTime));
+  const scheduledTasks = tasks.filter(
+    (t) => t.scheduledTime && isToday(t.scheduledTime)
+  );
   const dueTodayTasks = tasks.filter(
-    (t) => t.dueDate && isToday(t.dueDate) && (!t.scheduledTime || !isToday(t.scheduledTime))
+    (t) =>
+      t.dueDate &&
+      isToday(t.dueDate) &&
+      (!t.scheduledTime || !isToday(t.scheduledTime))
   );
   const todayMeetings = meetings.filter((m) => m.date === today);
 
@@ -121,7 +127,10 @@ export function TodayTimeline({
 
   function toggleTask(task: TaskWithMeeting, e: React.MouseEvent) {
     e.stopPropagation();
-    updateTask.mutate({ taskId: task.id, data: { isCompleted: !task.isCompleted } });
+    updateTask.mutate({
+      taskId: task.id,
+      data: { isCompleted: !task.isCompleted },
+    });
   }
 
   return (
@@ -163,7 +172,9 @@ export function TodayTimeline({
         {!isLoadingAny && !isError && totalCount === 0 && (
           <div className="py-10 text-center">
             <Clock className="w-6 h-6 mx-auto mb-2 text-neutral-300 dark:text-neutral-700" />
-            <p className="text-xs text-neutral-400 dark:text-neutral-600">Nothing on the calendar</p>
+            <p className="text-xs text-neutral-400 dark:text-neutral-600">
+              Nothing on the calendar
+            </p>
           </div>
         )}
 
@@ -179,7 +190,11 @@ export function TodayTimeline({
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2, delay: i * 0.04 }}
-                onClick={() => (task.meetingId ? navigate(`/meetings/${task.meetingId}`) : navigate('/tasks'))}
+                onClick={() =>
+                  task.meetingId
+                    ? navigate(`/meetings/${task.meetingId}`)
+                    : navigate('/tasks')
+                }
                 className="group flex items-center gap-3 px-3 py-2.5 rounded-xl
                            border border-dashed border-neutral-200 dark:border-neutral-700
                            hover:border-neutral-300 dark:hover:border-neutral-600
@@ -256,7 +271,11 @@ export function TodayTimeline({
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.22, delay: i * 0.04 }}
-                  onClick={() => (item.task.meetingId ? navigate(`/meetings/${item.task.meetingId}`) : navigate('/tasks'))}
+                  onClick={() =>
+                    item.task.meetingId
+                      ? navigate(`/meetings/${item.task.meetingId}`)
+                      : navigate('/tasks')
+                  }
                   className="group flex items-center gap-3 px-3 py-3 rounded-xl
                              border border-dashed border-neutral-200 dark:border-neutral-700
                              hover:border-neutral-300 dark:hover:border-neutral-600

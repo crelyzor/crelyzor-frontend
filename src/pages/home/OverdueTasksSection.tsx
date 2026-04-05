@@ -49,9 +49,17 @@ export function OverdueTasksSection({ tasks }: Props) {
       {/* Tasks */}
       <div className="divide-y divide-amber-100 dark:divide-amber-900/20">
         {visible.map((task) => (
-          <div key={task.id} className="group flex items-center gap-3 px-5 py-2.5">
+          <div
+            key={task.id}
+            className="group flex items-center gap-3 px-5 py-2.5"
+          >
             <button
-              onClick={() => updateTask.mutate({ taskId: task.id, data: { isCompleted: true } })}
+              onClick={() =>
+                updateTask.mutate({
+                  taskId: task.id,
+                  data: { isCompleted: true },
+                })
+              }
               className="shrink-0 w-3.5 h-3.5 rounded-full border border-amber-300 dark:border-amber-700 hover:bg-amber-200 dark:hover:bg-amber-800 transition-colors flex items-center justify-center"
               aria-label="Mark complete"
             >
@@ -60,7 +68,9 @@ export function OverdueTasksSection({ tasks }: Props) {
             <div
               className="flex-1 min-w-0 cursor-pointer"
               onClick={() =>
-                task.meetingId ? navigate(`/meetings/${task.meetingId}`) : navigate('/tasks')
+                task.meetingId
+                  ? navigate(`/meetings/${task.meetingId}`)
+                  : navigate('/tasks')
               }
             >
               <p className="text-[13px] text-amber-900 dark:text-amber-200 truncate">

@@ -20,7 +20,8 @@ function relDate(isoString: string): string {
   const date = new Date(isoString);
   const today = new Date();
   const diffDays = Math.floor(
-    (new Date(today.toDateString()).getTime() - new Date(date.toDateString()).getTime()) /
+    (new Date(today.toDateString()).getTime() -
+      new Date(date.toDateString()).getTime()) /
       86400000
   );
   if (diffDays === 0) return 'Today';
@@ -77,7 +78,9 @@ export function RecentMeetings({ meetings, isLoading, isError }: Props) {
         {!isLoading && !isError && meetings.length === 0 && (
           <div className="py-10 text-center">
             <Clock className="w-6 h-6 mx-auto mb-2 text-neutral-300 dark:text-neutral-700" />
-            <p className="text-xs text-neutral-400 dark:text-neutral-600">No recent meetings</p>
+            <p className="text-xs text-neutral-400 dark:text-neutral-600">
+              No recent meetings
+            </p>
           </div>
         )}
 
@@ -88,7 +91,11 @@ export function RecentMeetings({ meetings, isLoading, isError }: Props) {
               key={meeting.id}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25, delay: i * 0.04, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{
+                duration: 0.25,
+                delay: i * 0.04,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
               onClick={() => navigate(`/meetings/${meeting.id}`)}
               className="group flex items-center gap-4 px-4 py-3.5
                          hover:bg-neutral-50 dark:hover:bg-neutral-800/50

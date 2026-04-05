@@ -7,7 +7,8 @@ function relDate(isoString: string): string {
   const date = new Date(isoString);
   const today = new Date();
   const diffDays = Math.floor(
-    (new Date(today.toDateString()).getTime() - new Date(date.toDateString()).getTime()) /
+    (new Date(today.toDateString()).getTime() -
+      new Date(date.toDateString()).getTime()) /
       86400000
   );
   if (diffDays === 0) return 'Today';
@@ -42,7 +43,10 @@ export function RecentVoiceNotes() {
         {isLoading && (
           <div className="space-y-1 animate-pulse p-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-9 bg-neutral-100 dark:bg-neutral-800 rounded-xl" />
+              <div
+                key={i}
+                className="h-9 bg-neutral-100 dark:bg-neutral-800 rounded-xl"
+              />
             ))}
           </div>
         )}
@@ -78,7 +82,9 @@ export function RecentVoiceNotes() {
                   </span>
                   {note.endTime && (
                     <>
-                      <span className="text-[9px] text-neutral-200 dark:text-neutral-700">·</span>
+                      <span className="text-[9px] text-neutral-200 dark:text-neutral-700">
+                        ·
+                      </span>
                       <Clock className="w-2 h-2 text-neutral-300 dark:text-neutral-600" />
                       <span className="text-[9px] text-neutral-400 dark:text-neutral-500">
                         {formatMeetingDuration(note)}
