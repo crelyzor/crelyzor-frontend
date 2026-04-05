@@ -89,6 +89,7 @@ const VIEW_LABELS: Record<TaskView, string> = {
   upcoming: 'Upcoming',
   all: 'All Tasks',
   from_meetings: 'From Meetings',
+  from_voice_notes: 'From Voice Notes',
 };
 
 // Views that use status/source/sort filter bar
@@ -392,6 +393,8 @@ export default function Tasks() {
         };
       case 'from_meetings':
         return { view: 'from_meetings', limit: 100 };
+      case 'from_voice_notes':
+        return { view: 'from_voice_notes', limit: 100 };
       case 'all':
       default:
         return {
@@ -619,9 +622,9 @@ export default function Tasks() {
     return { overdueTasks: overdue, dueTodayTasks: dueToday };
   }, [view, tasks, startOfToday, endOfToday]);
 
-  // From Meetings: group by meeting
+  // From Meetings / From Voice Notes: group by meeting
   const meetingGroups = useMemo(() => {
-    if (view !== 'from_meetings') return [];
+    if (view !== 'from_meetings' && view !== 'from_voice_notes') return [];
     const map = new Map<
       string,
       { meetingId: string; title: string; tasks: TaskWithMeeting[] }
@@ -686,7 +689,7 @@ export default function Tasks() {
     if (view === 'today') return [...overdueTasks, ...dueTodayTasks];
     if (view === 'upcoming')
       return data?.grouped?.flatMap((g) => g.tasks) ?? [];
-    if (view === 'from_meetings') return meetingGroups.flatMap((g) => g.tasks);
+    if (view === 'from_meetings' || view === 'from_voice_notes') return meetingGroups.flatMap((g) => g.tasks);
     if (view === 'inbox' && displayMode === 'list') return []; // DnD conflict
     if (displayMode === 'board') return [];
     if (displayMode === 'grouped')
@@ -1198,12 +1201,12 @@ export default function Tasks() {
               </AnimatePresence>
             )}
 
-            {/* FROM MEETINGS VIEW — grouped by meeting */}
-            {!isLoading && !isError && view === 'from_meetings' && (
+            {/* FROM MEETINGS / FROM VOICE NOTES VIEW — grouped by meeting */}
+            {!isLoading && !isError && (view === 'from_meetings' || view === 'from_voice_notes') && (
               <AnimatePresence mode="popLayout">
                 {meetingGroups.length === 0 && (
                   <EmptyState
-                    view="from_meetings"
+                    view={view}
                     onShowCreate={() => setShowCreate(true)}
                   />
                 )}
@@ -1462,6 +1465,10 @@ function EmptyState({
     from_meetings: {
       title: 'No tasks from meetings',
       sub: 'AI-extracted and manual tasks linked to meetings will appear here',
+    },
+    from_voice_notes: {
+      title: 'No tasks from voice notes',
+      sub: 'AI-extracted tasks from voice notes will appear here',
     },
   };
 

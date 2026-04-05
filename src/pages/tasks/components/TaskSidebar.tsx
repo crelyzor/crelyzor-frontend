@@ -1,4 +1,4 @@
-import { Inbox, CalendarDays, CalendarRange, List, Video } from 'lucide-react';
+import { Inbox, CalendarDays, CalendarRange, List, Video, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { TaskView } from '@/services/smaService';
 
@@ -20,6 +20,7 @@ const NAV_ITEMS: {
   },
   { view: 'all', label: 'All Tasks', Icon: List },
   { view: 'from_meetings', label: 'From Meetings', Icon: Video },
+  { view: 'from_voice_notes', label: 'From Voice Notes', Icon: Mic },
 ];
 
 interface Props {

@@ -80,7 +80,7 @@ export type TaskWithMeeting = Task & {
   card: { id: string; displayName: string; slug: string } | null;
 };
 
-export type TaskView = 'inbox' | 'today' | 'upcoming' | 'all' | 'from_meetings';
+export type TaskView = 'inbox' | 'today' | 'upcoming' | 'all' | 'from_meetings' | 'from_voice_notes';
 
 export type TaskListParams = {
   status?: 'all' | 'completed' | 'pending';
@@ -222,7 +222,8 @@ export const smaApi = {
 
   getNotes: async (meetingId: string): Promise<MeetingNote[]> => {
     const result = await apiClient.get(`/sma/meetings/${meetingId}/notes`);
-    return unwrap<MeetingNote[]>(result);
+    const data = unwrap<{ notes: MeetingNote[] }>(result);
+    return data.notes;
   },
 
   createNote: async (

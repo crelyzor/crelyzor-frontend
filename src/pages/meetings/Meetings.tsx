@@ -172,7 +172,7 @@ function ParticipantPicker({
 
 const TYPE_TABS = [
   { id: 'all', label: 'All' },
-  { id: 'scheduled', label: 'Live' },
+  { id: 'scheduled', label: 'Scheduled' },
   { id: 'recorded', label: 'Recordings' },
   { id: 'bookings', label: 'Bookings' },
 ] as const;
@@ -545,29 +545,34 @@ export default function Meetings() {
           </div>
         </div>
 
-        {/* ── Pending bookings CTA ── */}
-        {pendingCount > 0 && (
-          <button
-            onClick={() => navigate('/bookings')}
-            className="w-full flex items-center justify-between gap-3 px-4 py-3 mb-5 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors text-left group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center shrink-0">
-                <CalendarClock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
-                  {pendingCount} pending booking{' '}
-                  {pendingCount === 1 ? 'request' : 'requests'}
-                </p>
-                <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
-                  Confirm or decline on the Bookings page
-                </p>
-              </div>
+        {/* ── Bookings CTA ── */}
+        <button
+          onClick={() => navigate('/bookings')}
+          className={`w-full flex items-center justify-between gap-3 px-4 py-3 mb-5 rounded-xl border transition-colors text-left group ${
+            pendingCount > 0
+              ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/40 hover:border-amber-300 dark:hover:border-amber-700/60'
+              : 'bg-neutral-50 dark:bg-neutral-800/60 border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+              pendingCount > 0 ? 'bg-amber-100 dark:bg-amber-950/40' : 'bg-neutral-100 dark:bg-neutral-800'
+            }`}>
+              <CalendarClock className={`w-3.5 h-3.5 ${pendingCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-neutral-500 dark:text-neutral-400'}`} />
             </div>
-            <ExternalLink className="w-3.5 h-3.5 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors shrink-0" />
-          </button>
-        )}
+            <div>
+              <p className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
+                {pendingCount > 0
+                  ? `${pendingCount} pending booking ${pendingCount === 1 ? 'request' : 'requests'}`
+                  : 'Bookings'}
+              </p>
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                {pendingCount > 0 ? 'Confirm or decline on the Bookings page' : 'Manage scheduling requests'}
+              </p>
+            </div>
+          </div>
+          <ExternalLink className="w-3.5 h-3.5 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors shrink-0" />
+        </button>
 
         {/* ── Type toggle: Live / Recordings ── */}
         <div className="flex items-center gap-1 mb-5 p-1 bg-neutral-100 dark:bg-neutral-800/60 rounded-xl w-fit">
