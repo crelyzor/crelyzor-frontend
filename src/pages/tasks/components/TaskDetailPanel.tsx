@@ -522,10 +522,10 @@ export function TaskDetailPanel({
                     {task.recurringRule === 'FREQ=DAILY'
                       ? 'Daily'
                       : task.recurringRule === 'FREQ=WEEKLY'
-                      ? 'Weekly'
-                      : task.recurringRule === 'FREQ=MONTHLY'
-                      ? 'Monthly'
-                      : 'Repeat'}
+                        ? 'Weekly'
+                        : task.recurringRule === 'FREQ=MONTHLY'
+                          ? 'Monthly'
+                          : 'Repeat'}
                   </button>
                   <AnimatePresence>
                     {showRepeatMenu && (
@@ -533,7 +533,11 @@ export function TaskDetailPanel({
                         initial={{ opacity: 0, scale: 0.94, y: -4 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.94, y: -4 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                        transition={{
+                          type: 'spring',
+                          damping: 25,
+                          stiffness: 350,
+                        }}
                         className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-[130px]"
                       >
                         {(
