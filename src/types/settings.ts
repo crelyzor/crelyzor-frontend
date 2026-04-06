@@ -2,7 +2,6 @@ export interface UserSettings {
   id: string;
   userId: string;
   schedulingEnabled: boolean;
-  minNoticeHours: number;
   maxWindowDays: number;
   defaultBufferMins: number;
   googleCalendarSyncEnabled: boolean;
@@ -24,7 +23,6 @@ export type PatchUserSettingsPayload = Partial<
   Pick<
     UserSettings,
     | 'schedulingEnabled'
-    | 'minNoticeHours'
     | 'maxWindowDays'
     | 'defaultBufferMins'
     | 'googleCalendarSyncEnabled'
@@ -53,6 +51,7 @@ export interface EventType {
   meetingLink: string | null;
   bufferBefore: number;
   bufferAfter: number;
+  minNoticeHours: number;
   maxPerDay: number | null;
   isActive: boolean;
   availabilityScheduleId: string | null;
@@ -69,13 +68,14 @@ export interface CreateEventTypePayload {
   meetingLink?: string;
   bufferBefore?: number;
   bufferAfter?: number;
+  minNoticeHours?: number;
   maxPerDay?: number;
   isActive?: boolean;
   availabilityScheduleId?: string | null;
 }
 
 export type UpdateEventTypePayload = Partial<
-  Omit<CreateEventTypePayload, 'slug'> & {
+  Omit<CreateEventTypePayload, 'slug' | 'meetingLink' | 'maxPerDay' | 'availabilityScheduleId'> & {
     slug?: string;
     meetingLink?: string | null;
     maxPerDay?: number | null;

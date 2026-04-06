@@ -103,6 +103,7 @@ import type {
   EventType,
   LocationType,
   CreateEventTypePayload,
+  UpdateEventTypePayload,
   AvailabilitySchedule,
   AvailabilitySlot,
   AvailabilityOverride,
@@ -236,11 +237,10 @@ export default function Settings() {
                             key={section.id}
                             onClick={() => setActiveSection(section.id)}
                             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                            ${
-                              isActive
+                            ${isActive
                                 ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
                                 : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
-                            }`}
+                              }`}
                           >
                             <Icon className="w-4 h-4" />
                             {section.label}
@@ -276,11 +276,10 @@ export default function Settings() {
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0
-                    ${
-                      isActive
+                    ${isActive
                         ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
                         : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
-                    }`}
+                      }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
                     {section.label}
@@ -364,23 +363,6 @@ function SchedulingSection() {
           </SettingRow>
 
           <div className="border-t border-neutral-100 dark:border-neutral-800" />
-
-          {/* Min notice */}
-          <SettingRow
-            label="Minimum notice"
-            description="How far in advance someone must book (hours)"
-          >
-            <Input
-              type="number"
-              min={0}
-              max={168}
-              value={settings?.minNoticeHours ?? 24}
-              onChange={(e) =>
-                handleNumberChange('minNoticeHours', e.target.value, 0, 168)
-              }
-              className="w-24 border-neutral-200 dark:border-neutral-700 text-right"
-            />
-          </SettingRow>
 
           {/* Max window */}
           <SettingRow
@@ -654,6 +636,7 @@ const EMPTY_FORM = {
   meetingLink: '',
   bufferBefore: 0,
   bufferAfter: 0,
+  minNoticeHours: 24,
   maxPerDay: '',
   availabilityScheduleId: null as string | null,
 };
@@ -689,6 +672,7 @@ function EventTypesSection() {
       meetingLink: et.meetingLink ?? '',
       bufferBefore: et.bufferBefore,
       bufferAfter: et.bufferAfter,
+      minNoticeHours: et.minNoticeHours,
       maxPerDay: et.maxPerDay != null ? String(et.maxPerDay) : '',
       availabilityScheduleId: et.availabilityScheduleId ?? null,
     });
@@ -719,18 +703,22 @@ function EventTypesSection() {
       slug: form.slug.trim(),
       duration: form.duration,
       locationType: form.locationType,
-      ...(form.description.trim() && { description: form.description.trim() }),
+      ...(form.description.trim() ? { description: form.description.trim() } : { description: '' }),
       ...(form.locationType === 'ONLINE' &&
         form.meetingLink.trim() && { meetingLink: form.meetingLink.trim() }),
-      ...(form.bufferBefore > 0 && { bufferBefore: form.bufferBefore }),
-      ...(form.bufferAfter > 0 && { bufferAfter: form.bufferAfter }),
-      ...(form.maxPerDay && { maxPerDay: parseInt(form.maxPerDay, 10) }),
+      bufferBefore: form.bufferBefore,
+      bufferAfter: form.bufferAfter,
+      minNoticeHours: form.minNoticeHours,
       availabilityScheduleId: form.availabilityScheduleId,
     };
 
     if (editingId) {
+      const updatePayload: UpdateEventTypePayload = {
+        ...payload,
+        maxPerDay: form.maxPerDay ? parseInt(form.maxPerDay, 10) : null,
+      };
       updateEventType.mutate(
-        { id: editingId, data: payload },
+        { id: editingId, data: updatePayload },
         {
           onSuccess: () => {
             toast.success('Event type updated');
@@ -739,7 +727,11 @@ function EventTypesSection() {
         }
       );
     } else {
-      createEventType.mutate(payload, {
+      const createPayload: CreateEventTypePayload = {
+        ...payload,
+        ...(form.maxPerDay ? { maxPerDay: parseInt(form.maxPerDay, 10) } : {}),
+      };
+      createEventType.mutate(createPayload, {
         onSuccess: () => {
           setDialogOpen(false);
         },
@@ -856,9 +848,8 @@ function EventTypesSection() {
           {eventTypes.map((et) => (
             <Card
               key={et.id}
-              className={`border-neutral-200 dark:border-neutral-800 transition-opacity ${
-                !et.isActive ? 'opacity-60' : ''
-              }`}
+              className={`border-neutral-200 dark:border-neutral-800 transition-opacity ${!et.isActive ? 'opacity-60' : ''
+                }`}
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-4">
@@ -1106,7 +1097,26 @@ function EventTypesSection() {
                   className="border-neutral-200 dark:border-neutral-700"
                 />
               </FieldGroup>
-              <FieldGroup label="Max per day">
+            </div>
+
+            {/* Notice + Max per day row */}
+            <div className="grid grid-cols-2 gap-4">
+              <FieldGroup label="Min notice (hours)">
+                <Input
+                  type="number"
+                  min={0}
+                  max={168}
+                  value={form.minNoticeHours}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      minNoticeHours: parseInt(e.target.value, 10) || 0,
+                    }))
+                  }
+                  className="border-neutral-200 dark:border-neutral-700"
+                />
+              </FieldGroup>
+              <FieldGroup label="Max bookings per day">
                 <Input
                   type="number"
                   min={1}
@@ -2265,10 +2275,9 @@ function AppearanceSection() {
                   key={t.id}
                   onClick={() => setTheme(t.id)}
                   className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors
-                    ${
-                      isActive
-                        ? 'border-neutral-900 dark:border-neutral-100 bg-neutral-50 dark:bg-neutral-800'
-                        : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
+                    ${isActive
+                      ? 'border-neutral-900 dark:border-neutral-100 bg-neutral-50 dark:bg-neutral-800'
+                      : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
                     }`}
                 >
                   <Icon
