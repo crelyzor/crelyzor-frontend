@@ -33,6 +33,7 @@ import {
   Star,
   CheckCircle2,
   Ban,
+  Bell,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -145,12 +146,24 @@ const SETTINGS_SECTIONS = [
     icon: Clock,
     group: 'scheduling',
   },
+  {
+    id: 'bookings',
+    label: 'Bookings',
+    icon: CalendarDays,
+    group: 'scheduling',
+  },
 
   { id: 'ai', label: 'AI & Transcription', icon: Sparkles, group: 'features' },
   {
     id: 'integrations',
     label: 'Integrations',
     icon: Puzzle,
+    group: 'features',
+  },
+  {
+    id: 'notifications',
+    label: 'Notifications',
+    icon: Bell,
     group: 'features',
   },
   { id: 'tags', label: 'Tags', icon: Tag, group: 'features' },
@@ -287,6 +300,7 @@ export default function Settings() {
             {activeSection === 'bookings' && <BookingsSection />}
             {activeSection === 'ai' && <AITranscriptionSection />}
             {activeSection === 'integrations' && <IntegrationsSection />}
+            {activeSection === 'notifications' && <NotificationsSection />}
             {activeSection === 'tags' && <TagsSection />}
             {activeSection === 'security' && <SecuritySection />}
           </div>
@@ -501,6 +515,97 @@ function AITranscriptionSection() {
               </SelectContent>
             </Select>
           </SettingRow>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ── Notifications ──
+
+function NotificationsSection() {
+  const { data: settings, isLoading } = useUserSettings();
+  const updateSettings = useUpdateUserSettings();
+
+  const handleToggle = (field: string, value: boolean) => {
+    updateSettings.mutate({ [field]: value });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <SectionHeader
+          title="Notifications"
+          description="Manage your email alerts and digests"
+        />
+        <SettingsSkeleton rows={4} />
+      </div>
+    );
+  }
+
+  const isMasterEnabled = settings?.emailNotificationsEnabled ?? true;
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader
+        title="Notifications"
+        description="Manage your email alerts and digests"
+      />
+
+      <Card className="border-neutral-200 dark:border-neutral-800">
+        <CardContent className="p-6 space-y-6">
+          <SettingRow
+            label="Enable email notifications"
+            description="Master switch for all transactional emails"
+          >
+            <Switch
+              checked={isMasterEnabled}
+              onCheckedChange={(v) => handleToggle('emailNotificationsEnabled', v)}
+            />
+          </SettingRow>
+
+          <div className="border-t border-neutral-100 dark:border-neutral-800" />
+
+          <div className={!isMasterEnabled ? 'opacity-50 pointer-events-none transition-opacity' : 'transition-opacity'}>
+            <div className="space-y-6">
+              <SettingRow
+                label="Booking emails"
+                description="Get an email when someone books you, cancels, or when a reminder is due"
+              >
+                <Switch
+                  checked={settings?.bookingEmailsEnabled ?? true}
+                  onCheckedChange={(v) => handleToggle('bookingEmailsEnabled', v)}
+                  disabled={!isMasterEnabled}
+                />
+              </SettingRow>
+
+              <div className="border-t border-neutral-100 dark:border-neutral-800" />
+
+              <SettingRow
+                label="Meeting ready"
+                description="Get an email when AI finishes processing your meeting"
+              >
+                <Switch
+                  checked={settings?.meetingReadyEmailEnabled ?? true}
+                  onCheckedChange={(v) => handleToggle('meetingReadyEmailEnabled', v)}
+                  disabled={!isMasterEnabled}
+                />
+              </SettingRow>
+
+              <div className="border-t border-neutral-100 dark:border-neutral-800" />
+
+              <SettingRow
+                label="Daily task digest"
+                description="Daily summary of tasks at 8:00 AM"
+              >
+                <Switch
+                  checked={settings?.dailyDigestEnabled ?? false}
+                  onCheckedChange={(v) => handleToggle('dailyDigestEnabled', v)}
+                  disabled={!isMasterEnabled}
+                />
+              </SettingRow>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

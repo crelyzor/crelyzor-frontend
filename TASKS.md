@@ -513,12 +513,12 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 
 ### P1 — Email Notification Preferences (Settings UI)
 
-- [ ] **Settings > Notifications tab** — new tab in Settings page (after Integrations). Show toggles for:
+- [x] **Settings > Notifications tab** — new tab in Settings page (after Integrations). Show toggles for:
   - Email notifications master toggle (`emailNotificationsEnabled`)
   - Booking emails (`bookingEmailsEnabled`) — "Get an email when someone books you"
   - Meeting ready (`meetingReadyEmailEnabled`) — "Get an email when AI finishes processing"
   - Daily task digest (`dailyDigestEnabled`) — "Daily summary of tasks at 8am" (off by default)
-- [ ] Wire to `PATCH /settings/user` — same pattern as existing settings toggles
+- [x] Wire to `PATCH /settings/user` — same pattern as existing settings toggles
 
 ---
 

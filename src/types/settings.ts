@@ -12,6 +12,10 @@ export interface UserSettings {
   autoTranscribe: boolean;
   autoAIProcess: boolean;
   defaultLanguage: string;
+  emailNotificationsEnabled: boolean;
+  bookingEmailsEnabled: boolean;
+  meetingReadyEmailEnabled: boolean;
+  dailyDigestEnabled: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,6 +32,10 @@ export type PatchUserSettingsPayload = Partial<
     | 'autoTranscribe'
     | 'autoAIProcess'
     | 'defaultLanguage'
+    | 'emailNotificationsEnabled'
+    | 'bookingEmailsEnabled'
+    | 'meetingReadyEmailEnabled'
+    | 'dailyDigestEnabled'
   >
 >;
 
