@@ -75,7 +75,10 @@ export interface CreateEventTypePayload {
 }
 
 export type UpdateEventTypePayload = Partial<
-  Omit<CreateEventTypePayload, 'slug' | 'meetingLink' | 'maxPerDay' | 'availabilityScheduleId'> & {
+  Omit<
+    CreateEventTypePayload,
+    'slug' | 'meetingLink' | 'maxPerDay' | 'availabilityScheduleId'
+  > & {
     slug?: string;
     meetingLink?: string | null;
     maxPerDay?: number | null;
