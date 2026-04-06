@@ -499,9 +499,9 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 
 ---
 
-### P4 — Major Feature
+### P4 — Major Feature ✅
 
-- [ ] **Recurring task UI** — in `TaskDetailPanel`: add a "Repeat" field (below Due Date). Options: None / Daily / Weekly / Monthly / Custom. For Weekly: show day-of-week selector. Stores as RRULE string via `updateTask({ recurringRule })`. Completed recurring tasks show "Next occurrence: [date]" instead of disappearing. Requires backend P4 task.
+- [x] **Recurring task UI** — `TaskDetailPanel`: "Repeat" button in metadata row. Options: Daily / Weekly / Monthly / Don't repeat. Stores as RRULE string via `updateTask({ recurringRule })`. Button turns dark when active. Completing a recurring task auto-spawns the next occurrence.
 
 ---
 
