@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-04-06 (Phase 3.4 planned + Phase 3.2/3.3 audit)
+Last updated: 2026-04-07 (Phase 3.2/3.3 complete, Phase 3.4 next)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
