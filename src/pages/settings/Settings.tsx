@@ -560,13 +560,21 @@ function NotificationsSection() {
           >
             <Switch
               checked={isMasterEnabled}
-              onCheckedChange={(v) => handleToggle('emailNotificationsEnabled', v)}
+              onCheckedChange={(v) =>
+                handleToggle('emailNotificationsEnabled', v)
+              }
             />
           </SettingRow>
 
           <div className="border-t border-neutral-100 dark:border-neutral-800" />
 
-          <div className={!isMasterEnabled ? 'opacity-50 pointer-events-none transition-opacity' : 'transition-opacity'}>
+          <div
+            className={
+              !isMasterEnabled
+                ? 'opacity-50 pointer-events-none transition-opacity'
+                : 'transition-opacity'
+            }
+          >
             <div className="space-y-6">
               <SettingRow
                 label="Booking emails"
@@ -574,7 +582,9 @@ function NotificationsSection() {
               >
                 <Switch
                   checked={settings?.bookingEmailsEnabled ?? true}
-                  onCheckedChange={(v) => handleToggle('bookingEmailsEnabled', v)}
+                  onCheckedChange={(v) =>
+                    handleToggle('bookingEmailsEnabled', v)
+                  }
                   disabled={!isMasterEnabled}
                 />
               </SettingRow>
@@ -587,7 +597,9 @@ function NotificationsSection() {
               >
                 <Switch
                   checked={settings?.meetingReadyEmailEnabled ?? true}
-                  onCheckedChange={(v) => handleToggle('meetingReadyEmailEnabled', v)}
+                  onCheckedChange={(v) =>
+                    handleToggle('meetingReadyEmailEnabled', v)
+                  }
                   disabled={!isMasterEnabled}
                 />
               </SettingRow>
