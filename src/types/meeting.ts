@@ -51,6 +51,11 @@ export type MeetingParticipant = {
     email: string;
     avatarUrl?: string;
   };
+  card?: {
+    id: string;
+    displayName: string;
+    slug: string;
+  } | null;
 };
 
 export type MeetingGuest = {

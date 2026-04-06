@@ -167,5 +167,7 @@ export const queryKeys = {
         'contacts',
         ...(filters ? [filters] : []),
       ] as const,
+    meetings: (cardId: string) =>
+      [...queryKeys.cards.all, 'meetings', cardId] as const,
   },
 } as const;

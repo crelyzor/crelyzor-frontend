@@ -21,6 +21,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   useCardContacts,
+  useCardMeetings,
   useDeleteContact,
   useUpdateContactTags,
 } from '@/hooks/queries/useCardQueries';
@@ -28,6 +29,34 @@ import { cardsApi } from '@/services/cardsService';
 import { toast } from 'sonner';
 import type { CardContact } from '@/types';
 import { TagInput } from '@/components/cards/TagInput';
+
+/** Shows how many meetings are linked to a specific contact email on a card. */
+function ContactMeetingsChip({
+  cardId,
+  contactEmail,
+}: {
+  cardId: string;
+  contactEmail: string;
+}) {
+  const { data: meetings } = useCardMeetings(cardId);
+
+  const count = (meetings ?? []).filter((m) => {
+    const inParticipants = m.participants?.some(
+      (p) => p.user?.email === contactEmail
+    );
+    const inGuests = m.guests?.some((g) => g.email === contactEmail);
+    return inParticipants || inGuests;
+  }).length;
+
+  if (count === 0) return null;
+
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
+      <Calendar className="w-2.5 h-2.5" />
+      {count} meeting{count !== 1 ? 's' : ''}
+    </span>
+  );
+}
 
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -359,8 +388,14 @@ export default function CardContacts() {
                             </p>
                           )}
 
-                          {/* Tags */}
+                          {/* Meetings chip + Tags */}
                           <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                            {contact.email && (
+                              <ContactMeetingsChip
+                                cardId={contact.cardId}
+                                contactEmail={contact.email}
+                              />
+                            )}
                             {contact.tags?.map((tag) => (
                               <Badge
                                 key={tag}

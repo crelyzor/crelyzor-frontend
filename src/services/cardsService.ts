@@ -9,6 +9,7 @@ import type {
   UpdateCardPayload,
   PreviewCardPayload,
   PreviewCardResponse,
+  Meeting,
 } from '@/types';
 
 export const cardsApi = {
@@ -69,4 +70,8 @@ export const cardsApi = {
     const params = cardId ? `?cardId=${cardId}` : '';
     return apiClient.get<string>(`/cards/contacts/export${params}`);
   },
+
+  /** GET /cards/:cardId/meetings — meetings linked to this card via participant email matching */
+  getCardMeetings: (cardId: string) =>
+    apiClient.get<Meeting[]>(`/cards/${cardId}/meetings`),
 };

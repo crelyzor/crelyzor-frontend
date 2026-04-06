@@ -146,3 +146,12 @@ export function useDeleteContact() {
     },
   });
 }
+
+export function useCardMeetings(cardId: string) {
+  return useQuery({
+    queryKey: queryKeys.cards.meetings(cardId),
+    queryFn: () => cardsApi.getCardMeetings(cardId),
+    enabled: !!cardId,
+    staleTime: 5 * 60 * 1000, // 5 min — card-meeting links change infrequently
+  });
+}

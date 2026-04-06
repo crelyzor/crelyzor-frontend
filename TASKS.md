@@ -495,7 +495,7 @@ Full design doc: `docs/dev-notes/phase-3-tasks-calendar.md`
 
 - [x] **Schedule task → create GCal block** — in `TaskDetailPanel`: when `scheduledTime` is set and user has GCal connected, show a toggle _"Block time in Google Calendar"_ (default off). When enabled, calls `updateTask({ scheduledTime, blockInCalendar: true })`. Backend creates a GCal event. Show the GCal event ID as a small chip "Blocked in calendar ✓" when set.
 
-- [ ] **Meeting ↔ Card contact chips** — in `ScheduledDetail` participants section: when a participant's `card` field is populated (from backend auto-linking), show their card chip (avatar + name, clickable → `/cards/:cardId/edit`). On `CardEditor` contacts section: show a "Meetings" count chip per contact that opens a meeting list filtered by that contact. Requires backend P3 task.
+- [x] **Meeting ↔ Card contact chips** — in `ScheduledDetail` participants section: when a participant's `card` field is populated (from backend auto-linking), show their card chip (avatar + name, clickable → `/cards/:cardId/edit`). On `CardEditor` contacts section: show a "Meetings" count chip per contact that opens a meeting list filtered by that contact. Requires backend P3 task.
 
 ---
 
