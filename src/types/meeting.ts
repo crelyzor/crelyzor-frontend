@@ -166,6 +166,8 @@ export type Task = {
   transcriptContext?: string | null;
   durationMinutes?: number | null;
   googleEventId?: string | null;
+  recurringRule?: string | null;
+  recurringParentId?: string | null;
   source: 'AI_EXTRACTED' | 'MANUAL';
   createdAt: string;
   updatedAt: string;

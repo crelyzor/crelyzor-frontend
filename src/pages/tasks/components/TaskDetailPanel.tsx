@@ -86,6 +86,7 @@ export function TaskDetailPanel({
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [showTagMenu, setShowTagMenu] = useState(false);
   const [showDurationMenu, setShowDurationMenu] = useState(false);
+  const [showRepeatMenu, setShowRepeatMenu] = useState(false);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
   const [showAddSubtask, setShowAddSubtask] = useState(false);
 
@@ -180,6 +181,15 @@ export function TaskDetailPanel({
         taskId: task.id,
         data: { durationMinutes: minutes },
       });
+    },
+    [task, updateTask]
+  );
+
+  const handleRepeatChange = useCallback(
+    (rule: 'FREQ=DAILY' | 'FREQ=WEEKLY' | 'FREQ=MONTHLY' | null) => {
+      if (!task) return;
+      updateTask.mutate({ taskId: task.id, data: { recurringRule: rule } });
+      setShowRepeatMenu(false);
     },
     [task, updateTask]
   );
@@ -493,6 +503,69 @@ export function TaskDetailPanel({
                             )}
                           </button>
                         ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Repeat */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowRepeatMenu((v) => !v)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
+                      task.recurringRule
+                        ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                    }`}
+                  >
+                    <span className="shrink-0">↻</span>
+                    {task.recurringRule === 'FREQ=DAILY'
+                      ? 'Daily'
+                      : task.recurringRule === 'FREQ=WEEKLY'
+                      ? 'Weekly'
+                      : task.recurringRule === 'FREQ=MONTHLY'
+                      ? 'Monthly'
+                      : 'Repeat'}
+                  </button>
+                  <AnimatePresence>
+                    {showRepeatMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.94, y: -4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.94, y: -4 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                        className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-[130px]"
+                      >
+                        {(
+                          [
+                            { label: 'Daily', value: 'FREQ=DAILY' },
+                            { label: 'Weekly', value: 'FREQ=WEEKLY' },
+                            { label: 'Monthly', value: 'FREQ=MONTHLY' },
+                          ] as const
+                        ).map(({ label, value }) => (
+                          <button
+                            key={value}
+                            onClick={() => handleRepeatChange(value)}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors text-neutral-700 dark:text-neutral-300"
+                          >
+                            {label}
+                            {task.recurringRule === value && (
+                              <Check className="w-3 h-3 ml-auto" />
+                            )}
+                          </button>
+                        ))}
+                        {task.recurringRule && (
+                          <>
+                            <div className="h-px bg-neutral-100 dark:bg-neutral-700 my-1" />
+                            <button
+                              onClick={() => handleRepeatChange(null)}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors text-neutral-400 dark:text-neutral-500"
+                            >
+                              <Minus className="w-3 h-3 shrink-0" />
+                              Don't repeat
+                            </button>
+                          </>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>

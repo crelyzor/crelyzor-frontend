@@ -186,6 +186,7 @@ export const smaApi = {
       transcriptContext?: string | null;
       durationMinutes?: number | null;
       blockInCalendar?: boolean;
+      recurringRule?: 'FREQ=DAILY' | 'FREQ=WEEKLY' | 'FREQ=MONTHLY' | null;
     }
   ): Promise<Task> => {
     const result = await apiClient.patch<{ task: Task }>(
