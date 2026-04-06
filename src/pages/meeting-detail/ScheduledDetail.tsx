@@ -339,7 +339,10 @@ export function ScheduledDetail({
             <div className="flex items-center gap-1.5 mb-2">
               <Users className="w-3.5 h-3.5 text-neutral-400" />
               <span className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                Participants ({rawMeeting.participants.length + (rawMeeting.guests?.length ?? 0)})
+                Participants (
+                {rawMeeting.participants.length +
+                  (rawMeeting.guests?.length ?? 0)}
+                )
               </span>
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -358,7 +361,9 @@ export function ScheduledDetail({
                       className="px-2.5 py-1 rounded-full text-xs bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 border border-neutral-700 dark:border-neutral-300 hover:opacity-80 transition-opacity flex items-center gap-1"
                     >
                       <span>{label}</span>
-                      <span className="text-[9px] opacity-60">↗ {p.card.displayName}</span>
+                      <span className="text-[9px] opacity-60">
+                        ↗ {p.card.displayName}
+                      </span>
                     </button>
                   );
                 }
