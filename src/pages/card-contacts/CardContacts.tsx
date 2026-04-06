@@ -79,7 +79,7 @@ export default function CardContacts() {
   const [page, setPage] = useState(1);
   const [filterTags, setFilterTags] = useState<string[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  
+
   const qc = useQueryClient();
   const [bulkTagOpen, setBulkTagOpen] = useState(false);
   const [bulkSearch, setBulkSearch] = useState('');
@@ -99,7 +99,7 @@ export default function CardContacts() {
   const { data: userTagsData } = useUserTags();
 
   const allTags = useMemo(() => {
-    return userTagsData?.map(t => t.name).sort() || [];
+    return userTagsData?.map((t) => t.name).sort() || [];
   }, [userTagsData]);
 
   const handleDelete = (id: string) => {
@@ -166,18 +166,18 @@ export default function CardContacts() {
   const handleBulkTag = async (tagId: string) => {
     // We already have `contacts: CardContact[]` in the component scope.
     const selectedContacts = contacts.filter((c) => selected.has(c.id));
-    
+
     // Process attaches in parallel
     await Promise.all(
-      selectedContacts.map((c) => 
+      selectedContacts.map((c) =>
         tagsApi.attachTagToContact(c.cardId, c.id, tagId).catch(() => {})
       )
     );
-    
+
     // Invalidate queries so that the contacts list refetches
     qc.invalidateQueries({ queryKey: ['cards', 'contacts'] });
     qc.invalidateQueries({ queryKey: ['tags', 'contact'] }); // Invalidate individual row tags
-    
+
     toast.success(`Tag applied to ${selected.size} contacts`);
     setBulkTagOpen(false);
     setSelected(new Set());
@@ -397,7 +397,10 @@ export default function CardContacts() {
                                 contactEmail={contact.email}
                               />
                             )}
-                            <ContactRowTags cardId={contact.cardId} contactId={contact.id} />
+                            <ContactRowTags
+                              cardId={contact.cardId}
+                              contactId={contact.id}
+                            />
                           </div>
                         </div>
                       </div>
@@ -455,72 +458,74 @@ export default function CardContacts() {
               </span>
               <div className="w-px h-5 bg-white/20 dark:bg-neutral-900/20" />
 
-                  <Popover open={bulkTagOpen} onOpenChange={setBulkTagOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 text-xs text-white/80 hover:text-white hover:bg-white/10 dark:text-neutral-900/80 dark:hover:text-neutral-900 dark:hover:bg-neutral-900/10"
-                      >
-                        <Tag className="w-3 h-3 mr-1" />
-                        Tag
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      align="start"
-                      sideOffset={8}
-                      className="w-64 p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl z-50 mb-2"
-                    >
-                      <div className="relative mb-2">
-                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-                        <input
-                          value={bulkSearch}
-                          onChange={(e) => setBulkSearch(e.target.value)}
-                          placeholder="Search tags…"
-                          className="w-full pl-7 pr-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-800 rounded-lg outline-none border border-transparent focus:border-neutral-300 dark:focus:border-neutral-700 placeholder:text-muted-foreground text-foreground"
-                        />
-                      </div>
-                      <div className="max-h-44 overflow-y-auto">
-                        {filteredTags.length === 0 && (
-                          <p className="text-xs text-muted-foreground text-center py-3">
-                            {bulkSearch ? 'No tags match' : 'No tags available'}
-                          </p>
-                        )}
-                        {filteredTags.map((tag) => (
-                          <Button
-                            key={tag.id}
-                            variant="ghost"
-                            onClick={() => handleBulkTag(tag.id)}
-                            className="w-full justify-start gap-2.5 px-2 h-8 text-sm text-neutral-800 dark:text-neutral-200 font-normal"
-                          >
-                            <span
-                              className="w-2.5 h-2.5 rounded-full shrink-0"
-                              style={{ background: tag.color }}
-                            />
-                            <span className="flex-1 text-left truncate">{tag.name}</span>
-                          </Button>
-                        ))}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+              <Popover open={bulkTagOpen} onOpenChange={setBulkTagOpen}>
+                <PopoverTrigger asChild>
                   <Button
                     size="sm"
                     variant="ghost"
                     className="h-7 text-xs text-white/80 hover:text-white hover:bg-white/10 dark:text-neutral-900/80 dark:hover:text-neutral-900 dark:hover:bg-neutral-900/10"
-                    onClick={handleExport}
                   >
-                    <Download className="w-3 h-3 mr-1" />
-                    Export
+                    <Tag className="w-3 h-3 mr-1" />
+                    Tag
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                    onClick={handleBulkDelete}
-                  >
-                    <Trash2 className="w-3 h-3 mr-1" />
-                    Delete
-                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  sideOffset={8}
+                  className="w-64 p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl z-50 mb-2"
+                >
+                  <div className="relative mb-2">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                    <input
+                      value={bulkSearch}
+                      onChange={(e) => setBulkSearch(e.target.value)}
+                      placeholder="Search tags…"
+                      className="w-full pl-7 pr-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-800 rounded-lg outline-none border border-transparent focus:border-neutral-300 dark:focus:border-neutral-700 placeholder:text-muted-foreground text-foreground"
+                    />
+                  </div>
+                  <div className="max-h-44 overflow-y-auto">
+                    {filteredTags.length === 0 && (
+                      <p className="text-xs text-muted-foreground text-center py-3">
+                        {bulkSearch ? 'No tags match' : 'No tags available'}
+                      </p>
+                    )}
+                    {filteredTags.map((tag) => (
+                      <Button
+                        key={tag.id}
+                        variant="ghost"
+                        onClick={() => handleBulkTag(tag.id)}
+                        className="w-full justify-start gap-2.5 px-2 h-8 text-sm text-neutral-800 dark:text-neutral-200 font-normal"
+                      >
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ background: tag.color }}
+                        />
+                        <span className="flex-1 text-left truncate">
+                          {tag.name}
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs text-white/80 hover:text-white hover:bg-white/10 dark:text-neutral-900/80 dark:hover:text-neutral-900 dark:hover:bg-neutral-900/10"
+                onClick={handleExport}
+              >
+                <Download className="w-3 h-3 mr-1" />
+                Export
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                onClick={handleBulkDelete}
+              >
+                <Trash2 className="w-3 h-3 mr-1" />
+                Delete
+              </Button>
 
               <button
                 onClick={() => setSelected(new Set())}

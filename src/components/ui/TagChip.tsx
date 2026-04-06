@@ -11,8 +11,8 @@ interface TagChipProps {
 export function TagChip({ tag, onRemove }: TagChipProps) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 px-2.5 py-0.5 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
-      <Link 
-        to={`/tags/${tag.id}`} 
+      <Link
+        to={`/tags/${tag.id}`}
         onClick={(e) => e.stopPropagation()}
         className="flex items-center gap-1.5 min-w-0"
       >

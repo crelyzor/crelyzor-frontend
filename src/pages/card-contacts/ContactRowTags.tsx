@@ -19,17 +19,32 @@ import type { Tag as TagType } from '@/types/meeting';
 
 const DEFAULT_TAG_COLOR = '#6b7280';
 
-export function ContactRowTags({ cardId, contactId }: { cardId: string; contactId: string }) {
+export function ContactRowTags({
+  cardId,
+  contactId,
+}: {
+  cardId: string;
+  contactId: string;
+}) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [newName, setNewName] = useState('');
 
   const { data: allTags = [], isLoading: loadingAll } = useUserTags();
-  const { data: contactTags = [], isLoading: loadingContact } = useContactTags(cardId, contactId);
+  const { data: contactTags = [], isLoading: loadingContact } = useContactTags(
+    cardId,
+    contactId
+  );
 
   const { mutate: createTag, isPending: isCreating } = useCreateTag();
-  const { mutate: attach, isPending: isAttaching } = useAttachTagToContact(cardId, contactId);
-  const { mutate: detach, isPending: isDetaching } = useDetachTagFromContact(cardId, contactId);
+  const { mutate: attach, isPending: isAttaching } = useAttachTagToContact(
+    cardId,
+    contactId
+  );
+  const { mutate: detach, isPending: isDetaching } = useDetachTagFromContact(
+    cardId,
+    contactId
+  );
 
   const attachedIds = useMemo(
     () => new Set(contactTags.map((t) => t.id)),
@@ -67,7 +82,10 @@ export function ContactRowTags({ cardId, contactId }: { cardId: string; contactI
   const isLoading = loadingAll || loadingContact;
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5 mt-1" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="flex flex-wrap items-center gap-1.5 mt-1"
+      onClick={(e) => e.stopPropagation()}
+    >
       {isLoading ? (
         <span className="inline-block h-5 w-16 rounded-full bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
       ) : contactTags.length === 0 ? null : (
