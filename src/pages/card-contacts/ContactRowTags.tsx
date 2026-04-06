@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Tag, Plus, Check, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -7,49 +7,33 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
+import { TagChip } from '@/components/ui/TagChip';
 import {
   useUserTags,
-  useCardTags,
+  useContactTags,
   useCreateTag,
-  useAttachTagToCard,
-  useDetachTagFromCard,
+  useAttachTagToContact,
+  useDetachTagFromContact,
 } from '@/hooks/queries/useTagQueries';
 import type { Tag as TagType } from '@/types/meeting';
-import { TagChip } from '@/components/ui/TagChip';
 
 const DEFAULT_TAG_COLOR = '#6b7280';
 
-function SkeletonPills() {
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {[60, 80, 50].map((w) => (
-        <span
-          key={w}
-          className="inline-block h-5 rounded-full bg-neutral-100 dark:bg-neutral-800 animate-pulse"
-          style={{ width: `${w}px` }}
-        />
-      ))}
-    </div>
-  );
-}
-
-export function CardTagsSection({ cardId }: { cardId: string }) {
+export function ContactRowTags({ cardId, contactId }: { cardId: string; contactId: string }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [newName, setNewName] = useState('');
-  const newNameRef = useRef<HTMLInputElement>(null);
 
   const { data: allTags = [], isLoading: loadingAll } = useUserTags();
-  const { data: cardTags = [], isLoading: loadingCard } = useCardTags(cardId);
+  const { data: contactTags = [], isLoading: loadingContact } = useContactTags(cardId, contactId);
 
   const { mutate: createTag, isPending: isCreating } = useCreateTag();
-  const { mutate: attach, isPending: isAttaching } = useAttachTagToCard(cardId);
-  const { mutate: detach, isPending: isDetaching } =
-    useDetachTagFromCard(cardId);
+  const { mutate: attach, isPending: isAttaching } = useAttachTagToContact(cardId, contactId);
+  const { mutate: detach, isPending: isDetaching } = useDetachTagFromContact(cardId, contactId);
 
   const attachedIds = useMemo(
-    () => new Set(cardTags.map((t) => t.id)),
-    [cardTags]
+    () => new Set(contactTags.map((t) => t.id)),
+    [contactTags]
   );
 
   const filtered = useMemo(() => {
@@ -57,13 +41,6 @@ export function CardTagsSection({ cardId }: { cardId: string }) {
     const q = search.toLowerCase();
     return allTags.filter((t) => t.name.toLowerCase().includes(q));
   }, [allTags, search]);
-
-  useEffect(() => {
-    if (!open) {
-      setSearch('');
-      setNewName('');
-    }
-  }, [open]);
 
   function handleToggle(tag: TagType) {
     if (attachedIds.has(tag.id)) {
@@ -87,34 +64,31 @@ export function CardTagsSection({ cardId }: { cardId: string }) {
     );
   }
 
-  const isLoading = loadingAll || loadingCard;
+  const isLoading = loadingAll || loadingContact;
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <div className="flex flex-wrap items-center gap-1.5 mt-1" onClick={(e) => e.stopPropagation()}>
       {isLoading ? (
-        <SkeletonPills />
-      ) : cardTags.length === 0 ? null : (
-        cardTags.map((tag) => (
+        <span className="inline-block h-5 w-16 rounded-full bg-neutral-100 dark:bg-neutral-800 animate-pulse" />
+      ) : contactTags.length === 0 ? null : (
+        contactTags.map((tag) => (
           <TagChip key={tag.id} tag={tag} onRemove={() => detach(tag.id)} />
         ))
       )}
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 px-2 text-xs text-muted-foreground gap-1 hover:text-foreground"
-          >
-            <Tag className="w-3 h-3" />
-            {cardTags.length === 0 ? 'Add tag' : '+'}
-          </Button>
+          <button className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+            <Tag className="w-2.5 h-2.5" />
+            {contactTags.length === 0 ? '+ Tag' : '+'}
+          </button>
         </PopoverTrigger>
 
         <PopoverContent
           align="start"
-          className="w-64 p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
+          className="w-64 p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg z-50"
           sideOffset={6}
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Search */}
           <div className="relative mb-1">
@@ -165,7 +139,6 @@ export function CardTagsSection({ cardId }: { cardId: string }) {
 
           <div className="flex gap-1 px-0.5">
             <input
-              ref={newNameRef}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => {

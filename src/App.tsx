@@ -29,6 +29,8 @@ const {
   CardContacts,
   CardAnalytics,
   Search,
+  Tags,
+  TagDetail,
 } = routes;
 
 function App() {
@@ -190,6 +192,26 @@ function App() {
                     <AuthGuard>
                       <Layout>
                         <Search />
+                      </Layout>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/tags"
+                  element={
+                    <AuthGuard>
+                      <Layout>
+                        <Tags />
+                      </Layout>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/tags/:tagId"
+                  element={
+                    <AuthGuard>
+                      <Layout>
+                        <TagDetail />
                       </Layout>
                     </AuthGuard>
                   }

@@ -131,6 +131,46 @@ export type Tag = {
   attachedAt?: string;
 };
 
+export type TagWithCounts = Tag & {
+  _count?: {
+    meetingTags: number;
+    cardTags: number;
+    taskTags: number;
+    contactTags: number;
+  };
+};
+
+export type ContactItem = {
+  id: string;
+  name: string;
+  email: string | null;
+  company: string | null;
+  cardId: string;
+};
+
+export type CardItem = {
+  id: string;
+  slug: string;
+  displayName: string;
+  title: string | null;
+  avatarUrl: string | null;
+};
+
+export type TagItemsRecord = {
+  tag: Tag;
+  meetings: Partial<Meeting>[];
+  cards: CardItem[];
+  tasks: Partial<Task>[];
+  contacts: ContactItem[];
+  counts: {
+    meetings: number;
+    cards: number;
+    tasks: number;
+    contacts: number;
+    total: number;
+  };
+};
+
 export type AttachmentType = 'FILE' | 'LINK' | 'PHOTO';
 
 export type Attachment = {

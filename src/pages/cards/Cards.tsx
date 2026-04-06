@@ -37,6 +37,7 @@ import { CardPreview } from '@/components/cards/CardPreview';
 import { QRCodeDialog } from '@/components/cards/QRCodeDialog';
 import { EmailSignatureDialog } from '@/components/cards/EmailSignatureDialog';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
+import { TagChip } from '@/components/ui/TagChip';
 
 const CARDS_PUBLIC_URL =
   import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
@@ -484,16 +485,7 @@ export default function Cards() {
                 {(cardTagsMap.get(card.id) ?? []).length > 0 && (
                   <div className="flex items-center gap-1 mt-1.5 flex-wrap px-1">
                     {(cardTagsMap.get(card.id) ?? []).map((tag) => (
-                      <span
-                        key={tag.id}
-                        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
-                      >
-                        <span
-                          className="w-1.5 h-1.5 rounded-full shrink-0"
-                          style={{ backgroundColor: tag.color }}
-                        />
-                        {tag.name}
-                      </span>
+                      <TagChip key={tag.id} tag={tag} />
                     ))}
                   </div>
                 )}

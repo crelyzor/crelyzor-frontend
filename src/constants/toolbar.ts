@@ -7,6 +7,7 @@ import {
   CheckSquare,
   CalendarClock,
   CalendarRange,
+  Tag,
 } from 'lucide-react';
 import type { ToolbarItem, ToolbarItemGroup } from '@/types';
 
@@ -87,6 +88,15 @@ export const TOOLBAR_ITEMS: ToolbarItem[] = [
     path: '/cards',
     group: 'navigation',
     description: 'Digital business cards',
+  },
+  {
+    id: 'tags',
+    label: 'Tags',
+    icon: Tag,
+    action: 'navigate',
+    path: '/tags',
+    group: 'navigation',
+    description: 'Manage all tags',
   },
 
   // Settings

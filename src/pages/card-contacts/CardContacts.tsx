@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { PageMotion } from '@/components/PageMotion';
 import {
   ArrowLeft,
@@ -20,15 +21,21 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { tagsApi } from '@/services/tagsService';
+import {
   useCardContacts,
   useCardMeetings,
   useDeleteContact,
-  useUpdateContactTags,
 } from '@/hooks/queries/useCardQueries';
+import { useUserTags } from '@/hooks/queries/useTagQueries';
 import { cardsApi } from '@/services/cardsService';
 import { toast } from 'sonner';
 import type { CardContact } from '@/types';
-import { TagInput } from '@/components/cards/TagInput';
+import { ContactRowTags } from './ContactRowTags';
 
 /** Shows how many meetings are linked to a specific contact email on a card. */
 function ContactMeetingsChip({
@@ -71,10 +78,11 @@ export default function CardContacts() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [filterTags, setFilterTags] = useState<string[]>([]);
-  const [editingTagId, setEditingTagId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [bulkTagging, setBulkTagging] = useState(false);
-  const [bulkTags, setBulkTags] = useState<string[]>([]);
+  
+  const qc = useQueryClient();
+  const [bulkTagOpen, setBulkTagOpen] = useState(false);
+  const [bulkSearch, setBulkSearch] = useState('');
 
   const { data, isLoading, isError } = useCardContacts({
     search: search || undefined,
@@ -84,17 +92,15 @@ export default function CardContacts() {
   });
 
   const deleteContact = useDeleteContact();
-  const updateTags = useUpdateContactTags();
 
   const contacts = useMemo(() => data?.contacts ?? [], [data]);
   const pagination = data?.pagination;
 
-  // Collect all unique tags from visible contacts
+  const { data: userTagsData } = useUserTags();
+
   const allTags = useMemo(() => {
-    const tagSet = new Set<string>();
-    contacts.forEach((c) => c.tags?.forEach((t) => tagSet.add(t)));
-    return Array.from(tagSet).sort();
-  }, [contacts]);
+    return userTagsData?.map(t => t.name).sort() || [];
+  }, [userTagsData]);
 
   const handleDelete = (id: string) => {
     deleteContact.mutate(id, {
@@ -121,14 +127,6 @@ export default function CardContacts() {
     } catch {
       toast.error('Failed to export contacts');
     }
-  };
-
-  const handleTagUpdate = (contactId: string, tags: string[]) => {
-    updateTags.mutate(
-      { id: contactId, tags },
-      { onSuccess: () => toast.success('Tags updated') }
-    );
-    setEditingTagId(null);
   };
 
   // Bulk actions
@@ -164,30 +162,33 @@ export default function CardContacts() {
     });
   };
 
-  const handleBulkTag = () => {
-    if (bulkTags.length === 0) return;
-    let completed = 0;
-    const total = selected.size;
-    selected.forEach((id) => {
-      const contact = contacts.find((c) => c.id === id);
-      const existingTags = contact?.tags ?? [];
-      const merged = Array.from(new Set([...existingTags, ...bulkTags]));
-      updateTags.mutate(
-        { id, tags: merged },
-        {
-          onSuccess: () => {
-            completed++;
-            if (completed === total) {
-              toast.success(`Tagged ${completed} contacts`);
-              setSelected(new Set());
-              setBulkTagging(false);
-              setBulkTags([]);
-            }
-          },
-        }
-      );
-    });
+  // Bulk tagging
+  const handleBulkTag = async (tagId: string) => {
+    // We already have `contacts: CardContact[]` in the component scope.
+    const selectedContacts = contacts.filter((c) => selected.has(c.id));
+    
+    // Process attaches in parallel
+    await Promise.all(
+      selectedContacts.map((c) => 
+        tagsApi.attachTagToContact(c.cardId, c.id, tagId).catch(() => {})
+      )
+    );
+    
+    // Invalidate queries so that the contacts list refetches
+    qc.invalidateQueries({ queryKey: ['cards', 'contacts'] });
+    qc.invalidateQueries({ queryKey: ['tags', 'contact'] }); // Invalidate individual row tags
+    
+    toast.success(`Tag applied to ${selected.size} contacts`);
+    setBulkTagOpen(false);
+    setSelected(new Set());
+    setBulkSearch('');
   };
+
+  const filteredTags = useMemo(() => {
+    if (!bulkSearch.trim()) return userTagsData || [];
+    const q = bulkSearch.toLowerCase();
+    return (userTagsData || []).filter((t) => t.name.toLowerCase().includes(q));
+  }, [userTagsData, bulkSearch]);
 
   return (
     <PageMotion>
@@ -396,34 +397,7 @@ export default function CardContacts() {
                                 contactEmail={contact.email}
                               />
                             )}
-                            {contact.tags?.map((tag) => (
-                              <Badge
-                                key={tag}
-                                variant="secondary"
-                                className="text-[10px] px-1.5 py-0"
-                              >
-                                {tag}
-                              </Badge>
-                            ))}
-                            {editingTagId === contact.id ? (
-                              <div className="w-full mt-1">
-                                <TagInput
-                                  tags={contact.tags ?? []}
-                                  onChange={(tags) =>
-                                    handleTagUpdate(contact.id, tags)
-                                  }
-                                  placeholder="Type tag and press Enter..."
-                                />
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => setEditingTagId(contact.id)}
-                                className="flex items-center gap-0.5 text-[10px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-                              >
-                                <Tag className="w-2.5 h-2.5" />
-                                {contact.tags?.length ? 'Edit' : '+ Tag'}
-                              </button>
-                            )}
+                            <ContactRowTags cardId={contact.cardId} contactId={contact.id} />
                           </div>
                         </div>
                       </div>
@@ -481,46 +455,54 @@ export default function CardContacts() {
               </span>
               <div className="w-px h-5 bg-white/20 dark:bg-neutral-900/20" />
 
-              {bulkTagging ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-48">
-                    <TagInput
-                      tags={bulkTags}
-                      onChange={setBulkTags}
-                      placeholder="Add tags..."
-                    />
-                  </div>
-                  <Button
-                    size="sm"
-                    className="h-7 text-xs bg-white text-neutral-900 hover:bg-neutral-100 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800"
-                    onClick={handleBulkTag}
-                    disabled={bulkTags.length === 0}
-                  >
-                    Apply
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 text-xs text-white/70 hover:text-white dark:text-neutral-900/70 dark:hover:text-neutral-900"
-                    onClick={() => {
-                      setBulkTagging(false);
-                      setBulkTags([]);
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 text-xs text-white/80 hover:text-white hover:bg-white/10 dark:text-neutral-900/80 dark:hover:text-neutral-900 dark:hover:bg-neutral-900/10"
-                    onClick={() => setBulkTagging(true)}
-                  >
-                    <Tag className="w-3 h-3 mr-1" />
-                    Tag
-                  </Button>
+                  <Popover open={bulkTagOpen} onOpenChange={setBulkTagOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs text-white/80 hover:text-white hover:bg-white/10 dark:text-neutral-900/80 dark:hover:text-neutral-900 dark:hover:bg-neutral-900/10"
+                      >
+                        <Tag className="w-3 h-3 mr-1" />
+                        Tag
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="start"
+                      sideOffset={8}
+                      className="w-64 p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl z-50 mb-2"
+                    >
+                      <div className="relative mb-2">
+                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                        <input
+                          value={bulkSearch}
+                          onChange={(e) => setBulkSearch(e.target.value)}
+                          placeholder="Search tags…"
+                          className="w-full pl-7 pr-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-800 rounded-lg outline-none border border-transparent focus:border-neutral-300 dark:focus:border-neutral-700 placeholder:text-muted-foreground text-foreground"
+                        />
+                      </div>
+                      <div className="max-h-44 overflow-y-auto">
+                        {filteredTags.length === 0 && (
+                          <p className="text-xs text-muted-foreground text-center py-3">
+                            {bulkSearch ? 'No tags match' : 'No tags available'}
+                          </p>
+                        )}
+                        {filteredTags.map((tag) => (
+                          <Button
+                            key={tag.id}
+                            variant="ghost"
+                            onClick={() => handleBulkTag(tag.id)}
+                            className="w-full justify-start gap-2.5 px-2 h-8 text-sm text-neutral-800 dark:text-neutral-200 font-normal"
+                          >
+                            <span
+                              className="w-2.5 h-2.5 rounded-full shrink-0"
+                              style={{ background: tag.color }}
+                            />
+                            <span className="flex-1 text-left truncate">{tag.name}</span>
+                          </Button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -539,8 +521,6 @@ export default function CardContacts() {
                     <Trash2 className="w-3 h-3 mr-1" />
                     Delete
                   </Button>
-                </>
-              )}
 
               <button
                 onClick={() => setSelected(new Set())}

@@ -17,6 +17,8 @@ const Tasks = lazy(() => import('@/pages/tasks'));
 const Calendar = lazy(() => import('@/pages/calendar'));
 const Bookings = lazy(() => import('@/pages/bookings'));
 const Search = lazy(() => import('@/pages/search'));
+const Tags = lazy(() => import('@/pages/tags'));
+const TagDetail = lazy(() => import('@/pages/tags/TagDetailPage'));
 
 export type RouteConfig = {
   path: string;
@@ -41,4 +43,6 @@ export const routes = {
   CardContacts,
   CardAnalytics,
   Search,
+  Tags,
+  TagDetail,
 };

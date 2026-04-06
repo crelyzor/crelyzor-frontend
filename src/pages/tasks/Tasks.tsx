@@ -15,6 +15,7 @@ import {
   LayoutGrid,
   Rows3,
 } from 'lucide-react';
+import { TagChip } from '@/components/ui/TagChip';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -254,16 +255,7 @@ function TaskRow({
             </span>
           )}
           {task.tags?.map((tag) => (
-            <span
-              key={tag.id}
-              className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400"
-            >
-              <span
-                className="w-1.5 h-1.5 rounded-full shrink-0"
-                style={{ backgroundColor: tag.color }}
-              />
-              {tag.name}
-            </span>
+            <TagChip key={tag.id} tag={tag} />
           ))}
         </div>
       </div>

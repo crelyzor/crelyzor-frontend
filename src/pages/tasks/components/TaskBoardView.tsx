@@ -13,6 +13,7 @@ import {
 import { useState } from 'react';
 import { Check, CalendarDays, Trash2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { TagChip } from '@/components/ui/TagChip';
 import type { TaskWithMeeting } from '@/services/smaService';
 import type { useUpdateTask } from '@/hooks/queries/useSMAQueries';
 
@@ -177,16 +178,7 @@ function BoardCard({
             </span>
           )}
           {task.tags?.map((tag) => (
-            <span
-              key={tag.id}
-              className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-neutral-100 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400"
-            >
-              <span
-                className="w-1.5 h-1.5 rounded-full shrink-0"
-                style={{ backgroundColor: tag.color }}
-              />
-              {tag.name}
-            </span>
+            <TagChip key={tag.id} tag={tag} />
           ))}
         </div>
       </div>

@@ -11,6 +11,21 @@ export function useUserTags() {
   });
 }
 
+export function useTagsWithCounts() {
+  return useQuery({
+    queryKey: queryKeys.tags.withCounts(),
+    queryFn: () => tagsApi.getTagsWithCounts(),
+  });
+}
+
+export function useTagItems(tagId: string) {
+  return useQuery({
+    queryKey: queryKeys.tags.items(tagId),
+    queryFn: () => tagsApi.getTagItems(tagId),
+    enabled: !!tagId,
+  });
+}
+
 export function useMeetingTags(meetingId: string) {
   return useQuery({
     queryKey: queryKeys.tags.byMeeting(meetingId),
@@ -53,9 +68,12 @@ export function useUpdateTag() {
       // so every ['tags', 'meeting', *] and ['tags', 'card', *] query is
       // invalidated without blowing up unrelated caches.
       qc.invalidateQueries({ queryKey: queryKeys.tags.userTags() });
+      qc.invalidateQueries({ queryKey: queryKeys.tags.withCounts() });
       qc.invalidateQueries({ queryKey: ['tags', 'meeting'] });
       qc.invalidateQueries({ queryKey: ['tags', 'card'] });
       qc.invalidateQueries({ queryKey: ['tags', 'task'] });
+      qc.invalidateQueries({ queryKey: ['tags', 'contact'] });
+      qc.invalidateQueries({ queryKey: ['tags', 'items'] });
     },
     onError: () => toast.error('Failed to update tag'),
   });
@@ -67,9 +85,12 @@ export function useDeleteTag() {
     mutationFn: (tagId: string) => tagsApi.deleteTag(tagId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.tags.userTags() });
+      qc.invalidateQueries({ queryKey: queryKeys.tags.withCounts() });
       qc.invalidateQueries({ queryKey: ['tags', 'meeting'] });
       qc.invalidateQueries({ queryKey: ['tags', 'card'] });
       qc.invalidateQueries({ queryKey: ['tags', 'task'] });
+      qc.invalidateQueries({ queryKey: ['tags', 'contact'] });
+      qc.invalidateQueries({ queryKey: ['tags', 'items'] });
     },
     onError: () => toast.error('Failed to delete tag'),
   });
@@ -155,6 +176,43 @@ export function useDetachTagFromTask(taskId: string) {
     mutationFn: (tagId: string) => tagsApi.detachTagFromTask(taskId, tagId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.tags.byTask(taskId) });
+    },
+    onError: () => toast.error('Failed to remove tag'),
+  });
+}
+
+export function useContactTags(cardId: string, contactId: string) {
+  return useQuery({
+    queryKey: queryKeys.tags.byContact(cardId, contactId),
+    queryFn: () => tagsApi.getContactTags(cardId, contactId),
+    enabled: !!cardId && !!contactId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useAttachTagToContact(cardId: string, contactId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (tagId: string) =>
+      tagsApi.attachTagToContact(cardId, contactId, tagId),
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: queryKeys.tags.byContact(cardId, contactId),
+      });
+    },
+    onError: () => toast.error('Failed to add tag'),
+  });
+}
+
+export function useDetachTagFromContact(cardId: string, contactId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (tagId: string) =>
+      tagsApi.detachTagFromContact(cardId, contactId, tagId),
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: queryKeys.tags.byContact(cardId, contactId),
+      });
     },
     onError: () => toast.error('Failed to remove tag'),
   });

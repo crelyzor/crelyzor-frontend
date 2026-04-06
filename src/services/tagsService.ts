@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/apiClient';
-import type { Tag } from '@/types/meeting';
+import type { Tag, TagWithCounts, TagItemsRecord } from '@/types/meeting';
 
 export const tagsApi = {
   // ── Tag CRUD ──────────────────────────────────────────────
@@ -7,6 +7,18 @@ export const tagsApi = {
   getTags: async (): Promise<Tag[]> => {
     const result = await apiClient.get<{ tags: Tag[] }>('/tags');
     return result.tags;
+  },
+
+  getTagsWithCounts: async (): Promise<TagWithCounts[]> => {
+    const result = await apiClient.get<{ tags: TagWithCounts[] }>('/tags');
+    return result.tags;
+  },
+
+  getTagItems: async (tagId: string): Promise<TagItemsRecord> => {
+    const result = await apiClient.get<{ data: TagItemsRecord }>(
+      `/tags/${tagId}/items`
+    );
+    return result.data;
   },
 
   createTag: async (data: { name: string; color?: string }): Promise<Tag> => {
@@ -81,5 +93,34 @@ export const tagsApi = {
 
   detachTagFromTask: async (taskId: string, tagId: string): Promise<void> => {
     await apiClient.delete(`/sma/tasks/${taskId}/tags/${tagId}`);
+  },
+
+  // ── Contact tags ──────────────────────────────────────────────
+
+  getContactTags: async (cardId: string, contactId: string): Promise<Tag[]> => {
+    const result = await apiClient.get<{ tags: Tag[] }>(
+      `/cards/${cardId}/contacts/${contactId}/tags`
+    );
+    return result.tags;
+  },
+
+  attachTagToContact: async (
+    cardId: string,
+    contactId: string,
+    tagId: string
+  ): Promise<void> => {
+    await apiClient.post(
+      `/cards/${cardId}/contacts/${contactId}/tags/${tagId}`
+    );
+  },
+
+  detachTagFromContact: async (
+    cardId: string,
+    contactId: string,
+    tagId: string
+  ): Promise<void> => {
+    await apiClient.delete(
+      `/cards/${cardId}/contacts/${contactId}/tags/${tagId}`
+    );
   },
 };

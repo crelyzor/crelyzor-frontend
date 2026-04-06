@@ -103,12 +103,16 @@ export const queryKeys = {
   tags: {
     all: ['tags'] as const,
     userTags: () => [...queryKeys.tags.all, 'list'] as const,
+    withCounts: () => [...queryKeys.tags.all, 'withCounts'] as const,
+    items: (tagId: string) => [...queryKeys.tags.all, 'items', tagId] as const,
     byMeeting: (meetingId: string) =>
       [...queryKeys.tags.all, 'meeting', meetingId] as const,
     byCard: (cardId: string) =>
       [...queryKeys.tags.all, 'card', cardId] as const,
     byTask: (taskId: string) =>
       [...queryKeys.tags.all, 'task', taskId] as const,
+    byContact: (cardId: string, contactId: string) =>
+      [...queryKeys.tags.all, 'contact', cardId, contactId] as const,
   },
 
   // Attachments

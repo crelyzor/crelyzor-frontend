@@ -15,6 +15,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { TagChip } from '@/components/ui/TagChip';
 import { toast } from 'sonner';
 import {
   useUpdateTask,
@@ -619,23 +620,11 @@ export function TaskDetailPanel({
                 </p>
                 <div className="flex flex-wrap items-center gap-1.5">
                   {(taskTagsData ?? task.tags ?? []).map((tag) => (
-                    <span
+                    <TagChip
                       key={tag.id}
-                      className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
-                    >
-                      <span
-                        className="w-1.5 h-1.5 rounded-full shrink-0"
-                        style={{ backgroundColor: tag.color }}
-                      />
-                      {tag.name}
-                      <button
-                        onClick={() => detachTag.mutate(tag.id)}
-                        className="ml-0.5 opacity-50 hover:opacity-100 transition-opacity"
-                        aria-label={`Remove ${tag.name}`}
-                      >
-                        <X className="w-2.5 h-2.5" />
-                      </button>
-                    </span>
+                      tag={tag}
+                      onRemove={() => detachTag.mutate(tag.id)}
+                    />
                   ))}
 
                   {/* Add tag */}

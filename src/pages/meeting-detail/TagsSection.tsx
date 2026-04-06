@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Tag, Plus, Check, X, Search } from 'lucide-react';
+import { Tag, Plus, Check, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -20,32 +20,7 @@ import type { Tag as TagType } from '@/types/meeting';
 // Color field is stored in DB for future palette expansion via tag settings.
 const DEFAULT_TAG_COLOR = '#6b7280';
 
-// ── Tag Pill ──────────────────────────────────────────────────────────────────
-function TagPill({ tag, onRemove }: { tag: TagType; onRemove?: () => void }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 px-2.5 py-0.5 text-xs text-neutral-700 dark:text-neutral-300">
-      <span
-        className="w-2 h-2 rounded-full shrink-0"
-        style={{ background: tag.color }}
-      />
-      <span>{tag.name}</span>
-      {onRemove && (
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove();
-          }}
-          className="ml-0.5 h-3.5 w-3.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-transparent"
-          aria-label={`Remove ${tag.name}`}
-        >
-          <X className="w-2.5 h-2.5" />
-        </Button>
-      )}
-    </span>
-  );
-}
+import { TagChip } from '@/components/ui/TagChip';
 
 // ── Skeleton Pills ────────────────────────────────────────────────────────────
 function SkeletonPills() {
@@ -129,7 +104,7 @@ export function TagsSection({ meetingId }: { meetingId: string }) {
         <SkeletonPills />
       ) : meetingTags.length === 0 ? null : (
         meetingTags.map((tag) => (
-          <TagPill key={tag.id} tag={tag} onRemove={() => detach(tag.id)} />
+          <TagChip key={tag.id} tag={tag} onRemove={() => detach(tag.id)} />
         ))
       )}
 
