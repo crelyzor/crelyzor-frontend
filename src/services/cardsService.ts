@@ -12,6 +12,12 @@ import type {
   Meeting,
 } from '@/types';
 
+export type ContactImportResult = {
+  created: number;
+  skipped: number;
+  errors: string[];
+};
+
 export const cardsApi = {
   /** GET /cards/templates — available card templates */
   getTemplates: () => apiClient.get<CardTemplate[]>('/cards/templates'),
@@ -74,4 +80,14 @@ export const cardsApi = {
   /** GET /cards/:cardId/meetings — meetings linked to this card via participant email matching */
   getCardMeetings: (cardId: string) =>
     apiClient.get<Meeting[]>(`/cards/${cardId}/meetings`),
+
+  /** POST /cards/:cardId/contacts/import — import CSV contacts into a card */
+  importContactsCsv: (cardId: string, file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return apiClient.postForm<ContactImportResult>(
+      `/cards/${cardId}/contacts/import`,
+      form
+    );
+  },
 };

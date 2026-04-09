@@ -23,6 +23,7 @@ import {
   UserPlus,
   CalendarClock,
   CalendarDays,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -815,6 +816,18 @@ export default function Meetings() {
                               </h3>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-[11px] text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/meetings/${meeting.id}#ask-ai`);
+                                }}
+                              >
+                                <MessageSquare className="w-3 h-3 mr-1" />
+                                Ask AI
+                              </Button>
                               {meeting.meetingType === 'SCHEDULED' && (
                                 <span
                                   className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(meeting.status)}`}

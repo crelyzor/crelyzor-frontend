@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { PageMotion } from '@/components/PageMotion';
 import { Button } from '@/components/ui/button';
@@ -13,8 +13,10 @@ import { ScheduledDetail } from './ScheduledDetail';
 export default function MeetingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const completedAtRef = useRef<number | null>(null);
   const pollCountRef = useRef(0);
+  const initialTab = location.hash === '#ask-ai' ? 'ask' : undefined;
 
   // Reset polling state whenever the meeting id changes
   useEffect(() => {
@@ -103,11 +105,13 @@ export default function MeetingDetail() {
         <RecordedDetail
           meeting={rawMeeting}
           transcriptionStatus={transcriptionStatus}
+          initialTab={initialTab}
         />
       ) : (
         <ScheduledDetail
           meeting={rawMeeting}
           transcriptionStatus={transcriptionStatus}
+          initialTab={initialTab}
         />
       )}
     </PageMotion>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
@@ -90,12 +90,16 @@ type ScheduledTab = (typeof SCHEDULED_TABS)[number]['id'];
 export function ScheduledDetail({
   meeting: rawMeeting,
   transcriptionStatus,
+  initialTab,
 }: {
   meeting: Meeting;
   transcriptionStatus: TranscriptionStatus;
+  initialTab?: ScheduledTab;
 }) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<ScheduledTab>('overview');
+  const [activeTab, setActiveTab] = useState<ScheduledTab>(
+    initialTab ?? 'overview'
+  );
   const [moreOpen, setMoreOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
@@ -126,6 +130,12 @@ export function ScheduledDetail({
     rawMeeting.status === 'ACCEPTED' ||
     rawMeeting.status === 'CREATED' ||
     rawMeeting.status === 'PENDING_ACCEPTANCE';
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   return (
     <div className="max-w-3xl mx-auto">

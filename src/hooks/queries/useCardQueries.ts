@@ -155,3 +155,19 @@ export function useCardMeetings(cardId: string) {
     staleTime: 5 * 60 * 1000, // 5 min — card-meeting links change infrequently
   });
 }
+
+export function useImportContactsCsv() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ cardId, file }: { cardId: string; file: File }) =>
+      cardsApi.importContactsCsv(cardId, file),
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: queryKeys.cards.contacts() });
+      qc.invalidateQueries({ queryKey: queryKeys.cards.detail('') });
+      toast.success(`Imported ${result.created} contacts`);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to import contacts');
+    },
+  });
+}

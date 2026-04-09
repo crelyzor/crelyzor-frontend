@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useScroll, useTransform, motion } from 'motion/react';
+import { MessageSquare, Sparkles } from 'lucide-react';
 import { useGreeting } from '@/hooks';
 import { useMeetingsAll } from '@/hooks/queries/useMeetingQueries';
 import { useAllTasks } from '@/hooks/queries/useSMAQueries';
@@ -21,6 +23,7 @@ import { OnboardingOverlay } from './OnboardingOverlay';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
 
 export default function Home() {
+  const navigate = useNavigate();
   const { scrollY } = useScroll();
   const { greeting, dayName, monthDay } = useGreeting();
   const { data: currentUser } = useCurrentUser();
@@ -110,6 +113,15 @@ export default function Home() {
     );
   }, [allPendingTasks]);
 
+  const askAiCandidateMeeting = useMemo(() => {
+    const transcriptReady = (allMeetingsData ?? []).filter(
+      (m) => m.type !== 'VOICE_NOTE' && m.transcriptionStatus === 'COMPLETED'
+    );
+    return transcriptReady
+      .sort((a, b) => Date.parse(b.startTime) - Date.parse(a.startTime))
+      .at(0);
+  }, [allMeetingsData]);
+
   // Onboarding
   const showOnboarding =
     !meetingsLoading &&
@@ -170,6 +182,32 @@ export default function Home() {
         <div className="lg:col-span-2 space-y-3">
           <OverdueTasksSection tasks={overdueTasks} />
           <NewAITasksBanner tasks={newAITasks} />
+          {askAiCandidateMeeting && (
+            <button
+              onClick={() =>
+                navigate(`/meetings/${askAiCandidateMeeting.id}#ask-ai`)
+              }
+              className="w-full rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-5 py-4 flex items-center justify-between text-left hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-sm transition-all"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
+                  <Sparkles className="w-4 h-4 text-amber-700 dark:text-amber-300" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
+                    Ask AI about your latest meeting
+                  </p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                    {askAiCandidateMeeting.title}
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-neutral-600 dark:text-neutral-300 shrink-0">
+                <MessageSquare className="w-3.5 h-3.5" />
+                Ask AI
+              </span>
+            </button>
+          )}
           <TodayTimeline
             meetings={
               allMeetingsData

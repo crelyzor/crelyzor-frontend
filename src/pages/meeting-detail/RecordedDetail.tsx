@@ -137,12 +137,16 @@ function SpeakerChip({
 export function RecordedDetail({
   meeting: rawMeeting,
   transcriptionStatus,
+  initialTab,
 }: {
   meeting: Meeting;
   transcriptionStatus: TranscriptionStatus;
+  initialTab?: RecordedTab;
 }) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<RecordedTab>('recording');
+  const [activeTab, setActiveTab] = useState<RecordedTab>(
+    initialTab ?? 'recording'
+  );
   const [moreOpen, setMoreOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -179,6 +183,12 @@ export function RecordedDetail({
 
   const canComplete =
     rawMeeting.status === 'ACCEPTED' || rawMeeting.status === 'CREATED';
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   return (
     <div className="max-w-3xl mx-auto">
