@@ -168,13 +168,6 @@ export function CommandPalette() {
             </CommandShortcut>
           </CommandItem>
 
-          <CommandItem onSelect={() => runCommand(() => navigate('/meetings'))}>
-            <Plus className="text-neutral-500 dark:text-neutral-400" />
-            <span>Schedule a Meet</span>
-            <CommandShortcut>
-              <ArrowRight className="w-3 h-3" />
-            </CommandShortcut>
-          </CommandItem>
           <CommandItem
             onSelect={() => runCommand(() => navigate('/cards/create'))}
           >

@@ -1,20 +1,25 @@
 /**
  * parseTaskInput — pure natural-language parser for quick-add task creation.
  *
- * Extracts priority and due date keywords from a free-text input and returns
- * a structured task payload. No external dependencies or network calls.
+ * Extracts priority, due date, and optional time from free-text input.
+ * No external dependencies or network calls.
  *
  * Examples:
- *   "Review deck tomorrow high"   → { title: "Review deck",  priority: "HIGH",   dueDate: "2026-04-02" }
- *   "Call client thursday medium" → { title: "Call client",  priority: "MEDIUM", dueDate: "2026-04-09" }
- *   "Buy milk"                    → { title: "Buy milk" }
+ *   "Review deck tomorrow high"      → { title: "Review deck",  priority: "HIGH",   dueDate: "2026-04-02" }
+ *   "Call client thursday at 3pm"    → { title: "Call client",  dueDate: "2026-04-09T15:00:00.000Z" }
+ *   "Stand-up today 9:30am medium"   → { title: "Stand-up",     priority: "MEDIUM", dueDate: "<today ISO>" }
+ *   "Buy milk"                       → { title: "Buy milk" }
  */
 
 export type ParsedTask = {
   title: string;
   priority?: 'LOW' | 'MEDIUM' | 'HIGH';
-  dueDate?: string; // YYYY-MM-DD
-  /** Human-readable due date label for preview ("Today", "Tomorrow", "Monday" …) */
+  /**
+   * YYYY-MM-DD when no time was parsed; full UTC ISO string when time was
+   * extracted (e.g. "2026-04-10T07:30:00.000Z").
+   */
+  dueDate?: string;
+  /** Human-readable due date label for preview ("Today", "Tomorrow", "Monday …" …) */
   dueDateLabel?: string;
 };
 
@@ -38,6 +43,40 @@ function daysFromToday(n: number): Date {
   d.setHours(0, 0, 0, 0);
   d.setDate(d.getDate() + n);
   return d;
+}
+
+/**
+ * Parse a time expression from text. Matches:
+ *   "3pm", "3:30pm", "15:00", "at 9am", "at 9:30 am"
+ * Returns { hours, minutes } in 24-hour format, or null if no match.
+ * Also strips the matched text from `text` (mutates via return value).
+ */
+function parseTime(text: string): { hours: number; minutes: number; rest: string } | null {
+  // 12-hour: optional "at ", digits, optional ":mm", space?, am/pm
+  const ampmRe = /\bat\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b|\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i;
+  // 24-hour: HH:MM (must have colon to avoid false-positives on lone numbers)
+  const h24Re = /\b([01]?\d|2[0-3]):([0-5]\d)\b/;
+
+  let match = text.match(ampmRe);
+  if (match) {
+    const rawH = parseInt(match[1] ?? match[4], 10);
+    const rawM = parseInt(match[2] ?? match[5] ?? '0', 10);
+    const period = (match[3] ?? match[6]).toLowerCase();
+    let hours = rawH % 12;
+    if (period === 'pm') hours += 12;
+    return { hours, minutes: rawM, rest: text.replace(match[0], '').trim() };
+  }
+
+  match = text.match(h24Re);
+  if (match) {
+    return {
+      hours: parseInt(match[1], 10),
+      minutes: parseInt(match[2], 10),
+      rest: text.replace(match[0], '').trim(),
+    };
+  }
+
+  return null;
 }
 
 export function parseTaskInput(input: string): ParsedTask {
