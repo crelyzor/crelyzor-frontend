@@ -58,6 +58,16 @@ const LINK_TYPES = [
 
 const MAX_LINKS = 5;
 
+function normalizeContactFields(fields: CardContactFields): CardContactFields {
+  const normalized = Object.fromEntries(
+    Object.entries(fields)
+      .map(([key, value]) => [key, typeof value === 'string' ? value.trim() : value])
+      .filter(([, value]) => typeof value !== 'string' || value.length > 0)
+  );
+
+  return normalized as CardContactFields;
+}
+
 export default function CardEditor() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -120,6 +130,8 @@ export default function CardEditor() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     debounceRef.current = setTimeout(() => {
+      const normalizedContactFields = normalizeContactFields(contactFields);
+
       previewCard.mutate(
         {
           templateId,
@@ -127,7 +139,7 @@ export default function CardEditor() {
           title: title.trim() || undefined,
           bio: bio.trim() || undefined,
           links: links.filter((l) => l.url.trim()),
-          contactFields,
+          contactFields: normalizedContactFields,
           showQr,
           slug: slug.trim() || undefined,
         },
@@ -179,6 +191,8 @@ export default function CardEditor() {
       return;
     }
 
+    const normalizedContactFields = normalizeContactFields(contactFields);
+
     const data = {
       templateId,
       displayName: displayName.trim(),
@@ -186,7 +200,7 @@ export default function CardEditor() {
       bio: bio.trim() || undefined,
       slug: slug.trim() || undefined,
       links: links.filter((l) => l.url.trim()),
-      contactFields,
+      contactFields: normalizedContactFields,
       showQr,
       isDefault,
     };

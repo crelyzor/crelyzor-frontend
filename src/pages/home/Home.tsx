@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScroll, useTransform, motion } from 'motion/react';
 import { MessageSquare, Sparkles } from 'lucide-react';
@@ -26,11 +26,10 @@ export default function Home() {
   const navigate = useNavigate();
   const { scrollY } = useScroll();
   const { greeting, dayName, monthDay } = useGreeting();
-  const { data: currentUser } = useCurrentUser();
+  const { data: currentUser, isLoading: currentUserLoading } = useCurrentUser();
 
-  const [onboardingDismissed, setOnboardingDismissed] = useState(
-    () => !!localStorage.getItem('crelyzor_onboarding_done')
-  );
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+  const [onboardingReady, setOnboardingReady] = useState(false);
 
   const {
     data: allMeetingsData,
@@ -39,6 +38,27 @@ export default function Home() {
   } = useMeetingsAll();
 
   const { data: cards, isLoading: cardsLoading } = useCards();
+  const activeCardCount = useMemo(
+    () => (cards ?? []).filter((card) => !card.isDeleted).length,
+    [cards]
+  );
+
+  const onboardingStorageKey = currentUser?.id
+    ? `crelyzor_onboarding_done:${currentUser.id}`
+    : null;
+
+  useEffect(() => {
+    if (!onboardingStorageKey) {
+      setOnboardingDismissed(false);
+      setOnboardingReady(false);
+      return;
+    }
+
+    setOnboardingDismissed(
+      !!localStorage.getItem(onboardingStorageKey)
+    );
+    setOnboardingReady(true);
+  }, [onboardingStorageKey]);
 
   const recentMeetings = useMemo(
     () =>
@@ -126,8 +146,10 @@ export default function Home() {
   const showOnboarding =
     !meetingsLoading &&
     !cardsLoading &&
+    !currentUserLoading &&
+    onboardingReady &&
     !onboardingDismissed &&
-    (cards?.length ?? 0) === 0 &&
+    activeCardCount === 0 &&
     (allMeetingsData?.length ?? 0) === 0;
 
   // Compact sticky bar scroll values
@@ -246,7 +268,9 @@ export default function Home() {
       <OnboardingOverlay
         show={showOnboarding}
         onDismiss={() => {
-          localStorage.setItem('crelyzor_onboarding_done', '1');
+          if (onboardingStorageKey) {
+            localStorage.setItem(onboardingStorageKey, '1');
+          }
           setOnboardingDismissed(true);
         }}
       />

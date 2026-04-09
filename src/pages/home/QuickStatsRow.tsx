@@ -92,6 +92,8 @@ export function QuickStatsRow() {
   const { data: cards } = useCards();
   const { data: taskData } = useAllTasks({ status: 'pending', limit: 500 });
 
+  const activeCardCount = (cards ?? []).filter((card) => !card.isDeleted).length;
+
   // Meetings this week
   const startOfWeek = new Date();
   startOfWeek.setHours(0, 0, 0, 0);
@@ -113,7 +115,7 @@ export function QuickStatsRow() {
     (b) => new Date(b.startTime) > now
   ).length;
 
-  const cardCount = cards?.length ?? 0;
+  const cardCount = activeCardCount;
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
