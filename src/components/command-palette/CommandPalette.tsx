@@ -147,7 +147,9 @@ export function CommandPalette() {
           </CommandItem>
 
           <CommandItem
-            onSelect={() => runCommand(() => navigate('/meetings?create=scheduled'))}
+            onSelect={() =>
+              runCommand(() => navigate('/meetings?create=scheduled'))
+            }
           >
             <Plus className="text-neutral-500 dark:text-neutral-400" />
             <span>Schedule Meeting</span>
