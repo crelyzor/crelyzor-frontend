@@ -114,6 +114,13 @@ export default function CalendarPage() {
     startDate: rangeStart.toISOString(),
     endDate: rangeEnd.toISOString(),
   });
+
+  // Voice notes are not calendar events; keep them in /voice-notes only.
+  const calendarMeetings = useMemo(
+    () => meetings.filter((m) => m.type !== 'VOICE_NOTE'),
+    [meetings]
+  );
+
   const { data: taskData } = useAllTasks(TASK_FILTERS);
   const allTasks = useMemo(() => taskData?.tasks ?? [], [taskData]);
 
@@ -351,7 +358,7 @@ export default function CalendarPage() {
           <CalendarMonthGrid
             days={days}
             gcalEvents={gcalEvents}
-            meetings={meetings ?? []}
+            meetings={calendarMeetings}
             allTasks={allTasks}
             today={today}
             anchorMonth={anchor.getMonth()}
@@ -362,7 +369,7 @@ export default function CalendarPage() {
           <CalendarGrid
             days={days}
             gcalEvents={gcalEvents}
-            meetings={meetings ?? []}
+            meetings={calendarMeetings}
             scheduledTasks={scheduledTasks}
             dueTasks={dueTasks}
             today={today}
