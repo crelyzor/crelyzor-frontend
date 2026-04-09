@@ -42,7 +42,9 @@ export default function CalendarPage() {
     y: number;
   } | null>(null);
   const [showScheduleMeeting, setShowScheduleMeeting] = useState(false);
-  const [scheduleMeetingStart, setScheduleMeetingStart] = useState<Date | null>(null);
+  const [scheduleMeetingStart, setScheduleMeetingStart] = useState<Date | null>(
+    null
+  );
 
   // Fixed "today" reference — never drifts within a render session
   const today = useMemo(() => {
@@ -118,9 +120,12 @@ export default function CalendarPage() {
     endDate: rangeEnd.toISOString(),
   });
 
-  // Voice notes are not calendar events; keep them in /voice-notes only.
+  // Voice notes and cancelled meetings are not active calendar events.
   const calendarMeetings = useMemo(
-    () => meetings.filter((m) => m.type !== 'VOICE_NOTE'),
+    () =>
+      meetings.filter(
+        (m) => m.type !== 'VOICE_NOTE' && m.status !== 'CANCELLED'
+      ),
     [meetings]
   );
 

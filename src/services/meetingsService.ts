@@ -20,6 +20,7 @@ export type CreateMeetingPayload = {
   timezone?: string;
   location?: string;
   participantUserIds?: string[];
+  guestEmails?: string[];
   notes?: string;
   addToCalendar?: boolean;
 };

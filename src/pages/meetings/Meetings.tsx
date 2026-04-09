@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageMotion } from '@/components/PageMotion';
 import {
@@ -64,14 +65,22 @@ import { getStatusStyle, getStatusLabel } from '@/types';
 import type { MeetingStatus } from '@/types';
 import type { UserSearchResult } from '@/services/userService';
 
+type SelectedParticipant =
+  | { kind: 'user'; id: string; name: string; email: string }
+  | { kind: 'guest'; email: string };
+
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 // ── Participant Picker ──────────────────────────────────────────────────────
 
 function ParticipantPicker({
   participants,
   onChange,
 }: {
-  participants: UserSearchResult[];
-  onChange: (participants: UserSearchResult[]) => void;
+  participants: SelectedParticipant[];
+  onChange: (participants: SelectedParticipant[]) => void;
 }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
@@ -79,17 +88,60 @@ function ParticipantPicker({
   const { data, isFetching } = useUserSearch(query);
   const results = data?.users ?? [];
 
-  const selectedIds = new Set(participants.map((p) => p.id));
+  const selectedIds = new Set(
+    participants.filter((p) => p.kind === 'user').map((p) => p.id)
+  );
+
+  const selectedGuestEmails = new Set(
+    participants
+      .filter((p) => p.kind === 'guest')
+      .map((p) => p.email.toLowerCase())
+  );
+
+  const visibleResults = results.filter((u) => !selectedIds.has(u.id));
 
   const add = (user: UserSearchResult) => {
-    if (!selectedIds.has(user.id)) onChange([...participants, user]);
+    if (selectedIds.has(user.id)) return;
+    flushSync(() => {
+      onChange([
+        ...participants,
+        { kind: 'user', id: user.id, name: user.name, email: user.email },
+      ]);
+    });
     setQuery('');
     setOpen(false);
     inputRef.current?.focus();
   };
 
-  const remove = (id: string) =>
-    onChange(participants.filter((p) => p.id !== id));
+  const addGuest = () => {
+    const email = query.trim().toLowerCase();
+    if (!isValidEmail(email)) return;
+    if (selectedGuestEmails.has(email)) return;
+    if (
+      participants.some(
+        (p) => p.kind === 'user' && p.email.toLowerCase() === email
+      )
+    ) {
+      return;
+    }
+
+    flushSync(() => {
+      onChange([...participants, { kind: 'guest', email }]);
+    });
+    setQuery('');
+    setOpen(false);
+    inputRef.current?.focus();
+  };
+
+  const remove = (target: SelectedParticipant) =>
+    onChange(
+      participants.filter((p) => {
+        if (target.kind === 'user') {
+          return !(p.kind === 'user' && p.id === target.id);
+        }
+        return !(p.kind === 'guest' && p.email === target.email);
+      })
+    );
 
   return (
     <div className="space-y-2">
@@ -98,13 +150,13 @@ function ParticipantPicker({
         <div className="flex flex-wrap gap-1.5">
           {participants.map((p) => (
             <span
-              key={p.id}
+              key={p.kind === 'user' ? p.id : `guest:${p.email}`}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-xs font-medium text-neutral-700 dark:text-neutral-300"
             >
-              {p.name}
+              {p.kind === 'user' ? p.name : p.email}
               <button
                 type="button"
-                onClick={() => remove(p.id)}
+                onClick={() => remove(p)}
                 className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
               >
                 <X className="w-3 h-3" />
@@ -126,9 +178,26 @@ function ParticipantPicker({
             setQuery(e.target.value);
             setOpen(e.target.value.trim().length >= 2);
           }}
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+
+            if (!open || visibleResults.length === 0) {
+              addGuest();
+              return;
+            }
+
+            const normalizedQuery = query.trim().toLowerCase();
+            const exactMatch = visibleResults.find(
+              (user) =>
+                user.email.toLowerCase() === normalizedQuery ||
+                user.name.toLowerCase() === normalizedQuery
+            );
+            add(exactMatch ?? visibleResults[0]);
+          }}
           onFocus={() => query.trim().length >= 2 && setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
-          placeholder="Search by name or email"
+          placeholder="Search by name/email or add guest email"
           className="text-sm pl-8"
         />
 
@@ -140,17 +209,31 @@ function ParticipantPicker({
                 Searching…
               </div>
             ) : results.length === 0 ? (
-              <div className="px-3 py-2.5 text-xs text-neutral-400">
-                No users found
-              </div>
+              isValidEmail(query.trim()) ? (
+                <button
+                  type="button"
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    addGuest();
+                  }}
+                  className="w-full px-3 py-2.5 text-xs text-left hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                >
+                  Add guest: <span className="font-medium">{query.trim()}</span>
+                </button>
+              ) : (
+                <div className="px-3 py-2.5 text-xs text-neutral-400">
+                  No users found
+                </div>
+              )
             ) : (
-              results
-                .filter((u) => !selectedIds.has(u.id))
-                .map((user) => (
+              visibleResults.map((user) => (
                   <button
                     key={user.id}
                     type="button"
-                    onMouseDown={() => add(user)}
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      add(user);
+                    }}
                     className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors text-left"
                   >
                     <div className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center shrink-0 text-[10px] font-medium text-neutral-600 dark:text-neutral-300">
@@ -420,7 +503,7 @@ export default function Meetings() {
     location: '',
     autoGenerateMeet: true,
   });
-  const [participants, setParticipants] = useState<UserSearchResult[]>([]);
+  const [participants, setParticipants] = useState<SelectedParticipant[]>([]);
 
   const createMeeting = useCreateMeeting();
   const importIcs = useImportMeetingsIcs();
@@ -454,8 +537,12 @@ export default function Meetings() {
         addToCalendar: gcalStatus?.connected
           ? createForm.autoGenerateMeet
           : undefined,
-        participantUserIds:
-          participants.length > 0 ? participants.map((p) => p.id) : undefined,
+        participantUserIds: participants
+          .filter((p): p is Extract<SelectedParticipant, { kind: 'user' }> => p.kind === 'user')
+          .map((p) => p.id),
+        guestEmails: participants
+          .filter((p): p is Extract<SelectedParticipant, { kind: 'guest' }> => p.kind === 'guest')
+          .map((p) => p.email),
       },
       {
         onSuccess: (meeting) => {
