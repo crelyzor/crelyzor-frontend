@@ -24,6 +24,7 @@ import {
   CalendarClock,
   CalendarDays,
   MessageSquare,
+  Upload,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -52,6 +53,7 @@ import {
   useCancelMeeting,
   useCompleteMeeting,
   useDeleteMeeting,
+  useImportMeetingsIcs,
 } from '@/hooks/queries/useMeetingQueries';
 import { useUserTags } from '@/hooks/queries/useTagQueries';
 import { useBookings } from '@/hooks/queries/useSchedulingQueries';
@@ -195,10 +197,6 @@ function matchesFilter(status: MeetingStatus, filter: FilterTab): boolean {
   if (filter === 'upcoming')
     return status === 'ACCEPTED' || status === 'CREATED';
   if (filter === 'completed') return status === 'COMPLETED';
-  if (filter === 'pending')
-    return (
-      status === 'PENDING_ACCEPTANCE' || status === 'RESCHEDULING_REQUESTED'
-    );
   if (filter === 'cancelled')
     return status === 'CANCELLED' || status === 'DECLINED';
   return true;
@@ -408,6 +406,7 @@ function MeetingContextMenu({ meeting }: { meeting: DisplayMeeting }) {
 
 export default function Meetings() {
   const navigate = useNavigate();
+  const icsInputRef = useRef<HTMLInputElement>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [typeTab, setTypeTab] = useState<TypeTab>('all');
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
@@ -424,6 +423,7 @@ export default function Meetings() {
   const [participants, setParticipants] = useState<UserSearchResult[]>([]);
 
   const createMeeting = useCreateMeeting();
+  const importIcs = useImportMeetingsIcs();
   const { data: gcalStatus } = useGoogleCalendarStatus();
 
   // Auto-open create scheduled dialog from FAB
@@ -545,6 +545,39 @@ export default function Meetings() {
               {scopedMeetings.length} total
             </p>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs gap-1.5"
+            onClick={() => icsInputRef.current?.click()}
+            disabled={importIcs.isPending}
+          >
+            <Upload className="w-3.5 h-3.5" />
+            Import calendar
+          </Button>
+          <input
+            ref={icsInputRef}
+            type="file"
+            accept=".ics,text/calendar"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+
+              importIcs.mutate(file, {
+                onSuccess: (result) => {
+                  if (result.errors.length > 0) {
+                    toast.message(
+                      `Imported ${result.created}, skipped ${result.skipped}`,
+                      { description: result.errors.slice(0, 2).join(' · ') }
+                    );
+                  }
+                },
+              });
+
+              e.currentTarget.value = '';
+            }}
+          />
         </div>
 
         {/* ── Bookings CTA ── */}

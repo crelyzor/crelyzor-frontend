@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { PageMotion } from '@/components/PageMotion';
@@ -30,6 +30,8 @@ import {
   useCardContacts,
   useCardMeetings,
   useDeleteContact,
+  useImportContactsCsv,
+  useCards,
 } from '@/hooks/queries/useCardQueries';
 import { useUserTags } from '@/hooks/queries/useTagQueries';
 import { cardsApi } from '@/services/cardsService';
@@ -78,20 +80,25 @@ export default function CardContacts() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [filterTags, setFilterTags] = useState<string[]>([]);
+  const [selectedCardId, setSelectedCardId] = useState<string>('all');
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const csvInputRef = useRef<HTMLInputElement>(null);
 
   const qc = useQueryClient();
   const [bulkTagOpen, setBulkTagOpen] = useState(false);
   const [bulkSearch, setBulkSearch] = useState('');
 
   const { data, isLoading, isError } = useCardContacts({
+    cardId: selectedCardId !== 'all' ? selectedCardId : undefined,
     search: search || undefined,
     tags: filterTags.length > 0 ? filterTags.join(',') : undefined,
     page,
     limit: 20,
   });
+  const { data: cards = [] } = useCards();
 
   const deleteContact = useDeleteContact();
+  const importContactsCsv = useImportContactsCsv();
 
   const contacts = useMemo(() => data?.contacts ?? [], [data]);
   const pagination = data?.pagination;
@@ -115,7 +122,9 @@ export default function CardContacts() {
 
   const handleExport = async () => {
     try {
-      const csv = await cardsApi.exportContacts();
+      const csv = await cardsApi.exportContacts(
+        selectedCardId !== 'all' ? selectedCardId : undefined
+      );
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -127,6 +136,27 @@ export default function CardContacts() {
     } catch {
       toast.error('Failed to export contacts');
     }
+  };
+
+  const handleImportCsv = (file: File) => {
+    if (selectedCardId === 'all') {
+      toast.error('Select a card before importing contacts');
+      return;
+    }
+
+    importContactsCsv.mutate(
+      { cardId: selectedCardId, file },
+      {
+        onSuccess: (result) => {
+          if (result.errors.length > 0) {
+            toast.message(
+              `Imported ${result.created}, skipped ${result.skipped}`,
+              { description: result.errors.slice(0, 2).join(' · ') }
+            );
+          }
+        },
+      }
+    );
   };
 
   // Bulk actions
@@ -212,6 +242,15 @@ export default function CardContacts() {
             </p>
           </div>
           <Button
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            onClick={() => csvInputRef.current?.click()}
+            disabled={importContactsCsv.isPending}
+          >
+            Import CSV
+          </Button>
+          <Button
             variant="ghost"
             size="sm"
             className="text-xs text-neutral-600 dark:text-neutral-400"
@@ -220,6 +259,36 @@ export default function CardContacts() {
             <Download className="w-3.5 h-3.5 mr-1.5" />
             Export CSV
           </Button>
+          <input
+            ref={csvInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              handleImportCsv(file);
+              e.currentTarget.value = '';
+            }}
+          />
+        </div>
+
+        <div className="mb-4">
+          <select
+            value={selectedCardId}
+            onChange={(e) => {
+              setSelectedCardId(e.target.value);
+              setPage(1);
+            }}
+            className="h-10 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-700 dark:text-neutral-300"
+          >
+            <option value="all">All cards</option>
+            {cards.map((card) => (
+              <option key={card.id} value={card.id}>
+                {card.displayName}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Search */}

@@ -537,7 +537,7 @@ The backend already supports these fields — we just need to expose them in the
 
 - [x] **Ask AI — meeting list shortcut** — add a small "Ask AI" ghost button on each meeting row in the meetings list (appears on hover). Clicking navigates to `/meetings/:id#ask-ai` and auto-opens the Ask AI panel. Makes the feature discoverable without drilling into the meeting.
 - [x] **Ask AI — home dashboard** — add "Ask about your meetings" as an action in the home quick-actions or a subtle prompt on the TodayTimeline when meetings exist with transcripts.
-- [ ] **Meeting ↔ Card contact chips** — in `ScheduledDetail` participants section: when participant has `card` populated from backend, show card chip (avatar + name, clickable → `/cards/:cardId/edit`). In `CardEditor` contacts section: show "N meetings" count chip per contact. (Requires backend P3.3 auto-linking to be built first.)
+- [x] **Meeting ↔ Card contact chips** — in `ScheduledDetail` participants section: when participant has `card` populated from backend, show card chip (avatar + name, clickable → `/cards/:cardId/edit`). In `CardEditor` contacts section: show "N meetings" count chip per contact. (Requires backend P3.3 auto-linking to be built first.)
 
 ---
 
@@ -551,8 +551,8 @@ _(Already in Phase 3.2 P4 — carry forward)_
 
 ### P5 — Data Import UI
 
-- [ ] **Contacts CSV import** — button in `CardEditor` contacts section: "Import from CSV". File picker → uploads to `POST /cards/:cardId/contacts/import`. Shows progress + result summary (`N contacts added, N skipped`).
-- [ ] **Calendar .ics import** — button in Meetings page header: "Import from calendar". File picker → uploads to `POST /meetings/import/ics`. Shows how many meetings were created. Each imported meeting is a SCHEDULED type with no recording.
+- [x] **Contacts CSV import** — button in `CardEditor` contacts section: "Import from CSV". File picker → uploads to `POST /cards/:cardId/contacts/import`. Shows progress + result summary (`N contacts added, N skipped`).
+- [x] **Calendar .ics import** — button in Meetings page header: "Import from calendar". File picker → uploads to `POST /meetings/import/ics`. Shows how many meetings were created. Each imported meeting is a SCHEDULED type with no recording.
 
 ---
 

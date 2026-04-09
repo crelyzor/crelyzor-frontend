@@ -26,6 +26,12 @@ export type CreateMeetingPayload = {
 
 export type UpdateMeetingPayload = Partial<CreateMeetingPayload>;
 
+export type IcsImportResult = {
+  created: number;
+  skipped: number;
+  errors: string[];
+};
+
 export const meetingsApi = {
   /** GET /meetings — paginated list with filters */
   list: (params?: MeetingsListParams) =>
@@ -69,6 +75,13 @@ export const meetingsApi = {
 
   /** DELETE /meetings/:id — soft delete */
   deleteMeeting: (id: string) => apiClient.delete<void>(`/meetings/${id}`),
+
+  /** POST /meetings/import/ics — import scheduled meetings from an ICS file */
+  importIcs: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return apiClient.postForm<IcsImportResult>('/meetings/import/ics', form);
+  },
 
   // Phase 2 methods (accept, decline, reschedule, public booking) are not yet
   // implemented in the backend — removed to prevent silent 404 errors.

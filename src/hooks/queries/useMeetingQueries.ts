@@ -152,3 +152,17 @@ export function useVoiceNotes() {
     staleTime: 60 * 1000,
   });
 }
+
+export function useImportMeetingsIcs() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => meetingsApi.importIcs(file),
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
+      toast.success(`Imported ${result.created} meetings`);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to import calendar file');
+    },
+  });
+}
