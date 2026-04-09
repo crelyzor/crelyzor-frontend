@@ -2,6 +2,23 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { attachmentsApi } from '@/services/attachmentsService';
 import { queryKeys } from '@/lib/queryKeys';
+import { ApiError } from '@/lib/apiClient';
+
+function getApiErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof ApiError) {
+    const payload = error.data as
+      | { message?: string; details?: { fieldErrors?: Record<string, string[]> } }
+      | null;
+    if (payload?.message) return payload.message;
+    const fieldErrors = payload?.details?.fieldErrors;
+    if (fieldErrors) {
+      const firstField = Object.keys(fieldErrors)[0];
+      const firstIssue = firstField ? fieldErrors[firstField]?.[0] : undefined;
+      if (firstIssue) return `${firstField}: ${firstIssue}`;
+    }
+  }
+  return fallback;
+}
 
 export function useMeetingAttachments(meetingId: string) {
   return useQuery({
@@ -23,8 +40,8 @@ export function useAddLink(meetingId: string) {
       });
       toast.success('Link added');
     },
-    onError: () => {
-      toast.error('Failed to add link');
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'Failed to add link'));
     },
   });
 }

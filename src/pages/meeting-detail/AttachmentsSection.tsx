@@ -42,6 +42,13 @@ function AttachmentIcon({ type }: { type: AttachmentType }) {
   return <FileText className="w-4 h-4 text-muted-foreground shrink-0" />;
 }
 
+function normalizeLinkUrl(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return trimmed;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
 function SkeletonRows() {
@@ -152,8 +159,9 @@ function LinkTab({
 
   function handleAdd() {
     if (!url.trim()) return;
+    const normalizedUrl = normalizeLinkUrl(url);
     addLink(
-      { url: url.trim(), name: name.trim() || undefined },
+      { url: normalizedUrl, name: name.trim() || undefined },
       {
         onSuccess: () => {
           setUrl('');
