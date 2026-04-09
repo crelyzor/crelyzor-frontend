@@ -227,28 +227,28 @@ function ParticipantPicker({
               )
             ) : (
               visibleResults.map((user) => (
-                  <button
-                    key={user.id}
-                    type="button"
-                    onPointerDown={(e) => {
-                      e.preventDefault();
-                      add(user);
-                    }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors text-left"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center shrink-0 text-[10px] font-medium text-neutral-600 dark:text-neutral-300">
-                      {user.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate">
-                        {user.name}
-                      </p>
-                      <p className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate">
-                        {user.email}
-                      </p>
-                    </div>
-                  </button>
-                ))
+                <button
+                  key={user.id}
+                  type="button"
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    add(user);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors text-left"
+                >
+                  <div className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center shrink-0 text-[10px] font-medium text-neutral-600 dark:text-neutral-300">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate">
+                      {user.name}
+                    </p>
+                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate">
+                      {user.email}
+                    </p>
+                  </div>
+                </button>
+              ))
             )}
           </div>
         )}
@@ -538,10 +538,16 @@ export default function Meetings() {
           ? createForm.autoGenerateMeet
           : undefined,
         participantUserIds: participants
-          .filter((p): p is Extract<SelectedParticipant, { kind: 'user' }> => p.kind === 'user')
+          .filter(
+            (p): p is Extract<SelectedParticipant, { kind: 'user' }> =>
+              p.kind === 'user'
+          )
           .map((p) => p.id),
         guestEmails: participants
-          .filter((p): p is Extract<SelectedParticipant, { kind: 'guest' }> => p.kind === 'guest')
+          .filter(
+            (p): p is Extract<SelectedParticipant, { kind: 'guest' }> =>
+              p.kind === 'guest'
+          )
           .map((p) => p.email),
       },
       {
