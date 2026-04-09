@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { getTimeZones } from '@vvo/tzdb';
 import { useQueryClient } from '@tanstack/react-query';
 import { PageMotion } from '@/components/PageMotion';
 import {
@@ -119,7 +120,16 @@ function formatTimezone(tz: string): string {
   return parts.find((p) => p.type === 'timeZoneName')?.value ?? tz;
 }
 
-const TIMEZONE_OPTIONS = [{ value: 'UTC', label: 'UTC (GMT +0:00)' }];
+const TIMEZONE_OPTIONS = getTimeZones({ includeUtc: true })
+  .map((tz) => ({
+    value: tz.name,
+    label: `${tz.name} GMT ${tz.currentTimeOffsetInMinutes >= 0 ? '+' : ''}${Math.floor(Math.abs(tz.currentTimeOffsetInMinutes) / 60)}:${String(Math.abs(tz.currentTimeOffsetInMinutes) % 60).padStart(2, '0')}`,
+  }))
+  .sort((a, b) => {
+    if (a.value === 'UTC') return -1;
+    if (b.value === 'UTC') return 1;
+    return a.label.localeCompare(b.label);
+  });
 
 // ── Settings sections ──
 const SETTINGS_SECTIONS = [
@@ -651,11 +661,13 @@ function EventTypesSection() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [slugEdited, setSlugEdited] = useState(false);
+  const [useAutoMeetingLink, setUseAutoMeetingLink] = useState(true);
 
   const openCreate = () => {
     setEditingId(null);
     setForm(EMPTY_FORM);
     setSlugEdited(false);
+    setUseAutoMeetingLink(true);
     setDialogOpen(true);
   };
 
@@ -675,6 +687,7 @@ function EventTypesSection() {
       availabilityScheduleId: et.availabilityScheduleId ?? null,
     });
     setSlugEdited(true);
+    setUseAutoMeetingLink(et.locationType === 'ONLINE' && !et.meetingLink);
     setDialogOpen(true);
   };
 
@@ -691,8 +704,13 @@ function EventTypesSection() {
       toast.error('Title and slug are required');
       return;
     }
-    if (form.locationType === 'ONLINE' && !form.meetingLink.trim()) {
-      toast.error('Meeting link is required for online events');
+
+    if (
+      form.locationType === 'ONLINE' &&
+      !useAutoMeetingLink &&
+      !form.meetingLink.trim()
+    ) {
+      toast.error('Add a meeting link or enable auto-generate');
       return;
     }
 
@@ -705,6 +723,7 @@ function EventTypesSection() {
         ? { description: form.description.trim() }
         : { description: '' }),
       ...(form.locationType === 'ONLINE' &&
+      !useAutoMeetingLink &&
         form.meetingLink.trim() && { meetingLink: form.meetingLink.trim() }),
       bufferBefore: form.bufferBefore,
       bufferAfter: form.bufferAfter,
@@ -1017,12 +1036,16 @@ function EventTypesSection() {
               <FieldGroup label="Location">
                 <Select
                   value={form.locationType}
-                  onValueChange={(v) =>
+                  onValueChange={(v) => {
+                    const locationType = v as LocationType;
                     setForm((prev) => ({
                       ...prev,
-                      locationType: v as LocationType,
-                    }))
-                  }
+                      locationType,
+                    }));
+                    if (locationType !== 'ONLINE') {
+                      setUseAutoMeetingLink(true);
+                    }
+                  }}
                 >
                   <SelectTrigger className="border-neutral-200 dark:border-neutral-700">
                     <SelectValue />
@@ -1038,17 +1061,41 @@ function EventTypesSection() {
             {/* Meeting link (ONLINE only) */}
             {form.locationType === 'ONLINE' && (
               <FieldGroup label="Meeting Link">
-                <Input
-                  value={form.meetingLink}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      meetingLink: e.target.value,
-                    }))
-                  }
-                  placeholder="https://zoom.us/j/..."
-                  className="border-neutral-200 dark:border-neutral-700 text-xs"
-                />
+                <div className="flex items-center justify-between rounded-md border border-neutral-200 dark:border-neutral-700 px-3 py-2">
+                  <div>
+                    <p className="text-xs font-medium text-neutral-700 dark:text-neutral-200">
+                      Auto-generate Google Meet
+                    </p>
+                    <p className="text-[10px] text-neutral-400 mt-0.5">
+                      Turn off to use your own Zoom/Meet link
+                    </p>
+                  </div>
+                  <Switch
+                    checked={useAutoMeetingLink}
+                    onCheckedChange={setUseAutoMeetingLink}
+                  />
+                </div>
+
+                {!useAutoMeetingLink && (
+                  <Input
+                    value={form.meetingLink}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        meetingLink: e.target.value,
+                      }))
+                    }
+                    placeholder="https://zoom.us/j/..."
+                    className="border-neutral-200 dark:border-neutral-700 text-xs"
+                  />
+                )}
+
+                {useAutoMeetingLink && (
+                  <p className="text-[10px] text-neutral-400 mt-1">
+                    Google Meet link will be created automatically when a
+                    booking is confirmed.
+                  </p>
+                )}
               </FieldGroup>
             )}
 
