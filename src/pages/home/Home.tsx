@@ -54,9 +54,7 @@ export default function Home() {
       return;
     }
 
-    setOnboardingDismissed(
-      !!localStorage.getItem(onboardingStorageKey)
-    );
+    setOnboardingDismissed(!!localStorage.getItem(onboardingStorageKey));
     setOnboardingReady(true);
   }, [onboardingStorageKey]);
 

@@ -88,63 +88,72 @@ export function OnboardingOverlay({ show, onDismiss }: OnboardingOverlayProps) {
               </div>
 
               <div className="px-4 pb-4 mt-2 space-y-1">
-                {STEPS.map(({ icon: Icon, title, description, cta, route, featured }) => (
-                  <button
-                    key={route}
-                    onClick={() => navigate(route)}
-                    className={`w-full flex items-start gap-3 px-3 py-3 rounded-xl text-left transition-colors group ${
-                      featured
-                        ? 'bg-neutral-950 text-white dark:bg-neutral-50 dark:text-neutral-950'
-                        : 'hover:bg-neutral-50 dark:hover:bg-neutral-800'
-                    }`}
-                  >
-                    <div
-                      className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center mt-0.5 ${
+                {STEPS.map(
+                  ({
+                    icon: Icon,
+                    title,
+                    description,
+                    cta,
+                    route,
+                    featured,
+                  }) => (
+                    <button
+                      key={route}
+                      onClick={() => navigate(route)}
+                      className={`w-full flex items-start gap-3 px-3 py-3 rounded-xl text-left transition-colors group ${
                         featured
-                          ? 'bg-white/10 dark:bg-neutral-900/10'
-                          : 'bg-neutral-100 dark:bg-neutral-800'
+                          ? 'bg-neutral-950 text-white dark:bg-neutral-50 dark:text-neutral-950'
+                          : 'hover:bg-neutral-50 dark:hover:bg-neutral-800'
                       }`}
                     >
-                      <Icon
-                        className={`w-4 h-4 ${
+                      <div
+                        className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center mt-0.5 ${
                           featured
-                            ? 'text-white dark:text-neutral-950'
-                            : 'text-neutral-500 dark:text-neutral-400'
-                        }`}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-sm font-medium ${
-                          featured
-                            ? 'text-white dark:text-neutral-950'
-                            : 'text-neutral-900 dark:text-neutral-100'
+                            ? 'bg-white/10 dark:bg-neutral-900/10'
+                            : 'bg-neutral-100 dark:bg-neutral-800'
                         }`}
                       >
-                        {title}
-                      </p>
-                      <p
-                        className={`text-xs mt-0.5 leading-relaxed ${
+                        <Icon
+                          className={`w-4 h-4 ${
+                            featured
+                              ? 'text-white dark:text-neutral-950'
+                              : 'text-neutral-500 dark:text-neutral-400'
+                          }`}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className={`text-sm font-medium ${
+                            featured
+                              ? 'text-white dark:text-neutral-950'
+                              : 'text-neutral-900 dark:text-neutral-100'
+                          }`}
+                        >
+                          {title}
+                        </p>
+                        <p
+                          className={`text-xs mt-0.5 leading-relaxed ${
+                            featured
+                              ? 'text-white/75 dark:text-neutral-700'
+                              : 'text-neutral-500 dark:text-neutral-400'
+                          }`}
+                        >
+                          {description}
+                        </p>
+                      </div>
+                      <span
+                        className={`shrink-0 mt-0.5 inline-flex items-center gap-1 text-xs font-medium ${
                           featured
-                            ? 'text-white/75 dark:text-neutral-700'
+                            ? 'text-white/90 dark:text-neutral-900'
                             : 'text-neutral-500 dark:text-neutral-400'
                         }`}
                       >
-                        {description}
-                      </p>
-                    </div>
-                    <span
-                      className={`shrink-0 mt-0.5 inline-flex items-center gap-1 text-xs font-medium ${
-                        featured
-                          ? 'text-white/90 dark:text-neutral-900'
-                          : 'text-neutral-500 dark:text-neutral-400'
-                      }`}
-                    >
-                      {cta}
-                      <ArrowRight className="w-3 h-3" />
-                    </span>
-                  </button>
-                ))}
+                        {cta}
+                        <ArrowRight className="w-3 h-3" />
+                      </span>
+                    </button>
+                  )
+                )}
               </div>
 
               <div className="px-6 pb-5 pt-1 border-t border-neutral-100 dark:border-neutral-800">

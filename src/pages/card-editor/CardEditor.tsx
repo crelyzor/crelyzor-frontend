@@ -61,7 +61,10 @@ const MAX_LINKS = 5;
 function normalizeContactFields(fields: CardContactFields): CardContactFields {
   const normalized = Object.fromEntries(
     Object.entries(fields)
-      .map(([key, value]) => [key, typeof value === 'string' ? value.trim() : value])
+      .map(([key, value]) => [
+        key,
+        typeof value === 'string' ? value.trim() : value,
+      ])
       .filter(([, value]) => typeof value !== 'string' || value.length > 0)
   );
 
