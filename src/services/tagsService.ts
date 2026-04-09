@@ -15,10 +15,7 @@ export const tagsApi = {
   },
 
   getTagItems: async (tagId: string): Promise<TagItemsRecord> => {
-    const result = await apiClient.get<{ data: TagItemsRecord }>(
-      `/tags/${tagId}/items`
-    );
-    return result.data;
+    return apiClient.get<TagItemsRecord>(`/tags/${tagId}/items`);
   },
 
   createTag: async (data: { name: string; color?: string }): Promise<Tag> => {

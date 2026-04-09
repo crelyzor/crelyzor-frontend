@@ -345,6 +345,22 @@ export function useUpdateSegment(meetingId: string) {
   });
 }
 
+export function useMergeConsecutiveSpeakerSegments(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => smaApi.mergeConsecutiveSpeakerSegments(meetingId),
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: queryKeys.sma.transcript(meetingId) });
+      if (result.mergedCount > 0) {
+        toast.success(`Merged ${result.mergedCount} segments`);
+      } else {
+        toast.message('No consecutive speaker segments to merge');
+      }
+    },
+    onError: () => toast.error('Failed to merge transcript segments'),
+  });
+}
+
 export function useUpdateSummary(meetingId: string) {
   const qc = useQueryClient();
   return useMutation({

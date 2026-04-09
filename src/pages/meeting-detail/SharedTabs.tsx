@@ -54,6 +54,7 @@ import {
   useGeneratedContents,
   useGenerateContent,
   useUpdateSegment,
+  useMergeConsecutiveSpeakerSegments,
   useUpdateSummary,
 } from '@/hooks/queries/useSMAQueries';
 import type { AIContentType, GeneratedContent } from '@/services/smaService';
@@ -403,6 +404,10 @@ export function TranscriptTab({
   const { data: transcript, isLoading } = useTranscript(meetingId, isCompleted);
   const { mutate: updateSegment, isPending: isUpdatingSegment } =
     useUpdateSegment(meetingId);
+  const {
+    mutate: mergeConsecutiveSegments,
+    isPending: isMergingSegments,
+  } = useMergeConsecutiveSpeakerSegments(meetingId);
   const segments = useMemo(() => transcript?.segments ?? [], [transcript]);
 
   if (transcriptionStatus === 'NONE') {
@@ -453,9 +458,25 @@ export function TranscriptTab({
 
   return (
     <div className="space-y-1">
-      <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 mb-4">
-        Transcript
-      </h3>
+      <div className="flex items-center justify-between mb-4 gap-2">
+        <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+          Transcript
+        </h3>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs text-neutral-500 gap-1"
+          onClick={() => mergeConsecutiveSegments()}
+          disabled={isMergingSegments || segments.length < 2}
+        >
+          {isMergingSegments ? (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          ) : (
+            <Wand2 className="w-3 h-3" />
+          )}
+          {isMergingSegments ? 'Merging…' : 'Merge speakers'}
+        </Button>
+      </div>
       {segments.map((seg: SMATranscriptSegment) => (
         <SegmentRow
           key={seg.id}
