@@ -75,8 +75,12 @@ export default function TagDetailPage() {
   }
 
   const { tag, counts, meetings, cards, tasks, contacts } = data;
+  const standardMeetings = meetings.filter((m) => m.type !== 'VOICE_NOTE');
+  const voiceNotes = meetings.filter((m) => m.type === 'VOICE_NOTE');
+
   const tabs = [
-    { id: 'meetings', label: 'Meetings', count: counts.meetings },
+    { id: 'meetings', label: 'Meetings', count: standardMeetings.length },
+    { id: 'voice-notes', label: 'Voice Notes', count: voiceNotes.length },
     { id: 'cards', label: 'Cards', count: counts.cards },
     { id: 'contacts', label: 'Contacts', count: counts.contacts },
     { id: 'tasks', label: 'Tasks', count: counts.tasks },
@@ -142,7 +146,7 @@ export default function TagDetailPage() {
 
             <TabsContent value="meetings" className="mt-4">
               <div className="flex flex-col gap-2">
-                {meetings.map((m) => (
+                {standardMeetings.map((m) => (
                   <Link
                     key={m.id}
                     to={`/meetings/${m.id}`}
@@ -172,6 +176,30 @@ export default function TagDetailPage() {
                         {getStatusLabel(m.status)}
                       </span>
                     )}
+                  </Link>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="voice-notes" className="mt-4">
+              <div className="flex flex-col gap-2">
+                {voiceNotes.map((m) => (
+                  <Link
+                    key={m.id}
+                    to={`/meetings/${m.id}`}
+                    className="flex items-center gap-4 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm hover:shadow transition-all"
+                  >
+                    <div className="p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 text-neutral-500">
+                      <Mic className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
+                        {m.title}
+                      </h4>
+                      <p className="text-xs text-neutral-500">
+                        {m.startTime ? formatMeetingDate(m) : 'No date'}
+                      </p>
+                    </div>
                   </Link>
                 ))}
               </div>
