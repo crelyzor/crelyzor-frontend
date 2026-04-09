@@ -112,6 +112,13 @@ export function useUpdateTask(meetingId?: string) {
         status?: 'TODO' | 'IN_PROGRESS' | 'DONE';
         cardId?: string | null;
         transcriptContext?: string | null;
+        durationMinutes?: number | null;
+        blockInCalendar?: boolean;
+        recurringRule?:
+          | 'FREQ=DAILY'
+          | 'FREQ=WEEKLY'
+          | 'FREQ=MONTHLY'
+          | null;
       };
     }) => smaApi.updateTask(taskId, data),
     onSuccess: () => {

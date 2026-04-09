@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -13,9 +13,16 @@ import {
   Trash2,
   ExternalLink,
   Calendar,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TagChip } from '@/components/ui/TagChip';
+import { Separator } from '@/components/ui/separator';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { toast } from 'sonner';
 import {
   useUpdateTask,
@@ -28,10 +35,13 @@ import {
   useDetachTagFromTask,
   useAttachTagToTask,
   useUserTags,
+  useCreateTag,
 } from '@/hooks/queries/useTagQueries';
 import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
 import type { TaskWithMeeting } from '@/services/smaService';
 import type { TaskStatus } from '@/types/meeting';
+
+const DEFAULT_TAG_COLOR = '#6b7280';
 
 const STATUS_CONFIG: Record<TaskStatus, { label: string; className: string }> =
   {
@@ -86,6 +96,8 @@ export function TaskDetailPanel({
   const [showPriorityMenu, setShowPriorityMenu] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [showTagMenu, setShowTagMenu] = useState(false);
+  const [tagSearch, setTagSearch] = useState('');
+  const [newTagName, setNewTagName] = useState('');
   const [showDurationMenu, setShowDurationMenu] = useState(false);
   const [showRepeatMenu, setShowRepeatMenu] = useState(false);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
@@ -114,8 +126,23 @@ export function TaskDetailPanel({
   const createSubtask = useCreateSubtask(task?.id ?? '');
   const { data: taskTagsData } = useTaskTags(task?.id ?? '');
   const { data: userTags } = useUserTags();
+  const { mutate: createTag, isPending: isCreatingTag } = useCreateTag();
   const attachTag = useAttachTagToTask(task?.id ?? '');
   const detachTag = useDetachTagFromTask(task?.id ?? '');
+
+  const availableTags = useMemo(() => {
+    const tags = userTags ?? [];
+    if (!tagSearch.trim()) return tags;
+    const q = tagSearch.toLowerCase();
+    return tags.filter((tag) => tag.name.toLowerCase().includes(q));
+  }, [userTags, tagSearch]);
+
+  useEffect(() => {
+    if (!showTagMenu) {
+      setTagSearch('');
+      setNewTagName('');
+    }
+  }, [showTagMenu]);
 
   // Sync local state when task changes
   useEffect(() => {
@@ -235,6 +262,25 @@ export function TaskDetailPanel({
     );
   }, [task, newSubtaskTitle, createSubtask]);
 
+  const handleCreateTag = useCallback(() => {
+    const name = newTagName.trim();
+    if (!name || !task) return;
+    createTag(
+      { name, color: DEFAULT_TAG_COLOR },
+      {
+        onSuccess: (tag) => {
+          attachTag.mutate(tag.id, {
+            onSuccess: () => {
+              setNewTagName('');
+              setTagSearch('');
+              setShowTagMenu(false);
+            },
+          });
+        },
+      }
+    );
+  }, [attachTag, createTag, newTagName, task]);
+
   const currentStatus: TaskStatus = (task?.status as TaskStatus) ?? 'TODO';
   const isOverdue =
     task?.dueDate && !task.isCompleted && new Date(task.dueDate) < new Date();
@@ -261,7 +307,7 @@ export function TaskDetailPanel({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 32 }}
             transition={{ type: 'spring', damping: 28, stiffness: 360 }}
-            className={`fixed right-0 top-0 bottom-0 z-40 w-[400px] bg-white dark:bg-neutral-900
+            className={`fixed right-0 top-0 bottom-0 z-40 w-100 bg-white dark:bg-neutral-900
                         border-l border-neutral-200 dark:border-neutral-800
                         flex flex-col shadow-2xl overflow-hidden
                         ${task.priority ? `border-l-[3px] ${PRIORITY_BORDER[task.priority]}` : ''}`}
@@ -289,7 +335,7 @@ export function TaskDetailPanel({
                           damping: 25,
                           stiffness: 350,
                         }}
-                        className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-[130px]"
+                        className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-32.5"
                       >
                         {(Object.keys(STATUS_CONFIG) as TaskStatus[]).map(
                           (s) => (
@@ -431,7 +477,7 @@ export function TaskDetailPanel({
                           damping: 25,
                           stiffness: 350,
                         }}
-                        className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-[120px]"
+                        className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-30"
                       >
                         {(['HIGH', 'MEDIUM', 'LOW'] as const).map((p) => (
                           <button
@@ -487,7 +533,7 @@ export function TaskDetailPanel({
                           damping: 25,
                           stiffness: 350,
                         }}
-                        className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-[120px]"
+                        className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-30"
                       >
                         {([15, 30, 45, 60, 90, 120] as const).map((mins) => (
                           <button
@@ -539,7 +585,7 @@ export function TaskDetailPanel({
                           damping: 25,
                           stiffness: 350,
                         }}
-                        className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-[130px]"
+                        className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-32.5"
                       >
                         {(
                           [
@@ -628,28 +674,35 @@ export function TaskDetailPanel({
                   ))}
 
                   {/* Add tag */}
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowTagMenu((v) => !v)}
-                      className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                  <Popover open={showTagMenu} onOpenChange={setShowTagMenu}>
+                    <PopoverTrigger asChild>
+                      <button className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+                        <Plus className="w-2.5 h-2.5" />
+                        Add tag
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="start"
+                      sideOffset={6}
+                      className="w-64 p-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg z-50"
                     >
-                      <Plus className="w-2.5 h-2.5" />
-                      Add tag
-                    </button>
-                    <AnimatePresence>
-                      {showTagMenu && userTags && userTags.length > 0 && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.94, y: -4 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.94, y: -4 }}
-                          transition={{
-                            type: 'spring',
-                            damping: 25,
-                            stiffness: 350,
-                          }}
-                          className="absolute left-0 top-full mt-1 z-50 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1 min-w-[160px] max-h-48 overflow-y-auto"
-                        >
-                          {userTags.map((tag) => {
+                      <div className="relative mb-2">
+                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" />
+                        <input
+                          value={tagSearch}
+                          onChange={(e) => setTagSearch(e.target.value)}
+                          placeholder="Search tags…"
+                          className="w-full pl-7 pr-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 rounded-lg outline-none border border-transparent focus:border-neutral-300 dark:focus:border-neutral-700 placeholder:text-neutral-400 text-neutral-900 dark:text-neutral-100"
+                        />
+                      </div>
+
+                      <div className="max-h-44 overflow-y-auto">
+                        {availableTags.length === 0 ? (
+                          <p className="text-xs text-neutral-400 text-center py-3">
+                            {tagSearch ? 'No tags match' : 'No tags yet'}
+                          </p>
+                        ) : (
+                          availableTags.map((tag) => {
                             const attached = (
                               taskTagsData ??
                               task.tags ??
@@ -660,12 +713,23 @@ export function TaskDetailPanel({
                                 key={tag.id}
                                 onClick={() => {
                                   if (attached) {
-                                    detachTag.mutate(tag.id);
+                                    detachTag.mutate(tag.id, {
+                                      onSuccess: () => {
+                                        setShowTagMenu(false);
+                                      },
+                                    });
                                   } else {
-                                    attachTag.mutate(tag.id);
+                                    attachTag.mutate(tag.id, {
+                                      onSuccess: () => {
+                                        setShowTagMenu(false);
+                                      },
+                                    });
                                   }
                                 }}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors text-neutral-700 dark:text-neutral-300"
+                                disabled={
+                                  attachTag.isPending || detachTag.isPending
+                                }
+                                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors text-neutral-700 dark:text-neutral-300 rounded-lg"
                               >
                                 <span
                                   className="w-2 h-2 rounded-full shrink-0"
@@ -677,11 +741,41 @@ export function TaskDetailPanel({
                                 )}
                               </button>
                             );
-                          })}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                          })
+                        )}
+                      </div>
+
+                      <Separator className="my-2" />
+                      <p className="text-[10px] text-neutral-400 uppercase tracking-wider px-1 mb-1.5">
+                        New tag
+                      </p>
+                      <div className="flex gap-1 px-0.5">
+                        <input
+                          value={newTagName}
+                          onChange={(e) => setNewTagName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleCreateTag();
+                          }}
+                          placeholder="Tag name…"
+                          maxLength={50}
+                          className="flex-1 px-2 py-1 text-xs bg-neutral-50 dark:bg-neutral-900 rounded-lg outline-none border border-transparent focus:border-neutral-300 dark:focus:border-neutral-700 placeholder:text-neutral-400 text-neutral-900 dark:text-neutral-100 min-w-0"
+                        />
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={handleCreateTag}
+                          disabled={!newTagName.trim() || isCreatingTag}
+                          className="h-7 px-2 text-xs shrink-0"
+                        >
+                          {isCreatingTag ? (
+                            <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Plus className="w-3 h-3" />
+                          )}
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
 
