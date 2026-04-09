@@ -26,6 +26,10 @@ export function useSummary(meetingId: string, enabled = true) {
     enabled: !!meetingId && enabled,
     retry: false,
     staleTime: 10 * 60 * 1000,
+    refetchInterval: (query) => {
+      if (!enabled) return false;
+      return query.state.data ? false : 4000;
+    },
   });
 }
 

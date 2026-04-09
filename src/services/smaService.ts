@@ -1,6 +1,7 @@
 import { apiClient } from '@/lib/apiClient';
 import { useAuthStore } from '@/stores';
 import type { Task } from '@/types';
+import { ApiError } from '@/lib/apiClient';
 
 export type SMATranscriptSegment = {
   id: string;
@@ -123,9 +124,17 @@ export const smaApi = {
     return unwrap<SMATranscript>(result);
   },
 
-  getSummary: async (meetingId: string): Promise<SMAAISummary> => {
-    const result = await apiClient.get(`/sma/meetings/${meetingId}/summary`);
-    return unwrap<SMAAISummary>(result);
+  getSummary: async (meetingId: string): Promise<SMAAISummary | null> => {
+    try {
+      const result = await apiClient.get(`/sma/meetings/${meetingId}/summary`);
+      return unwrap<SMAAISummary>(result);
+    } catch (err) {
+      // Fresh recordings can return 404 until AI processing persists summary.
+      if (err instanceof ApiError && err.statusCode === 404) {
+        return null;
+      }
+      throw err;
+    }
   },
 
   getAllTasks: async (params?: TaskListParams): Promise<TaskListResponse> => {
