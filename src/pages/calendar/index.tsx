@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import PageMotion from '@/components/PageMotion';
+import { ScheduleMeetingDialog } from '@/components/meetings/ScheduleMeetingDialog';
 import { CalendarGrid } from './components/CalendarGrid';
 import { CalendarMonthGrid } from './components/CalendarMonthGrid';
 import { QuickCreatePopover } from './components/QuickCreatePopover';
@@ -40,6 +41,8 @@ export default function CalendarPage() {
     x: number;
     y: number;
   } | null>(null);
+  const [showScheduleMeeting, setShowScheduleMeeting] = useState(false);
+  const [scheduleMeetingStart, setScheduleMeetingStart] = useState<Date | null>(null);
 
   // Fixed "today" reference — never drifts within a render session
   const today = useMemo(() => {
@@ -259,6 +262,11 @@ export default function CalendarPage() {
     setViewMode('day');
   }
 
+  function handleNewMeeting(time: Date) {
+    setScheduleMeetingStart(time);
+    setShowScheduleMeeting(true);
+  }
+
   const gcalConnected = gcalStatus?.connected;
 
   return (
@@ -386,9 +394,19 @@ export default function CalendarPage() {
             x={slotClick.x}
             y={slotClick.y}
             onClose={() => setSlotClick(null)}
+            onNewMeeting={handleNewMeeting}
           />
         )}
       </AnimatePresence>
+
+      <ScheduleMeetingDialog
+        open={showScheduleMeeting}
+        defaultStartTime={scheduleMeetingStart}
+        onOpenChange={(open) => {
+          setShowScheduleMeeting(open);
+          if (!open) setScheduleMeetingStart(null);
+        }}
+      />
     </PageMotion>
   );
 }

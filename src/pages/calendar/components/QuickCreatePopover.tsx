@@ -1,5 +1,4 @@
 import { useRef, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { CalendarPlus, CheckSquare, ChevronLeft, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ interface QuickCreatePopoverProps {
   x: number;
   y: number;
   onClose: () => void;
+  onNewMeeting: (time: Date) => void;
 }
 
 const POPOVER_W = 220;
@@ -21,8 +21,8 @@ export function QuickCreatePopover({
   x,
   y,
   onClose,
+  onNewMeeting,
 }: QuickCreatePopoverProps) {
-  const navigate = useNavigate();
   const createTask = useCreateStandaloneTask();
   const [mode, setMode] = useState<'pick' | 'task'>('pick');
   const [title, setTitle] = useState('');
@@ -131,9 +131,7 @@ export function QuickCreatePopover({
           </button>
           <button
             onClick={() => {
-              navigate(
-                `/meetings/new?time=${encodeURIComponent(time.toISOString())}`
-              );
+              onNewMeeting(time);
               onClose();
             }}
             className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors group"
