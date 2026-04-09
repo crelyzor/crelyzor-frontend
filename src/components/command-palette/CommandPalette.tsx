@@ -10,7 +10,14 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from '@/components/ui/command';
-import { LogOut, Plus, ArrowRight, CheckSquare } from 'lucide-react';
+import {
+  LogOut,
+  Plus,
+  ArrowRight,
+  CheckSquare,
+  Mic,
+  CalendarPlus,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { useUIStore } from '@/stores';
 import { TOOLBAR_ITEMS } from '@/constants/toolbar';
@@ -117,9 +124,51 @@ export function CommandPalette() {
             </CommandItem>
           )}
 
+          <CommandItem
+            onSelect={() => runCommand(() => navigate('/?create=voice-note'))}
+          >
+            <Mic className="text-neutral-500 dark:text-neutral-400" />
+            <span>Voice Note</span>
+            <CommandShortcut>
+              <ArrowRight className="w-3 h-3" />
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() =>
+              runCommand(() => navigate('/?create=meeting-recording'))
+            }
+          >
+            <CalendarPlus className="text-neutral-500 dark:text-neutral-400" />
+            <span>Start Meeting Recording</span>
+            <CommandShortcut>
+              <ArrowRight className="w-3 h-3" />
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => runCommand(() => navigate('/meetings?create=scheduled'))}
+          >
+            <Plus className="text-neutral-500 dark:text-neutral-400" />
+            <span>Schedule Meeting</span>
+            <CommandShortcut>
+              <ArrowRight className="w-3 h-3" />
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => runCommand(() => navigate('/tasks?create=1'))}
+          >
+            <CheckSquare className="text-neutral-500 dark:text-neutral-400" />
+            <span>Create Task</span>
+            <CommandShortcut>
+              <ArrowRight className="w-3 h-3" />
+            </CommandShortcut>
+          </CommandItem>
+
           <CommandItem onSelect={() => runCommand(() => navigate('/meetings'))}>
             <Plus className="text-neutral-500 dark:text-neutral-400" />
-            <span>New Meeting</span>
+            <span>Schedule a Meet</span>
             <CommandShortcut>
               <ArrowRight className="w-3 h-3" />
             </CommandShortcut>

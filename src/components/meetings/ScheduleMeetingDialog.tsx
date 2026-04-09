@@ -338,7 +338,7 @@ export function ScheduleMeetingDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Schedule a meeting</DialogTitle>
+          <DialogTitle>Schedule a Meet</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div className="space-y-1.5">

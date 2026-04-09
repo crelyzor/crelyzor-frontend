@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Plus,
@@ -114,6 +114,7 @@ export function StartMeetingFab() {
   const [recording, setRecording] = useState<RecordingResult | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -160,6 +161,23 @@ export function StartMeetingFab() {
     setElapsed(0);
     timerRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
   }, []);
+
+  useEffect(() => {
+    const createAction = searchParams.get('create');
+    if (!createAction) return;
+
+    if (createAction === 'voice-note') {
+      setSearchParams({}, { replace: true });
+      startRecording('VOICE_NOTE');
+      return;
+    }
+
+    if (createAction === 'meeting-recording') {
+      setSearchParams({}, { replace: true });
+      startRecording('RECORDED');
+      return;
+    }
+  }, [searchParams, setSearchParams, startRecording]);
 
   const stopRecording = useCallback(() => {
     if (timerRef.current) {

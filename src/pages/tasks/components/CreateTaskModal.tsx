@@ -67,6 +67,7 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
 
   const titleRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
   const createTask = useCreateStandaloneTask();
   const navigate = useNavigate();
 
@@ -324,9 +325,14 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
                           </button>
                         ))}
                         <div className="h-px bg-white/5 mx-2 my-1" />
-                        <label className="flex items-center px-3 py-2 text-[12px] text-neutral-400 hover:bg-white/5 transition-colors cursor-pointer">
+                        <button
+                          className="w-full text-left px-3 py-2 text-[12px] text-neutral-400 hover:bg-white/5 transition-colors cursor-pointer"
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onClick={() => dateInputRef.current?.showPicker()}
+                        >
                           Pick a date…
                           <input
+                            ref={dateInputRef}
                             type="date"
                             className="sr-only"
                             onChange={(e) => {
@@ -341,7 +347,7 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
                               );
                             }}
                           />
-                        </label>
+                        </button>
                       </motion.div>
                     )}
                   </AnimatePresence>

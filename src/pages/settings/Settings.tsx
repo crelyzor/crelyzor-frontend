@@ -723,7 +723,7 @@ function EventTypesSection() {
         ? { description: form.description.trim() }
         : { description: '' }),
       ...(form.locationType === 'ONLINE' &&
-      !useAutoMeetingLink &&
+        !useAutoMeetingLink &&
         form.meetingLink.trim() && { meetingLink: form.meetingLink.trim() }),
       bufferBefore: form.bufferBefore,
       bufferAfter: form.bufferAfter,
