@@ -6,9 +6,10 @@ import { ApiError } from '@/lib/apiClient';
 
 function getApiErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof ApiError) {
-    const payload = error.data as
-      | { message?: string; details?: { fieldErrors?: Record<string, string[]> } }
-      | null;
+    const payload = error.data as {
+      message?: string;
+      details?: { fieldErrors?: Record<string, string[]> };
+    } | null;
     if (payload?.message) return payload.message;
     const fieldErrors = payload?.details?.fieldErrors;
     if (fieldErrors) {
