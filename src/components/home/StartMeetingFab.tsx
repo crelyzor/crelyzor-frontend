@@ -192,7 +192,7 @@ export function StartMeetingFab() {
         type: recordingType,
         startTime: startTime.toISOString(),
         endTime: endTime.toISOString(),
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezone: 'UTC',
       });
       try {
         await meetingsApi.uploadRecording(

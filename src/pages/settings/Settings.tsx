@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { getTimeZones } from '@vvo/tzdb';
 import { useQueryClient } from '@tanstack/react-query';
 import { PageMotion } from '@/components/PageMotion';
 import {
@@ -120,10 +119,7 @@ function formatTimezone(tz: string): string {
   return parts.find((p) => p.type === 'timeZoneName')?.value ?? tz;
 }
 
-const TIMEZONE_OPTIONS = getTimeZones({ includeUtc: true }).map((tz) => ({
-  value: tz.name,
-  label: `${tz.name} GMT ${tz.currentTimeOffsetInMinutes >= 0 ? '+' : ''}${Math.floor(Math.abs(tz.currentTimeOffsetInMinutes) / 60)}:${String(Math.abs(tz.currentTimeOffsetInMinutes) % 60).padStart(2, '0')}`,
-}));
+const TIMEZONE_OPTIONS = [{ value: 'UTC', label: 'UTC (GMT +0:00)' }];
 
 // ── Settings sections ──
 const SETTINGS_SECTIONS = [
@@ -1626,9 +1622,7 @@ function AvailabilitySection() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newScheduleOpen, setNewScheduleOpen] = useState(false);
   const [newName, setNewName] = useState('');
-  const [newTimezone, setNewTimezone] = useState(
-    Intl.DateTimeFormat().resolvedOptions().timeZone
-  );
+  const [newTimezone, setNewTimezone] = useState('UTC');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [copyId, setCopyId] = useState<string | null>(null);
   const [copyName, setCopyName] = useState('');
@@ -2927,7 +2921,7 @@ function BookingsSection() {
     );
   };
 
-  const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const userTz = 'UTC';
 
   return (
     <div className="space-y-6">

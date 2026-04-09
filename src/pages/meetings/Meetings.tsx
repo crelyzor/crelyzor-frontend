@@ -532,7 +532,7 @@ export default function Meetings() {
         type: 'SCHEDULED',
         startTime: new Date(createForm.startTime).toISOString(),
         endTime: new Date(createForm.endTime).toISOString(),
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezone: 'UTC',
         location: createForm.location.trim() || undefined,
         addToCalendar: gcalStatus?.connected
           ? createForm.autoGenerateMeet
