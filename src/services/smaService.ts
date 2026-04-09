@@ -342,11 +342,19 @@ export const smaApi = {
 
   mergeConsecutiveSpeakerSegments: async (
     meetingId: string
-  ): Promise<{ mergedCount: number; originalCount: number; finalCount: number }> => {
+  ): Promise<{
+    mergedCount: number;
+    originalCount: number;
+    finalCount: number;
+  }> => {
     const result = await apiClient.post(
       `/sma/meetings/${meetingId}/transcript/segments/merge-consecutive`
     );
-    return unwrap<{ mergedCount: number; originalCount: number; finalCount: number }>(result);
+    return unwrap<{
+      mergedCount: number;
+      originalCount: number;
+      finalCount: number;
+    }>(result);
   },
 
   patchSummary: async (

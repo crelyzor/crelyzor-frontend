@@ -51,7 +51,8 @@ export default function TagDetailPage() {
               Tag not found
             </p>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2">
-              This tag may belong to a different account or may have been deleted.
+              This tag may belong to a different account or may have been
+              deleted.
             </p>
             <div className="mt-6 flex items-center justify-center gap-2">
               <button
@@ -132,7 +133,9 @@ export default function TagDetailPage() {
                   className="px-3.5 py-2 text-xs font-medium whitespace-nowrap rounded-xl h-auto data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-800 data-[state=active]:shadow-sm data-[state=active]:text-neutral-900 dark:data-[state=active]:text-neutral-100 text-neutral-500 dark:text-neutral-400"
                 >
                   {tab.label}
-                  <span className="ml-1.5 text-[10px] opacity-70">{tab.count}</span>
+                  <span className="ml-1.5 text-[10px] opacity-70">
+                    {tab.count}
+                  </span>
                 </TabsTrigger>
               ))}
             </TabsList>

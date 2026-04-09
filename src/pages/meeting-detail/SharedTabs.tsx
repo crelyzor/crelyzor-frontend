@@ -404,10 +404,8 @@ export function TranscriptTab({
   const { data: transcript, isLoading } = useTranscript(meetingId, isCompleted);
   const { mutate: updateSegment, isPending: isUpdatingSegment } =
     useUpdateSegment(meetingId);
-  const {
-    mutate: mergeConsecutiveSegments,
-    isPending: isMergingSegments,
-  } = useMergeConsecutiveSpeakerSegments(meetingId);
+  const { mutate: mergeConsecutiveSegments, isPending: isMergingSegments } =
+    useMergeConsecutiveSpeakerSegments(meetingId);
   const segments = useMemo(() => transcript?.segments ?? [], [transcript]);
 
   if (transcriptionStatus === 'NONE') {
