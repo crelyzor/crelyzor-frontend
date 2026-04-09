@@ -163,7 +163,7 @@ export function useImportContactsCsv() {
       cardsApi.importContactsCsv(cardId, file),
     onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: queryKeys.cards.contacts() });
-      qc.invalidateQueries({ queryKey: queryKeys.cards.detail('') });
+      qc.invalidateQueries({ queryKey: queryKeys.cards.all });
       toast.success(`Imported ${result.created} contacts`);
     },
     onError: (error: Error) => {
