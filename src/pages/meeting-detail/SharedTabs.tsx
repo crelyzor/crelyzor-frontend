@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { formatTaskDue } from '@/lib/utils';
 import {
   Popover,
   PopoverContent,
@@ -868,11 +869,7 @@ export function ActionsTab({
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
                   {task.dueDate && (
                     <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                      Due{' '}
-                      {new Date(task.dueDate).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                      Due {formatTaskDue(task.dueDate)}
                     </span>
                   )}
                   {task.priority && (

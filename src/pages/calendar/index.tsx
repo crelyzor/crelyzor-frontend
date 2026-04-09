@@ -17,6 +17,7 @@ import { useMeetingsAll } from '@/hooks/queries/useMeetingQueries';
 import { useAllTasks, useUpdateTask } from '@/hooks/queries/useSMAQueries';
 import { queryKeys } from '@/lib/queryKeys';
 import type { TaskListParams, TaskListResponse } from '@/services/smaService';
+import { hasTaskTime } from '@/lib/utils';
 
 // Constant filters used for the calendar task query — must match the setQueryData key exactly
 const TASK_FILTERS: TaskListParams = { status: 'all', limit: 200 };
@@ -143,10 +144,25 @@ export default function CalendarPage() {
     [allTasks, rangeStart, rangeEnd]
   );
 
-  // Tasks with only a dueDate (shown in the all-day row)
+  // Tasks with a dueDate but no scheduledTime, and no explicit time → all-day row
   const dueTasks = useMemo(
-    () => allTasks.filter((t) => t.dueDate && !t.scheduledTime),
+    () =>
+      allTasks.filter(
+        (t) => t.dueDate && !t.scheduledTime && !hasTaskTime(t.dueDate)
+      ),
     [allTasks]
+  );
+
+  // Tasks with a dueDate + explicit time but no scheduledTime → time grid
+  const timedDueTasks = useMemo(
+    () =>
+      allTasks.filter((t) => {
+        if (!t.dueDate || t.scheduledTime) return false;
+        if (!hasTaskTime(t.dueDate)) return false;
+        const ms = new Date(t.dueDate).getTime();
+        return ms >= rangeStart.getTime() && ms <= rangeEnd.getTime();
+      }),
+    [allTasks, rangeStart, rangeEnd]
   );
 
   // ── Navigation ───────────────────────────────────────────────────────────────
@@ -384,6 +400,7 @@ export default function CalendarPage() {
             gcalEvents={gcalEvents}
             meetings={calendarMeetings}
             scheduledTasks={scheduledTasks}
+            timedDueTasks={timedDueTasks}
             dueTasks={dueTasks}
             today={today}
             onReschedule={handleReschedule}

@@ -30,6 +30,7 @@ import { Button } from '@/components/ui/button';
 import { TagChip } from '@/components/ui/TagChip';
 import type { TaskWithMeeting } from '@/services/smaService';
 import type { useReorderTasks } from '@/hooks/queries/useSMAQueries';
+import { formatTaskDue } from '@/lib/utils';
 
 const PRIORITY_BORDER: Record<string, string> = {
   HIGH: 'border-l-[3px] border-l-red-400',
@@ -226,10 +227,7 @@ function SortableTaskRow({
           {task.dueDate && !isOverdue && (
             <span className="flex items-center gap-0.5 text-[10px] text-neutral-400 dark:text-neutral-500">
               <CalendarDays className="w-2.5 h-2.5" />
-              {new Date(task.dueDate).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-              })}
+              {formatTaskDue(task.dueDate)}
             </span>
           )}
           {task.tags?.map((tag) => (

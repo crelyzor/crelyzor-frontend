@@ -51,9 +51,12 @@ function daysFromToday(n: number): Date {
  * Returns { hours, minutes } in 24-hour format, or null if no match.
  * Also strips the matched text from `text` (mutates via return value).
  */
-function parseTime(text: string): { hours: number; minutes: number; rest: string } | null {
+function parseTime(
+  text: string
+): { hours: number; minutes: number; rest: string } | null {
   // 12-hour: optional "at ", digits, optional ":mm", space?, am/pm
-  const ampmRe = /\bat\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b|\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i;
+  const ampmRe =
+    /\bat\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b|\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i;
   // 24-hour: HH:MM (must have colon to avoid false-positives on lone numbers)
   const h24Re = /\b([01]?\d|2[0-3]):([0-5]\d)\b/;
 
@@ -142,6 +145,30 @@ export function parseTaskInput(input: string): ParsedTask {
         text = text.replace(dayRe, '').trim();
         break;
       }
+    }
+  }
+
+  // ── Time ─────────────────────────────────────────────────────────────────────
+  // Only parse time if a date was also found — standalone times are too ambiguous.
+  if (dueDate) {
+    const parsed = parseTime(text);
+    if (parsed) {
+      const [year, month, day] = dueDate.split('-').map(Number);
+      const withTime = new Date(
+        year,
+        month - 1,
+        day,
+        parsed.hours,
+        parsed.minutes
+      );
+      dueDate = withTime.toISOString();
+      text = parsed.rest;
+      // Append time to label e.g. "Tomorrow · 3:00 PM"
+      const timeStr = withTime.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+      });
+      dueDateLabel = `${dueDateLabel} · ${timeStr}`;
     }
   }
 

@@ -60,7 +60,7 @@ function ParticipantPicker({
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { data, isFetching } = useUserSearch(query);
-  const results = data?.users ?? [];
+  const results = useMemo(() => data?.users ?? [], [data]);
 
   const selectedIds = useMemo(
     () =>

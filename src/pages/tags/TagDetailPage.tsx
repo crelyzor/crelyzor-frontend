@@ -18,6 +18,7 @@ import {
   getStatusStyle,
   getStatusLabel,
 } from '@/types/meeting';
+import { formatTaskDue } from '@/lib/utils';
 
 export default function TagDetailPage() {
   const { tagId } = useParams<{ tagId: string }>();
@@ -298,7 +299,7 @@ export default function TagDetailPage() {
                     </div>
                     {t.dueDate && (
                       <span className="text-xs text-neutral-500 px-2 py-1 bg-neutral-50 dark:bg-neutral-800 rounded">
-                        Due: {new Date(t.dueDate).toLocaleDateString()}
+                        Due: {formatTaskDue(t.dueDate)}
                       </span>
                     )}
                   </div>

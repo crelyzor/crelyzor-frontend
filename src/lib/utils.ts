@@ -14,9 +14,15 @@ export function hasTaskTime(iso: string): boolean {
 /** Format a task dueDate for display: "Apr 10" or "Apr 10 · 3:00 PM" */
 export function formatTaskDue(iso: string): string {
   const d = new Date(iso);
-  const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const date = d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
   if (!hasTaskTime(iso)) return date;
-  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const time = d.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
   return `${date} · ${time}`;
 }
 
@@ -47,6 +53,9 @@ export function appendTimeToLabel(baseLabel: string, time: string): string {
   const [h, m] = time.split(':').map(Number);
   const d = new Date();
   d.setHours(h, m, 0, 0);
-  const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const timeStr = d.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
   return `${baseLabel} · ${timeStr}`;
 }

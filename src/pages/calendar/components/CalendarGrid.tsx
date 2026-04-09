@@ -240,6 +240,7 @@ interface CalendarGridProps {
   gcalEvents: CalendarEvent[];
   meetings: Meeting[];
   scheduledTasks: TaskWithMeeting[];
+  timedDueTasks: TaskWithMeeting[];
   dueTasks: TaskWithMeeting[];
   today: Date;
   onReschedule: (taskId: string, newTime: Date) => void;
@@ -251,6 +252,7 @@ export function CalendarGrid({
   gcalEvents,
   meetings,
   scheduledTasks,
+  timedDueTasks,
   dueTasks,
   today,
   onReschedule,
@@ -321,6 +323,22 @@ export function CalendarGrid({
     for (const task of scheduledTasks) {
       if (!task.scheduledTime) continue;
       const start = new Date(task.scheduledTime).getTime();
+      const end = start + (task.durationMinutes ?? 30) * 60 * 1000;
+      if (start < dayEnd.getTime() && end > dayStart.getTime()) {
+        items.push({
+          id: task.id,
+          title: task.title,
+          type: 'task',
+          startMs: start,
+          endMs: end,
+        });
+      }
+    }
+
+    // Tasks with an explicit dueDate+time (no scheduledTime) — render at their due time
+    for (const task of timedDueTasks) {
+      if (!task.dueDate) continue;
+      const start = new Date(task.dueDate).getTime();
       const end = start + (task.durationMinutes ?? 30) * 60 * 1000;
       if (start < dayEnd.getTime() && end > dayStart.getTime()) {
         items.push({

@@ -5,6 +5,7 @@ import { useUpdateTask } from '@/hooks/queries/useSMAQueries';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queryKeys';
 import type { TaskWithMeeting } from '@/services/smaService';
+import { formatTaskDue } from '@/lib/utils';
 
 const PRIORITY_DOT: Record<string, string> = {
   HIGH: 'bg-amber-400 dark:bg-amber-500',
@@ -130,10 +131,7 @@ export function PendingTasksWidget({ tasks, isLoading }: Props) {
                   )}
                   {task.dueDate && (
                     <span className="text-[9px] text-neutral-300 dark:text-neutral-600">
-                      {new Date(task.dueDate).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                      {formatTaskDue(task.dueDate)}
                     </span>
                   )}
                 </div>

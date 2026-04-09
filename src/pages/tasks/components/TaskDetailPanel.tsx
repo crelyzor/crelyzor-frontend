@@ -40,6 +40,8 @@ import {
 import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
 import type { TaskWithMeeting } from '@/services/smaService';
 import type { TaskStatus } from '@/types/meeting';
+import { formatTaskDue, buildDueDateISO, extractTimeFromISO } from '@/lib/utils';
+import { DateTimePicker } from '@/components/ui/DateTimePicker';
 
 const DEFAULT_TAG_COLOR = '#6b7280';
 
@@ -100,12 +102,13 @@ export function TaskDetailPanel({
   const [newTagName, setNewTagName] = useState('');
   const [showDurationMenu, setShowDurationMenu] = useState(false);
   const [showRepeatMenu, setShowRepeatMenu] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
   const [showAddSubtask, setShowAddSubtask] = useState(false);
 
   const titleRef = useRef<HTMLTextAreaElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
-  const dueDateLabelRef = useRef<HTMLLabelElement>(null);
+  const dueDateBtnRef = useRef<HTMLButtonElement>(null);
 
   // Auto-focus title or open due-date picker when triggered by keyboard shortcut
   useEffect(() => {
@@ -114,7 +117,8 @@ export function TaskDetailPanel({
       if (autoFocusField === 'title') {
         titleRef.current?.focus();
       } else if (autoFocusField === 'dueDate') {
-        dueDateLabelRef.current?.click();
+        setShowDatePicker(true);
+        dueDateBtnRef.current?.scrollIntoView({ block: 'nearest' });
       }
       onAutoFocusConsumed?.();
     }, 60);
@@ -190,17 +194,6 @@ export function TaskDetailPanel({
     [task, updateTask]
   );
 
-  const handleDueDateChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (!task) return;
-      const val = e.target.value;
-      updateTask.mutate({
-        taskId: task.id,
-        data: { dueDate: val ? new Date(val).toISOString() : null },
-      });
-    },
-    [task, updateTask]
-  );
 
   const handleDurationChange = useCallback(
     (minutes: number) => {
@@ -418,34 +411,87 @@ export function TaskDetailPanel({
 
               {/* Metadata row */}
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                {/* Due date */}
-                <label
-                  ref={dueDateLabelRef}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs cursor-pointer transition-colors
-                    ${
-                      isOverdue
-                        ? 'bg-red-50 dark:bg-red-950/30 text-red-500 dark:text-red-400'
-                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
-                    }`}
-                >
-                  <CalendarDays className="w-3 h-3 shrink-0" />
-                  {task.dueDate
-                    ? new Date(task.dueDate).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                      })
-                    : 'Due date'}
-                  <input
-                    type="date"
-                    className="sr-only"
-                    value={
-                      task.dueDate
-                        ? new Date(task.dueDate).toISOString().split('T')[0]
-                        : ''
-                    }
-                    onChange={handleDueDateChange}
-                  />
-                </label>
+                {/* Due date + time — single button that opens DateTimePicker */}
+                <div className="relative">
+                  <button
+                    ref={dueDateBtnRef}
+                    onClick={() => setShowDatePicker((v) => !v)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs cursor-pointer transition-colors
+                      ${
+                        isOverdue
+                          ? 'bg-red-50 dark:bg-red-950/30 text-red-500 dark:text-red-400'
+                          : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                      }`}
+                  >
+                    <CalendarDays className="w-3 h-3 shrink-0" />
+                    {task.dueDate ? formatTaskDue(task.dueDate) : 'Due date'}
+                    {task.dueDate && (
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateTask.mutate({ taskId: task.id, data: { dueDate: null } });
+                          setShowDatePicker(false);
+                        }}
+                        className="ml-0.5 opacity-50 hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-2.5 h-2.5" />
+                      </span>
+                    )}
+                  </button>
+
+                  <AnimatePresence>
+                    {showDatePicker && (
+                      <>
+                        {/* click-outside to close */}
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setShowDatePicker(false)}
+                        />
+                        <motion.div
+                          initial={{ opacity: 0, y: 4, scale: 0.96 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 4, scale: 0.96 }}
+                          transition={{ duration: 0.12 }}
+                          className="absolute top-full left-0 mt-1.5 z-20"
+                        >
+                          <DateTimePicker
+                            date={
+                              task.dueDate
+                                ? [
+                                    new Date(task.dueDate).getFullYear(),
+                                    String(new Date(task.dueDate).getMonth() + 1).padStart(2, '0'),
+                                    String(new Date(task.dueDate).getDate()).padStart(2, '0'),
+                                  ].join('-')
+                                : null
+                            }
+                            time={task.dueDate ? extractTimeFromISO(task.dueDate) : ''}
+                            onDateChange={(iso) => {
+                              const existingTime = task.dueDate
+                                ? extractTimeFromISO(task.dueDate)
+                                : '';
+                              updateTask.mutate({
+                                taskId: task.id,
+                                data: { dueDate: buildDueDateISO(iso, existingTime) },
+                              });
+                            }}
+                            onTimeChange={(time) => {
+                              if (!task.dueDate) return;
+                              const localDate = [
+                                new Date(task.dueDate).getFullYear(),
+                                String(new Date(task.dueDate).getMonth() + 1).padStart(2, '0'),
+                                String(new Date(task.dueDate).getDate()).padStart(2, '0'),
+                              ].join('-');
+                              updateTask.mutate({
+                                taskId: task.id,
+                                data: { dueDate: buildDueDateISO(localDate, time) },
+                              });
+                            }}
+                          />
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
 
                 {/* Priority */}
                 <div className="relative">

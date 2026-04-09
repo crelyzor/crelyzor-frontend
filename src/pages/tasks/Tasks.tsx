@@ -30,6 +30,7 @@ import { TaskSidebar } from './components/TaskSidebar';
 import { TaskBoardView } from './components/TaskBoardView';
 import { TaskListView } from './components/TaskListView';
 import { BulkActionBar } from './components/BulkActionBar';
+import { formatTaskDue } from '@/lib/utils';
 import { CreateTaskModal } from './components/CreateTaskModal';
 import { toast } from 'sonner';
 import { smaApi } from '@/services/smaService';
@@ -248,10 +249,7 @@ function TaskRow({
           {task.dueDate && !isOverdue && (
             <span className="flex items-center gap-0.5 text-[10px] text-neutral-400 dark:text-neutral-500">
               <CalendarDays className="w-2.5 h-2.5" />
-              {new Date(task.dueDate).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-              })}
+              {formatTaskDue(task.dueDate)}
             </span>
           )}
           {task.tags?.map((tag) => (

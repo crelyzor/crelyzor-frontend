@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useUpdateTask } from '@/hooks/queries/useSMAQueries';
 import type { TaskWithMeeting } from '@/services/smaService';
+import { formatTaskDue } from '@/lib/utils';
 
 type Props = {
   tasks: TaskWithMeeting[];
@@ -78,11 +79,7 @@ export function OverdueTasksSection({ tasks }: Props) {
               </p>
               {task.dueDate && (
                 <p className="text-[9px] text-amber-500 dark:text-amber-600 mt-0.5">
-                  Due{' '}
-                  {new Date(task.dueDate).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                  })}
+                  Due {formatTaskDue(task.dueDate)}
                 </p>
               )}
             </div>

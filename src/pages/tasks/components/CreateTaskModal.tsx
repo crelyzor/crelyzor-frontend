@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Flag, X, CalendarDays } from 'lucide-react';
 import { useCreateStandaloneTask } from '@/hooks/queries/useSMAQueries';
 import { parseTaskInput } from '@/lib/parseTaskInput';
+import { buildDueDateISO, appendTimeToLabel, extractTimeFromISO } from '@/lib/utils';
+import { DateTimePicker } from '@/components/ui/DateTimePicker';
 
 type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
 type ActivePopover = 'date' | 'priority' | null;
@@ -34,18 +36,6 @@ const PRIORITY_OPTIONS: {
   },
 ];
 
-const DATE_PRESETS = [
-  { label: 'Today', days: 0 },
-  { label: 'Tomorrow', days: 1 },
-  { label: 'Next week', days: 7 },
-];
-
-function toISODate(days: number): string {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() + days);
-  return d.toISOString().split('T')[0];
-}
 
 type Props = {
   open: boolean;
@@ -58,7 +48,8 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueLabel, setDueLabel] = useState<string | null>(null);
-  const [dueDate, setDueDate] = useState<string | null>(null);
+  const [dueDate, setDueDate] = useState<string | null>(null); // always YYYY-MM-DD
+  const [dueTime, setDueTime] = useState(''); // HH:MM or ''
   const [priority, setPriority] = useState<Priority | null>(null);
   const [activePopover, setActivePopover] = useState<ActivePopover>(null);
   // Track whether the user manually set date/priority so NL doesn't overwrite
@@ -67,7 +58,6 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
 
   const titleRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
-  const dateInputRef = useRef<HTMLInputElement>(null);
   const createTask = useCreateStandaloneTask();
   const navigate = useNavigate();
 
@@ -80,6 +70,7 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
       setDescription('');
       setDueDate(null);
       setDueLabel(null);
+      setDueTime('');
       setPriority(null);
       setActivePopover(null);
       setManualDue(false);
@@ -92,7 +83,22 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
     if (!title.trim()) return;
     const parsed = parseTaskInput(title.trim());
     if (parsed.dueDate && !manualDue) {
-      setDueDate(parsed.dueDate);
+      // If NL extracted a time, split into local date + time parts
+      const hasTime = parsed.dueDate.includes('T');
+      if (hasTime) {
+        const d = new Date(parsed.dueDate);
+        // Use local date fields to avoid UTC midnight crossing for non-UTC timezones
+        const dateOnly = [
+          d.getFullYear(),
+          String(d.getMonth() + 1).padStart(2, '0'),
+          String(d.getDate()).padStart(2, '0'),
+        ].join('-');
+        setDueDate(dateOnly);
+        setDueTime(extractTimeFromISO(parsed.dueDate));
+      } else {
+        setDueDate(parsed.dueDate);
+        setDueTime('');
+      }
       setDueLabel(parsed.dueDateLabel ?? null);
     }
     if (parsed.priority && !manualPriority) {
@@ -116,14 +122,16 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
     setDueDate(iso);
     setDueLabel(label);
     setManualDue(true);
-    setActivePopover(null);
+    // Keep the popover open so the user can optionally set a time
   }, []);
 
   const handleClearDate = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setDueDate(null);
     setDueLabel(null);
+    setDueTime('');
     setManualDue(false);
+    setActivePopover(null);
   }, []);
 
   const handleSetPriority = useCallback((p: Priority) => {
@@ -141,11 +149,16 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
   const handleSubmit = useCallback(() => {
     if (!title.trim() || createTask.isPending) return;
     const parsed = parseTaskInput(title.trim());
+    const rawDueDate = dueDate ?? parsed.dueDate;
+    // If a time is set, combine date + time into a full ISO string
+    const finalDueDate = rawDueDate
+      ? buildDueDateISO(rawDueDate.split('T')[0], dueTime)
+      : undefined;
     createTask.mutate(
       {
         title: parsed.title,
         description: description.trim() || undefined,
-        dueDate: dueDate ?? parsed.dueDate,
+        dueDate: finalDueDate,
         priority: priority ?? parsed.priority,
       },
       {
@@ -159,6 +172,7 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
     title,
     description,
     dueDate,
+    dueTime,
     priority,
     createTask,
     onClose,
@@ -285,7 +299,7 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
                     }`}
                   >
                     <CalendarDays className="w-3.5 h-3.5 shrink-0" />
-                    <span>{dueLabel ?? 'Due date'}</span>
+                    <span>{appendTimeToLabel(dueLabel ?? 'Due date', dueDate ? dueTime : '')}</span>
                     {dueDate && (
                       <span
                         onClick={handleClearDate}
@@ -303,51 +317,14 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 4, scale: 0.96 }}
                         transition={{ duration: 0.12 }}
-                        className="absolute top-full left-0 mt-1.5 z-10 rounded-xl py-1 min-w-[140px]"
-                        style={{
-                          background: '#232325',
-                          border: '1px solid rgba(255,255,255,0.08)',
-                          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                        }}
+                        className="absolute top-full left-0 mt-1.5 z-10"
                       >
-                        {DATE_PRESETS.map((preset) => (
-                          <button
-                            key={preset.label}
-                            onClick={() =>
-                              handleSetDate(
-                                preset.label,
-                                toISODate(preset.days)
-                              )
-                            }
-                            className="w-full text-left px-3 py-2 text-[12px] text-neutral-200 hover:bg-white/5 transition-colors"
-                          >
-                            {preset.label}
-                          </button>
-                        ))}
-                        <div className="h-px bg-white/5 mx-2 my-1" />
-                        <button
-                          className="w-full text-left px-3 py-2 text-[12px] text-neutral-400 hover:bg-white/5 transition-colors cursor-pointer"
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onClick={() => dateInputRef.current?.showPicker()}
-                        >
-                          Pick a date…
-                          <input
-                            ref={dateInputRef}
-                            type="date"
-                            className="sr-only"
-                            onChange={(e) => {
-                              if (!e.target.value) return;
-                              const d = new Date(e.target.value + 'T00:00:00');
-                              handleSetDate(
-                                d.toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                }),
-                                e.target.value
-                              );
-                            }}
-                          />
-                        </button>
+                        <DateTimePicker
+                          date={dueDate}
+                          time={dueTime}
+                          onDateChange={(iso, label) => handleSetDate(label, iso)}
+                          onTimeChange={setDueTime}
+                        />
                       </motion.div>
                     )}
                   </AnimatePresence>
