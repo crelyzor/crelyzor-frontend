@@ -535,8 +535,8 @@ The backend already supports these fields — we just need to expose them in the
 
 ### P3 — Connection Features
 
-- [ ] **Ask AI — meeting list shortcut** — add a small "Ask AI" ghost button on each meeting row in the meetings list (appears on hover). Clicking navigates to `/meetings/:id#ask-ai` and auto-opens the Ask AI panel. Makes the feature discoverable without drilling into the meeting.
-- [ ] **Ask AI — home dashboard** — add "Ask about your meetings" as an action in the home quick-actions or a subtle prompt on the TodayTimeline when meetings exist with transcripts.
+- [x] **Ask AI — meeting list shortcut** — add a small "Ask AI" ghost button on each meeting row in the meetings list (appears on hover). Clicking navigates to `/meetings/:id#ask-ai` and auto-opens the Ask AI panel. Makes the feature discoverable without drilling into the meeting.
+- [x] **Ask AI — home dashboard** — add "Ask about your meetings" as an action in the home quick-actions or a subtle prompt on the TodayTimeline when meetings exist with transcripts.
 - [ ] **Meeting ↔ Card contact chips** — in `ScheduledDetail` participants section: when participant has `card` populated from backend, show card chip (avatar + name, clickable → `/cards/:cardId/edit`). In `CardEditor` contacts section: show "N meetings" count chip per contact. (Requires backend P3.3 auto-linking to be built first.)
 
 ---
