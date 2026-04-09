@@ -114,11 +114,7 @@ export function useUpdateTask(meetingId?: string) {
         transcriptContext?: string | null;
         durationMinutes?: number | null;
         blockInCalendar?: boolean;
-        recurringRule?:
-          | 'FREQ=DAILY'
-          | 'FREQ=WEEKLY'
-          | 'FREQ=MONTHLY'
-          | null;
+        recurringRule?: 'FREQ=DAILY' | 'FREQ=WEEKLY' | 'FREQ=MONTHLY' | null;
       };
     }) => smaApi.updateTask(taskId, data),
     onSuccess: () => {
