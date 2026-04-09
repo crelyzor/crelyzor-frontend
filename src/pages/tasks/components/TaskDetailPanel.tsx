@@ -40,7 +40,11 @@ import {
 import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
 import type { TaskWithMeeting } from '@/services/smaService';
 import type { TaskStatus } from '@/types/meeting';
-import { formatTaskDue, buildDueDateISO, extractTimeFromISO } from '@/lib/utils';
+import {
+  formatTaskDue,
+  buildDueDateISO,
+  extractTimeFromISO,
+} from '@/lib/utils';
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
 
 const DEFAULT_TAG_COLOR = '#6b7280';
@@ -193,7 +197,6 @@ export function TaskDetailPanel({
     },
     [task, updateTask]
   );
-
 
   const handleDurationChange = useCallback(
     (minutes: number) => {
@@ -429,7 +432,10 @@ export function TaskDetailPanel({
                       <span
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateTask.mutate({ taskId: task.id, data: { dueDate: null } });
+                          updateTask.mutate({
+                            taskId: task.id,
+                            data: { dueDate: null },
+                          });
                           setShowDatePicker(false);
                         }}
                         className="ml-0.5 opacity-50 hover:opacity-100 transition-opacity"
@@ -459,31 +465,47 @@ export function TaskDetailPanel({
                               task.dueDate
                                 ? [
                                     new Date(task.dueDate).getFullYear(),
-                                    String(new Date(task.dueDate).getMonth() + 1).padStart(2, '0'),
-                                    String(new Date(task.dueDate).getDate()).padStart(2, '0'),
+                                    String(
+                                      new Date(task.dueDate).getMonth() + 1
+                                    ).padStart(2, '0'),
+                                    String(
+                                      new Date(task.dueDate).getDate()
+                                    ).padStart(2, '0'),
                                   ].join('-')
                                 : null
                             }
-                            time={task.dueDate ? extractTimeFromISO(task.dueDate) : ''}
+                            time={
+                              task.dueDate
+                                ? extractTimeFromISO(task.dueDate)
+                                : ''
+                            }
                             onDateChange={(iso) => {
                               const existingTime = task.dueDate
                                 ? extractTimeFromISO(task.dueDate)
                                 : '';
                               updateTask.mutate({
                                 taskId: task.id,
-                                data: { dueDate: buildDueDateISO(iso, existingTime) },
+                                data: {
+                                  dueDate: buildDueDateISO(iso, existingTime),
+                                },
                               });
                             }}
                             onTimeChange={(time) => {
                               if (!task.dueDate) return;
                               const localDate = [
                                 new Date(task.dueDate).getFullYear(),
-                                String(new Date(task.dueDate).getMonth() + 1).padStart(2, '0'),
-                                String(new Date(task.dueDate).getDate()).padStart(2, '0'),
+                                String(
+                                  new Date(task.dueDate).getMonth() + 1
+                                ).padStart(2, '0'),
+                                String(
+                                  new Date(task.dueDate).getDate()
+                                ).padStart(2, '0'),
                               ].join('-');
                               updateTask.mutate({
                                 taskId: task.id,
-                                data: { dueDate: buildDueDateISO(localDate, time) },
+                                data: {
+                                  dueDate: buildDueDateISO(localDate, time),
+                                },
                               });
                             }}
                           />

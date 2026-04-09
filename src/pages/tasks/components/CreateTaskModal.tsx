@@ -4,7 +4,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Flag, X, CalendarDays } from 'lucide-react';
 import { useCreateStandaloneTask } from '@/hooks/queries/useSMAQueries';
 import { parseTaskInput } from '@/lib/parseTaskInput';
-import { buildDueDateISO, appendTimeToLabel, extractTimeFromISO } from '@/lib/utils';
+import {
+  buildDueDateISO,
+  appendTimeToLabel,
+  extractTimeFromISO,
+} from '@/lib/utils';
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
 
 type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
@@ -35,7 +39,6 @@ const PRIORITY_OPTIONS: {
     bg: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
   },
 ];
-
 
 type Props = {
   open: boolean;
@@ -299,7 +302,12 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
                     }`}
                   >
                     <CalendarDays className="w-3.5 h-3.5 shrink-0" />
-                    <span>{appendTimeToLabel(dueLabel ?? 'Due date', dueDate ? dueTime : '')}</span>
+                    <span>
+                      {appendTimeToLabel(
+                        dueLabel ?? 'Due date',
+                        dueDate ? dueTime : ''
+                      )}
+                    </span>
                     {dueDate && (
                       <span
                         onClick={handleClearDate}
@@ -322,7 +330,9 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
                         <DateTimePicker
                           date={dueDate}
                           time={dueTime}
-                          onDateChange={(iso, label) => handleSetDate(label, iso)}
+                          onDateChange={(iso, label) =>
+                            handleSetDate(label, iso)
+                          }
                           onTimeChange={setDueTime}
                         />
                       </motion.div>

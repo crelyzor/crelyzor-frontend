@@ -10,11 +10,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
+import { DateTimePicker } from '@/components/ui/DateTimePicker';
 import { useCreateMeeting } from '@/hooks/queries/useMeetingQueries';
 import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
 import { useUserSearch } from '@/hooks/queries/useUserQueries';
 import { toast } from 'sonner';
-import { UserPlus, X } from 'lucide-react';
+import { CalendarDays, UserPlus, X } from 'lucide-react';
 import type { UserSearchResult } from '@/services/userService';
 
 type Props = {
@@ -22,14 +23,6 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   onSuccess?: (meetingId: string) => void;
   defaultStartTime?: Date | null;
-};
-
-type CreateFormState = {
-  title: string;
-  startTime: string;
-  endTime: string;
-  location: string;
-  autoGenerateMeet: boolean;
 };
 
 type SelectedParticipant =
@@ -40,13 +33,35 @@ function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-function formatDateTimeLocal(date: Date): string {
-  const pad = (value: number) => String(value).padStart(2, '0');
-  return (
-    [date.getFullYear(), pad(date.getMonth() + 1), pad(date.getDate())].join(
-      '-'
-    ) + `T${pad(date.getHours())}:${pad(date.getMinutes())}`
-  );
+function toLocalDateStr(d: Date): string {
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-');
+}
+
+function toLocalTimeStr(d: Date): string {
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function formatMeetingDateTime(date: string, time: string): string {
+  if (!date) return 'Set date & time';
+  const d = new Date(`${date}T${time || '00:00'}`);
+  const datePart = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  if (!time) return datePart;
+  const h = d.getHours();
+  const m = d.getMinutes();
+  const period = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  const minStr = m > 0 ? `:${String(m).padStart(2, '0')}` : '';
+  return `${datePart} · ${h12}${minStr} ${period}`;
+}
+
+function buildISO(date: string, time: string): string {
+  const [year, month, day] = date.split('-').map(Number);
+  const [hours, minutes] = (time || '00:00').split(':').map(Number);
+  return new Date(year, month - 1, day, hours, minutes).toISOString();
 }
 
 function ParticipantPicker({
@@ -249,62 +264,66 @@ export function ScheduleMeetingDialog({
   onSuccess,
   defaultStartTime,
 }: Props) {
-  const [createForm, setCreateForm] = useState<CreateFormState>({
-    title: '',
-    startTime: '',
-    endTime: '',
-    location: '',
-    autoGenerateMeet: true,
-  });
+  const [title, setTitle] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [location, setLocation] = useState('');
+  const [autoGenerateMeet, setAutoGenerateMeet] = useState(true);
   const [participants, setParticipants] = useState<SelectedParticipant[]>([]);
+  const [openPicker, setOpenPicker] = useState<'start' | 'end' | null>(null);
+
   const createMeeting = useCreateMeeting();
   const { data: gcalStatus } = useGoogleCalendarStatus();
 
   useEffect(() => {
     if (!open) {
-      setCreateForm({
-        title: '',
-        startTime: '',
-        endTime: '',
-        location: '',
-        autoGenerateMeet: true,
-      });
+      setTitle('');
+      setStartDate('');
+      setStartTime('');
+      setEndDate('');
+      setEndTime('');
+      setLocation('');
+      setAutoGenerateMeet(true);
       setParticipants([]);
+      setOpenPicker(null);
       return;
     }
 
     if (defaultStartTime) {
       const start = new Date(defaultStartTime);
       const end = new Date(start.getTime() + 60 * 60 * 1000);
-      setCreateForm((prev) => ({
-        ...prev,
-        startTime: formatDateTimeLocal(start),
-        endTime: formatDateTimeLocal(end),
-      }));
+      setStartDate(toLocalDateStr(start));
+      setStartTime(toLocalTimeStr(start));
+      setEndDate(toLocalDateStr(end));
+      setEndTime(toLocalTimeStr(end));
     }
   }, [open, defaultStartTime]);
 
   const handleCreateScheduled = useCallback(() => {
-    if (
-      !createForm.title.trim() ||
-      !createForm.startTime ||
-      !createForm.endTime
-    ) {
+    if (!title.trim() || !startDate || !startTime || !endDate || !endTime) {
       toast.error('Title, start time, and end time are required');
+      return;
+    }
+
+    const startISO = buildISO(startDate, startTime);
+    const endISO = buildISO(endDate, endTime);
+
+    if (new Date(startISO) >= new Date(endISO)) {
+      toast.error('End time must be after start time');
       return;
     }
 
     createMeeting.mutate(
       {
-        title: createForm.title.trim(),
+        title: title.trim(),
         type: 'SCHEDULED',
-        startTime: new Date(createForm.startTime).toISOString(),
-        endTime: new Date(createForm.endTime).toISOString(),
+        startTime: startISO,
+        endTime: endISO,
         timezone: 'UTC',
-        location: createForm.location.trim() || undefined,
-        addToCalendar: gcalStatus?.connected
-          ? createForm.autoGenerateMeet
-          : undefined,
+        location: location.trim() || undefined,
+        addToCalendar: gcalStatus?.connected ? autoGenerateMeet : undefined,
         participantUserIds: participants
           .filter(
             (p): p is Extract<SelectedParticipant, { kind: 'user' }> =>
@@ -326,7 +345,13 @@ export function ScheduleMeetingDialog({
       }
     );
   }, [
-    createForm,
+    title,
+    startDate,
+    startTime,
+    endDate,
+    endTime,
+    location,
+    autoGenerateMeet,
     createMeeting,
     gcalStatus?.connected,
     onOpenChange,
@@ -344,45 +369,94 @@ export function ScheduleMeetingDialog({
           <div className="space-y-1.5">
             <Label className="text-xs text-neutral-500">Title</Label>
             <Input
-              value={createForm.title}
-              onChange={(e) =>
-                setCreateForm((f) => ({ ...f, title: e.target.value }))
-              }
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="Meeting title"
               className="text-sm"
             />
           </div>
+
+          {/* Start time */}
           <div className="space-y-1.5">
             <Label className="text-xs text-neutral-500">Start time</Label>
-            <Input
-              type="datetime-local"
-              value={createForm.startTime}
-              onChange={(e) =>
-                setCreateForm((f) => ({ ...f, startTime: e.target.value }))
-              }
-              className="text-sm"
-            />
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() =>
+                  setOpenPicker(openPicker === 'start' ? null : 'start')
+                }
+                className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
+                  startDate
+                    ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
+                    : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
+                } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
+              >
+                <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                <span>{formatMeetingDateTime(startDate, startTime)}</span>
+              </button>
+              {openPicker === 'start' && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setOpenPicker(null)}
+                  />
+                  <div className="absolute top-full left-0 mt-1.5 z-50">
+                    <DateTimePicker
+                      date={startDate || null}
+                      time={startTime}
+                      onDateChange={(iso) => setStartDate(iso)}
+                      onTimeChange={(t) => setStartTime(t)}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
+
+          {/* End time */}
           <div className="space-y-1.5">
             <Label className="text-xs text-neutral-500">End time</Label>
-            <Input
-              type="datetime-local"
-              value={createForm.endTime}
-              onChange={(e) =>
-                setCreateForm((f) => ({ ...f, endTime: e.target.value }))
-              }
-              className="text-sm"
-            />
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() =>
+                  setOpenPicker(openPicker === 'end' ? null : 'end')
+                }
+                className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
+                  endDate
+                    ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
+                    : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
+                } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
+              >
+                <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                <span>{formatMeetingDateTime(endDate, endTime)}</span>
+              </button>
+              {openPicker === 'end' && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setOpenPicker(null)}
+                  />
+                  <div className="absolute top-full left-0 mt-1.5 z-50">
+                    <DateTimePicker
+                      date={endDate || null}
+                      time={endTime}
+                      onDateChange={(iso) => setEndDate(iso)}
+                      onTimeChange={(t) => setEndTime(t)}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
+
           <div className="space-y-1.5">
             <Label className="text-xs text-neutral-500">
               Location <span className="text-neutral-400">(optional)</span>
             </Label>
             <Input
-              value={createForm.location}
-              onChange={(e) =>
-                setCreateForm((f) => ({ ...f, location: e.target.value }))
-              }
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
               placeholder="Zoom link or address"
               className="text-sm"
             />
@@ -400,10 +474,8 @@ export function ScheduleMeetingDialog({
             <div className="flex items-center gap-2 pt-1">
               <Switch
                 id="gcal-meet"
-                checked={createForm.autoGenerateMeet}
-                onCheckedChange={(checked) =>
-                  setCreateForm((f) => ({ ...f, autoGenerateMeet: checked }))
-                }
+                checked={autoGenerateMeet}
+                onCheckedChange={setAutoGenerateMeet}
               />
               <Label
                 htmlFor="gcal-meet"

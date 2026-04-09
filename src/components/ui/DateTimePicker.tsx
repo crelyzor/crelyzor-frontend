@@ -13,7 +13,14 @@
 
 import { useState, useEffect } from 'react';
 import { DayPicker } from 'react-day-picker';
-import { ChevronLeft, ChevronRight, Clock, ChevronUp, ChevronDown, X } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  ChevronUp,
+  ChevronDown,
+  X,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // ── helpers ────────────────────────────────────────────────────────────────────
@@ -59,9 +66,10 @@ const MINUTE_STEP = 5;
 interface TimePickerProps {
   time: string; // "HH:MM" 24 h, or ""
   onChange: (time: string) => void; // "" to clear
+  clearable?: boolean; // show the X button (default true)
 }
 
-function TimePicker({ time, onChange }: TimePickerProps) {
+export function TimePicker({ time, onChange, clearable = true }: TimePickerProps) {
   const hasTime = time.length > 0;
 
   // Internal state — initialised from prop, kept in sync
@@ -163,19 +171,29 @@ function TimePicker({ time, onChange }: TimePickerProps) {
       </div>
 
       {/* Clear time */}
-      <button
-        onClick={() => onChange('')}
-        className="ml-auto text-neutral-600 hover:text-neutral-400 transition-colors"
-      >
-        <X className="w-3 h-3" />
-      </button>
+      {clearable && (
+        <button
+          onClick={() => onChange('')}
+          className="ml-auto text-neutral-600 hover:text-neutral-400 transition-colors"
+        >
+          <X className="w-3 h-3" />
+        </button>
+      )}
     </div>
   );
 }
 
 // ── Spinbox ───────────────────────────────────────────────────────────────────
 
-function Spinbox({ value, onUp, onDown }: { value: string; onUp: () => void; onDown: () => void }) {
+function Spinbox({
+  value,
+  onUp,
+  onDown,
+}: {
+  value: string;
+  onUp: () => void;
+  onDown: () => void;
+}) {
   return (
     <div className="flex flex-col items-center">
       <button
@@ -203,10 +221,18 @@ interface Props {
   date: string | null;
   time: string;
   onDateChange: (date: string, label: string) => void;
-  onTimeChange: (time: string) => void;
+  onTimeChange?: (time: string) => void;
+  /** Set to false to hide the time picker (date-only mode). Default: true */
+  showTime?: boolean;
 }
 
-export function DateTimePicker({ date, time, onDateChange, onTimeChange }: Props) {
+export function DateTimePicker({
+  date,
+  time,
+  onDateChange,
+  onTimeChange,
+  showTime = true,
+}: Props) {
   // Calendar month shown — sync to selected date
   const [month, setMonth] = useState<Date>(() =>
     date ? new Date(date + 'T00:00:00') : new Date()
@@ -217,7 +243,10 @@ export function DateTimePicker({ date, time, onDateChange, onTimeChange }: Props
   function handleDaySelect(day: Date | undefined) {
     if (!day) return;
     const iso = toLocalDateStr(day);
-    const label = day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const label = day.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
     onDateChange(iso, label);
   }
 
@@ -305,16 +334,20 @@ export function DateTimePicker({ date, time, onDateChange, onTimeChange }: Props
         }}
       />
 
-      {/* Divider */}
-      <div className="h-px bg-white/5 mx-3" />
+      {showTime && (
+        <>
+          {/* Divider */}
+          <div className="h-px bg-white/5 mx-3" />
 
-      {/* Time picker */}
-      <div className="px-3 py-2.5">
-        <TimePicker
-          time={date ? time : ''}
-          onChange={date ? onTimeChange : () => {}}
-        />
-      </div>
+          {/* Time picker */}
+          <div className="px-3 py-2.5">
+            <TimePicker
+              time={date ? time : ''}
+              onChange={date ? (onTimeChange ?? (() => {})) : () => {}}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

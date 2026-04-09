@@ -7,7 +7,12 @@ import { buttonVariants } from '@/components/ui/button';
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
-function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
+function Calendar({
+  className,
+  classNames,
+  showOutsideDays = true,
+  ...props
+}: CalendarProps) {
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -28,7 +33,8 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         ),
         month_grid: 'w-full border-collapse',
         weekdays: 'flex',
-        weekday: 'text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]',
+        weekday:
+          'text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]',
         week: 'flex w-full mt-2',
         day: cn(
           'relative p-0 text-center text-sm focus-within:relative focus-within:z-20',
@@ -47,7 +53,8 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         outside:
           'day-outside text-muted-foreground aria-selected:bg-accent/50 aria-selected:text-muted-foreground',
         disabled: 'text-muted-foreground opacity-50',
-        range_middle: 'aria-selected:bg-accent aria-selected:text-accent-foreground',
+        range_middle:
+          'aria-selected:bg-accent aria-selected:text-accent-foreground',
         hidden: 'invisible',
         ...classNames,
       }}
