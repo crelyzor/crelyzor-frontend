@@ -506,7 +506,9 @@ export default function Meetings() {
     location: '',
     autoGenerateMeet: true,
   });
-  const [openTimePicker, setOpenTimePicker] = useState<'start' | 'end' | null>(null);
+  const [openTimePicker, setOpenTimePicker] = useState<'start' | 'end' | null>(
+    null
+  );
   const [participants, setParticipants] = useState<SelectedParticipant[]>([]);
 
   const createMeeting = useCreateMeeting();
@@ -1109,77 +1111,113 @@ export default function Meetings() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-neutral-500">Start time</Label>
-              <button
-                type="button"
-                onClick={() =>
-                  setOpenTimePicker(openTimePicker === 'start' ? null : 'start')
+              <Popover
+                open={openTimePicker === 'start'}
+                onOpenChange={(open) =>
+                  setOpenTimePicker(open ? 'start' : null)
                 }
-                className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
-                  createForm.startDate
-                    ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
-                    : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
-                } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
               >
-                <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
-                <span>
-                  {createForm.startDate
-                    ? (() => {
-                        const d = new Date(`${createForm.startDate}T${createForm.startTime || '00:00'}`);
-                        const datePart = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                        if (!createForm.startTime) return datePart;
-                        const h = d.getHours(), m = d.getMinutes();
-                        const p = h >= 12 ? 'PM' : 'AM';
-                        const h12 = h % 12 || 12;
-                        return `${datePart} · ${h12}${m > 0 ? `:${String(m).padStart(2,'0')}` : ''} ${p}`;
-                      })()
-                    : 'Set date & time'}
-                </span>
-              </button>
-              {openTimePicker === 'start' && (
-                <DateTimePicker
-                  date={createForm.startDate || null}
-                  time={createForm.startTime}
-                  onDateChange={(iso) => setCreateForm((f) => ({ ...f, startDate: iso }))}
-                  onTimeChange={(t) => setCreateForm((f) => ({ ...f, startTime: t }))}
-                />
-              )}
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
+                      createForm.startDate
+                        ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
+                        : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
+                    } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
+                  >
+                    <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                    <span>
+                      {createForm.startDate
+                        ? (() => {
+                            const d = new Date(
+                              `${createForm.startDate}T${createForm.startTime || '00:00'}`
+                            );
+                            const datePart = d.toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                            });
+                            if (!createForm.startTime) return datePart;
+                            const h = d.getHours(),
+                              m = d.getMinutes();
+                            const p = h >= 12 ? 'PM' : 'AM';
+                            const h12 = h % 12 || 12;
+                            return `${datePart} · ${h12}${m > 0 ? `:${String(m).padStart(2, '0')}` : ''} ${p}`;
+                          })()
+                        : 'Set date & time'}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="p-0 border-0 shadow-none bg-transparent w-auto"
+                  align="start"
+                >
+                  <DateTimePicker
+                    date={createForm.startDate || null}
+                    time={createForm.startTime}
+                    onDateChange={(iso) =>
+                      setCreateForm((f) => ({ ...f, startDate: iso }))
+                    }
+                    onTimeChange={(t) =>
+                      setCreateForm((f) => ({ ...f, startTime: t }))
+                    }
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-neutral-500">End time</Label>
-              <button
-                type="button"
-                onClick={() =>
-                  setOpenTimePicker(openTimePicker === 'end' ? null : 'end')
-                }
-                className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
-                  createForm.endDate
-                    ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
-                    : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
-                } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
+              <Popover
+                open={openTimePicker === 'end'}
+                onOpenChange={(open) => setOpenTimePicker(open ? 'end' : null)}
               >
-                <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
-                <span>
-                  {createForm.endDate
-                    ? (() => {
-                        const d = new Date(`${createForm.endDate}T${createForm.endTime || '00:00'}`);
-                        const datePart = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                        if (!createForm.endTime) return datePart;
-                        const h = d.getHours(), m = d.getMinutes();
-                        const p = h >= 12 ? 'PM' : 'AM';
-                        const h12 = h % 12 || 12;
-                        return `${datePart} · ${h12}${m > 0 ? `:${String(m).padStart(2,'0')}` : ''} ${p}`;
-                      })()
-                    : 'Set date & time'}
-                </span>
-              </button>
-              {openTimePicker === 'end' && (
-                <DateTimePicker
-                  date={createForm.endDate || null}
-                  time={createForm.endTime}
-                  onDateChange={(iso) => setCreateForm((f) => ({ ...f, endDate: iso }))}
-                  onTimeChange={(t) => setCreateForm((f) => ({ ...f, endTime: t }))}
-                />
-              )}
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
+                      createForm.endDate
+                        ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
+                        : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
+                    } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
+                  >
+                    <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                    <span>
+                      {createForm.endDate
+                        ? (() => {
+                            const d = new Date(
+                              `${createForm.endDate}T${createForm.endTime || '00:00'}`
+                            );
+                            const datePart = d.toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                            });
+                            if (!createForm.endTime) return datePart;
+                            const h = d.getHours(),
+                              m = d.getMinutes();
+                            const p = h >= 12 ? 'PM' : 'AM';
+                            const h12 = h % 12 || 12;
+                            return `${datePart} · ${h12}${m > 0 ? `:${String(m).padStart(2, '0')}` : ''} ${p}`;
+                          })()
+                        : 'Set date & time'}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="p-0 border-0 shadow-none bg-transparent w-auto"
+                  align="start"
+                >
+                  <DateTimePicker
+                    date={createForm.endDate || null}
+                    time={createForm.endTime}
+                    onDateChange={(iso) =>
+                      setCreateForm((f) => ({ ...f, endDate: iso }))
+                    }
+                    onTimeChange={(t) =>
+                      setCreateForm((f) => ({ ...f, endTime: t }))
+                    }
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-neutral-500">

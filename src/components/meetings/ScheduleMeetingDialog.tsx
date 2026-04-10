@@ -11,6 +11,11 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { useCreateMeeting } from '@/hooks/queries/useMeetingQueries';
 import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
 import { useUserSearch } from '@/hooks/queries/useUserQueries';
@@ -382,55 +387,69 @@ export function ScheduleMeetingDialog({
           {/* Start time */}
           <div className="space-y-1.5">
             <Label className="text-xs text-neutral-500">Start time</Label>
-            <button
-              type="button"
-              onClick={() =>
-                setOpenPicker(openPicker === 'start' ? null : 'start')
-              }
-              className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
-                startDate
-                  ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
-                  : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
-              } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
+            <Popover
+              open={openPicker === 'start'}
+              onOpenChange={(open) => setOpenPicker(open ? 'start' : null)}
             >
-              <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
-              <span>{formatMeetingDateTime(startDate, startTime)}</span>
-            </button>
-            {openPicker === 'start' && (
-              <DateTimePicker
-                date={startDate || null}
-                time={startTime}
-                onDateChange={(iso) => setStartDate(iso)}
-                onTimeChange={(t) => setStartTime(t)}
-              />
-            )}
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
+                    startDate
+                      ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
+                      : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
+                  } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
+                >
+                  <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                  <span>{formatMeetingDateTime(startDate, startTime)}</span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="p-0 border-0 shadow-none bg-transparent w-auto"
+                align="start"
+              >
+                <DateTimePicker
+                  date={startDate || null}
+                  time={startTime}
+                  onDateChange={(iso) => setStartDate(iso)}
+                  onTimeChange={(t) => setStartTime(t)}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* End time */}
           <div className="space-y-1.5">
             <Label className="text-xs text-neutral-500">End time</Label>
-            <button
-              type="button"
-              onClick={() =>
-                setOpenPicker(openPicker === 'end' ? null : 'end')
-              }
-              className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
-                endDate
-                  ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
-                  : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
-              } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
+            <Popover
+              open={openPicker === 'end'}
+              onOpenChange={(open) => setOpenPicker(open ? 'end' : null)}
             >
-              <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
-              <span>{formatMeetingDateTime(endDate, endTime)}</span>
-            </button>
-            {openPicker === 'end' && (
-              <DateTimePicker
-                date={endDate || null}
-                time={endTime}
-                onDateChange={(iso) => setEndDate(iso)}
-                onTimeChange={(t) => setEndTime(t)}
-              />
-            )}
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
+                    endDate
+                      ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
+                      : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
+                  } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
+                >
+                  <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                  <span>{formatMeetingDateTime(endDate, endTime)}</span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="p-0 border-0 shadow-none bg-transparent w-auto"
+                align="start"
+              >
+                <DateTimePicker
+                  date={endDate || null}
+                  time={endTime}
+                  onDateChange={(iso) => setEndDate(iso)}
+                  onTimeChange={(t) => setEndTime(t)}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-1.5">

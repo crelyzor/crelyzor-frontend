@@ -13,6 +13,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import type { Meeting } from '@/types';
 import { useUpdateMeeting } from '@/hooks/queries/useMeetingQueries';
 import { ApiError } from '@/lib/apiClient';
@@ -179,51 +184,65 @@ export function EditMeetingModal({ meeting, open, onOpenChange }: Props) {
               <Label className="text-xs text-neutral-500 dark:text-neutral-400">
                 Start
               </Label>
-              <button
-                type="button"
-                onClick={() =>
-                  setOpenPicker(openPicker === 'start' ? null : 'start')
-                }
-                className="w-full flex items-center gap-1.5 h-9 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors text-left"
+              <Popover
+                open={openPicker === 'start'}
+                onOpenChange={(open) => setOpenPicker(open ? 'start' : null)}
               >
-                <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
-                <span className="truncate">
-                  {formatDateTime(startDate, startTime)}
-                </span>
-              </button>
-              {openPicker === 'start' && (
-                <DateTimePicker
-                  date={startDate || null}
-                  time={startTime}
-                  onDateChange={(iso) => setStartDate(iso)}
-                  onTimeChange={(t) => setStartTime(t)}
-                />
-              )}
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full flex items-center gap-1.5 h-9 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors text-left"
+                  >
+                    <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                    <span className="truncate">
+                      {formatDateTime(startDate, startTime)}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="p-0 border-0 shadow-none bg-transparent w-auto"
+                  align="start"
+                >
+                  <DateTimePicker
+                    date={startDate || null}
+                    time={startTime}
+                    onDateChange={(iso) => setStartDate(iso)}
+                    onTimeChange={(t) => setStartTime(t)}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-neutral-500 dark:text-neutral-400">
                 End
               </Label>
-              <button
-                type="button"
-                onClick={() =>
-                  setOpenPicker(openPicker === 'end' ? null : 'end')
-                }
-                className="w-full flex items-center gap-1.5 h-9 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors text-left"
+              <Popover
+                open={openPicker === 'end'}
+                onOpenChange={(open) => setOpenPicker(open ? 'end' : null)}
               >
-                <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
-                <span className="truncate">
-                  {formatDateTime(endDate, endTime)}
-                </span>
-              </button>
-              {openPicker === 'end' && (
-                <DateTimePicker
-                  date={endDate || null}
-                  time={endTime}
-                  onDateChange={(iso) => setEndDate(iso)}
-                  onTimeChange={(t) => setEndTime(t)}
-                />
-              )}
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full flex items-center gap-1.5 h-9 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors text-left"
+                  >
+                    <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                    <span className="truncate">
+                      {formatDateTime(endDate, endTime)}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="p-0 border-0 shadow-none bg-transparent w-auto"
+                  align="start"
+                >
+                  <DateTimePicker
+                    date={endDate || null}
+                    time={endTime}
+                    onDateChange={(iso) => setEndDate(iso)}
+                    onTimeChange={(t) => setEndTime(t)}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 

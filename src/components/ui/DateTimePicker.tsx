@@ -268,8 +268,6 @@ export function DateTimePicker({
         boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
         width: 268,
       }}
-      // Prevent the modal's outside-click handler from firing on interactions inside
-      onMouseDown={(e) => e.stopPropagation()}
     >
       {/* Preset chips */}
       <div className="flex gap-1 px-3 pt-3 pb-1">
