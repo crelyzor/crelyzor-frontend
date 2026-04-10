@@ -48,7 +48,10 @@ function toLocalTimeStr(d: Date): string {
 function formatMeetingDateTime(date: string, time: string): string {
   if (!date) return 'Set date & time';
   const d = new Date(`${date}T${time || '00:00'}`);
-  const datePart = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const datePart = d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
   if (!time) return datePart;
   const h = d.getHours();
   const m = d.getMinutes();

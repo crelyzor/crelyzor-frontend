@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence } from 'motion/react';
+import { DateTimePicker } from '@/components/ui/DateTimePicker';
 import { Button } from '@/components/ui/button';
 import PageMotion from '@/components/PageMotion';
 import { ScheduleMeetingDialog } from '@/components/meetings/ScheduleMeetingDialog';
@@ -46,6 +47,7 @@ export default function CalendarPage() {
   const [scheduleMeetingStart, setScheduleMeetingStart] = useState<Date | null>(
     null
   );
+  const [showDateJump, setShowDateJump] = useState(false);
 
   // Fixed "today" reference — never drifts within a render session
   const today = useMemo(() => {
@@ -303,17 +305,33 @@ export default function CalendarPage() {
         {/* ── Calendar header ────────────────────────────────────────────── */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-neutral-200/70 dark:border-neutral-800/70 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl shrink-0">
           <div className="flex items-center gap-3">
-            <label className="text-sm font-semibold text-neutral-900 dark:text-white cursor-pointer hover:opacity-70 transition-opacity select-none">
-              {headerLabel}
-              <input
-                type="date"
-                className="sr-only"
-                value={anchorDateStr}
-                onChange={(e) =>
-                  e.target.value && handleJumpToDate(e.target.value)
-                }
-              />
-            </label>
+            <div className="relative">
+              <button
+                onClick={() => setShowDateJump((v) => !v)}
+                className="text-sm font-semibold text-neutral-900 dark:text-white hover:opacity-70 transition-opacity select-none"
+              >
+                {headerLabel}
+              </button>
+              {showDateJump && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowDateJump(false)}
+                  />
+                  <div className="absolute top-full left-0 mt-1.5 z-50">
+                    <DateTimePicker
+                      date={anchorDateStr}
+                      time=""
+                      showTime={false}
+                      onDateChange={(iso) => {
+                        handleJumpToDate(iso);
+                        setShowDateJump(false);
+                      }}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
             <div className="flex items-center gap-0.5">
               <Button
                 variant="ghost"

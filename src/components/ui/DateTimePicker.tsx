@@ -69,7 +69,11 @@ interface TimePickerProps {
   clearable?: boolean; // show the X button (default true)
 }
 
-export function TimePicker({ time, onChange, clearable = true }: TimePickerProps) {
+export function TimePicker({
+  time,
+  onChange,
+  clearable = true,
+}: TimePickerProps) {
   const hasTime = time.length > 0;
 
   // Internal state — initialised from prop, kept in sync

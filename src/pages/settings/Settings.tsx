@@ -39,6 +39,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DateTimePicker, TimePicker } from '@/components/ui/DateTimePicker';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -1264,6 +1265,61 @@ function EventTypeSchedulePicker({
   );
 }
 
+// Sub-component: inline time picker button for availability slots
+function TimeSlotField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  function formatTime(t: string): string {
+    if (!t) return 'Set time';
+    const [hh, mm] = t.split(':').map(Number);
+    const period = hh >= 12 ? 'PM' : 'AM';
+    const h12 = hh % 12 || 12;
+    const minStr = mm > 0 ? `:${String(mm).padStart(2, '0')}` : '';
+    return `${h12}${minStr} ${period}`;
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors min-w-[90px]"
+      >
+        <Clock className="w-3 h-3 text-neutral-400 shrink-0" />
+        <span>{formatTime(value)}</span>
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div
+            className="absolute top-full left-0 mt-1 z-50 rounded-2xl overflow-hidden px-3 py-2.5"
+            style={{
+              background: '#1c1c1e',
+              border: '1px solid rgba(255,255,255,0.08)',
+              boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <TimePicker
+              time={value}
+              clearable={false}
+              onChange={(t) => {
+                if (t) onChange(t);
+              }}
+            />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // Sub-component: slot editor for a single day
 function DaySlotEditor({
   dayOfWeek,
@@ -1297,18 +1353,14 @@ function DaySlotEditor({
         )}
         {slots.map((slot, idx) => (
           <div key={idx} className="flex items-center gap-2">
-            <Input
-              type="time"
+            <TimeSlotField
               value={slot.startTime}
-              onChange={(e) => onChange(idx, 'startTime', e.target.value)}
-              className="w-36 h-8 text-xs border-neutral-200 dark:border-neutral-700"
+              onChange={(v) => onChange(idx, 'startTime', v)}
             />
             <span className="text-xs text-neutral-400">to</span>
-            <Input
-              type="time"
+            <TimeSlotField
               value={slot.endTime}
-              onChange={(e) => onChange(idx, 'endTime', e.target.value)}
-              className="w-36 h-8 text-xs border-neutral-200 dark:border-neutral-700"
+              onChange={(v) => onChange(idx, 'endTime', v)}
             />
             <Button
               variant="ghost"
@@ -1349,6 +1401,7 @@ function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
   const [localSlots, setLocalSlots] = useState<Record<number, LocalSlot[]>>({});
   const [dirty, setDirty] = useState(false);
   const [blockDate, setBlockDate] = useState('');
+  const [showBlockDatePicker, setShowBlockDatePicker] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(schedule.name);
   const [editingTimezone, setEditingTimezone] = useState(false);
@@ -1602,13 +1655,43 @@ function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
             Specific dates when you're unavailable (for this schedule)
           </p>
           <div className="flex items-center gap-2 mb-4">
-            <Input
-              type="date"
-              value={blockDate}
-              onChange={(e) => setBlockDate(e.target.value)}
-              min={new Date().toISOString().split('T')[0]}
-              className="w-44 h-8 text-xs border-neutral-200 dark:border-neutral-700"
-            />
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowBlockDatePicker((v) => !v)}
+                className={`flex items-center gap-1.5 h-8 px-3 rounded-lg border text-xs transition-colors ${
+                  blockDate
+                    ? 'border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100'
+                    : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
+                } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600 min-w-[140px]`}
+              >
+                <CalendarOff className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                <span>
+                  {blockDate
+                    ? new Date(blockDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                    : 'Pick a date'}
+                </span>
+              </button>
+              {showBlockDatePicker && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowBlockDatePicker(false)}
+                  />
+                  <div className="absolute top-full left-0 mt-1.5 z-50">
+                    <DateTimePicker
+                      date={blockDate || null}
+                      time=""
+                      showTime={false}
+                      onDateChange={(iso) => {
+                        setBlockDate(iso);
+                        setShowBlockDatePicker(false);
+                      }}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
             <Button
               size="sm"
               onClick={handleBlockDate}
