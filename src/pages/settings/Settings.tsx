@@ -1298,12 +1298,7 @@ function TimeSlotField({
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div
-            className="absolute top-full left-0 mt-1 z-50 rounded-2xl overflow-hidden px-3 py-2.5"
-            style={{
-              background: '#1c1c1e',
-              border: '1px solid rgba(255,255,255,0.08)',
-              boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
-            }}
+            className="absolute top-full left-0 mt-1 z-50 rounded-2xl overflow-hidden px-3 py-2.5 bg-white dark:bg-[#1c1c1e] border border-neutral-200 dark:border-white/[0.08] shadow-lg dark:shadow-[0_16px_40px_rgba(0,0,0,0.6)]"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <TimePicker

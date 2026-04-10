@@ -1,7 +1,7 @@
 /**
  * DateTimePicker
  *
- * Self-contained dark date + time picker panel.
+ * Self-contained date + time picker panel. Supports light and dark mode.
  * Uses react-day-picker for the calendar and a custom spinbox for time.
  *
  * Props
@@ -128,7 +128,7 @@ export function TimePicker({
     return (
       <button
         onClick={activate}
-        className="flex items-center gap-2 w-full px-1 py-1.5 rounded-lg text-neutral-500 hover:text-neutral-300 hover:bg-white/5 transition-colors text-[12px]"
+        className="flex items-center gap-2 w-full px-1 py-1.5 rounded-lg text-neutral-500 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors text-[12px]"
       >
         <Clock className="w-3.5 h-3.5 shrink-0" />
         <span>Add time</span>
@@ -147,7 +147,7 @@ export function TimePicker({
         onDown={() => stepHour(-1)}
       />
 
-      <span className="text-neutral-500 text-[13px] font-medium">:</span>
+      <span className="text-neutral-400 dark:text-neutral-500 text-[13px] font-medium">:</span>
 
       {/* Minute */}
       <Spinbox
@@ -157,7 +157,7 @@ export function TimePicker({
       />
 
       {/* AM / PM */}
-      <div className="flex rounded-md overflow-hidden border border-white/10 ml-1">
+      <div className="flex rounded-md overflow-hidden border border-neutral-200 dark:border-white/10 ml-1">
         {(['AM', 'PM'] as const).map((p) => (
           <button
             key={p}
@@ -165,8 +165,8 @@ export function TimePicker({
             className={cn(
               'px-2 py-1 text-[11px] font-medium transition-colors',
               period === p
-                ? 'bg-white/15 text-white'
-                : 'text-neutral-500 hover:text-neutral-300'
+                ? 'bg-neutral-100 dark:bg-white/15 text-neutral-900 dark:text-white'
+                : 'text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
             )}
           >
             {p}
@@ -178,7 +178,7 @@ export function TimePicker({
       {clearable && (
         <button
           onClick={() => onChange('')}
-          className="ml-auto text-neutral-600 hover:text-neutral-400 transition-colors"
+          className="ml-auto text-neutral-400 dark:text-neutral-600 hover:text-neutral-600 dark:hover:text-neutral-400 transition-colors"
         >
           <X className="w-3 h-3" />
         </button>
@@ -202,16 +202,16 @@ function Spinbox({
     <div className="flex flex-col items-center">
       <button
         onClick={onUp}
-        className="text-neutral-600 hover:text-neutral-300 transition-colors leading-none"
+        className="text-neutral-400 dark:text-neutral-600 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors leading-none"
       >
         <ChevronUp className="w-3 h-3" />
       </button>
-      <span className="text-[13px] font-medium text-white w-6 text-center tabular-nums select-none">
+      <span className="text-[13px] font-medium text-neutral-900 dark:text-white w-6 text-center tabular-nums select-none">
         {value}
       </span>
       <button
         onClick={onDown}
-        className="text-neutral-600 hover:text-neutral-300 transition-colors leading-none"
+        className="text-neutral-400 dark:text-neutral-600 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors leading-none"
       >
         <ChevronDown className="w-3 h-3" />
       </button>
@@ -261,13 +261,8 @@ export function DateTimePicker({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
-      style={{
-        background: '#1c1c1e',
-        border: '1px solid rgba(255,255,255,0.08)',
-        boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
-        width: 268,
-      }}
+      className="rounded-2xl overflow-hidden bg-white dark:bg-[#1c1c1e] border border-neutral-200 dark:border-white/[0.08] shadow-lg dark:shadow-[0_16px_40px_rgba(0,0,0,0.6)]"
+      style={{ width: 268 }}
     >
       {/* Preset chips */}
       <div className="flex gap-1 px-3 pt-3 pb-1">
@@ -281,8 +276,8 @@ export function DateTimePicker({
               className={cn(
                 'flex-1 rounded-md py-1 text-[11px] font-medium transition-colors',
                 active
-                  ? 'bg-white/15 text-white'
-                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-white/5'
+                  ? 'bg-neutral-100 dark:bg-white/15 text-neutral-900 dark:text-white'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/5'
               )}
             >
               {p.label}
@@ -304,24 +299,24 @@ export function DateTimePicker({
           months: '',
           month: 'w-full',
           month_caption: 'flex items-center justify-between px-1 mb-2',
-          caption_label: 'text-[12px] font-medium text-neutral-200',
+          caption_label: 'text-[12px] font-medium text-neutral-700 dark:text-neutral-200',
           nav: 'flex items-center gap-1',
           button_previous:
-            'p-1 rounded-md text-neutral-500 hover:text-neutral-200 hover:bg-white/5 transition-colors',
+            'p-1 rounded-md text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors',
           button_next:
-            'p-1 rounded-md text-neutral-500 hover:text-neutral-200 hover:bg-white/5 transition-colors',
+            'p-1 rounded-md text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors',
           month_grid: 'w-full',
           weekdays: 'flex mb-1',
           weekday:
-            'flex-1 text-center text-[10px] font-medium text-neutral-600 uppercase tracking-wide',
+            'flex-1 text-center text-[10px] font-medium text-neutral-400 dark:text-neutral-600 uppercase tracking-wide',
           week: 'flex',
           day: 'flex-1 flex items-center justify-center',
           day_button: cn(
             'w-7 h-7 rounded-full text-[12px] transition-colors',
-            'text-neutral-300 hover:bg-white/10 hover:text-white'
+            'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-white/10 hover:text-neutral-900 dark:hover:text-white'
           ),
-          selected: '!bg-white !text-neutral-900 font-semibold rounded-full',
-          today: 'text-white font-semibold',
+          selected: '!bg-neutral-900 dark:!bg-white !text-white dark:!text-neutral-900 font-semibold rounded-full',
+          today: 'text-neutral-900 dark:text-white font-semibold',
           outside: 'opacity-25',
           disabled: 'opacity-20 cursor-not-allowed',
           hidden: 'invisible',
@@ -339,7 +334,7 @@ export function DateTimePicker({
       {showTime && (
         <>
           {/* Divider */}
-          <div className="h-px bg-white/5 mx-3" />
+          <div className="h-px bg-neutral-100 dark:bg-white/5 mx-3" />
 
           {/* Time picker */}
           <div className="px-3 py-2.5">

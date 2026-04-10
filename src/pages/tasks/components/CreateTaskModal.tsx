@@ -375,27 +375,22 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 4, scale: 0.96 }}
                         transition={{ duration: 0.12 }}
-                        className="absolute top-full left-0 mt-1.5 z-10 rounded-xl py-1 min-w-[130px]"
-                        style={{
-                          background: '#232325',
-                          border: '1px solid rgba(255,255,255,0.08)',
-                          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                        }}
+                        className="absolute top-full left-0 mt-1.5 z-10 rounded-xl py-1 min-w-[130px] bg-white dark:bg-[#232325] border border-neutral-200 dark:border-white/[0.08] shadow-lg dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
                       >
                         {PRIORITY_OPTIONS.map((opt) => (
                           <button
                             key={opt.value}
                             onClick={() => handleSetPriority(opt.value)}
-                            className={`w-full flex items-center gap-2 px-3 py-2 text-[12px] hover:bg-white/5 transition-colors ${
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-[12px] hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors ${
                               priority === opt.value
-                                ? 'text-white'
-                                : 'text-neutral-300'
+                                ? 'text-neutral-900 dark:text-white'
+                                : 'text-neutral-600 dark:text-neutral-300'
                             }`}
                           >
                             <Flag className={`w-3.5 h-3.5 ${opt.color}`} />
                             {opt.label}
                             {priority === opt.value && (
-                              <span className="ml-auto text-white/40 text-[10px]">
+                              <span className="ml-auto text-neutral-400 dark:text-white/40 text-[10px]">
                                 ✓
                               </span>
                             )}
