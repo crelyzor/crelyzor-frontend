@@ -147,7 +147,9 @@ export function TimePicker({
         onDown={() => stepHour(-1)}
       />
 
-      <span className="text-neutral-400 dark:text-neutral-500 text-[13px] font-medium">:</span>
+      <span className="text-neutral-400 dark:text-neutral-500 text-[13px] font-medium">
+        :
+      </span>
 
       {/* Minute */}
       <Spinbox
@@ -299,7 +301,8 @@ export function DateTimePicker({
           months: '',
           month: 'w-full',
           month_caption: 'flex items-center justify-between px-1 mb-2',
-          caption_label: 'text-[12px] font-medium text-neutral-700 dark:text-neutral-200',
+          caption_label:
+            'text-[12px] font-medium text-neutral-700 dark:text-neutral-200',
           nav: 'flex items-center gap-1',
           button_previous:
             'p-1 rounded-md text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors',
@@ -315,7 +318,8 @@ export function DateTimePicker({
             'w-7 h-7 rounded-full text-[12px] transition-colors',
             'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-white/10 hover:text-neutral-900 dark:hover:text-white'
           ),
-          selected: '!bg-neutral-900 dark:!bg-white !text-white dark:!text-neutral-900 font-semibold rounded-full',
+          selected:
+            '!bg-neutral-900 dark:!bg-white !text-white dark:!text-neutral-900 font-semibold rounded-full',
           today: 'text-neutral-900 dark:text-white font-semibold',
           outside: 'opacity-25',
           disabled: 'opacity-20 cursor-not-allowed',
