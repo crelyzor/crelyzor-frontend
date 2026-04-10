@@ -13,7 +13,11 @@ type MeetingsFilterBarProps = {
 function formatDateLabel(iso: string): string {
   if (!iso) return '';
   const d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 export function MeetingsFilterBar({
@@ -51,7 +55,9 @@ export function MeetingsFilterBar({
           <div className="relative">
             <button
               type="button"
-              onClick={() => setOpenPicker(openPicker === 'from' ? null : 'from')}
+              onClick={() =>
+                setOpenPicker(openPicker === 'from' ? null : 'from')
+              }
               className={`flex items-center gap-1.5 h-9 px-3 rounded-lg border text-sm transition-colors ${
                 dateFrom
                   ? 'border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100'
@@ -62,7 +68,10 @@ export function MeetingsFilterBar({
               <span>{dateFrom ? formatDateLabel(dateFrom) : 'From'}</span>
               {dateFrom && (
                 <span
-                  onClick={(e) => { e.stopPropagation(); setDateFrom(''); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDateFrom('');
+                  }}
                   className="ml-0.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
                 >
                   <X className="w-3 h-3" />
@@ -71,20 +80,28 @@ export function MeetingsFilterBar({
             </button>
             {openPicker === 'from' && (
               <>
-                <div className="fixed inset-0 z-40" onClick={() => setOpenPicker(null)} />
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setOpenPicker(null)}
+                />
                 <div className="absolute top-full left-0 mt-1.5 z-50">
                   <DateTimePicker
                     date={dateFrom || null}
                     time=""
                     showTime={false}
-                    onDateChange={(iso) => { setDateFrom(iso); setOpenPicker(null); }}
+                    onDateChange={(iso) => {
+                      setDateFrom(iso);
+                      setOpenPicker(null);
+                    }}
                   />
                 </div>
               </>
             )}
           </div>
 
-          <span className="text-neutral-500 dark:text-neutral-400 text-sm">to</span>
+          <span className="text-neutral-500 dark:text-neutral-400 text-sm">
+            to
+          </span>
 
           {/* To */}
           <div className="relative">
@@ -101,7 +118,10 @@ export function MeetingsFilterBar({
               <span>{dateTo ? formatDateLabel(dateTo) : 'To'}</span>
               {dateTo && (
                 <span
-                  onClick={(e) => { e.stopPropagation(); setDateTo(''); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDateTo('');
+                  }}
                   className="ml-0.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
                 >
                   <X className="w-3 h-3" />
@@ -110,13 +130,19 @@ export function MeetingsFilterBar({
             </button>
             {openPicker === 'to' && (
               <>
-                <div className="fixed inset-0 z-40" onClick={() => setOpenPicker(null)} />
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setOpenPicker(null)}
+                />
                 <div className="absolute top-full left-0 mt-1.5 z-50">
                   <DateTimePicker
                     date={dateTo || null}
                     time=""
                     showTime={false}
-                    onDateChange={(iso) => { setDateTo(iso); setOpenPicker(null); }}
+                    onDateChange={(iso) => {
+                      setDateTo(iso);
+                      setOpenPicker(null);
+                    }}
                   />
                 </div>
               </>

@@ -1668,7 +1668,10 @@ function ScheduleEditor({ schedule }: { schedule: AvailabilitySchedule }) {
                 <CalendarOff className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
                 <span>
                   {blockDate
-                    ? new Date(blockDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                    ? new Date(blockDate + 'T00:00:00').toLocaleDateString(
+                        'en-US',
+                        { month: 'short', day: 'numeric', year: 'numeric' }
+                      )
                     : 'Pick a date'}
                 </span>
               </button>
