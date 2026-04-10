@@ -28,6 +28,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { DateTimePicker } from '@/components/ui/DateTimePicker';
 import {
   Dialog,
   DialogContent,
@@ -498,11 +499,14 @@ export default function Meetings() {
   const [showCreateScheduled, setShowCreateScheduled] = useState(false);
   const [createForm, setCreateForm] = useState({
     title: '',
+    startDate: '',
     startTime: '',
+    endDate: '',
     endTime: '',
     location: '',
     autoGenerateMeet: true,
   });
+  const [openTimePicker, setOpenTimePicker] = useState<'start' | 'end' | null>(null);
   const [participants, setParticipants] = useState<SelectedParticipant[]>([]);
 
   const createMeeting = useCreateMeeting();
@@ -520,18 +524,31 @@ export default function Meetings() {
   const handleCreateScheduled = () => {
     if (
       !createForm.title.trim() ||
+      !createForm.startDate ||
       !createForm.startTime ||
+      !createForm.endDate ||
       !createForm.endTime
     ) {
       toast.error('Title, start time, and end time are required');
+      return;
+    }
+    const buildISO = (date: string, time: string) => {
+      const [year, month, day] = date.split('-').map(Number);
+      const [hours, minutes] = time.split(':').map(Number);
+      return new Date(year, month - 1, day, hours, minutes).toISOString();
+    };
+    const startISO = buildISO(createForm.startDate, createForm.startTime);
+    const endISO = buildISO(createForm.endDate, createForm.endTime);
+    if (new Date(startISO) >= new Date(endISO)) {
+      toast.error('End time must be after start time');
       return;
     }
     createMeeting.mutate(
       {
         title: createForm.title.trim(),
         type: 'SCHEDULED',
-        startTime: new Date(createForm.startTime).toISOString(),
-        endTime: new Date(createForm.endTime).toISOString(),
+        startTime: startISO,
+        endTime: endISO,
         timezone: 'UTC',
         location: createForm.location.trim() || undefined,
         addToCalendar: gcalStatus?.connected
@@ -1062,11 +1079,14 @@ export default function Meetings() {
           if (!open) {
             setCreateForm({
               title: '',
+              startDate: '',
               startTime: '',
+              endDate: '',
               endTime: '',
               location: '',
               autoGenerateMeet: true,
             });
+            setOpenTimePicker(null);
             setParticipants([]);
           }
         }}
@@ -1089,25 +1109,77 @@ export default function Meetings() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-neutral-500">Start time</Label>
-              <Input
-                type="datetime-local"
-                value={createForm.startTime}
-                onChange={(e) =>
-                  setCreateForm((f) => ({ ...f, startTime: e.target.value }))
+              <button
+                type="button"
+                onClick={() =>
+                  setOpenTimePicker(openTimePicker === 'start' ? null : 'start')
                 }
-                className="text-sm"
-              />
+                className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
+                  createForm.startDate
+                    ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
+                    : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
+                } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
+              >
+                <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                <span>
+                  {createForm.startDate
+                    ? (() => {
+                        const d = new Date(`${createForm.startDate}T${createForm.startTime || '00:00'}`);
+                        const datePart = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        if (!createForm.startTime) return datePart;
+                        const h = d.getHours(), m = d.getMinutes();
+                        const p = h >= 12 ? 'PM' : 'AM';
+                        const h12 = h % 12 || 12;
+                        return `${datePart} · ${h12}${m > 0 ? `:${String(m).padStart(2,'0')}` : ''} ${p}`;
+                      })()
+                    : 'Set date & time'}
+                </span>
+              </button>
+              {openTimePicker === 'start' && (
+                <DateTimePicker
+                  date={createForm.startDate || null}
+                  time={createForm.startTime}
+                  onDateChange={(iso) => setCreateForm((f) => ({ ...f, startDate: iso }))}
+                  onTimeChange={(t) => setCreateForm((f) => ({ ...f, startTime: t }))}
+                />
+              )}
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-neutral-500">End time</Label>
-              <Input
-                type="datetime-local"
-                value={createForm.endTime}
-                onChange={(e) =>
-                  setCreateForm((f) => ({ ...f, endTime: e.target.value }))
+              <button
+                type="button"
+                onClick={() =>
+                  setOpenTimePicker(openTimePicker === 'end' ? null : 'end')
                 }
-                className="text-sm"
-              />
+                className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
+                  createForm.endDate
+                    ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
+                    : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
+                } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
+              >
+                <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                <span>
+                  {createForm.endDate
+                    ? (() => {
+                        const d = new Date(`${createForm.endDate}T${createForm.endTime || '00:00'}`);
+                        const datePart = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        if (!createForm.endTime) return datePart;
+                        const h = d.getHours(), m = d.getMinutes();
+                        const p = h >= 12 ? 'PM' : 'AM';
+                        const h12 = h % 12 || 12;
+                        return `${datePart} · ${h12}${m > 0 ? `:${String(m).padStart(2,'0')}` : ''} ${p}`;
+                      })()
+                    : 'Set date & time'}
+                </span>
+              </button>
+              {openTimePicker === 'end' && (
+                <DateTimePicker
+                  date={createForm.endDate || null}
+                  time={createForm.endTime}
+                  onDateChange={(iso) => setCreateForm((f) => ({ ...f, endDate: iso }))}
+                  onTimeChange={(t) => setCreateForm((f) => ({ ...f, endTime: t }))}
+                />
+              )}
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-neutral-500">
