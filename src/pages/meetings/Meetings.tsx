@@ -1130,9 +1130,7 @@ export default function Meetings() {
               <Label className="text-xs text-neutral-500">Date</Label>
               <Popover
                 open={openTimePicker === 'date'}
-                onOpenChange={(open) =>
-                  setOpenTimePicker(open ? 'date' : null)
-                }
+                onOpenChange={(open) => setOpenTimePicker(open ? 'date' : null)}
               >
                 <PopoverTrigger asChild>
                   <button
@@ -1189,7 +1187,9 @@ export default function Meetings() {
                 >
                   <TimePicker
                     time={createForm.startTime}
-                    onChange={(t) => setCreateForm((f) => ({ ...f, startTime: t }))}
+                    onChange={(t) =>
+                      setCreateForm((f) => ({ ...f, startTime: t }))
+                    }
                   />
                 </PopoverContent>
               </Popover>
@@ -1219,7 +1219,9 @@ export default function Meetings() {
                 >
                   <TimePicker
                     time={createForm.endTime}
-                    onChange={(t) => setCreateForm((f) => ({ ...f, endTime: t }))}
+                    onChange={(t) =>
+                      setCreateForm((f) => ({ ...f, endTime: t }))
+                    }
                   />
                 </PopoverContent>
               </Popover>
@@ -1250,12 +1252,16 @@ export default function Meetings() {
                     id="generate-link"
                     checked={createForm.autoGenerateMeet}
                     onCheckedChange={(checked) =>
-                      setCreateForm((f) => ({ ...f, autoGenerateMeet: checked }))
+                      setCreateForm((f) => ({
+                        ...f,
+                        autoGenerateMeet: checked,
+                      }))
                     }
                   />
                 </div>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  Google Meet link will be created automatically when the meeting is created.
+                  Google Meet link will be created automatically when the
+                  meeting is created.
                 </p>
               </div>
             )}
