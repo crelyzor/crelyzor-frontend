@@ -249,6 +249,29 @@ export function getParticipantNames(meeting: Meeting): string[] {
   return names;
 }
 
+/**
+ * Compute display status accounting for both record status and meeting time.
+ * If a meeting's start time is in the past, show a time-based status regardless of record status.
+ */
+export function getDisplayStatus(
+  status: MeetingStatus,
+  startTime?: string
+): MeetingStatus {
+  // Check if the meeting time is in the past
+  if (startTime) {
+    const meetingStart = new Date(startTime).getTime();
+    const now = new Date().getTime();
+    if (meetingStart < now) {
+      // Meeting time has passed — override to show as "COMPLETED" unless already marked completed/cancelled
+      if (status === 'COMPLETED' || status === 'CANCELLED' || status === 'DECLINED') {
+        return status;
+      }
+      return 'COMPLETED';
+    }
+  }
+  return status;
+}
+
 export function getStatusLabel(status: MeetingStatus): string {
   const map: Record<MeetingStatus, string> = {
     CREATED: 'Upcoming',

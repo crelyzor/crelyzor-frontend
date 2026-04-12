@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { DateTimePicker } from '@/components/ui/DateTimePicker';
+import { TimePicker } from '@/components/ui/DateTimePicker';
 import {
   Popover,
   PopoverContent,
@@ -43,20 +43,16 @@ function buildISO(date: string, time: string): string {
   return new Date(year, month - 1, day, hours, minutes).toISOString();
 }
 
-function formatDateTime(date: string, time: string): string {
-  if (!date) return 'Set date & time';
-  const d = new Date(`${date}T${time || '00:00'}`);
-  const datePart = d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
-  if (!time) return datePart;
+
+function formatTime(time: string): string {
+  if (!time) return 'Set time';
+  const d = new Date(`2000-01-01T${time}`);
   const h = d.getHours();
   const m = d.getMinutes();
   const period = h >= 12 ? 'PM' : 'AM';
   const h12 = h % 12 || 12;
   const minStr = m > 0 ? `:${String(m).padStart(2, '0')}` : '';
-  return `${datePart} · ${h12}${minStr} ${period}`;
+  return `${h12}${minStr} ${period}`;
 }
 
 export function RescheduleMeetingModal({ meeting, open, onOpenChange }: Props) {
@@ -141,19 +137,16 @@ export function RescheduleMeetingModal({ meeting, open, onOpenChange }: Props) {
                   className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-900 dark:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors text-left"
                 >
                   <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
-                  <span>{formatDateTime(startDate, startTime)}</span>
+                  <span>{formatTime(startTime)}</span>
                 </button>
               </PopoverTrigger>
               <PopoverContent
                 className="p-0 border-0 shadow-none bg-transparent w-auto"
                 align="start"
               >
-                <DateTimePicker
-                  date={startDate || null}
-                  time={startTime}
-                  onDateChange={(iso) => setStartDate(iso)}
-                  onTimeChange={(t) => setStartTime(t)}
-                />
+                <div className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 w-56 shadow-lg">
+                  <TimePicker time={startTime} onChange={setStartTime} />
+                </div>
               </PopoverContent>
             </Popover>
           </div>
@@ -172,19 +165,16 @@ export function RescheduleMeetingModal({ meeting, open, onOpenChange }: Props) {
                   className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-900 dark:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors text-left"
                 >
                   <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
-                  <span>{formatDateTime(endDate, endTime)}</span>
+                  <span>{formatTime(endTime)}</span>
                 </button>
               </PopoverTrigger>
               <PopoverContent
                 className="p-0 border-0 shadow-none bg-transparent w-auto"
                 align="start"
               >
-                <DateTimePicker
-                  date={endDate || null}
-                  time={endTime}
-                  onDateChange={(iso) => setEndDate(iso)}
-                  onTimeChange={(t) => setEndTime(t)}
-                />
+                <div className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 w-56 shadow-lg">
+                  <TimePicker time={endTime} onChange={setEndTime} />
+                </div>
               </PopoverContent>
             </Popover>
           </div>

@@ -21,6 +21,7 @@ export type CalendarEvent = {
 
 export type GCalConnectionStatus = {
   connected: boolean;
+  writable: boolean;
   email: string | null;
   syncEnabled: boolean;
 };

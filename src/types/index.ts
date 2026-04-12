@@ -20,6 +20,7 @@ export {
   getParticipantNames,
   getStatusLabel,
   getStatusStyle,
+  getDisplayStatus,
 } from './meeting';
 
 export type { CurrentUser, ProfileResponse } from './organization';

@@ -62,7 +62,7 @@ import { useBookings } from '@/hooks/queries/useSchedulingQueries';
 import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
 import { useUserSearch } from '@/hooks/queries/useUserQueries';
 import { toDisplayMeeting, type DisplayMeeting } from '@/lib/meetingHelpers';
-import { getStatusStyle, getStatusLabel } from '@/types';
+import { getStatusStyle, getStatusLabel, getDisplayStatus } from '@/types';
 import type { MeetingStatus } from '@/types';
 import type { UserSearchResult } from '@/services/userService';
 
@@ -302,10 +302,19 @@ const FILTER_TABS = [
 
 type FilterTab = (typeof FILTER_TABS)[number]['id'];
 
-function matchesFilter(status: MeetingStatus, filter: FilterTab): boolean {
+function matchesFilter(status: MeetingStatus, filter: FilterTab, startTime?: string): boolean {
   if (filter === 'all') return true;
-  if (filter === 'upcoming')
+  if (filter === 'upcoming') {
+    // Check if meeting time has passed
+    if (startTime) {
+      const meetingStart = new Date(startTime).getTime();
+      const now = new Date().getTime();
+      if (meetingStart < now) {
+        return false; // Meeting is in the past, not upcoming
+      }
+    }
     return status === 'ACCEPTED' || status === 'CREATED';
+  }
   if (filter === 'completed') return status === 'COMPLETED';
   if (filter === 'cancelled')
     return status === 'CANCELLED' || status === 'DECLINED';
@@ -528,6 +537,7 @@ export default function Meetings() {
     startDate: '',
     startTime: '',
     endTime: '',
+    meetingLink: '',
     autoGenerateMeet: true,
   });
   const [openTimePicker, setOpenTimePicker] = useState<
@@ -538,6 +548,7 @@ export default function Meetings() {
   const createMeeting = useCreateMeeting();
   const importIcs = useImportMeetingsIcs();
   const { data: gcalStatus } = useGoogleCalendarStatus();
+  const canAutoGenerateMeet = !!gcalStatus?.writable;
 
   // Auto-open create scheduled dialog from FAB
   useEffect(() => {
@@ -547,6 +558,15 @@ export default function Meetings() {
     }
   }, [searchParams, setSearchParams]);
 
+  useEffect(() => {
+    if (!showCreateScheduled || gcalStatus === undefined) return;
+    if (canAutoGenerateMeet) return;
+    setCreateForm((form) => ({
+      ...form,
+      autoGenerateMeet: false,
+    }));
+  }, [showCreateScheduled, gcalStatus, canAutoGenerateMeet]);
+
   const handleCreateScheduled = () => {
     if (
       !createForm.title.trim() ||
@@ -555,6 +575,14 @@ export default function Meetings() {
       !createForm.endTime
     ) {
       toast.error('Title, date, start time, and end time are required');
+      return;
+    }
+
+    const shouldAutoGenerate = canAutoGenerateMeet && createForm.autoGenerateMeet;
+    const normalizedMeetingLink = createForm.meetingLink.trim();
+
+    if (!shouldAutoGenerate && !normalizedMeetingLink) {
+      toast.error('Add a meeting link or reconnect Google Calendar');
       return;
     }
 
@@ -572,9 +600,8 @@ export default function Meetings() {
         startTime: startISO,
         endTime: endISO,
         timezone: 'UTC',
-        addToCalendar: gcalStatus?.connected
-          ? createForm.autoGenerateMeet
-          : undefined,
+        location: normalizedMeetingLink || undefined,
+        addToCalendar: shouldAutoGenerate,
         participantUserIds: participants
           .filter(
             (p): p is Extract<SelectedParticipant, { kind: 'user' }> =>
@@ -596,6 +623,7 @@ export default function Meetings() {
             startDate: '',
             startTime: '',
             endTime: '',
+            meetingLink: '',
             autoGenerateMeet: true,
           });
           setParticipants([]);
@@ -640,7 +668,7 @@ export default function Meetings() {
 
   const filtered = useMemo(() => {
     return scopedMeetings.filter((m) => {
-      if (!matchesFilter(m.status, activeTab)) return false;
+      if (!matchesFilter(m.status, activeTab, m._raw.startTime)) return false;
       if (
         searchQuery &&
         !m.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -994,9 +1022,9 @@ export default function Meetings() {
                               </Button>
                               {meeting.meetingType === 'SCHEDULED' && (
                                 <span
-                                  className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(meeting.status)}`}
+                                  className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(getDisplayStatus(meeting.status, meeting._raw.startTime))}`}
                                 >
-                                  {getStatusLabel(meeting.status)}
+                                  {getStatusLabel(getDisplayStatus(meeting.status, meeting._raw.startTime))}
                                 </span>
                               )}
                               <MeetingContextMenu meeting={meeting} />
@@ -1103,6 +1131,7 @@ export default function Meetings() {
               startDate: '',
               startTime: '',
               endTime: '',
+              meetingLink: '',
               autoGenerateMeet: true,
             });
             setOpenTimePicker(null);
@@ -1237,31 +1266,59 @@ export default function Meetings() {
               />
             </div>
             {gcalStatus?.connected && (
-              <div className="space-y-2 pt-1">
-                <Label className="text-xs text-neutral-500">Meeting Link</Label>
-                <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-950/2 dark:bg-neutral-900 px-4 py-3 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                      Auto-generate Google Meet
-                    </p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                      Turn off to use your own Zoom/Meet link
-                    </p>
+              <div className="space-y-3 pt-1">
+                <div className="space-y-2">
+                  <Label className="text-xs text-neutral-500">Meeting Link</Label>
+                  <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-950/2 dark:bg-neutral-900 px-4 py-3 flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                        Auto-generate Google Meet
+                      </p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                        {canAutoGenerateMeet
+                          ? 'Turn off to use your own Zoom/Meet link'
+                          : 'Reconnect Google Calendar to generate Meet links automatically'}
+                      </p>
+                    </div>
+                    <Switch
+                      id="generate-link"
+                      checked={canAutoGenerateMeet && createForm.autoGenerateMeet}
+                      onCheckedChange={(checked) =>
+                        setCreateForm((f) => ({
+                          ...f,
+                          autoGenerateMeet: checked,
+                        }))
+                      }
+                      disabled={!canAutoGenerateMeet}
+                    />
                   </div>
-                  <Switch
-                    id="generate-link"
-                    checked={createForm.autoGenerateMeet}
-                    onCheckedChange={(checked) =>
-                      setCreateForm((f) => ({
-                        ...f,
-                        autoGenerateMeet: checked,
-                      }))
-                    }
-                  />
                 </div>
+                {(!canAutoGenerateMeet || !createForm.autoGenerateMeet) && (
+                  <div className="space-y-1.5">
+                    <Label
+                      htmlFor="create-meeting-link"
+                      className="text-xs text-neutral-500"
+                    >
+                      Meeting URL
+                    </Label>
+                    <Input
+                      id="create-meeting-link"
+                      value={createForm.meetingLink}
+                      onChange={(e) =>
+                        setCreateForm((f) => ({
+                          ...f,
+                          meetingLink: e.target.value,
+                        }))
+                      }
+                      placeholder="https://meet.google.com/..."
+                      className="text-sm"
+                    />
+                  </div>
+                )}
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  Google Meet link will be created automatically when the
-                  meeting is created.
+                  {canAutoGenerateMeet
+                    ? 'Google Meet link will be created automatically when the meeting is created.'
+                    : 'Use a manual meeting URL for Recall until Google Calendar write access is restored.'}
                 </p>
               </div>
             )}
