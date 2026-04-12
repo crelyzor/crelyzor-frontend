@@ -362,7 +362,8 @@ export function ScheduledDetail({
                 </span>
               )}
               {rawMeeting.participants.map((p) => {
-                const label = p.user?.name ?? p.user?.email ?? 'Unknown';
+                const label =
+                  p.user?.name ?? p.user?.email ?? p.guestEmail ?? 'Unknown';
                 if (p.card) {
                   return (
                     <button

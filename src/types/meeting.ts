@@ -45,6 +45,7 @@ export type MeetingParticipant = {
   responseStatus: ResponseStatus;
   respondedAt?: string;
   joinedAt?: string;
+  guestEmail?: string | null;
   user?: {
     id: string;
     name: string;
@@ -240,7 +241,7 @@ export function formatMeetingDuration(meeting: Meeting): string {
 export function getParticipantNames(meeting: Meeting): string[] {
   const names: string[] = [];
   for (const p of meeting.participants ?? []) {
-    names.push(p.user?.name ?? 'Unknown');
+    names.push(p.user?.name ?? p.user?.email ?? p.guestEmail ?? 'Unknown');
   }
   for (const g of meeting.guests ?? []) {
     names.push(g.name ?? g.email);

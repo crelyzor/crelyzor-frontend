@@ -28,7 +28,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DateTimePicker } from '@/components/ui/DateTimePicker';
+import { DateTimePicker, TimePicker } from '@/components/ui/DateTimePicker';
 import {
   Dialog,
   DialogContent,
@@ -69,6 +69,32 @@ import type { UserSearchResult } from '@/services/userService';
 type SelectedParticipant =
   | { kind: 'user'; id: string; name: string; email: string }
   | { kind: 'guest'; email: string };
+
+function buildISO(date: string, time: string): string {
+  const [year, month, day] = date.split('-').map(Number);
+  const [hours, minutes] = time.split(':').map(Number);
+  return new Date(year, month - 1, day, hours, minutes).toISOString();
+}
+
+function formatDateLabel(date: string): string {
+  if (!date) return 'Set date';
+  const d = new Date(`${date}T00:00`);
+  const datePart = d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+  return datePart;
+}
+
+function formatTimeLabel(time: string): string {
+  if (!time) return 'Set time';
+  const d = new Date(`2000-01-01T${time}`);
+  const h = d.getHours();
+  const m = d.getMinutes();
+  const p = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}${m > 0 ? `:${String(m).padStart(2, '0')}` : ''} ${p}`;
+}
 
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -501,14 +527,12 @@ export default function Meetings() {
     title: '',
     startDate: '',
     startTime: '',
-    endDate: '',
     endTime: '',
-    location: '',
     autoGenerateMeet: true,
   });
-  const [openTimePicker, setOpenTimePicker] = useState<'start' | 'end' | null>(
-    null
-  );
+  const [openTimePicker, setOpenTimePicker] = useState<
+    'date' | 'start' | 'end' | null
+  >(null);
   const [participants, setParticipants] = useState<SelectedParticipant[]>([]);
 
   const createMeeting = useCreateMeeting();
@@ -528,19 +552,15 @@ export default function Meetings() {
       !createForm.title.trim() ||
       !createForm.startDate ||
       !createForm.startTime ||
-      !createForm.endDate ||
       !createForm.endTime
     ) {
-      toast.error('Title, start time, and end time are required');
+      toast.error('Title, date, start time, and end time are required');
       return;
     }
-    const buildISO = (date: string, time: string) => {
-      const [year, month, day] = date.split('-').map(Number);
-      const [hours, minutes] = time.split(':').map(Number);
-      return new Date(year, month - 1, day, hours, minutes).toISOString();
-    };
+
     const startISO = buildISO(createForm.startDate, createForm.startTime);
-    const endISO = buildISO(createForm.endDate, createForm.endTime);
+    const endISO = buildISO(createForm.startDate, createForm.endTime);
+
     if (new Date(startISO) >= new Date(endISO)) {
       toast.error('End time must be after start time');
       return;
@@ -552,7 +572,6 @@ export default function Meetings() {
         startTime: startISO,
         endTime: endISO,
         timezone: 'UTC',
-        location: createForm.location.trim() || undefined,
         addToCalendar: gcalStatus?.connected
           ? createForm.autoGenerateMeet
           : undefined,
@@ -574,9 +593,9 @@ export default function Meetings() {
           setShowCreateScheduled(false);
           setCreateForm({
             title: '',
+            startDate: '',
             startTime: '',
             endTime: '',
-            location: '',
             autoGenerateMeet: true,
           });
           setParticipants([]);
@@ -1083,9 +1102,7 @@ export default function Meetings() {
               title: '',
               startDate: '',
               startTime: '',
-              endDate: '',
               endTime: '',
-              location: '',
               autoGenerateMeet: true,
             });
             setOpenTimePicker(null);
@@ -1110,11 +1127,11 @@ export default function Meetings() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-neutral-500">Start time</Label>
+              <Label className="text-xs text-neutral-500">Date</Label>
               <Popover
-                open={openTimePicker === 'start'}
+                open={openTimePicker === 'date'}
                 onOpenChange={(open) =>
-                  setOpenTimePicker(open ? 'start' : null)
+                  setOpenTimePicker(open ? 'date' : null)
                 }
               >
                 <PopoverTrigger asChild>
@@ -1127,25 +1144,7 @@ export default function Meetings() {
                     } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
                   >
                     <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
-                    <span>
-                      {createForm.startDate
-                        ? (() => {
-                            const d = new Date(
-                              `${createForm.startDate}T${createForm.startTime || '00:00'}`
-                            );
-                            const datePart = d.toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                            });
-                            if (!createForm.startTime) return datePart;
-                            const h = d.getHours(),
-                              m = d.getMinutes();
-                            const p = h >= 12 ? 'PM' : 'AM';
-                            const h12 = h % 12 || 12;
-                            return `${datePart} · ${h12}${m > 0 ? `:${String(m).padStart(2, '0')}` : ''} ${p}`;
-                          })()
-                        : 'Set date & time'}
-                    </span>
+                    <span>{formatDateLabel(createForm.startDate)}</span>
                   </button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -1154,13 +1153,43 @@ export default function Meetings() {
                 >
                   <DateTimePicker
                     date={createForm.startDate || null}
-                    time={createForm.startTime}
+                    time=""
                     onDateChange={(iso) =>
                       setCreateForm((f) => ({ ...f, startDate: iso }))
                     }
-                    onTimeChange={(t) =>
-                      setCreateForm((f) => ({ ...f, startTime: t }))
-                    }
+                    showTime={false}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-neutral-500">Start time</Label>
+              <Popover
+                open={openTimePicker === 'start'}
+                onOpenChange={(open) =>
+                  setOpenTimePicker(open ? 'start' : null)
+                }
+              >
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
+                      createForm.startTime
+                        ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
+                        : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
+                    } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
+                  >
+                    <Clock className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                    <span>{formatTimeLabel(createForm.startTime)}</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 w-56"
+                  align="start"
+                >
+                  <TimePicker
+                    time={createForm.startTime}
+                    onChange={(t) => setCreateForm((f) => ({ ...f, startTime: t }))}
                   />
                 </PopoverContent>
               </Popover>
@@ -1175,62 +1204,25 @@ export default function Meetings() {
                   <button
                     type="button"
                     className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
-                      createForm.endDate
+                      createForm.endTime
                         ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
                         : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
                     } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
                   >
-                    <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
-                    <span>
-                      {createForm.endDate
-                        ? (() => {
-                            const d = new Date(
-                              `${createForm.endDate}T${createForm.endTime || '00:00'}`
-                            );
-                            const datePart = d.toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                            });
-                            if (!createForm.endTime) return datePart;
-                            const h = d.getHours(),
-                              m = d.getMinutes();
-                            const p = h >= 12 ? 'PM' : 'AM';
-                            const h12 = h % 12 || 12;
-                            return `${datePart} · ${h12}${m > 0 ? `:${String(m).padStart(2, '0')}` : ''} ${p}`;
-                          })()
-                        : 'Set date & time'}
-                    </span>
+                    <Clock className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                    <span>{formatTimeLabel(createForm.endTime)}</span>
                   </button>
                 </PopoverTrigger>
                 <PopoverContent
-                  className="p-0 border-0 shadow-none bg-transparent w-auto"
+                  className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 w-56"
                   align="start"
                 >
-                  <DateTimePicker
-                    date={createForm.endDate || null}
+                  <TimePicker
                     time={createForm.endTime}
-                    onDateChange={(iso) =>
-                      setCreateForm((f) => ({ ...f, endDate: iso }))
-                    }
-                    onTimeChange={(t) =>
-                      setCreateForm((f) => ({ ...f, endTime: t }))
-                    }
+                    onChange={(t) => setCreateForm((f) => ({ ...f, endTime: t }))}
                   />
                 </PopoverContent>
               </Popover>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-neutral-500">
-                Location <span className="text-neutral-400">(optional)</span>
-              </Label>
-              <Input
-                value={createForm.location}
-                onChange={(e) =>
-                  setCreateForm((f) => ({ ...f, location: e.target.value }))
-                }
-                placeholder="Zoom link or address"
-                className="text-sm"
-              />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs text-neutral-500">
@@ -1243,20 +1235,28 @@ export default function Meetings() {
               />
             </div>
             {gcalStatus?.connected && (
-              <div className="flex items-center gap-2 pt-1">
-                <Switch
-                  id="gcal-meet"
-                  checked={createForm.autoGenerateMeet}
-                  onCheckedChange={(checked) =>
-                    setCreateForm((f) => ({ ...f, autoGenerateMeet: checked }))
-                  }
-                />
-                <Label
-                  htmlFor="gcal-meet"
-                  className="text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer"
-                >
-                  Add to Google Calendar with a Meet link
-                </Label>
+              <div className="space-y-2 pt-1">
+                <Label className="text-xs text-neutral-500">Meeting Link</Label>
+                <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-950/2 dark:bg-neutral-900 px-4 py-3 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                      Auto-generate Google Meet
+                    </p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      Turn off to use your own Zoom/Meet link
+                    </p>
+                  </div>
+                  <Switch
+                    id="generate-link"
+                    checked={createForm.autoGenerateMeet}
+                    onCheckedChange={(checked) =>
+                      setCreateForm((f) => ({ ...f, autoGenerateMeet: checked }))
+                    }
+                  />
+                </div>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  Google Meet link will be created automatically when the meeting is created.
+                </p>
               </div>
             )}
             <div className="flex gap-2 justify-end pt-1">
