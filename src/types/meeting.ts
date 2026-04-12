@@ -263,7 +263,11 @@ export function getDisplayStatus(
     const now = new Date().getTime();
     if (meetingStart < now) {
       // Meeting time has passed — override to show as "COMPLETED" unless already marked completed/cancelled
-      if (status === 'COMPLETED' || status === 'CANCELLED' || status === 'DECLINED') {
+      if (
+        status === 'COMPLETED' ||
+        status === 'CANCELLED' ||
+        status === 'DECLINED'
+      ) {
         return status;
       }
       return 'COMPLETED';

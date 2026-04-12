@@ -43,7 +43,6 @@ function buildISO(date: string, time: string): string {
   return new Date(year, month - 1, day, hours, minutes).toISOString();
 }
 
-
 function formatTime(time: string): string {
   if (!time) return 'Set time';
   const d = new Date(`2000-01-01T${time}`);

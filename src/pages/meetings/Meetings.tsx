@@ -302,7 +302,11 @@ const FILTER_TABS = [
 
 type FilterTab = (typeof FILTER_TABS)[number]['id'];
 
-function matchesFilter(status: MeetingStatus, filter: FilterTab, startTime?: string): boolean {
+function matchesFilter(
+  status: MeetingStatus,
+  filter: FilterTab,
+  startTime?: string
+): boolean {
   if (filter === 'all') return true;
   if (filter === 'upcoming') {
     // Check if meeting time has passed
@@ -578,7 +582,8 @@ export default function Meetings() {
       return;
     }
 
-    const shouldAutoGenerate = canAutoGenerateMeet && createForm.autoGenerateMeet;
+    const shouldAutoGenerate =
+      canAutoGenerateMeet && createForm.autoGenerateMeet;
     const normalizedMeetingLink = createForm.meetingLink.trim();
 
     if (!shouldAutoGenerate && !normalizedMeetingLink) {
@@ -1024,7 +1029,12 @@ export default function Meetings() {
                                 <span
                                   className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${getStatusStyle(getDisplayStatus(meeting.status, meeting._raw.startTime))}`}
                                 >
-                                  {getStatusLabel(getDisplayStatus(meeting.status, meeting._raw.startTime))}
+                                  {getStatusLabel(
+                                    getDisplayStatus(
+                                      meeting.status,
+                                      meeting._raw.startTime
+                                    )
+                                  )}
                                 </span>
                               )}
                               <MeetingContextMenu meeting={meeting} />
@@ -1268,7 +1278,9 @@ export default function Meetings() {
             {gcalStatus?.connected && (
               <div className="space-y-3 pt-1">
                 <div className="space-y-2">
-                  <Label className="text-xs text-neutral-500">Meeting Link</Label>
+                  <Label className="text-xs text-neutral-500">
+                    Meeting Link
+                  </Label>
                   <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-950/2 dark:bg-neutral-900 px-4 py-3 flex items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
@@ -1282,7 +1294,9 @@ export default function Meetings() {
                     </div>
                     <Switch
                       id="generate-link"
-                      checked={canAutoGenerateMeet && createForm.autoGenerateMeet}
+                      checked={
+                        canAutoGenerateMeet && createForm.autoGenerateMeet
+                      }
                       onCheckedChange={(checked) =>
                         setCreateForm((f) => ({
                           ...f,

@@ -339,11 +339,13 @@ export function EditMeetingModal({ meeting, open, onOpenChange }: Props) {
               )}
               {canAutoGenerateMeet ? (
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  Google Meet link will be created automatically when you save changes.
+                  Google Meet link will be created automatically when you save
+                  changes.
                 </p>
               ) : (
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  Use a manual meeting URL for Recall until Google Calendar write access is restored.
+                  Use a manual meeting URL for Recall until Google Calendar
+                  write access is restored.
                 </p>
               )}
             </div>
