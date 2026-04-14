@@ -29,7 +29,8 @@ export function formatMeetingLocationLabel(
 export function getMeetingJoinUrl(meeting: Meeting): string | null {
   if (meeting.meetLink && isHttpUrl(meeting.meetLink)) return meeting.meetLink;
   if (meeting.location && isHttpUrl(meeting.location)) return meeting.location;
-  if (meeting.meetingLink && isHttpUrl(meeting.meetingLink)) return meeting.meetingLink;
+  if (meeting.meetingLink && isHttpUrl(meeting.meetingLink))
+    return meeting.meetingLink;
   return null;
 }
 

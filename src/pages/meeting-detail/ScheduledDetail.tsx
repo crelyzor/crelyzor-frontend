@@ -30,7 +30,10 @@ import {
 import type { Meeting, TranscriptionStatus } from '@/types';
 import { getStatusStyle, getStatusLabel } from '@/types';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
-import { formatMeetingLocationLabel, getMeetingJoinUrl } from '@/lib/meetingHelpers';
+import {
+  formatMeetingLocationLabel,
+  getMeetingJoinUrl,
+} from '@/lib/meetingHelpers';
 import {
   useAcceptMeeting,
   useDeclineMeeting,
@@ -346,7 +349,10 @@ export function ScheduledDetail({
                     Location
                   </p>
                   <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
-                    {formatMeetingLocationLabel(rawMeeting.location, rawMeeting.meetingProvider)}
+                    {formatMeetingLocationLabel(
+                      rawMeeting.location,
+                      rawMeeting.meetingProvider
+                    )}
                   </p>
                 </div>
               </div>
