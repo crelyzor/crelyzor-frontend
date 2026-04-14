@@ -229,9 +229,7 @@ export default function Home() {
             </button>
           )}
           <TodayTimeline
-            meetings={
-              allMeetingsData?.map(toDisplayMeeting) ?? []
-            }
+            meetings={allMeetingsData?.map(toDisplayMeeting) ?? []}
             tasks={todayTasks}
             isLoading={meetingsLoading}
             isTasksLoading={tasksLoading}
