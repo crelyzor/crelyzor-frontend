@@ -16,12 +16,14 @@ export default function MeetingDetail() {
   const location = useLocation();
   const completedAtRef = useRef<number | null>(null);
   const pollCountRef = useRef(0);
+  const mountTimeRef = useRef(Date.now());
   const initialTab = location.hash === '#ask-ai' ? 'ask' : undefined;
 
   // Reset polling state whenever the meeting id changes
   useEffect(() => {
     completedAtRef.current = null;
     pollCountRef.current = 0;
+    mountTimeRef.current = Date.now();
   }, [id]);
 
   // Poll while transcription is in-flight, then for 30s after COMPLETED (AI title update)
@@ -34,7 +36,9 @@ export default function MeetingDetail() {
     queryFn: () => meetingsApi.getById(id ?? ''),
     enabled: !!id,
     refetchInterval: (query) => {
-      const status = query.state.data?.transcriptionStatus;
+      const data = query.state.data;
+      const status = data?.transcriptionStatus;
+      // Poll while transcription is in-flight
       if (status === 'UPLOADED' || status === 'PROCESSING') {
         completedAtRef.current = null;
         // Exponential backoff: 3s → 6s → 12s → max 30s
@@ -44,6 +48,12 @@ export default function MeetingDetail() {
         );
         pollCountRef.current += 1;
         return interval;
+      }
+      // Poll when NONE for up to 10 minutes from mount.
+      // Covers: meeting still live (status CREATED), 90s post-meeting delay
+      // before recording fetch job runs, and any other pending state.
+      if (status === 'NONE' && Date.now() - mountTimeRef.current < 10 * 60 * 1000) {
+        return 8000;
       }
       pollCountRef.current = 0;
       if (status === 'COMPLETED') {
