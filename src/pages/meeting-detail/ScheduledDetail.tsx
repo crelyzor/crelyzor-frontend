@@ -30,6 +30,7 @@ import {
 import type { Meeting, TranscriptionStatus } from '@/types';
 import { getStatusStyle, getStatusLabel } from '@/types';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
+import { formatMeetingLocationLabel, getMeetingJoinUrl } from '@/lib/meetingHelpers';
 import {
   useAcceptMeeting,
   useDeclineMeeting,
@@ -113,6 +114,7 @@ export function ScheduledDetail({
   const complete = useCompleteMeeting();
 
   const meeting = toDisplayMeeting(rawMeeting);
+  const joinUrl = getMeetingJoinUrl(rawMeeting);
   const statusClasses = getStatusStyle(meeting.status);
   const statusText = getStatusLabel(meeting.status);
   const hasSMA = transcriptionStatus !== 'NONE';
@@ -344,7 +346,7 @@ export function ScheduledDetail({
                     Location
                   </p>
                   <p className="text-xs font-medium text-neutral-950 dark:text-neutral-50">
-                    {meeting.location}
+                    {formatMeetingLocationLabel(rawMeeting.location, rawMeeting.meetingProvider)}
                   </p>
                 </div>
               </div>
@@ -438,7 +440,7 @@ export function ScheduledDetail({
 
           {/* Quick actions */}
           <div className="flex gap-2 mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800 flex-wrap">
-            {rawMeeting.meetLink && (
+            {joinUrl && (
               <>
                 <Button
                   variant="default"
@@ -446,11 +448,7 @@ export function ScheduledDetail({
                   className="text-xs gap-1.5 h-8"
                   asChild
                 >
-                  <a
-                    href={rawMeeting.meetLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <a href={joinUrl} target="_blank" rel="noopener noreferrer">
                     <Video className="w-3.5 h-3.5" />
                     Join Meeting
                   </a>
@@ -460,7 +458,7 @@ export function ScheduledDetail({
                   size="icon"
                   className="h-8 w-8 shrink-0"
                   onClick={() => {
-                    navigator.clipboard.writeText(rawMeeting.meetLink!);
+                    navigator.clipboard.writeText(joinUrl);
                     toast.success('Link copied');
                   }}
                 >

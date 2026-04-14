@@ -6,6 +6,33 @@ import {
   getParticipantNames,
 } from '@/types';
 
+function isHttpUrl(value?: string): boolean {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+export function formatMeetingLocationLabel(
+  location?: string,
+  meetingProvider?: Meeting['meetingProvider']
+): string {
+  if (meetingProvider === 'GOOGLE') return 'Google Meet';
+  if (meetingProvider === 'ZOOM') return 'Zoom';
+  if (isHttpUrl(location)) return 'Video call';
+  return location || 'In Person';
+}
+
+export function getMeetingJoinUrl(meeting: Meeting): string | null {
+  if (meeting.meetLink && isHttpUrl(meeting.meetLink)) return meeting.meetLink;
+  if (meeting.location && isHttpUrl(meeting.location)) return meeting.location;
+  if (meeting.meetingLink && isHttpUrl(meeting.meetingLink)) return meeting.meetingLink;
+  return null;
+}
+
 /**
  * Display-friendly shape derived from backend Meeting.
  * Used by Meetings list, MeetingDetail, and Home page components

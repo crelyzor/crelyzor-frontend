@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/table';
 import type { MeetingStatus } from '@/types';
 import type { DisplayMeeting } from '@/lib/meetingHelpers';
+import { formatMeetingLocationLabel } from '@/lib/meetingHelpers';
 
 type MeetingsTableProps = {
   meetings: DisplayMeeting[];
@@ -40,14 +41,6 @@ function getMeetingIcon(platform?: string) {
   if (p?.includes('zoom'))
     return <Video className="w-3.5 h-3.5" strokeWidth={1.5} />;
   return <MapPin className="w-3.5 h-3.5" strokeWidth={1.5} />;
-}
-
-function formatPlatformLabel(platform?: string, location?: string) {
-  if (!platform || platform === 'IN_PERSON') return location || 'In Person';
-  return platform
-    .split('_')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(' ');
 }
 
 export function MeetingsTable({ meetings }: MeetingsTableProps) {
@@ -103,9 +96,9 @@ export function MeetingsTable({ meetings }: MeetingsTableProps) {
                   </span>
                   <span className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
                     {getMeetingIcon(meeting.meetingProvider)}
-                    {formatPlatformLabel(
-                      meeting.meetingProvider,
-                      meeting.location
+                    {formatMeetingLocationLabel(
+                      meeting.location,
+                      meeting.meetingProvider
                     )}
                   </span>
                 </div>
