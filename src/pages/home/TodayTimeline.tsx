@@ -33,6 +33,11 @@ type TimelineItem =
   | { kind: 'gcal'; event: CalendarEvent; sortKey: number }
   | { kind: 'task'; task: TaskWithMeeting; sortKey: number };
 
+type TimelineBadge = {
+  label: string;
+  className: string;
+};
+
 function fmt(iso: string) {
   return new Date(iso).toLocaleTimeString('en-US', {
     hour: 'numeric',
@@ -63,6 +68,62 @@ function RowSkeleton() {
       </div>
     </div>
   );
+}
+
+function getMeetingBadge(meeting: DisplayMeeting): TimelineBadge {
+  if (meeting.meetingType === 'VOICE_NOTE') {
+    return {
+      label: 'Voice Note',
+      className:
+        'bg-violet-50 dark:bg-violet-950/30 text-violet-600 dark:text-violet-300 border-violet-100 dark:border-violet-900/40',
+    };
+  }
+
+  if (meeting.meetingType === 'RECORDED') {
+    return {
+      label: 'Recording',
+      className:
+        'bg-sky-50 dark:bg-sky-950/30 text-sky-600 dark:text-sky-300 border-sky-100 dark:border-sky-900/40',
+    };
+  }
+
+  if (meeting.isFromBooking) {
+    return {
+      label: 'Booking',
+      className:
+        'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-100 dark:border-amber-900/40',
+    };
+  }
+
+  return {
+    label: 'Scheduled meeting',
+    className:
+      'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-900/40',
+  };
+}
+
+function getCalendarBadge(event: CalendarEvent): TimelineBadge {
+  if (event.meetLink) {
+    return {
+      label: 'Calendar event',
+      className:
+        'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700',
+    };
+  }
+
+  return {
+    label: 'Calendar block',
+    className:
+      'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700',
+  };
+}
+
+function getTaskBadge(task: TaskWithMeeting): TimelineBadge {
+  return {
+    label: task.meetingId ? 'Task from meeting' : 'Task',
+    className:
+      'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700',
+  };
 }
 
 export function TodayTimeline({
@@ -272,9 +333,16 @@ export function TodayTimeline({
                     </div>
                     <div className="w-px h-6 bg-neutral-150 dark:bg-neutral-700 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium text-neutral-900 dark:text-neutral-100 truncate">
-                        {item.meeting.title}
-                      </p>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <p className="text-[13px] font-medium text-neutral-900 dark:text-neutral-100 truncate">
+                          {item.meeting.title}
+                        </p>
+                        <span
+                          className={`inline-flex shrink-0 items-center rounded-full border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${getMeetingBadge(item.meeting).className}`}
+                        >
+                          {getMeetingBadge(item.meeting).label}
+                        </span>
+                      </div>
                       <span
                         className={`inline-block mt-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${getStatusStyle(item.meeting.status)}`}
                       >
@@ -296,7 +364,7 @@ export function TodayTimeline({
                     onClick={() =>
                       item.task.meetingId
                         ? navigate(`/meetings/${item.task.meetingId}`)
-                        : navigate('/tasks')
+                        : navigate(`/tasks?selected=${item.task.id}`)
                     }
                     className="group flex items-center gap-3 px-3 py-3 rounded-xl
                              border border-dashed border-neutral-200 dark:border-neutral-700
@@ -310,20 +378,29 @@ export function TodayTimeline({
                       </p>
                     </div>
                     <div className="w-px h-6 bg-neutral-150 dark:bg-neutral-700 shrink-0" />
-                    <button
-                      type="button"
-                      onClick={(e) => toggleTask(item.task, e)}
-                      className="shrink-0 text-neutral-300 dark:text-neutral-600 hover:text-neutral-500 dark:hover:text-neutral-400 transition-colors"
-                    >
-                      {item.task.isCompleted ? (
-                        <CheckSquare className="w-3.5 h-3.5" />
-                      ) : (
-                        <Square className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                    <p className="text-[13px] text-neutral-700 dark:text-neutral-300 flex-1 truncate">
-                      {item.task.title}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <button
+                          type="button"
+                          onClick={(e) => toggleTask(item.task, e)}
+                          className="shrink-0 text-neutral-300 dark:text-neutral-600 hover:text-neutral-500 dark:hover:text-neutral-400 transition-colors"
+                        >
+                          {item.task.isCompleted ? (
+                            <CheckSquare className="w-3.5 h-3.5" />
+                          ) : (
+                            <Square className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                        <p className="text-[13px] text-neutral-700 dark:text-neutral-300 flex-1 truncate">
+                          {item.task.title}
+                        </p>
+                        <span
+                          className={`inline-flex shrink-0 items-center rounded-full border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${getTaskBadge(item.task).className}`}
+                        >
+                          {getTaskBadge(item.task).label}
+                        </span>
+                      </div>
+                    </div>
                   </motion.div>
                 );
               }
@@ -341,9 +418,16 @@ export function TodayTimeline({
                   </div>
                   <div className="w-px h-6 bg-neutral-150 dark:bg-neutral-700 shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] text-neutral-600 dark:text-neutral-400 truncate">
-                      {item.event.title}
-                    </p>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <p className="text-[13px] text-neutral-600 dark:text-neutral-400 truncate">
+                        {item.event.title}
+                      </p>
+                      <span
+                        className={`inline-flex shrink-0 items-center rounded-full border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${getCalendarBadge(item.event).className}`}
+                      >
+                        {getCalendarBadge(item.event).label}
+                      </span>
+                    </div>
                     <p className="text-[9px] text-neutral-300 dark:text-neutral-600 mt-0.5">
                       Google Calendar
                     </p>

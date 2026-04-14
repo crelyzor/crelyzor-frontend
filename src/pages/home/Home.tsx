@@ -230,9 +230,7 @@ export default function Home() {
           )}
           <TodayTimeline
             meetings={
-              allMeetingsData
-                ?.filter((m) => m.type !== 'VOICE_NOTE')
-                .map(toDisplayMeeting) ?? []
+              allMeetingsData?.map(toDisplayMeeting) ?? []
             }
             tasks={todayTasks}
             isLoading={meetingsLoading}
