@@ -34,7 +34,9 @@ export function SpeakerChip({
   participantNames?: string[];
 }) {
   const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(speaker.displayName ?? speaker.speakerLabel);
+  const [value, setValue] = useState(
+    speaker.displayName ?? speaker.speakerLabel
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const { mutate: rename, isPending } = useRenameSpeaker(meetingId);
 

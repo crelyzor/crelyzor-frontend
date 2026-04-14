@@ -59,7 +59,6 @@ const RECORDED_TABS = [
 
 type RecordedTab = (typeof RECORDED_TABS)[number]['id'];
 
-
 export function RecordedDetail({
   meeting: rawMeeting,
   transcriptionStatus,
