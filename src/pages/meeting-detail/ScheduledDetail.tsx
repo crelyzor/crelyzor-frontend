@@ -52,11 +52,13 @@ import { ShareSheet } from './ShareSheet';
 import {
   useRegenerateTitle,
   useRegenerateTranscript,
+  useSpeakers,
 } from '@/hooks/queries/useSMAQueries';
 import { TagsSection } from './TagsSection';
 import { AttachmentsSection } from './AttachmentsSection';
 import { ChangeLanguageDialog } from './ChangeLanguageDialog';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { SpeakersSection } from './meetingDetailHelpers';
 
 function TabError() {
   return (
@@ -120,6 +122,11 @@ export function ScheduledDetail({
     useRegenerateTitle(rawMeeting.id);
   const { mutate: regenerateTranscript, isPending: isRegeneratingTranscript } =
     useRegenerateTranscript(rawMeeting.id);
+  const { data: speakers } = useSpeakers(rawMeeting.id, isCompleted);
+  const speakerNames: Record<string, string> = {};
+  for (const s of speakers ?? []) {
+    if (s.displayName) speakerNames[s.speakerLabel] = s.displayName;
+  }
 
   const canAccept =
     rawMeeting.status === 'PENDING_ACCEPTANCE' ||
@@ -398,6 +405,17 @@ export function ScheduledDetail({
             </div>
           </div>
 
+          {/* Speakers (shown after transcription completes) */}
+          {speakers && speakers.length > 0 && (
+            <SpeakersSection
+              speakers={speakers}
+              meetingId={rawMeeting.id}
+              participantNames={rawMeeting.participants
+                .map((p) => p.user?.name ?? p.guestEmail ?? null)
+                .filter((n): n is string => !!n)}
+            />
+          )}
+
           {/* Tags */}
           <div className="mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800">
             <div className="flex items-center gap-1.5 mb-2">
@@ -612,6 +630,7 @@ export function ScheduledDetail({
                 <TranscriptTab
                   meetingId={rawMeeting.id}
                   transcriptionStatus={transcriptionStatus}
+                  speakerNames={speakerNames}
                 />
               </ErrorBoundary>
             </TabsContent>

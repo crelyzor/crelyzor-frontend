@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -11,8 +11,6 @@ import {
   Trash2,
   Loader2,
   RefreshCcw,
-  Users,
-  Pencil,
   Languages,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,13 +26,11 @@ import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { useCompleteMeeting } from '@/hooks/queries/useMeetingQueries';
 import {
   useSpeakers,
-  useRenameSpeaker,
   useSummary,
   useTriggerAI,
   useRegenerateTitle,
   useRegenerateTranscript,
 } from '@/hooks/queries/useSMAQueries';
-import type { SMASpeaker } from '@/services/smaService';
 import {
   RecordingTab,
   TranscriptTab,
@@ -44,6 +40,7 @@ import {
   AskAITab,
   GenerateTab,
 } from './SharedTabs';
+import { SpeakersSection } from './meetingDetailHelpers';
 import { DeleteMeetingModal } from './DeleteMeetingModal';
 import { ShareSheet } from './ShareSheet';
 import { TagsSection } from './TagsSection';
@@ -62,77 +59,6 @@ const RECORDED_TABS = [
 
 type RecordedTab = (typeof RECORDED_TABS)[number]['id'];
 
-// ── Inline speaker rename ──
-function SpeakerChip({
-  speaker,
-  meetingId,
-}: {
-  speaker: SMASpeaker;
-  meetingId: string;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(
-    speaker.displayName ?? speaker.speakerLabel
-  );
-  const inputRef = useRef<HTMLInputElement>(null);
-  const { mutate: rename, isPending } = useRenameSpeaker(meetingId);
-
-  useEffect(() => {
-    if (editing) inputRef.current?.focus();
-  }, [editing]);
-
-  // Sync if parent data changes (e.g. after rename)
-  useEffect(() => {
-    if (!editing) setValue(speaker.displayName ?? speaker.speakerLabel);
-  }, [speaker.displayName, speaker.speakerLabel, editing]);
-
-  const save = () => {
-    const trimmed = value.trim();
-    if (!trimmed || trimmed === (speaker.displayName ?? speaker.speakerLabel)) {
-      setEditing(false);
-      return;
-    }
-    rename(
-      { speakerId: speaker.id, displayName: trimmed },
-      { onSettled: () => setEditing(false) }
-    );
-  };
-
-  if (editing) {
-    return (
-      <div className="flex items-center gap-1">
-        <input
-          ref={inputRef}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onBlur={save}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') save();
-            if (e.key === 'Escape') {
-              setValue(speaker.displayName ?? speaker.speakerLabel);
-              setEditing(false);
-            }
-          }}
-          className="px-2 py-0.5 rounded-md text-xs font-medium border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 outline-none focus:border-neutral-500 dark:focus:border-neutral-400 w-28"
-        />
-        {isPending && (
-          <Loader2 className="w-3 h-3 animate-spin text-neutral-400 shrink-0" />
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <button
-      onClick={() => setEditing(true)}
-      className="group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500 transition-colors"
-      title={`${speaker.speakerLabel} — click to rename`}
-    >
-      <span>{speaker.displayName ?? speaker.speakerLabel}</span>
-      <Pencil className="w-2.5 h-2.5 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-    </button>
-  );
-}
 
 export function RecordedDetail({
   meeting: rawMeeting,
@@ -333,26 +259,13 @@ export function RecordedDetail({
 
           {/* Speakers section */}
           {speakers && speakers.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
-              <div className="flex items-center gap-1.5 mb-2.5">
-                <Users className="w-3.5 h-3.5 text-neutral-400" />
-                <span className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                  Speakers ({speakers.length})
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {speakers.map((s) => (
-                  <SpeakerChip
-                    key={s.id}
-                    speaker={s}
-                    meetingId={rawMeeting.id}
-                  />
-                ))}
-              </div>
-              <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-2">
-                Click a speaker to rename them
-              </p>
-            </div>
+            <SpeakersSection
+              speakers={speakers}
+              meetingId={rawMeeting.id}
+              participantNames={rawMeeting.participants
+                .map((p) => p.user?.name ?? p.guestEmail ?? null)
+                .filter((n): n is string => !!n)}
+            />
           )}
 
           {/* AI missing banner */}
