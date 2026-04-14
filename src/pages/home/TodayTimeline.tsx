@@ -4,7 +4,10 @@ import {
   ArrowUpRight,
   CheckSquare,
   Square,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import type { DisplayMeeting } from '@/lib/meetingHelpers';
@@ -71,6 +74,7 @@ export function TodayTimeline({
 }: Props) {
   const navigate = useNavigate();
   const updateTask = useUpdateTask('');
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
   const startISO = (() => {
@@ -148,16 +152,32 @@ export function TodayTimeline({
             </span>
           )}
         </div>
-        <button
-          onClick={() => navigate('/meetings')}
-          className="flex items-center gap-0.5 text-[10px] font-medium text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors group"
-        >
-          See all
-          <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setIsCollapsed((prev) => !prev)}
+            className="flex items-center gap-1 text-[10px] font-medium text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
+            aria-expanded={!isCollapsed}
+            aria-label={isCollapsed ? 'Expand today section' : 'Collapse today section'}
+          >
+            {isCollapsed ? 'Expand' : 'Collapse'}
+            {isCollapsed ? (
+              <ChevronDown className="w-3 h-3" />
+            ) : (
+              <ChevronUp className="w-3 h-3" />
+            )}
+          </button>
+          <button
+            onClick={() => navigate('/meetings')}
+            className="flex items-center gap-0.5 text-[10px] font-medium text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors group"
+          >
+            See all
+            <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </button>
+        </div>
       </div>
 
-      <div className="p-3 space-y-1.5">
+      {!isCollapsed && (
+        <div className="p-3 space-y-1.5">
         {/* Loading */}
         {isLoadingAny && [1, 2, 3].map((i) => <RowSkeleton key={i} />)}
 
@@ -358,7 +378,8 @@ export function TodayTimeline({
               </motion.div>
             );
           })}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
