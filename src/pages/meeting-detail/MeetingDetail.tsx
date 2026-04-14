@@ -52,7 +52,10 @@ export default function MeetingDetail() {
       // Poll when NONE for up to 10 minutes from mount.
       // Covers: meeting still live (status CREATED), 90s post-meeting delay
       // before recording fetch job runs, and any other pending state.
-      if (status === 'NONE' && Date.now() - mountTimeRef.current < 10 * 60 * 1000) {
+      if (
+        status === 'NONE' &&
+        Date.now() - mountTimeRef.current < 10 * 60 * 1000
+      ) {
         return 8000;
       }
       pollCountRef.current = 0;
