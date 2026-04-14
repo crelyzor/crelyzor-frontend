@@ -41,7 +41,7 @@ export function PendingTasksWidget({ tasks, isLoading }: Props) {
     );
   };
 
-  const visible = tasks.slice(0, 6);
+  const visible = tasks.slice(0, 4);
 
   return (
     <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden">
@@ -147,13 +147,13 @@ export function PendingTasksWidget({ tasks, isLoading }: Props) {
           ))}
       </div>
 
-      {!isLoading && tasks.length > 6 && (
+      {!isLoading && tasks.length > 4 && (
         <div className="border-t border-neutral-100 dark:border-neutral-800 px-4 py-3">
           <button
             onClick={() => navigate('/tasks')}
             className="w-full text-[11px] font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors text-center"
           >
-            +{tasks.length - 6} more tasks →
+            +{tasks.length - 4} more tasks →
           </button>
         </div>
       )}

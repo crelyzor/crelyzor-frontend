@@ -39,7 +39,7 @@ export default function Home() {
 
   const { data: cards, isLoading: cardsLoading } = useCards();
   const activeCardCount = useMemo(
-    () => (cards ?? []).filter((card) => !card.isDeleted).length,
+    () => (cards ?? []).filter((card) => card.isActive).length,
     [cards]
   );
 
@@ -62,7 +62,7 @@ export default function Home() {
     () =>
       (allMeetingsData ?? [])
         .filter((m) => m.type !== 'VOICE_NOTE')
-        .slice(0, 8)
+        .slice(0, 4)
         .map(toDisplayMeeting),
     [allMeetingsData]
   );

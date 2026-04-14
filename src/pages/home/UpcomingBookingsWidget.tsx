@@ -45,7 +45,7 @@ export function UpcomingBookingsWidget() {
       (a, b) =>
         new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
     )
-    .slice(0, 4);
+    .slice(0, 2);
 
   const pendingCount = pendingData?.bookings?.length ?? 0;
 
