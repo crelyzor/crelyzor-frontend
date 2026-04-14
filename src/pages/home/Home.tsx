@@ -166,7 +166,7 @@ export default function Home() {
   const tipOpacity = useTransform(scrollY, [0, 50], [1, 0]);
 
   return (
-    <div className="space-y-3 pb-10">
+    <div className="space-y-2.5 pb-8">
       {/* Compact sticky header (appears on scroll) */}
       <CompactStickyBar
         barOpacity={barOpacity}
@@ -196,10 +196,10 @@ export default function Home() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-        className="grid grid-cols-1 lg:grid-cols-3 gap-3"
+        className="grid grid-cols-1 lg:grid-cols-3 gap-2.5"
       >
         {/* Left column — timeline focus (2/3) */}
-        <div className="lg:col-span-2 space-y-3">
+        <div className="lg:col-span-2 space-y-2.5">
           <OverdueTasksSection tasks={overdueTasks} />
           <NewAITasksBanner tasks={newAITasks} />
           {askAiCandidateMeeting && (
@@ -248,7 +248,7 @@ export default function Home() {
         </div>
 
         {/* Right column — work + identity (1/3) */}
-        <div className="lg:col-span-1 space-y-3">
+        <div className="lg:col-span-1 space-y-2.5">
           <ThisWeekWidget
             meetings={(allMeetingsData ?? []).filter(
               (m) => m.type !== 'VOICE_NOTE'
