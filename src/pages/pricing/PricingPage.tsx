@@ -9,6 +9,7 @@ import {
   ArrowRight,
   Infinity as InfinityIcon,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { PageMotion } from '@/components/PageMotion';
 import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
 import { useUIStore } from '@/stores/uiStore';
@@ -121,7 +122,7 @@ function MiniMeter({
                 ? 'bg-red-500'
                 : isWarning
                   ? 'bg-amber-500'
-                  : 'bg-violet-500'
+                  : 'bg-neutral-400 dark:bg-neutral-500'
             }`}
             style={{ width: `${pct}%` }}
           />
@@ -172,9 +173,9 @@ export default function PricingPage() {
                 <span
                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                     plan === 'PRO'
-                      ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400'
+                      ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
                       : plan === 'BUSINESS'
-                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                        ? 'bg-neutral-700 text-white dark:bg-neutral-200 dark:text-neutral-900'
                         : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
                   }`}
                 >
@@ -182,13 +183,10 @@ export default function PricingPage() {
                 </span>
               </div>
               {!isProOrBusiness && (
-                <button
-                  onClick={() => openUpgradeModal()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 transition-colors shadow-sm"
-                >
+                <Button size="sm" onClick={() => openUpgradeModal()}>
                   <Zap className="w-3.5 h-3.5" />
                   Upgrade to Pro
-                </button>
+                </Button>
               )}
             </div>
 
@@ -273,70 +271,73 @@ export default function PricingPage() {
                 </li>
               ))}
             </ul>
-            <button
+            <Button
+              variant="outline"
+              className="w-full h-9 rounded-xl text-xs font-medium text-neutral-400 cursor-default"
               disabled
-              className="w-full h-9 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs font-medium text-neutral-400 cursor-default"
             >
               Your current plan
-            </button>
+            </Button>
           </div>
 
           {/* Pro */}
           <div
-            className={`rounded-2xl border p-6 flex flex-col gap-5 relative overflow-hidden ${
+            className={`rounded-2xl border flex flex-col gap-0 relative overflow-hidden ${
               plan === 'PRO'
-                ? 'border-violet-400 dark:border-violet-600 ring-1 ring-violet-400 dark:ring-violet-600'
-                : 'border-violet-200 dark:border-violet-900/50'
-            } bg-gradient-to-b from-violet-50/60 to-white dark:from-violet-950/20 dark:to-neutral-900`}
+                ? 'border-neutral-900 dark:border-neutral-100 ring-1 ring-neutral-900 dark:ring-neutral-100'
+                : 'border-neutral-300 dark:border-neutral-600'
+            } bg-white dark:bg-neutral-900`}
           >
-            {plan !== 'PRO' && (
-              <span className="absolute top-4 right-4 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-600 text-white">
-                Recommended
-              </span>
-            )}
-            {plan === 'PRO' && (
-              <span className="absolute top-4 right-4 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400">
-                Current
-              </span>
-            )}
-            <div>
-              <p className="text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-1">
-                Pro
-              </p>
-              <p className="text-2xl font-bold text-neutral-950 dark:text-neutral-50">
-                ₹1,499
-              </p>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                per month
-              </p>
+            {/* Dark header block */}
+            <div className="bg-neutral-950 px-6 pt-5 pb-4 text-white">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">
+                  Pro
+                </p>
+                {plan !== 'PRO' && (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/15 text-white">
+                    Recommended
+                  </span>
+                )}
+                {plan === 'PRO' && (
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/10 text-neutral-300">
+                    Current
+                  </span>
+                )}
+              </div>
+              <p className="text-2xl font-bold tracking-tight">₹1,499</p>
+              <p className="text-xs text-white/50 mt-0.5">per month</p>
             </div>
-            <ul className="space-y-2 flex-1">
-              {PRO_BULLETS.map((b) => (
-                <li
-                  key={b}
-                  className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300"
+
+            <div className="p-6 flex flex-col gap-5 flex-1">
+              <ul className="space-y-2 flex-1">
+                {PRO_BULLETS.map((b) => (
+                  <li
+                    key={b}
+                    className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300"
+                  >
+                    <Check className="w-4 h-4 shrink-0 text-neutral-400 mt-0.5" />
+                    {b}
+                  </li>
+                ))}
+              </ul>
+              {plan === 'PRO' ? (
+                <button
+                  disabled
+                  className="w-full h-9 rounded-xl border border-neutral-200 dark:border-neutral-700 text-xs font-medium text-neutral-400 cursor-default"
                 >
-                  <Check className="w-4 h-4 shrink-0 text-violet-500 mt-0.5" />
-                  {b}
-                </li>
-              ))}
-            </ul>
-            {plan === 'PRO' ? (
-              <button
-                disabled
-                className="w-full h-9 rounded-xl border border-violet-200 dark:border-violet-800 text-xs font-medium text-violet-500 cursor-default"
-              >
-                Active plan
-              </button>
-            ) : (
-              <button
-                onClick={() => openUpgradeModal()}
-                className="w-full h-9 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
-              >
-                <Zap className="w-3.5 h-3.5" />
-                Upgrade to Pro
-              </button>
-            )}
+                  Active plan
+                </button>
+              ) : (
+                <Button
+                  className="w-full h-9 rounded-xl"
+                  onClick={() => openUpgradeModal()}
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  Upgrade to Pro
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -367,7 +368,7 @@ export default function PricingPage() {
                     className={`text-xs font-medium w-24 text-right ${
                       f.pro === '—'
                         ? 'text-neutral-300'
-                        : 'text-violet-700 dark:text-violet-400'
+                        : 'text-neutral-900 dark:text-neutral-100'
                     }`}
                   >
                     {f.pro}
@@ -408,13 +409,15 @@ export default function PricingPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 shrink-0">
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
+                className="bg-white text-neutral-900 hover:bg-neutral-100 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
                 onClick={handleCopyEmail}
-                className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-white text-neutral-900 text-xs font-medium hover:bg-neutral-100 transition-colors"
               >
                 <Mail className="w-3.5 h-3.5" />
                 {SUPPORT_EMAIL}
-              </button>
+              </Button>
               <a
                 href={`${PUBLIC_URL}/pricing`}
                 target="_blank"

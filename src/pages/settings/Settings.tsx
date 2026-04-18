@@ -183,7 +183,7 @@ const SETTINGS_SECTIONS = [
     group: 'features',
   },
   { id: 'tags', label: 'Tags', icon: Tag, group: 'features' },
-  { id: 'billing', label: 'Billing', icon: CreditCard, group: 'other' },
+  { id: 'billing', label: 'Usage', icon: CreditCard, group: 'other' },
   { id: 'security', label: 'Security', icon: Shield, group: 'other' },
 ] as const;
 
@@ -2916,9 +2916,8 @@ const PLAN_LABELS: Record<string, string> = {
 
 const PLAN_COLORS: Record<string, string> = {
   FREE: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
-  PRO: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
-  BUSINESS:
-    'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  PRO: 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900',
+  BUSINESS: 'bg-neutral-700 text-white dark:bg-neutral-200 dark:text-neutral-900',
 };
 
 function UsageMeter({
@@ -2972,7 +2971,7 @@ function UsageMeter({
                 ? 'bg-red-500'
                 : isWarning
                   ? 'bg-amber-500'
-                  : 'bg-violet-500'
+                  : 'bg-neutral-400 dark:bg-neutral-500'
             }`}
             style={{ width: `${pct}%` }}
           />
@@ -3014,7 +3013,7 @@ function BillingSection() {
   return (
     <div className="space-y-6">
       <SectionHeader
-        title="Billing"
+        title="Usage"
         description="Your plan, usage, and limits"
       />
 
@@ -3042,13 +3041,10 @@ function BillingSection() {
               </div>
             </div>
             {plan === 'FREE' && (
-              <button
-                onClick={() => openUpgradeModal()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 transition-colors shadow-sm"
-              >
+              <Button size="sm" onClick={() => openUpgradeModal()}>
                 <Zap className="w-3.5 h-3.5" />
                 Upgrade to Pro
-              </button>
+              </Button>
             )}
           </div>
         </CardContent>
@@ -3103,29 +3099,41 @@ function BillingSection() {
 
       {/* Upgrade CTA for Free users */}
       {plan === 'FREE' && (
-        <Card className="border-violet-200 dark:border-violet-900/50 bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-950/20 dark:to-indigo-950/20">
+        <Card className="border-neutral-800 bg-neutral-950">
           <CardContent className="p-6">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0 mt-0.5">
                 <Zap className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                <p className="text-sm font-semibold text-white">
                   Upgrade to Pro
                 </p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                  5× transcription · 20× AI credits · Auto-record · 10× storage
-                </p>
-                <button
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-1.5">
+                  {[
+                    '5× transcription',
+                    '20× AI credits',
+                    'Auto-record',
+                    '10× storage',
+                  ].map((item) => (
+                    <span key={item} className="text-xs text-neutral-400 flex items-center gap-1">
+                      <span className="w-1 h-1 rounded-full bg-neutral-600 shrink-0" />
+                      {item}
+                    </span>
+                  ))}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  className="mt-3 px-0 text-neutral-300 hover:text-white hover:bg-transparent gap-1.5"
                   onClick={() => {
                     navigator.clipboard.writeText('support@crelyzor.com');
                     toast.success('Email copied — support@crelyzor.com');
                   }}
-                  className="mt-3 flex items-center gap-1.5 text-xs font-medium text-violet-600 dark:text-violet-400 hover:underline"
                 >
                   <Mail className="w-3.5 h-3.5" />
                   Email us to upgrade — support@crelyzor.com
-                </button>
+                </Button>
               </div>
             </div>
           </CardContent>

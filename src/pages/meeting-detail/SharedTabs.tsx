@@ -1219,6 +1219,7 @@ export function AskAITab({
   const abortRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { data: billing } = useBillingUsage();
+  const queryClient = useQueryClient();
 
   const isAvailable = transcriptionStatus === 'COMPLETED';
 
@@ -1266,6 +1267,7 @@ export function AskAITab({
       () => {
         setIsStreaming(false);
         abortRef.current = null;
+        queryClient.invalidateQueries({ queryKey: queryKeys.billing.usage() });
       },
       (err) => {
         toast.error(err ?? 'AI response failed');
@@ -1418,30 +1420,35 @@ const CONTENT_TYPE_META: {
   label: string;
   icon: React.ElementType;
   desc: string;
+  credits: number;
 }[] = [
   {
     type: 'MEETING_REPORT',
     label: 'Meeting Report',
     icon: FileText,
     desc: 'Formal meeting minutes',
+    credits: 13,
   },
   {
     type: 'TWEET',
     label: 'Tweet',
     icon: MessageSquare,
     desc: 'Share on social',
+    credits: 7,
   },
   {
     type: 'BLOG_POST',
     label: 'Blog Post',
     icon: BookOpen,
     desc: 'Detailed write-up',
+    credits: 15,
   },
   {
     type: 'EMAIL',
     label: 'Follow-up Email',
     icon: Mail,
     desc: 'Send to participants',
+    credits: 10,
   },
 ];
 
@@ -1456,6 +1463,9 @@ export function GenerateTab({
     useState<AIContentType>('MEETING_REPORT');
   const [copied, setCopied] = useState(false);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { data: billing } = useBillingUsage();
+  const { openUpgradeModal } = useUIStore();
+  const isFree = billing?.plan === 'FREE';
 
   useEffect(() => {
     return () => {
@@ -1504,7 +1514,7 @@ export function GenerateTab({
 
       {/* Type selector grid */}
       <div className="grid grid-cols-3 gap-2">
-        {CONTENT_TYPE_META.map(({ type, label, icon: Icon, desc }) => {
+        {CONTENT_TYPE_META.map(({ type, label, icon: Icon, desc, credits }) => {
           const hasContent = contentMap.has(type);
           const isSelected = selectedType === type;
           return (
@@ -1521,8 +1531,12 @@ export function GenerateTab({
                 <Icon
                   className={`w-3.5 h-3.5 ${isSelected ? 'text-neutral-900 dark:text-neutral-100' : 'text-neutral-400'}`}
                 />
-                {hasContent && (
+                {hasContent ? (
                   <div className="w-1.5 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" />
+                ) : (
+                  <span className="text-[9px] text-neutral-400 dark:text-neutral-500">
+                    ~{credits}cr
+                  </span>
                 )}
               </div>
               <span
@@ -1556,7 +1570,7 @@ export function GenerateTab({
                   onClick={handleCopy}
                 >
                   {copied ? (
-                    <Check className="w-3 h-3 text-green-500" />
+                    <Check className="w-3 h-3 text-neutral-500 dark:text-neutral-400" />
                   ) : (
                     <Copy className="w-3 h-3" />
                   )}
@@ -1567,7 +1581,11 @@ export function GenerateTab({
                   size="sm"
                   className="h-6 px-2 text-xs text-neutral-500 gap-1"
                   disabled={isGenerating}
-                  onClick={() => generate(selectedType)}
+                  onClick={() =>
+                    isFree
+                      ? openUpgradeModal('FEATURE_GATE')
+                      : generate(selectedType)
+                  }
                 >
                   {isGenerating ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
@@ -1609,7 +1627,11 @@ export function GenerateTab({
                   variant="outline"
                   size="sm"
                   className="text-xs gap-1.5 h-7"
-                  onClick={() => generate(selectedType)}
+                  onClick={() =>
+                    isFree
+                      ? openUpgradeModal('FEATURE_GATE')
+                      : generate(selectedType)
+                  }
                 >
                   <Wand2 className="w-3 h-3" />
                   Generate

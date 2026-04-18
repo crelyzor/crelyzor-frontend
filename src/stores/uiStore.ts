@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 
-/** Known billing error codes emitted by the backend on 402. */
+/** Known billing error codes emitted by the backend on 402, plus frontend-only gates. */
 export type BillingLimitCode =
   | 'TRANSCRIPTION_LIMIT_REACHED'
   | 'RECALL_LIMIT_REACHED'
   | 'AI_CREDITS_EXHAUSTED'
-  | 'STORAGE_LIMIT_REACHED';
+  | 'STORAGE_LIMIT_REACHED'
+  | 'FEATURE_GATE';
 
 type UIStore = {
   // Command Palette

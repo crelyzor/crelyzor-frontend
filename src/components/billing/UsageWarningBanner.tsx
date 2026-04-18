@@ -1,6 +1,8 @@
 import { X, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Button } from '@/components/ui/button';
 import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
 import { useUIStore } from '@/stores/uiStore';
 
@@ -19,7 +21,6 @@ export function UsageWarningBanner() {
 
   const { usage, limits } = data;
 
-  // Find the most critical resource (highest % used)
   const resources = [
     {
       label: 'transcription',
@@ -51,50 +52,70 @@ export function UsageWarningBanner() {
   const isExhausted = critical.pct >= 100;
 
   return (
-    <div
-      className={`relative flex items-center gap-3 px-4 py-2.5 text-sm ${
-        isExhausted
-          ? 'bg-red-50 dark:bg-red-950/30 border-b border-red-100 dark:border-red-900/50'
-          : 'bg-amber-50 dark:bg-amber-950/20 border-b border-amber-100 dark:border-amber-900/40'
-      }`}
-    >
-      <AlertTriangle
-        className={`w-4 h-4 shrink-0 ${
-          isExhausted ? 'text-red-500' : 'text-amber-500'
-        }`}
-      />
-      <p
-        className={`flex-1 text-xs font-medium ${
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+        className={`relative flex items-center gap-3 px-4 py-2.5 text-sm border-b ${
           isExhausted
-            ? 'text-red-700 dark:text-red-400'
-            : 'text-amber-700 dark:text-amber-400'
+            ? 'bg-neutral-950 border-neutral-800'
+            : 'bg-neutral-50 dark:bg-neutral-800/80 border-neutral-200 dark:border-neutral-700'
         }`}
       >
-        {isExhausted
-          ? `Your ${critical.label} quota is exhausted.`
-          : `You've used ${Math.floor(critical.pct)}% of your ${critical.label} quota.`}{' '}
-        <button
-          onClick={() => openUpgradeModal(critical.code)}
-          className="underline underline-offset-2 font-semibold hover:opacity-80 transition-opacity"
+        <AlertTriangle
+          className={`w-4 h-4 shrink-0 ${
+            isExhausted ? 'text-white/70' : 'text-neutral-500 dark:text-neutral-400'
+          }`}
+        />
+        <p
+          className={`flex-1 text-xs font-medium ${
+            isExhausted
+              ? 'text-white'
+              : 'text-neutral-900 dark:text-neutral-100'
+          }`}
         >
-          Upgrade to Pro
-        </button>{' '}
-        or{' '}
-        <button
-          onClick={() => navigate('/pricing')}
-          className="underline underline-offset-2 hover:opacity-80 transition-opacity"
+          {isExhausted
+            ? `Your ${critical.label} quota is exhausted.`
+            : `You've used ${Math.floor(critical.pct)}% of your ${critical.label} quota.`}{' '}
+          <Button
+            variant="link"
+            size="xs"
+            className={`inline h-auto p-0 font-semibold underline underline-offset-2 ${
+              isExhausted ? 'text-white hover:text-white/80' : ''
+            }`}
+            onClick={() => openUpgradeModal(critical.code)}
+          >
+            Upgrade to Pro
+          </Button>{' '}
+          or{' '}
+          <Button
+            variant="link"
+            size="xs"
+            className={`inline h-auto p-0 underline underline-offset-2 ${
+              isExhausted ? 'text-white/80 hover:text-white' : ''
+            }`}
+            onClick={() => navigate('/pricing')}
+          >
+            see plans
+          </Button>
+          .
+        </p>
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={() => setDismissed(true)}
+          aria-label="Dismiss"
+          className={
+            isExhausted
+              ? 'text-white/60 hover:text-white hover:bg-white/10'
+              : ''
+          }
         >
-          see plans
-        </button>
-        .
-      </p>
-      <button
-        onClick={() => setDismissed(true)}
-        className="shrink-0 p-1 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-        aria-label="Dismiss"
-      >
-        <X className="w-3.5 h-3.5 text-neutral-400" />
-      </button>
-    </div>
+          <X className="w-3.5 h-3.5" />
+        </Button>
+      </motion.div>
+    </AnimatePresence>
   );
 }

@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-04-19 (Phase 4 billing P0–P2 partial, in-context indicators + pricing page next)
+Last updated: 2026-04-19 (Phase 4.1 complete ✅ — Phase 4.2 Ask AI Persistence in progress)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -626,7 +626,7 @@ _(Already in Phase 3.2 P4 — carry forward)_
 
 ---
 
-## Phase 4 — Billing & Monetization
+## Phase 4.1 — Billing & Monetization ✅ Complete
 
 Full design: `docs/pricing-and-costs.md`
 
@@ -665,8 +665,8 @@ Full design: `docs/pricing-and-costs.md`
 - [x] **Ask AI panel** — `"X credits remaining"` badge, amber when < 10
 - [x] **Recording upload / FAB** — `"X min remaining this month"`
 - [x] **Settings > Integrations (Recall toggle)** — `"X hrs remaining this month"`
-- [ ] **Content generation buttons** — tooltip with estimated credit cost (`"~10 credits"`) ← not done
-- [ ] **Free users trying content gen** — `UpgradeModal` with `reason="feature_gate"` ← not done
+- [x] **Content generation buttons** — `~Ncr` badge on each type card in type selector grid
+- [x] **Free users trying content gen** — `UpgradeModal` with `reason="FEATURE_GATE"` on both Generate + Redo buttons
 
 ---
 
@@ -684,8 +684,33 @@ Full design: `docs/pricing-and-costs.md`
 
 ---
 
+## Phase 4.2 — Ask AI Persistence
+
+> **What:** Ask AI conversations persist per meeting across page refreshes via localStorage.
+> **Why:** Currently all messages are held in React state — reload = blank chat. Users lose context mid-investigation.
+> **How:** localStorage keyed by `askai_${meetingId}`. Max 50 messages per meeting. No backend changes.
+
+---
+
+### P0 — Core Persistence ← start here
+
+**File:** `src/pages/meeting-detail/SharedTabs.tsx` → `AskAITab`
+
+- [ ] On mount: read `localStorage.getItem("askai_${meetingId}")`, parse JSON, set as initial `messages` state. Wrap in try/catch — if parse fails, start fresh.
+- [ ] In `onDone` callback (after streaming completes): serialize messages to JSON, write to `localStorage.setItem("askai_${meetingId}", ...)`. Cap to last 50 messages before writing.
+- [ ] Add "Clear" `<Button variant="ghost" size="icon-xs">` with `<Trash2>` icon in the `AskAITab` header row — only rendered when `messages.length > 0`. Clicking clears state (`setMessages([])`) and deletes the localStorage key.
+
+---
+
+### P1 — UX Polish
+
+- [ ] Suggestion chips: only show when `messages.length === 0` — they are discovery UI for an empty state, not relevant when a conversation is already in progress.
+- [ ] localStorage quota exceeded: wrap the `setItem` call in try/catch, silently ignore `QuotaExceededError` — conversation still works in memory, just won't persist.
+
+---
+
 ## Phase 5 — Big Brain ⛔ BLOCKED
 
-Requires vector infra + Phase 4 complete first.
+Requires vector infra + Phase 4.1 + 4.2 complete first.
 
 - [ ] Global Ask AI / Big Brain chat interface (RAG — requires vector infra first)

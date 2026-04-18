@@ -39,6 +39,12 @@ const LIMIT_COPY: Record<
     description:
       "You've hit your 2 GB storage cap. Upgrade to Pro for 10× more storage.",
   },
+  FEATURE_GATE: {
+    icon: Zap,
+    title: 'Pro feature',
+    description:
+      'Content generation is a Pro feature. Upgrade to generate meeting reports, tweets, blog posts, and follow-up emails from your transcripts.',
+  },
 };
 
 const DEFAULT_COPY = {
@@ -77,16 +83,18 @@ export function UpgradeModal() {
   return (
     <Dialog open={upgradeModalOpen} onOpenChange={closeUpgradeModal}>
       <DialogContent className="max-w-md p-0 overflow-hidden rounded-2xl border-neutral-200 dark:border-neutral-800">
-        {/* Header gradient */}
-        <div className="bg-gradient-to-br from-violet-600 to-indigo-700 px-6 pt-6 pb-8 text-white relative">
-          <button
+        {/* Header — dark neutral */}
+        <div className="bg-neutral-950 px-6 pt-6 pb-8 text-white relative">
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={closeUpgradeModal}
-            className="absolute top-4 right-4 p-1 rounded-md text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+            className="absolute top-4 right-4 text-white/60 hover:text-white hover:bg-white/10"
           >
             <X className="w-4 h-4" />
-          </button>
+          </Button>
 
-          <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-3">
+          <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center mb-3">
             <Icon className="w-5 h-5 text-white" />
           </div>
           <DialogHeader>
@@ -94,7 +102,7 @@ export function UpgradeModal() {
               {copy.title}
             </DialogTitle>
           </DialogHeader>
-          <p className="text-white/80 text-sm mt-2 leading-relaxed">
+          <p className="text-white/70 text-sm mt-2 leading-relaxed">
             {copy.description}
           </p>
         </div>
@@ -129,14 +137,14 @@ export function UpgradeModal() {
         {/* CTA */}
         <div className="px-6 pb-6 space-y-2.5">
           <Button
-            className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-medium h-10 rounded-xl shadow-sm"
+            className="w-full h-10 rounded-xl"
             onClick={handleContactSupport}
           >
             <Mail className="w-4 h-4 mr-2" />
             Upgrade to Pro — contact us
           </Button>
           <p className="text-center text-xs text-neutral-400">
-            Email copied to clipboard. We'll upgrade you within 24 hours.
+            Email copied to clipboard. We&apos;ll upgrade you within 24 hours.
           </p>
         </div>
       </DialogContent>
