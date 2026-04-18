@@ -686,26 +686,39 @@ Full design: `docs/pricing-and-costs.md`
 
 ## Phase 4.2 — Ask AI Persistence
 
-> **What:** Ask AI conversations persist per meeting across page refreshes via localStorage.
-> **Why:** Currently all messages are held in React state — reload = blank chat. Users lose context mid-investigation.
-> **How:** localStorage keyed by `askai_${meetingId}`. Max 50 messages per meeting. No backend changes.
+> **What:** Ask AI conversations fetched from + saved to PostgreSQL. Persists across page refreshes, devices, and sessions.
+> **Why:** localStorage doesn't survive device switches and doesn't position us for Phase 5 Big Brain (RAG needs server-side history).
+> **How:** New `AskAIConversation` + `AskAIMessage` models on backend. Frontend fetches history on tab open via React Query, clears via mutation.
 
 ---
 
-### P0 — Core Persistence ← start here
+### P0 — Query Keys + Service Types
+
+- [ ] `src/lib/queryKeys.ts` — add `queryKeys.sma.askHistory(meetingId)`
+- [ ] `src/services/smaService.ts` — add:
+  - `getAskAIHistory(meetingId)` → `GET /sma/meetings/:meetingId/ask/history` — returns `{ messages: AIChatMessage[] }`
+  - `clearAskAIHistory(meetingId)` → `DELETE /sma/meetings/:meetingId/ask/history`
+
+---
+
+### P1 — React Query Hooks
+
+**File:** `src/hooks/queries/useSMAQueries.ts`
+
+- [ ] `useAskAIHistory(meetingId)` — `useQuery` with `queryKeys.sma.askHistory(meetingId)`, only runs when `transcriptionStatus === 'COMPLETED'`
+- [ ] `useClearAskAIHistory(meetingId)` — `useMutation` that calls `clearAskAIHistory`, on success: `setQueryData(queryKeys.sma.askHistory(meetingId), { messages: [] })`
+
+---
+
+### P2 — AskAITab Wiring
 
 **File:** `src/pages/meeting-detail/SharedTabs.tsx` → `AskAITab`
 
-- [ ] On mount: read `localStorage.getItem("askai_${meetingId}")`, parse JSON, set as initial `messages` state. Wrap in try/catch — if parse fails, start fresh.
-- [ ] In `onDone` callback (after streaming completes): serialize messages to JSON, write to `localStorage.setItem("askai_${meetingId}", ...)`. Cap to last 50 messages before writing.
-- [ ] Add "Clear" `<Button variant="ghost" size="icon-xs">` with `<Trash2>` icon in the `AskAITab` header row — only rendered when `messages.length > 0`. Clicking clears state (`setMessages([])`) and deletes the localStorage key.
-
----
-
-### P1 — UX Polish
-
-- [ ] Suggestion chips: only show when `messages.length === 0` — they are discovery UI for an empty state, not relevant when a conversation is already in progress.
-- [ ] localStorage quota exceeded: wrap the `setItem` call in try/catch, silently ignore `QuotaExceededError` — conversation still works in memory, just won't persist.
+- [ ] Replace `useState<AIChatMessage[]>([])` initialization — seed from `useAskAIHistory` data on first load
+- [ ] Show skeleton (3 lines) while history query is loading
+- [ ] After streaming completes (`onDone`): invalidate `queryKeys.sma.askHistory(meetingId)` so the saved message is reflected — no manual state surgery needed
+- [ ] "Clear" `<Button variant="ghost" size="icon-xs">` + `<Trash2>` in header, only when messages exist — calls `useClearAskAIHistory`
+- [ ] Suggestion chips — only shown when `messages.length === 0` (empty conversation)
 
 ---
 
