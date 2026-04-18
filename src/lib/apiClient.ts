@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/stores';
+import { useAuthStore, useUIStore } from '@/stores';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
@@ -148,7 +148,28 @@ async function request<T>(
 
   if (!res.ok) {
     const data = await res.json().catch(() => null);
-    throw new ApiError(res.status, res.statusText, data);
+    const err = new ApiError(res.status, res.statusText, data);
+
+    // 402 billing limit — trigger the upgrade modal instead of letting the
+    // error propagate to the component. The component's catch handler will
+    // still receive the ApiError, but the modal will have already opened.
+    if (res.status === 402) {
+      const code = (data as Record<string, unknown>)?.code;
+      const BILLING_CODES = new Set([
+        'TRANSCRIPTION_LIMIT_REACHED',
+        'RECALL_LIMIT_REACHED',
+        'AI_CREDITS_EXHAUSTED',
+        'STORAGE_LIMIT_REACHED',
+      ]);
+      if (typeof code === 'string' && BILLING_CODES.has(code)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        useUIStore.getState().openUpgradeModal(code as any);
+      } else {
+        useUIStore.getState().openUpgradeModal();
+      }
+    }
+
+    throw err;
   }
 
   // Handle 204 No Content

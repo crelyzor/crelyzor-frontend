@@ -6,6 +6,7 @@ import { Toaster } from 'sonner';
 import { queryClient } from '@/lib/queryClient';
 import { ThemeProvider } from '@/components/theme';
 import { CommandPalette } from '@/components/command-palette';
+import { UpgradeModal } from '@/components/billing/UpgradeModal';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PageLoader } from '@/components/PageLoader';
 import Layout from '@/layout/Layout';
@@ -40,6 +41,7 @@ function App() {
         <ThemeProvider>
           <BrowserRouter>
             <CommandPalette />
+            <UpgradeModal />
 
             <Suspense fallback={<PageLoader />}>
               <Routes>

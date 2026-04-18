@@ -128,6 +128,12 @@ export const queryKeys = {
     user: () => [...queryKeys.settings.all, 'user'] as const,
   },
 
+  // Billing
+  billing: {
+    all: ['billing'] as const,
+    usage: () => [...queryKeys.billing.all, 'usage'] as const,
+  },
+
   // Scheduling
   scheduling: {
     all: ['scheduling'] as const,
