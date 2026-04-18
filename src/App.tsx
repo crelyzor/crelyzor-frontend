@@ -32,6 +32,7 @@ const {
   Search,
   Tags,
   TagDetail,
+  Pricing,
 } = routes;
 
 function App() {
@@ -214,6 +215,16 @@ function App() {
                     <AuthGuard>
                       <Layout>
                         <TagDetail />
+                      </Layout>
+                    </AuthGuard>
+                  }
+                />
+                <Route
+                  path="/pricing"
+                  element={
+                    <AuthGuard>
+                      <Layout>
+                        <Pricing />
                       </Layout>
                     </AuthGuard>
                   }

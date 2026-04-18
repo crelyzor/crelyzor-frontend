@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { meetingsApi } from '@/services/meetingsService';
 import type { MeetingKind } from '@/types';
 import { CreateTaskModal } from '@/pages/tasks/components/CreateTaskModal';
+import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
 
 type FabState =
   | 'idle'
@@ -115,6 +116,7 @@ export function StartMeetingFab() {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { data: billing } = useBillingUsage();
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -446,6 +448,25 @@ export function StartMeetingFab() {
                       {formatDuration(recording.durationSeconds)} &middot;{' '}
                       {formatFileSize(recording.blob.size)}
                     </p>
+                    {/* Transcription quota indicator */}
+                    {billing && billing.limits.transcriptionMinutes !== -1 && (() => {
+                      const minsLeft = Math.max(
+                        0,
+                        billing.limits.transcriptionMinutes - billing.usage.transcriptionMinutes
+                      );
+                      const thisRecordingMins = Math.ceil(recording.durationSeconds / 60);
+                      const willExceed = thisRecordingMins > minsLeft;
+                      return (
+                        <p className={`text-[10px] mt-1 font-medium ${
+                          willExceed ? 'text-amber-400' : 'text-neutral-500'
+                        }`}>
+                          {willExceed
+                            ? `⚠ Only ${minsLeft} min left — this recording may hit your limit`
+                            : `${minsLeft} transcription min remaining`
+                          }
+                        </p>
+                      );
+                    })()}
                   </div>
                 </div>
                 <div className="h-px bg-white/5 mx-2" />

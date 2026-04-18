@@ -660,27 +660,27 @@ Full design: `docs/pricing-and-costs.md`
 
 ---
 
-### P3 — In-Context Usage Indicators ← next
+### P3 — In-Context Usage Indicators ✅ Done
 
-- [ ] **Ask AI panel** — `"X credits remaining"` badge below input, red when < 10
-- [ ] **Content generation buttons** — tooltip showing estimated credit cost (`"~10 credits"`)
-- [ ] **Recording upload modal** — `"X min remaining this month"` before upload starts
-- [ ] **Settings > Integrations (Recall toggle)** — `"X hrs remaining this month"` next to toggle
-- [ ] **Free users trying content gen** — show `UpgradeModal` with `reason="feature_gate"` immediately
-
----
-
-### P4 — Usage Warning Banner
-
-- [ ] `src/components/billing/UsageWarningBanner.tsx` — dismissible, shows at 80%+ on any limit
-- [ ] Wire into app layout — check usage on mount, show banner if threshold hit
+- [x] **Ask AI panel** — `"X credits remaining"` badge, amber when < 10
+- [x] **Recording upload / FAB** — `"X min remaining this month"`
+- [x] **Settings > Integrations (Recall toggle)** — `"X hrs remaining this month"`
+- [ ] **Content generation buttons** — tooltip with estimated credit cost (`"~10 credits"`) ← not done
+- [ ] **Free users trying content gen** — `UpgradeModal` with `reason="feature_gate"` ← not done
 
 ---
 
-### P5 — Dashboard Pricing Page
+### P4 — Usage Warning Banner ✅ Done
 
-- [ ] `/pricing` route in `App.tsx`
-- [ ] `src/pages/pricing/Pricing.tsx` — plan comparison table, current plan highlighted, upgrade CTA (⛔ payment stub)
+- [x] `src/components/billing/UsageWarningBanner.tsx` — dismissible, shows at 80%+ (Free plan only)
+- [x] Wired into `Layout.tsx`
+
+---
+
+### P5 — Dashboard Pricing Page ✅ Done
+
+- [x] `/pricing` route in `App.tsx`
+- [x] `src/pages/pricing/PricingPage.tsx` — plan comparison table, upgrade CTA (⛔ payment stub)
 
 ---
 

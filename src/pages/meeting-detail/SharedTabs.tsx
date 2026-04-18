@@ -58,6 +58,7 @@ import {
   useMergeConsecutiveSpeakerSegments,
   useUpdateSummary,
 } from '@/hooks/queries/useSMAQueries';
+import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
 import type { AIContentType, GeneratedContent } from '@/services/smaService';
 import { smaApi } from '@/services/smaService';
 import { toast } from 'sonner';
@@ -1217,6 +1218,7 @@ export function AskAITab({
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const { data: billing } = useBillingUsage();
 
   const isAvailable = transcriptionStatus === 'COMPLETED';
 
@@ -1300,11 +1302,28 @@ export function AskAITab({
     );
   }
 
+  const creditsLeft =
+    billing && billing.limits.aiCredits !== -1
+      ? Math.max(0, billing.limits.aiCredits - billing.usage.aiCredits)
+      : null;
+  const creditsWarn = creditsLeft !== null && creditsLeft < 10;
+
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 flex items-center gap-1.5">
         <Sparkles className="w-4 h-4 text-neutral-500" />
         Ask AI
+        {creditsLeft !== null && (
+          <span
+            className={`ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+              creditsWarn
+                ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
+            }`}
+          >
+            {creditsLeft} credit{creditsLeft !== 1 ? 's' : ''} left
+          </span>
+        )}
       </h3>
 
       {/* Suggestion chips — shown only when conversation is empty */}

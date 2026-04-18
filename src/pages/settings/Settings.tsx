@@ -2078,6 +2078,7 @@ function IntegrationsSection() {
 
   const { data: gcalStatus } = useGoogleCalendarStatus();
   const disconnect = useDisconnectGoogleCalendar();
+  const { data: billingData } = useBillingUsage();
 
   // GCal connected when OAuthAccount has calendar scope + email is stored
   const isCalendarConnected = gcalStatus?.connected === true;
@@ -2237,17 +2238,31 @@ function IntegrationsSection() {
                   <div className="h-4 w-48 bg-neutral-200 dark:bg-neutral-800 rounded" />
                 </div>
               ) : settings?.recallAvailable ? (
-                <SettingRow
-                  label="Auto-record online meetings"
-                  description="Bot joins your Google Meet, Zoom, or Teams calls automatically"
-                >
-                  <Switch
-                    checked={settings?.recallEnabled ?? false}
-                    onCheckedChange={(v) =>
-                      updateSettings.mutate({ recallEnabled: v })
-                    }
-                  />
-                </SettingRow>
+                <>
+                  <SettingRow
+                    label="Auto-record online meetings"
+                    description="Bot joins your Google Meet, Zoom, or Teams calls automatically"
+                  >
+                    <Switch
+                      checked={settings?.recallEnabled ?? false}
+                      onCheckedChange={(v) =>
+                        updateSettings.mutate({ recallEnabled: v })
+                      }
+                    />
+                  </SettingRow>
+                  {/* In-context Recall hours quota */}
+                  {billingData && billingData.limits.recallHours !== -1 && (
+                    <p className={`text-xs mt-2 ${
+                      billingData.usage.recallHours >= billingData.limits.recallHours
+                        ? 'text-red-500 dark:text-red-400'
+                        : billingData.usage.recallHours / billingData.limits.recallHours >= 0.8
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-neutral-400 dark:text-neutral-500'
+                    }`}>
+                      {(billingData.limits.recallHours - billingData.usage.recallHours).toFixed(1)} hrs auto-record remaining this month
+                    </p>
+                  )}
+                </>
               ) : (
                 <p className="text-xs text-neutral-400 dark:text-neutral-500">
                   Recording bot is not available on this instance
@@ -2893,7 +2908,8 @@ const PLAN_LABELS: Record<string, string> = {
 const PLAN_COLORS: Record<string, string> = {
   FREE: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
   PRO: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
-  BUSINESS: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  BUSINESS:
+    'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
 };
 
 function UsageMeter({
@@ -2964,7 +2980,10 @@ function BillingSection() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <SectionHeader title="Billing" description="Your plan, usage, and limits" />
+        <SectionHeader
+          title="Billing"
+          description="Your plan, usage, and limits"
+        />
         <SettingsSkeleton rows={4} />
       </div>
     );
@@ -2976,19 +2995,28 @@ function BillingSection() {
   const resetAt = data?.resetAt ? new Date(data.resetAt) : null;
 
   const resetLabel = resetAt
-    ? resetAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    ? resetAt.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })
     : '—';
 
   return (
     <div className="space-y-6">
-      <SectionHeader title="Billing" description="Your plan, usage, and limits" />
+      <SectionHeader
+        title="Billing"
+        description="Your plan, usage, and limits"
+      />
 
       {/* Plan badge */}
       <Card className="border-neutral-200 dark:border-neutral-800">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1.5">Current plan</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1.5">
+                Current plan
+              </p>
               <div className="flex items-center gap-2">
                 <span
                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
