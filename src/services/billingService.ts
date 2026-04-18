@@ -26,8 +26,7 @@ export interface BillingData {
 
 export const billingApi = {
   /** GET /billing/usage — current plan, counters, limits, reset date */
-  getUsage: () =>
-    apiClient.get<BillingData>('/billing/usage'),
+  getUsage: () => apiClient.get<BillingData>('/billing/usage'),
 
   /** POST /billing/checkout — stub until payment gateway is live */
   checkout: () =>

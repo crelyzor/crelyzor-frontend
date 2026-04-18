@@ -25,7 +25,7 @@ const LIMIT_COPY: Record<
     icon: Bot,
     title: 'Auto-record not available',
     description:
-      "Auto-recording with Recall.ai is a Pro feature. Upgrade to record your online meetings automatically.",
+      'Auto-recording with Recall.ai is a Pro feature. Upgrade to record your online meetings automatically.',
   },
   AI_CREDITS_EXHAUSTED: {
     icon: Sparkles,
@@ -64,7 +64,7 @@ export function UpgradeModal() {
     useUIStore();
 
   const copy = upgradeModalCode
-    ? LIMIT_COPY[upgradeModalCode] ?? DEFAULT_COPY
+    ? (LIMIT_COPY[upgradeModalCode] ?? DEFAULT_COPY)
     : DEFAULT_COPY;
   const Icon = copy.icon;
 
@@ -106,7 +106,10 @@ export function UpgradeModal() {
           </p>
           <div className="space-y-2">
             {PLAN_FEATURES.map((f) => (
-              <div key={f.label} className="flex items-center justify-between text-sm">
+              <div
+                key={f.label}
+                className="flex items-center justify-between text-sm"
+              >
                 <span className="text-neutral-600 dark:text-neutral-400">
                   {f.label}
                 </span>
