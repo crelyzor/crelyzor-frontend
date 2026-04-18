@@ -1,10 +1,21 @@
-import { Check, Zap, Mic, Bot, Sparkles, HardDrive, Mail, ArrowRight, Infinity as InfinityIcon } from 'lucide-react';
+import {
+  Check,
+  Zap,
+  Mic,
+  Bot,
+  Sparkles,
+  HardDrive,
+  Mail,
+  ArrowRight,
+  Infinity as InfinityIcon,
+} from 'lucide-react';
 import { PageMotion } from '@/components/PageMotion';
 import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
 import { useUIStore } from '@/stores/uiStore';
 
 const SUPPORT_EMAIL = 'support@crelyzor.com';
-const PUBLIC_URL = import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'https://cards.crelyzor.com';
+const PUBLIC_URL =
+  import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'https://cards.crelyzor.com';
 
 // ── Plan comparison ──────────────────────────────────────────────────────────
 
@@ -14,7 +25,12 @@ const PLAN_FEATURES: Array<{
   free: string;
   pro: string;
 }> = [
-  { icon: Mic, label: 'Transcription', free: '120 min / mo', pro: '600 min / mo' },
+  {
+    icon: Mic,
+    label: 'Transcription',
+    free: '120 min / mo',
+    pro: '600 min / mo',
+  },
   { icon: Sparkles, label: 'AI Credits', free: '50 / mo', pro: '1,000 / mo' },
   { icon: Bot, label: 'Auto-record (Recall.ai)', free: '—', pro: '5 hrs / mo' },
   { icon: HardDrive, label: 'Storage', free: '2 GB', pro: '20 GB' },
@@ -90,7 +106,7 @@ function MiniMeter({
         >
           {isUnlimited ? (
             <span className="flex items-center gap-1">
-              <Infinity className="w-3 h-3" /> Unlimited
+              <InfinityIcon className="w-3 h-3" /> Unlimited
             </span>
           ) : (
             `${used.toFixed(unit === 'hrs' ? 1 : 0)} / ${limit} ${unit}`
@@ -101,7 +117,11 @@ function MiniMeter({
         <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
           <div
             className={`h-full rounded-full transition-all ${
-              isExhausted ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-violet-500'
+              isExhausted
+                ? 'bg-red-500'
+                : isWarning
+                  ? 'bg-amber-500'
+                  : 'bg-violet-500'
             }`}
             style={{ width: `${pct}%` }}
           />
@@ -123,7 +143,9 @@ export default function PricingPage() {
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(SUPPORT_EMAIL);
     // toast would need Toaster, using alert as simple fallback — the toast is already global
-    import('sonner').then(({ toast }) => toast.success('Email copied — ' + SUPPORT_EMAIL));
+    import('sonner').then(({ toast }) =>
+      toast.success('Email copied — ' + SUPPORT_EMAIL)
+    );
   };
 
   return (
@@ -224,19 +246,28 @@ export default function PricingPage() {
           >
             <div>
               <div className="flex items-center justify-between mb-1">
-                <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">Free</p>
+                <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                  Free
+                </p>
                 {plan === 'FREE' && (
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
                     Current
                   </span>
                 )}
               </div>
-              <p className="text-2xl font-bold text-neutral-950 dark:text-neutral-50">₹0</p>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500">forever</p>
+              <p className="text-2xl font-bold text-neutral-950 dark:text-neutral-50">
+                ₹0
+              </p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                forever
+              </p>
             </div>
             <ul className="space-y-2 flex-1">
               {FREE_BULLETS.map((b) => (
-                <li key={b} className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+                <li
+                  key={b}
+                  className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-400"
+                >
                   <Check className="w-4 h-4 shrink-0 text-neutral-400 mt-0.5" />
                   {b}
                 </li>
@@ -269,13 +300,22 @@ export default function PricingPage() {
               </span>
             )}
             <div>
-              <p className="text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-1">Pro</p>
-              <p className="text-2xl font-bold text-neutral-950 dark:text-neutral-50">₹1,499</p>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500">per month</p>
+              <p className="text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-1">
+                Pro
+              </p>
+              <p className="text-2xl font-bold text-neutral-950 dark:text-neutral-50">
+                ₹1,499
+              </p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                per month
+              </p>
             </div>
             <ul className="space-y-2 flex-1">
               {PRO_BULLETS.map((b) => (
-                <li key={b} className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+                <li
+                  key={b}
+                  className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300"
+                >
                   <Check className="w-4 h-4 shrink-0 text-violet-500 mt-0.5" />
                   {b}
                 </li>
@@ -311,16 +351,23 @@ export default function PricingPage() {
             {PLAN_FEATURES.map((f) => {
               const Icon = f.icon;
               return (
-                <div key={f.label} className="flex items-center px-6 py-3.5 gap-3">
+                <div
+                  key={f.label}
+                  className="flex items-center px-6 py-3.5 gap-3"
+                >
                   <Icon className="w-4 h-4 text-neutral-400 shrink-0" />
                   <span className="flex-1 text-sm text-neutral-700 dark:text-neutral-300">
                     {f.label}
                   </span>
-                  <span className="text-xs text-neutral-400 w-24 text-right">{f.free}</span>
+                  <span className="text-xs text-neutral-400 w-24 text-right">
+                    {f.free}
+                  </span>
                   <ArrowRight className="w-3 h-3 text-neutral-300 dark:text-neutral-600 shrink-0" />
                   <span
                     className={`text-xs font-medium w-24 text-right ${
-                      f.pro === '—' ? 'text-neutral-300' : 'text-violet-700 dark:text-violet-400'
+                      f.pro === '—'
+                        ? 'text-neutral-300'
+                        : 'text-violet-700 dark:text-violet-400'
                     }`}
                   >
                     {f.pro}
@@ -356,7 +403,8 @@ export default function PricingPage() {
             <div className="flex-1 min-w-0">
               <p className="font-semibold mb-0.5">Ready to upgrade?</p>
               <p className="text-xs text-neutral-400">
-                Email us and we'll switch your account within 24 hours. Self-serve payments coming soon.
+                Email us and we'll switch your account within 24 hours.
+                Self-serve payments coming soon.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 shrink-0">

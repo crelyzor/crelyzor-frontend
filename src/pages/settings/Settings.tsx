@@ -2252,14 +2252,23 @@ function IntegrationsSection() {
                   </SettingRow>
                   {/* In-context Recall hours quota */}
                   {billingData && billingData.limits.recallHours !== -1 && (
-                    <p className={`text-xs mt-2 ${
-                      billingData.usage.recallHours >= billingData.limits.recallHours
-                        ? 'text-red-500 dark:text-red-400'
-                        : billingData.usage.recallHours / billingData.limits.recallHours >= 0.8
-                          ? 'text-amber-600 dark:text-amber-400'
-                          : 'text-neutral-400 dark:text-neutral-500'
-                    }`}>
-                      {(billingData.limits.recallHours - billingData.usage.recallHours).toFixed(1)} hrs auto-record remaining this month
+                    <p
+                      className={`text-xs mt-2 ${
+                        billingData.usage.recallHours >=
+                        billingData.limits.recallHours
+                          ? 'text-red-500 dark:text-red-400'
+                          : billingData.usage.recallHours /
+                                billingData.limits.recallHours >=
+                              0.8
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-neutral-400 dark:text-neutral-500'
+                      }`}
+                    >
+                      {(
+                        billingData.limits.recallHours -
+                        billingData.usage.recallHours
+                      ).toFixed(1)}{' '}
+                      hrs auto-record remaining this month
                     </p>
                   )}
                 </>
