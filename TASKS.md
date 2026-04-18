@@ -636,8 +636,8 @@ Full design: `docs/pricing-and-costs.md`
 
 - [ ] `src/services/billingService.ts`:
   - `getBillingUsage()` → `GET /billing/usage` → `{ plan, usage, limits, resetAt }`
-  - `createCheckoutSession()` → `POST /billing/checkout` → `{ subscriptionId, keyId }` → opens Razorpay checkout
-  - `createPortalSession()` → `POST /billing/portal` → `{ url }` → redirect to billing management
+  - `initiateUpgrade()` → `POST /billing/checkout` → stub for now (shows "coming soon" toast until gateway is live)
+  - `createPortalSession()` → `POST /billing/portal` → stub for now
 - [ ] `src/hooks/queries/useBillingQueries.ts`:
   - `useBillingUsage()` — fetches current usage + limits (5min stale time)
 - [ ] `src/lib/queryKeys.ts` — add `queryKeys.billing.usage()`
@@ -656,8 +656,8 @@ Full design: `docs/pricing-and-costs.md`
     - Recall hours — `X / 5 hrs used` (hidden on Free plan)
     - Storage — `X / 2 GB used`
   - **Reset date** — `"Resets May 1"`
-  - **Upgrade CTA** (Free users) — `"Upgrade to Pro — $19/mo"` button → `createCheckoutSession()` → redirect
-  - **Manage billing** (Pro users) — `"Manage billing"` link → `createPortalSession()` → redirect
+  - **Upgrade CTA** (Free users) — `"Upgrade to Pro — $19/mo"` button → `initiateUpgrade()` → "Payment coming soon" toast (gateway deferred)
+  - **Manage billing** (Pro users) — `"Manage billing"` link → stub toast for now
   - Skeleton loading state
 
 ---
@@ -667,7 +667,7 @@ Full design: `docs/pricing-and-costs.md`
 - [ ] `src/components/billing/UpgradeModal.tsx`:
   - Props: `reason: 'transcription_limit' | 'recall_limit' | 'credits_exhausted' | 'feature_gate'`
   - Each reason shows: what they hit, what Pro unlocks, price ($19/mo), CTA
-  - CTA calls `createCheckoutSession()` → opens Razorpay checkout
+  - CTA calls `initiateUpgrade()` → "Payment coming soon" toast (gateway deferred)
   - Example: `credits_exhausted` → "You've used all 50 AI Credits this month. Pro gives you 1,000 credits."
 - [ ] `src/components/billing/UsageWarningBanner.tsx`:
   - Shows when any resource is at 80%+ — dismissible toast/banner
