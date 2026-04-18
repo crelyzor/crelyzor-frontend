@@ -545,7 +545,7 @@ The backend already supports these fields — we just need to expose them in the
 
 _(Already in Phase 3.2 P4 — carry forward)_
 
-- [ ] **`TaskDetailPanel`:** Add "Repeat" field below Due Date. Dropdown: None / Daily / Weekly / Monthly / Custom. For Weekly: show day-of-week chip selector. Stores as RRULE string via `updateTask({ recurringRule })`. When task has recurringRule + isCompleted: show "Next occurrence: [date]" instead of struck-through title.
+- [x] **`TaskDetailPanel`:** Add "Repeat" field below Due Date. Dropdown: None / Daily / Weekly / Monthly / Custom. For Weekly: show day-of-week chip selector. Stores as RRULE string via `updateTask({ recurringRule })`. When task has recurringRule + isCompleted: show "Next occurrence: [date]" instead of struck-through title.
 
 ---
 
@@ -613,16 +613,16 @@ _(Already in Phase 3.2 P4 — carry forward)_
 
 ### P3 — Tags on Contacts
 
-- [ ] **Tag chips on contact rows** — in the contacts table/list on `CardEditor` (or contacts page): render tag chips per contact (same `TagChip` component). Fetch via `useContactTags(cardId, contactId)`.
-- [ ] **Tag editor on contact** — popover tag editor on each contact row (same `TagsPopover` pattern used on meetings/cards). Add / remove tags. Calls `attachTagToContact` / `detachTagFromContact`.
-- [ ] **Tag filter on contacts list** — tag filter chips above the contacts table. Filter client-side (same pattern as meetings/voice notes).
-- [ ] **Query hook** — `useContactTags(cardId, contactId)` in `src/hooks/queries/useTagQueries.ts`
+- [x] **Tag chips on contact rows** — in the contacts table/list on `CardEditor` (or contacts page): render tag chips per contact (same `TagChip` component). Fetch via `useContactTags(cardId, contactId)`.
+- [x] **Tag editor on contact** — popover tag editor on each contact row (same `TagsPopover` pattern used on meetings/cards). Add / remove tags. Calls `attachTagToContact` / `detachTagFromContact`.
+- [x] **Tag filter on contacts list** — tag filter chips above the contacts table. Filter client-side (same pattern as meetings/voice notes).
+- [x] **Query hook** — `useContactTags(cardId, contactId)` in `src/hooks/queries/useTagQueries.ts`
 
 ---
 
 ### P4 — Tag Chip Navigation
 
-- [ ] **`TagChip` component** — make every tag chip in the app a link to `/tags/:tagId`. Currently chips are display-only. Wrap in `<Link to={/tags/${tag.id}}>` (or `useNavigate` on click) with `stopPropagation`. Apply to: meeting detail, meeting list rows, voice note rows, card list rows, card editor, task detail panel, task rows, contact rows.
+- [x] **`TagChip` component** — make every tag chip in the app a link to `/tags/:tagId`. Currently chips are display-only. Wrap in `<Link to={/tags/${tag.id}}>` (or `useNavigate` on click) with `stopPropagation`. Apply to: meeting detail, meeting list rows, voice note rows, card list rows, card editor, task detail panel, task rows, contact rows.
 
 ---
 
