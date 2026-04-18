@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-04-07 (Phase 3.2/3.3 complete, Phase 3.4 next)
+Last updated: 2026-04-19 (Phase 4 billing P0–P2 partial, in-context indicators + pricing page next)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -632,73 +632,55 @@ Full design: `docs/pricing-and-costs.md`
 
 ---
 
-### P0 — Billing Service + Query Hook
+### P0 — Billing Service + Query Hook ✅ Done
 
-- [ ] `src/services/billingService.ts`:
-  - `getBillingUsage()` → `GET /billing/usage` → `{ plan, usage, limits, resetAt }`
-  - `initiateUpgrade()` → ⛔ payment gateway NOT DOING NOW — button shows "Contact us to upgrade" or is disabled
-  - `createPortalSession()` → ⛔ NOT DOING NOW
-- [ ] `src/hooks/queries/useBillingQueries.ts`:
-  - `useBillingUsage()` — fetches current usage + limits (5min stale time)
-- [ ] `src/lib/queryKeys.ts` — add `queryKeys.billing.usage()`
-- [ ] Types: `BillingUsage`, `UsageLimits`, `Plan` in `src/types/`
+- [x] `src/services/billingService.ts` — `getBillingUsage()`, `initiateUpgrade()` (⛔ payment stub)
+- [x] `src/hooks/queries/useBillingQueries.ts` — `useBillingUsage()` (5min stale time)
+- [x] `src/lib/queryKeys.ts` — `queryKeys.billing.usage()`
+- [x] Types: `BillingUsage`, `UsageLimits`, `Plan`
 
 ---
 
-### P1 — Settings > Billing Tab
+### P1 — Settings > Billing Tab ✅ Done
 
-- [ ] New "Billing" tab in `Settings.tsx` (between Notifications and Integrations)
-- [ ] `src/pages/settings/BillingSettings.tsx`:
-  - **Plan badge** — `Free` (neutral) / `Pro` (gold) / `Business` (dark)
-  - **3 usage meters** with progress bars + numbers:
-    - Transcription — `X / 120 min used` (bar turns amber at 80%, red at 100%)
-    - AI Credits — `X / 50 used`
-    - Recall hours — `X / 5 hrs used` (hidden on Free plan)
-    - Storage — `X / 2 GB used`
-  - **Reset date** — `"Resets May 1"`
-  - **Upgrade CTA** (Free users) — `"Upgrade to Pro — $19/mo"` button → ⛔ payment NOT DOING NOW — show disabled state or "Contact us" link
-  - **Manage billing** (Pro users) — ⛔ NOT DOING NOW
-  - Skeleton loading state
+- [x] "Billing" tab in `Settings.tsx`
+- [x] Plan badge — `Free` (neutral) / `Pro` (gold) / `Business` (dark)
+- [x] 4 usage meters with progress bars (transcription, AI credits, Recall hours, storage)
+- [x] Reset date — `"Resets May 1"`
+- [x] Upgrade CTA — ⛔ payment NOT DOING NOW — disabled/contact us
+- [x] Skeleton loading state
 
 ---
 
-### P2 — Reusable Upgrade Modal
+### P2 — UpgradeModal + 402 Hard Wall ✅ Done
 
-- [ ] `src/components/billing/UpgradeModal.tsx`:
-  - Props: `reason: 'transcription_limit' | 'recall_limit' | 'credits_exhausted' | 'feature_gate'`
-  - Each reason shows: what they hit, what Pro unlocks, price ($19/mo), CTA
-  - CTA → ⛔ payment NOT DOING NOW — button disabled or shows "Contact us to upgrade"
-  - Example: `credits_exhausted` → "You've used all 50 AI Credits this month. Pro gives you 1,000 credits."
-- [ ] `src/components/billing/UsageWarningBanner.tsx`:
-  - Shows when any resource is at 80%+ — dismissible toast/banner
-  - "You've used 80% of your transcription minutes this month. [Upgrade]"
+- [x] `src/components/billing/UpgradeModal.tsx` — reason-aware, shows what was hit + what Pro unlocks
+- [x] 402 interceptor in `apiClient.ts` — auto-opens `UpgradeModal` on limit errors
+- [x] `uiStore` — `billingError` state to trigger modal globally
 
 ---
 
-### P3 — In-Context Usage Indicators
+### P3 — In-Context Usage Indicators ← next
 
-- [ ] **Ask AI panel** — show `"X credits remaining"` badge below input. Red when < 10 credits.
-- [ ] **Content generation buttons** — tooltip on each showing estimated credit cost (`"~10 credits"`)
-- [ ] **Recording upload modal** — show `"X min remaining this month"` before upload starts
-- [ ] **Settings > Integrations (Recall toggle)** — show `"X hrs remaining this month"` next to toggle
+- [ ] **Ask AI panel** — `"X credits remaining"` badge below input, red when < 10
+- [ ] **Content generation buttons** — tooltip showing estimated credit cost (`"~10 credits"`)
+- [ ] **Recording upload modal** — `"X min remaining this month"` before upload starts
+- [ ] **Settings > Integrations (Recall toggle)** — `"X hrs remaining this month"` next to toggle
 - [ ] **Free users trying content gen** — show `UpgradeModal` with `reason="feature_gate"` immediately
 
 ---
 
-### P4 — Hard Wall Handling
+### P4 — Usage Warning Banner
 
-- [ ] Global API error handler — intercept `402` responses from backend
-- [ ] On `402` with code `TRANSCRIPTION_LIMIT_REACHED` → open `UpgradeModal` with correct reason
-- [ ] On `402` with code `AI_CREDITS_EXHAUSTED` → open `UpgradeModal`
-- [ ] On `402` with code `RECALL_LIMIT_REACHED` → open `UpgradeModal`
-- [ ] Wire into `apiClient.ts` response interceptor (already has auth interceptor — add billing interceptor)
+- [ ] `src/components/billing/UsageWarningBanner.tsx` — dismissible, shows at 80%+ on any limit
+- [ ] Wire into app layout — check usage on mount, show banner if threshold hit
 
 ---
 
 ### P5 — Dashboard Pricing Page
 
-- [ ] `/pricing` route in `App.tsx` (for logged-in users)
-- [ ] `src/pages/pricing/Pricing.tsx` — plan comparison table, current plan highlighted, upgrade CTA
+- [ ] `/pricing` route in `App.tsx`
+- [ ] `src/pages/pricing/Pricing.tsx` — plan comparison table, current plan highlighted, upgrade CTA (⛔ payment stub)
 
 ---
 

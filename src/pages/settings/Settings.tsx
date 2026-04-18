@@ -34,6 +34,12 @@ import {
   CheckCircle2,
   Ban,
   Bell,
+  CreditCard,
+  Zap,
+  Mic,
+  HardDrive,
+  Mail,
+  Infinity as InfinityIcon,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -98,6 +104,8 @@ import {
   useDeclineBooking,
   useCancelBooking,
 } from '@/hooks/queries/useSchedulingQueries';
+import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
+import { useUIStore } from '@/stores/uiStore';
 import { useThemeStore } from '@/stores';
 import type { Theme } from '@/types';
 import type {
@@ -175,6 +183,7 @@ const SETTINGS_SECTIONS = [
     group: 'features',
   },
   { id: 'tags', label: 'Tags', icon: Tag, group: 'features' },
+  { id: 'billing', label: 'Billing', icon: CreditCard, group: 'other' },
   { id: 'security', label: 'Security', icon: Shield, group: 'other' },
 ] as const;
 
@@ -310,6 +319,7 @@ export default function Settings() {
             {activeSection === 'integrations' && <IntegrationsSection />}
             {activeSection === 'notifications' && <NotificationsSection />}
             {activeSection === 'tags' && <TagsSection />}
+            {activeSection === 'billing' && <BillingSection />}
             {activeSection === 'security' && <SecuritySection />}
           </div>
         </div>
@@ -2871,6 +2881,224 @@ function TagsSection() {
 }
 
 // ── Shared components ──
+
+// ── Billing ─────────────────────────────────────────────────────────────────
+
+const PLAN_LABELS: Record<string, string> = {
+  FREE: 'Free',
+  PRO: 'Pro',
+  BUSINESS: 'Business',
+};
+
+const PLAN_COLORS: Record<string, string> = {
+  FREE: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
+  PRO: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
+  BUSINESS: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+};
+
+function UsageMeter({
+  label,
+  icon: Icon,
+  used,
+  limit,
+  unit,
+}: {
+  label: string;
+  icon: React.ElementType;
+  used: number;
+  limit: number;
+  unit: string;
+}) {
+  const isUnlimited = limit === -1;
+  const pct = isUnlimited ? 0 : Math.min(100, (used / limit) * 100);
+  const isWarning = !isUnlimited && pct >= 80;
+  const isExhausted = !isUnlimited && pct >= 100;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+          <Icon className="w-3.5 h-3.5" />
+          {label}
+        </div>
+        <span
+          className={`text-xs font-medium ${
+            isExhausted
+              ? 'text-red-600 dark:text-red-400'
+              : isWarning
+                ? 'text-amber-600 dark:text-amber-400'
+                : 'text-neutral-500 dark:text-neutral-400'
+          }`}
+        >
+          {isUnlimited ? (
+            <span className="flex items-center gap-1">
+              <InfinityIcon className="w-3.5 h-3.5" /> Unlimited
+            </span>
+          ) : (
+            `${used.toFixed(unit === 'hrs' ? 1 : 0)} / ${limit} ${unit}`
+          )}
+        </span>
+      </div>
+      {!isUnlimited && (
+        <div className="w-full h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all ${
+              isExhausted
+                ? 'bg-red-500'
+                : isWarning
+                  ? 'bg-amber-500'
+                  : 'bg-violet-500'
+            }`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BillingSection() {
+  const { data, isLoading } = useBillingUsage();
+  const { openUpgradeModal } = useUIStore();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <SectionHeader title="Billing" description="Your plan, usage, and limits" />
+        <SettingsSkeleton rows={4} />
+      </div>
+    );
+  }
+
+  const plan = data?.plan ?? 'FREE';
+  const usage = data?.usage;
+  const limits = data?.limits;
+  const resetAt = data?.resetAt ? new Date(data.resetAt) : null;
+
+  const resetLabel = resetAt
+    ? resetAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : '—';
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader title="Billing" description="Your plan, usage, and limits" />
+
+      {/* Plan badge */}
+      <Card className="border-neutral-200 dark:border-neutral-800">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1.5">Current plan</p>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                    PLAN_COLORS[plan] ?? PLAN_COLORS.FREE
+                  }`}
+                >
+                  {PLAN_LABELS[plan] ?? plan}
+                </span>
+                {resetAt && (
+                  <span className="text-xs text-neutral-400 dark:text-neutral-500">
+                    Resets {resetLabel}
+                  </span>
+                )}
+              </div>
+            </div>
+            {plan === 'FREE' && (
+              <button
+                onClick={() => openUpgradeModal()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 transition-colors shadow-sm"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                Upgrade to Pro
+              </button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Usage meters */}
+      <Card className="border-neutral-200 dark:border-neutral-800">
+        <CardContent className="p-6 space-y-5">
+          <p className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
+            This month's usage
+          </p>
+
+          {usage && limits ? (
+            <>
+              <UsageMeter
+                label="Transcription"
+                icon={Mic}
+                used={usage.transcriptionMinutes}
+                limit={limits.transcriptionMinutes}
+                unit="min"
+              />
+              <div className="border-t border-neutral-100 dark:border-neutral-800" />
+              <UsageMeter
+                label="AI Credits"
+                icon={Sparkles}
+                used={usage.aiCredits}
+                limit={limits.aiCredits}
+                unit="credits"
+              />
+              <div className="border-t border-neutral-100 dark:border-neutral-800" />
+              <UsageMeter
+                label="Auto-record (Recall.ai)"
+                icon={Bot}
+                used={usage.recallHours}
+                limit={limits.recallHours}
+                unit="hrs"
+              />
+              <div className="border-t border-neutral-100 dark:border-neutral-800" />
+              <UsageMeter
+                label="Storage"
+                icon={HardDrive}
+                used={usage.storageGb}
+                limit={limits.storageGb}
+                unit="GB"
+              />
+            </>
+          ) : (
+            <p className="text-sm text-neutral-400">Usage data unavailable</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Upgrade CTA for Free users */}
+      {plan === 'FREE' && (
+        <Card className="border-violet-200 dark:border-violet-900/50 bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-950/20 dark:to-indigo-950/20">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 mt-0.5">
+                <Zap className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                  Upgrade to Pro
+                </p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  5× transcription · 20× AI credits · Auto-record · 10× storage
+                </p>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText('support@crelyzor.com');
+                    toast.success('Email copied — support@crelyzor.com');
+                  }}
+                  className="mt-3 flex items-center gap-1.5 text-xs font-medium text-violet-600 dark:text-violet-400 hover:underline"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  Email us to upgrade — support@crelyzor.com
+                </button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ── Shared ────────────────────────────────────────────────────────────────────
 
 function SectionHeader({
   title,
