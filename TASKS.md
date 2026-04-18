@@ -626,6 +626,84 @@ _(Already in Phase 3.2 P4 — carry forward)_
 
 ---
 
-## Phase 4 — Big Brain ⛔ BLOCKED
+## Phase 4 — Billing & Monetization
+
+Full design: `docs/pricing-and-costs.md`
+
+---
+
+### P0 — Billing Service + Query Hook
+
+- [ ] `src/services/billingService.ts`:
+  - `getBillingUsage()` → `GET /billing/usage` → `{ plan, usage, limits, resetAt }`
+  - `createCheckoutSession()` → `POST /billing/checkout` → `{ url }` → redirect to Stripe
+  - `createPortalSession()` → `POST /billing/portal` → `{ url }` → redirect to Stripe portal
+- [ ] `src/hooks/queries/useBillingQueries.ts`:
+  - `useBillingUsage()` — fetches current usage + limits (5min stale time)
+- [ ] `src/lib/queryKeys.ts` — add `queryKeys.billing.usage()`
+- [ ] Types: `BillingUsage`, `UsageLimits`, `Plan` in `src/types/`
+
+---
+
+### P1 — Settings > Billing Tab
+
+- [ ] New "Billing" tab in `Settings.tsx` (between Notifications and Integrations)
+- [ ] `src/pages/settings/BillingSettings.tsx`:
+  - **Plan badge** — `Free` (neutral) / `Pro` (gold) / `Business` (dark)
+  - **3 usage meters** with progress bars + numbers:
+    - Transcription — `X / 120 min used` (bar turns amber at 80%, red at 100%)
+    - AI Credits — `X / 50 used`
+    - Recall hours — `X / 5 hrs used` (hidden on Free plan)
+    - Storage — `X / 2 GB used`
+  - **Reset date** — `"Resets May 1"`
+  - **Upgrade CTA** (Free users) — `"Upgrade to Pro — $19/mo"` button → `createCheckoutSession()` → redirect
+  - **Manage billing** (Pro users) — `"Manage billing"` link → `createPortalSession()` → redirect
+  - Skeleton loading state
+
+---
+
+### P2 — Reusable Upgrade Modal
+
+- [ ] `src/components/billing/UpgradeModal.tsx`:
+  - Props: `reason: 'transcription_limit' | 'recall_limit' | 'credits_exhausted' | 'feature_gate'`
+  - Each reason shows: what they hit, what Pro unlocks, price ($19/mo), CTA
+  - CTA calls `createCheckoutSession()` → redirect to Stripe
+  - Example: `credits_exhausted` → "You've used all 50 AI Credits this month. Pro gives you 1,000 credits."
+- [ ] `src/components/billing/UsageWarningBanner.tsx`:
+  - Shows when any resource is at 80%+ — dismissible toast/banner
+  - "You've used 80% of your transcription minutes this month. [Upgrade]"
+
+---
+
+### P3 — In-Context Usage Indicators
+
+- [ ] **Ask AI panel** — show `"X credits remaining"` badge below input. Red when < 10 credits.
+- [ ] **Content generation buttons** — tooltip on each showing estimated credit cost (`"~10 credits"`)
+- [ ] **Recording upload modal** — show `"X min remaining this month"` before upload starts
+- [ ] **Settings > Integrations (Recall toggle)** — show `"X hrs remaining this month"` next to toggle
+- [ ] **Free users trying content gen** — show `UpgradeModal` with `reason="feature_gate"` immediately
+
+---
+
+### P4 — Hard Wall Handling
+
+- [ ] Global API error handler — intercept `402` responses from backend
+- [ ] On `402` with code `TRANSCRIPTION_LIMIT_REACHED` → open `UpgradeModal` with correct reason
+- [ ] On `402` with code `AI_CREDITS_EXHAUSTED` → open `UpgradeModal`
+- [ ] On `402` with code `RECALL_LIMIT_REACHED` → open `UpgradeModal`
+- [ ] Wire into `apiClient.ts` response interceptor (already has auth interceptor — add billing interceptor)
+
+---
+
+### P5 — Dashboard Pricing Page
+
+- [ ] `/pricing` route in `App.tsx` (for logged-in users)
+- [ ] `src/pages/pricing/Pricing.tsx` — plan comparison table, current plan highlighted, upgrade CTA
+
+---
+
+## Phase 5 — Big Brain ⛔ BLOCKED
+
+Requires vector infra + Phase 4 complete first.
 
 - [ ] Global Ask AI / Big Brain chat interface (RAG — requires vector infra first)
