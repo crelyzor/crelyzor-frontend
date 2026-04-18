@@ -2917,7 +2917,8 @@ const PLAN_LABELS: Record<string, string> = {
 const PLAN_COLORS: Record<string, string> = {
   FREE: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
   PRO: 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900',
-  BUSINESS: 'bg-neutral-700 text-white dark:bg-neutral-200 dark:text-neutral-900',
+  BUSINESS:
+    'bg-neutral-700 text-white dark:bg-neutral-200 dark:text-neutral-900',
 };
 
 function UsageMeter({
@@ -3012,10 +3013,7 @@ function BillingSection() {
 
   return (
     <div className="space-y-6">
-      <SectionHeader
-        title="Usage"
-        description="Your plan, usage, and limits"
-      />
+      <SectionHeader title="Usage" description="Your plan, usage, and limits" />
 
       {/* Plan badge */}
       <Card className="border-neutral-200 dark:border-neutral-800">
@@ -3116,7 +3114,10 @@ function BillingSection() {
                     'Auto-record',
                     '10× storage',
                   ].map((item) => (
-                    <span key={item} className="text-xs text-neutral-400 flex items-center gap-1">
+                    <span
+                      key={item}
+                      className="text-xs text-neutral-400 flex items-center gap-1"
+                    >
                       <span className="w-1 h-1 rounded-full bg-neutral-600 shrink-0" />
                       {item}
                     </span>

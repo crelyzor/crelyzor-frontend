@@ -66,7 +66,9 @@ export function UsageWarningBanner() {
       >
         <AlertTriangle
           className={`w-4 h-4 shrink-0 ${
-            isExhausted ? 'text-white/70' : 'text-neutral-500 dark:text-neutral-400'
+            isExhausted
+              ? 'text-white/70'
+              : 'text-neutral-500 dark:text-neutral-400'
           }`}
         />
         <p
