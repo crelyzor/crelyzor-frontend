@@ -75,7 +75,9 @@ export function useRegisterGCalPushChannel() {
   return useMutation({
     mutationFn: () => integrationsApi.registerGCalPushChannel(),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.integrations.google.status() });
+      qc.invalidateQueries({
+        queryKey: queryKeys.integrations.google.status(),
+      });
     },
     onError: () => {
       // Fail-open — don't surface to user, push is best-effort

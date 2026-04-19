@@ -53,5 +53,7 @@ export const integrationsApi = {
 
   /** POST /integrations/google/calendar/push/register — register push watch channel */
   registerGCalPushChannel: () =>
-    apiClient.post<{ pushEnabled: boolean }>('/integrations/google/calendar/push/register'),
+    apiClient.post<{ pushEnabled: boolean }>(
+      '/integrations/google/calendar/push/register'
+    ),
 };
