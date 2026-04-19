@@ -43,7 +43,7 @@ const LIMIT_COPY: Record<
     icon: Zap,
     title: 'Pro feature',
     description:
-      'Content generation is a Pro feature. Upgrade to generate meeting reports, tweets, blog posts, and follow-up emails from your transcripts.',
+      'Content generation is a Pro feature. Upgrade to generate meeting reports, social media posts, blog posts, and follow-up emails from your transcripts.',
   },
 };
 

@@ -70,6 +70,7 @@ import {
   useSessions,
   useGoogleCalendarStatus,
   useDisconnectGoogleCalendar,
+  useRegisterGCalPushChannel,
 } from '@/hooks/queries/useIntegrationQueries';
 import { queryKeys } from '@/lib/queryKeys';
 import {
@@ -2078,11 +2079,19 @@ function IntegrationsSection() {
 
   const { data: gcalStatus } = useGoogleCalendarStatus();
   const disconnect = useDisconnectGoogleCalendar();
+  const registerPush = useRegisterGCalPushChannel();
   const { data: billingData } = useBillingUsage();
 
   // GCal connected when OAuthAccount has calendar scope + email is stored
   const isCalendarConnected = gcalStatus?.connected === true;
   const calendarEmail = gcalStatus?.email ?? settings?.googleCalendarEmail;
+
+  // Phase 4.3: silently register push channel if GCal is connected but push isn't active
+  useEffect(() => {
+    if (isCalendarConnected && gcalStatus?.pushEnabled === false) {
+      registerPush.mutate();
+    }
+  }, [isCalendarConnected, gcalStatus?.pushEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // After Google Calendar OAuth redirect, detect success/failure and refetch
   useEffect(() => {
@@ -2162,6 +2171,14 @@ function IntegrationsSection() {
                     >
                       {calendarEmail}
                     </Badge>
+                    {gcalStatus?.pushEnabled && (
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px] px-1.5 py-0 h-4 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900"
+                      >
+                        Real-time sync active
+                      </Badge>
+                    )}
                     <Button
                       variant="ghost"
                       size="xs"

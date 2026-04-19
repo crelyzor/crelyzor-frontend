@@ -64,3 +64,21 @@ export function useDisconnectGoogleCalendar() {
     },
   });
 }
+
+/**
+ * Silently (re-)register a GCal push watch channel.
+ * Called on Settings > Integrations mount when GCal is connected but push is not active.
+ * Fail-open: errors are swallowed to avoid noisy toasts for a background operation.
+ */
+export function useRegisterGCalPushChannel() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => integrationsApi.registerGCalPushChannel(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.integrations.google.status() });
+    },
+    onError: () => {
+      // Fail-open — don't surface to user, push is best-effort
+    },
+  });
+}

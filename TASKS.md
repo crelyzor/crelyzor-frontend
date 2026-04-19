@@ -693,46 +693,45 @@ Full design: `docs/pricing-and-costs.md`
 
 ---
 
-## Phase 4.2 — Ask AI Persistence
+## Phase 4.2 — Ask AI Persistence ✅ Complete
 
-> **What:** Ask AI conversations fetched from + saved to PostgreSQL. Persists across page refreshes, devices, and sessions.
-> **Why:** localStorage doesn't survive device switches and doesn't position us for Phase 5 Big Brain (RAG needs server-side history).
-> **How:** New `AskAIConversation` + `AskAIMessage` models on backend. Frontend fetches history on tab open via React Query, clears via mutation.
+See item 22 above for full checklist.
 
 ---
 
-### P0 — Query Keys + Service Types
+## Phase 4.3 — Two-way GCal Push Webhooks
 
-- [ ] `src/lib/queryKeys.ts` — add `queryKeys.sma.askHistory(meetingId)`
-- [ ] `src/services/smaService.ts` — add:
-  - `getAskAIHistory(meetingId)` → `GET /sma/meetings/:meetingId/ask/history` — returns `{ messages: AIChatMessage[] }`
-  - `clearAskAIHistory(meetingId)` → `DELETE /sma/meetings/:meetingId/ask/history`
+> Pull-based sync already works on every dashboard load. This phase wires real-time push delivery.
+> Frontend work is minimal — mostly a status badge + backfill trigger.
+
+### P0 — Integration Status Update
+
+- [ ] `GET /integrations/google/status` response: add `pushEnabled: boolean` field
+- [ ] `queryKeys.integrations.google.status()` — already exists, just needs type update
+- [ ] Update `GCalConnectionStatus` type in `src/services/integrationService.ts` (or wherever typed)
+
+### P1 — Settings > Integrations UI
+
+- [ ] Show "Real-time sync" status badge when `pushEnabled === true` (neutral treatment — no green)
+- [ ] On GCal connect success callback (`calendarConnected=true` in URL params): call backfill endpoint `POST /integrations/google/calendar/push/register` (fire-and-forget, no toast needed)
+- [ ] Invalidate `queryKeys.integrations.google.status()` after backfill call
 
 ---
 
-### P1 — React Query Hooks
+## Phase 4.4 — Polish & First-Run Experience
 
-**File:** `src/hooks/queries/useSMAQueries.ts`
-
-- [ ] `useAskAIHistory(meetingId)` — `useQuery` with `queryKeys.sma.askHistory(meetingId)`, only runs when `transcriptionStatus === 'COMPLETED'`
-- [ ] `useClearAskAIHistory(meetingId)` — `useMutation` that calls `clearAskAIHistory`, on success: `setQueryData(queryKeys.sma.askHistory(meetingId), { messages: [] })`
+> Scope defined after Phase 4.3 ships. A fresh product audit will surface the real gaps.
 
 ---
 
-### P2 — AskAITab Wiring
+## Phase 4.5 — Razorpay ⛔ BLOCKED
 
-**File:** `src/pages/meeting-detail/SharedTabs.tsx` → `AskAITab`
-
-- [ ] Replace `useState<AIChatMessage[]>([])` initialization — seed from `useAskAIHistory` data on first load
-- [ ] Show skeleton (3 lines) while history query is loading
-- [ ] After streaming completes (`onDone`): invalidate `queryKeys.sma.askHistory(meetingId)` so the saved message is reflected — no manual state surgery needed
-- [ ] "Clear" `<Button variant="ghost" size="icon-xs">` + `<Trash2>` in header, only when messages exist — calls `useClearAskAIHistory`
-- [ ] Suggestion chips — only shown when `messages.length === 0` (empty conversation)
+Account blocked. Do not start.
 
 ---
 
 ## Phase 5 — Big Brain ⛔ BLOCKED
 
-Requires vector infra + Phase 4.1 + 4.2 complete first.
+Requires vector infra + all Phase 4.x complete first.
 
 - [ ] Global Ask AI / Big Brain chat interface (RAG — requires vector infra first)

@@ -61,6 +61,7 @@ import {
   useClearAskAIHistory,
 } from '@/hooks/queries/useSMAQueries';
 import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
+import { useUIStore } from '@/stores/uiStore';
 import type {
   AIContentType,
   AIChatMessage,
@@ -1477,7 +1478,7 @@ const CONTENT_TYPE_META: {
   },
   {
     type: 'TWEET',
-    label: 'Tweet',
+    label: 'Social Media Post',
     icon: MessageSquare,
     desc: 'Share on social',
     credits: 7,

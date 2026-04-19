@@ -24,6 +24,7 @@ export type GCalConnectionStatus = {
   writable: boolean;
   email: string | null;
   syncEnabled: boolean;
+  pushEnabled: boolean; // Phase 4.3: true when a push watch channel is active
 };
 
 export const sessionsApi = {
@@ -49,4 +50,8 @@ export const integrationsApi = {
   /** DELETE /integrations/google/disconnect — strips calendar scopes and clears settings */
   disconnectGoogleCalendar: () =>
     apiClient.delete<void>('/integrations/google/disconnect'),
+
+  /** POST /integrations/google/calendar/push/register — register push watch channel */
+  registerGCalPushChannel: () =>
+    apiClient.post<{ pushEnabled: boolean }>('/integrations/google/calendar/push/register'),
 };
