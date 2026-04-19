@@ -97,6 +97,8 @@ export const queryKeys = {
       ] as const,
     subtasks: (taskId: string) =>
       [...queryKeys.sma.all, 'subtasks', taskId] as const,
+    askHistory: (meetingId: string) =>
+      [...queryKeys.sma.all, 'askHistory', meetingId] as const,
   },
 
   // Tags

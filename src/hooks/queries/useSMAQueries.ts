@@ -4,6 +4,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { smaApi } from '@/services/smaService';
 import type {
   AIContentType,
+  AIChatMessage,
   GeneratedContent,
   MeetingShare,
   TaskListParams,
@@ -380,6 +381,29 @@ export function useUpdateSummary(meetingId: string) {
       toast.success('Saved');
     },
     onError: () => toast.error('Failed to save'),
+  });
+}
+
+export function useAskAIHistory(meetingId: string, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.sma.askHistory(meetingId),
+    queryFn: () => smaApi.getAskAIHistory(meetingId),
+    enabled: !!meetingId && enabled,
+    staleTime: Infinity,
+  });
+}
+
+export function useClearAskAIHistory(meetingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => smaApi.clearAskAIHistory(meetingId),
+    onSuccess: () => {
+      qc.setQueryData<AIChatMessage[]>(
+        queryKeys.sma.askHistory(meetingId),
+        []
+      );
+    },
+    onError: () => toast.error('Failed to clear chat history'),
   });
 }
 

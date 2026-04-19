@@ -57,9 +57,15 @@ import {
   useUpdateSegment,
   useMergeConsecutiveSpeakerSegments,
   useUpdateSummary,
+  useAskAIHistory,
+  useClearAskAIHistory,
 } from '@/hooks/queries/useSMAQueries';
 import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
-import type { AIContentType, GeneratedContent } from '@/services/smaService';
+import type {
+  AIContentType,
+  AIChatMessage,
+  GeneratedContent,
+} from '@/services/smaService';
 import { smaApi } from '@/services/smaService';
 import { toast } from 'sonner';
 import {
@@ -1197,8 +1203,6 @@ export function NotesTab({ meetingId }: { meetingId: string }) {
 }
 
 // ── Ask AI Tab ──
-type AIChatMessage = { role: 'user' | 'assistant'; content: string };
-
 const SUGGESTION_CHIPS = [
   'Summarize decisions made',
   'List all tasks mentioned',
@@ -1213,15 +1217,29 @@ export function AskAITab({
   meetingId: string;
   transcriptionStatus: TranscriptionStatus;
 }) {
+  const isAvailable = transcriptionStatus === 'COMPLETED';
+  const { data: history, isLoading: historyLoading } = useAskAIHistory(
+    meetingId,
+    isAvailable
+  );
+  const clearHistory = useClearAskAIHistory(meetingId);
+
   const [messages, setMessages] = useState<AIChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const seededRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { data: billing } = useBillingUsage();
   const queryClient = useQueryClient();
 
-  const isAvailable = transcriptionStatus === 'COMPLETED';
+  // Seed messages from persisted history once on first load (ref = no re-render, no re-run)
+  useEffect(() => {
+    if (!seededRef.current && history !== undefined) {
+      seededRef.current = true;
+      setMessages(history);
+    }
+  }, [history]);
 
   // Abort any in-flight SSE stream when the component unmounts
   useEffect(() => {
@@ -1304,6 +1322,18 @@ export function AskAITab({
     );
   }
 
+  if (historyLoading) {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="animate-pulse flex flex-col gap-3">
+          <div className="h-4 bg-neutral-200 dark:bg-neutral-800 rounded-lg w-1/2" />
+          <div className="h-16 bg-neutral-200 dark:bg-neutral-800 rounded-xl w-3/4 self-end" />
+          <div className="h-20 bg-neutral-200 dark:bg-neutral-800 rounded-xl w-4/5" />
+        </div>
+      </div>
+    );
+  }
+
   const creditsLeft =
     billing && billing.limits.aiCredits !== -1
       ? Math.max(0, billing.limits.aiCredits - billing.usage.aiCredits)
@@ -1317,14 +1347,30 @@ export function AskAITab({
         Ask AI
         {creditsLeft !== null && (
           <span
-            className={`ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+            className={`ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
               creditsWarn
-                ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
                 : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
             }`}
           >
             {creditsLeft} credit{creditsLeft !== 1 ? 's' : ''} left
           </span>
+        )}
+        {messages.length > 0 && (
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="ml-auto text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
+            onClick={() => {
+              clearHistory.mutate(undefined, {
+                onSuccess: () => setMessages([]),
+              });
+            }}
+            disabled={clearHistory.isPending || isStreaming}
+            title="Clear chat history"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
         )}
       </h3>
 

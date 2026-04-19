@@ -46,6 +46,8 @@ export type SMASpeaker = {
 
 export type AIContentType = 'MEETING_REPORT' | 'TWEET' | 'BLOG_POST' | 'EMAIL';
 
+export type AIChatMessage = { role: 'user' | 'assistant'; content: string };
+
 export type GeneratedContent = { type: AIContentType; content: string };
 
 export type MeetingNote = {
@@ -470,6 +472,20 @@ export const smaApi = {
         onError('Stream interrupted');
       }
     }
+  },
+
+  // Ask AI history — GET / DELETE persisted conversation
+  getAskAIHistory: async (
+    meetingId: string
+  ): Promise<{ role: 'user' | 'assistant'; content: string }[]> => {
+    const res = await apiClient.get<{
+      data: { messages: { role: 'user' | 'assistant'; content: string }[] };
+    }>(`/sma/meetings/${meetingId}/ask/history`);
+    return res.data.data.messages;
+  },
+
+  clearAskAIHistory: async (meetingId: string): Promise<void> => {
+    await apiClient.delete(`/sma/meetings/${meetingId}/ask/history`);
   },
 
   // Export transcript or summary as PDF/TXT — triggers file download
