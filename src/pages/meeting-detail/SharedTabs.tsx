@@ -1354,7 +1354,8 @@ export function AskAITab({
                 : 'bg-neutral-100 dark:bg-neutral-800 border-transparent text-neutral-500 dark:text-neutral-400'
             }`}
           >
-            {creditsWarn && '⚠ '}{creditsLeft} credit{creditsLeft !== 1 ? 's' : ''} left
+            {creditsWarn && '⚠ '}
+            {creditsLeft} credit{creditsLeft !== 1 ? 's' : ''} left
           </span>
         )}
         {messages.length > 0 && (

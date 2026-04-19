@@ -937,11 +937,14 @@ export default function Meetings() {
               <p className="text-sm text-neutral-400 dark:text-neutral-500">
                 No meetings found
               </p>
-              {(activeTab !== 'all' || searchQuery || selectedTagIds.size > 0) && (
+              {(activeTab !== 'all' ||
+                searchQuery ||
+                selectedTagIds.size > 0) && (
                 <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-neutral-400 dark:text-neutral-500">
                   {activeTab !== 'all' && (
                     <span className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-                      Status: {FILTER_TABS.find(t => t.id === activeTab)?.label}
+                      Status:{' '}
+                      {FILTER_TABS.find((t) => t.id === activeTab)?.label}
                     </span>
                   )}
                   {searchQuery && (
@@ -951,7 +954,8 @@ export default function Meetings() {
                   )}
                   {selectedTagIds.size > 0 && (
                     <span className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
-                      {selectedTagIds.size} tag{selectedTagIds.size !== 1 ? 's' : ''}
+                      {selectedTagIds.size} tag
+                      {selectedTagIds.size !== 1 ? 's' : ''}
                     </span>
                   )}
                   <button

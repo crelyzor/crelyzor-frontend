@@ -43,9 +43,11 @@ const FILTER_TABS: { label: string; value: FilterStatus }[] = [
 /** Returns the local timezone abbreviation, e.g. "IST", "EST", "PST" */
 function getLocalTzAbbr(): string {
   try {
-    return new Intl.DateTimeFormat('en', { timeZoneName: 'short' })
-      .formatToParts(new Date())
-      .find((p) => p.type === 'timeZoneName')?.value ?? '';
+    return (
+      new Intl.DateTimeFormat('en', { timeZoneName: 'short' })
+        .formatToParts(new Date())
+        .find((p) => p.type === 'timeZoneName')?.value ?? ''
+    );
   } catch {
     return '';
   }
@@ -139,7 +141,8 @@ function BookingRow({
             <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">
               <Clock className="w-3 h-3 shrink-0" />
               <span>
-                {format(start, 'h:mm a')} – {format(end, 'h:mm a')}{LOCAL_TZ ? ` ${LOCAL_TZ}` : ''}
+                {format(start, 'h:mm a')} – {format(end, 'h:mm a')}
+                {LOCAL_TZ ? ` ${LOCAL_TZ}` : ''}
               </span>
               <span className="text-neutral-300 dark:text-neutral-600">·</span>
               {getLocationIcon(booking.eventType.locationType)}

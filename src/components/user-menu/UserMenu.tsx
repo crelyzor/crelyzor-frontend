@@ -99,7 +99,9 @@ export function UserMenu() {
                   onClick={() => {
                     close();
                     if (user?.id) {
-                      localStorage.removeItem(`crelyzor_onboarding_done:${user.id}`);
+                      localStorage.removeItem(
+                        `crelyzor_onboarding_done:${user.id}`
+                      );
                       sessionStorage.setItem('crelyzor_onboarding_force', '1');
                     }
                     navigate('/');

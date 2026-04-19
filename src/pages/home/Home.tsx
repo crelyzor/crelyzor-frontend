@@ -155,7 +155,8 @@ export default function Home() {
     !currentUserLoading &&
     onboardingReady &&
     !onboardingDismissed &&
-    (onboardingForced || (activeCardCount === 0 && (allMeetingsData?.length ?? 0) === 0));
+    (onboardingForced ||
+      (activeCardCount === 0 && (allMeetingsData?.length ?? 0) === 0));
 
   // Compact sticky bar scroll values
   const barOpacity = useTransform(scrollY, [120, 170], [0, 1]);

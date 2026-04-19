@@ -120,8 +120,8 @@ export default function SetupPage() {
             Your public card will live at{' '}
             <span className="font-medium text-neutral-700 dark:text-neutral-300">
               crelyzor.com/[username]
-            </span>
-            {' '}— pick something you'd share on a business card.
+            </span>{' '}
+            — pick something you'd share on a business card.
           </p>
         </div>
 
