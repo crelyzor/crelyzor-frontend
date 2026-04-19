@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-04-19 (Phase 4.1 complete ✅ — Phase 4.2 Ask AI Persistence in progress)
+Last updated: 2026-04-19 (Phase 4.2 complete ✅ — Ask AI Persistence shipped)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -209,9 +209,18 @@ Currently: meeting cards use `transition-all` which causes jitter/paint issues o
 - [x] Same fix on VoiceNotes.tsx cards and any other list cards using `transition-all`
 - [x] Test in both light and dark mode
 
-### 22. Ask AI Persistence (Deferred)
+### 22. Ask AI Persistence ✅ Complete (Phase 4.2)
 
-Deferred until Ask AI becomes universal (Phase 2 Big Brain). Skip for now.
+- [x] `queryKeys.sma.askHistory(meetingId)` added to `queryKeys.ts`
+- [x] `AIChatMessage` type exported from `smaService.ts` (removed local definition)
+- [x] `smaApi.getAskAIHistory(meetingId)` — `GET /sma/meetings/:id/ask/history`
+- [x] `smaApi.clearAskAIHistory(meetingId)` — `DELETE /sma/meetings/:id/ask/history`
+- [x] `useAskAIHistory(meetingId)` — `staleTime: Infinity`, `refetchOnMount: false`, `refetchOnWindowFocus: false`
+- [x] `useClearAskAIHistory(meetingId)` — on success clears cache via `setQueryData([])`
+- [x] `AskAITab` seeds `messages` from DB history on first mount (ref-based guard, no re-seed on background refetch)
+- [x] Skeleton shown while history loads
+- [x] Clear button (`Trash2`) in header — only visible when messages exist, clears local state + cache on success
+- [x] Suggestion chips only shown when `messages.length === 0`
 
 ---
 
