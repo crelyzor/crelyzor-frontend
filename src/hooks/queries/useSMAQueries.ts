@@ -398,10 +398,7 @@ export function useClearAskAIHistory(meetingId: string) {
   return useMutation({
     mutationFn: () => smaApi.clearAskAIHistory(meetingId),
     onSuccess: () => {
-      qc.setQueryData<AIChatMessage[]>(
-        queryKeys.sma.askHistory(meetingId),
-        []
-      );
+      qc.setQueryData<AIChatMessage[]>(queryKeys.sma.askHistory(meetingId), []);
     },
     onError: () => toast.error('Failed to clear chat history'),
   });
