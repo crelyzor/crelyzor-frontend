@@ -937,6 +937,35 @@ export default function Meetings() {
               <p className="text-sm text-neutral-400 dark:text-neutral-500">
                 No meetings found
               </p>
+              {(activeTab !== 'all' || searchQuery || selectedTagIds.size > 0) && (
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-neutral-400 dark:text-neutral-500">
+                  {activeTab !== 'all' && (
+                    <span className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                      Status: {FILTER_TABS.find(t => t.id === activeTab)?.label}
+                    </span>
+                  )}
+                  {searchQuery && (
+                    <span className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 truncate max-w-[180px]">
+                      "{searchQuery}"
+                    </span>
+                  )}
+                  {selectedTagIds.size > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                      {selectedTagIds.size} tag{selectedTagIds.size !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                  <button
+                    onClick={() => {
+                      setActiveTab('all');
+                      setSearchQuery('');
+                      setSelectedTagIds(new Set());
+                    }}
+                    className="text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 underline underline-offset-2 transition-colors"
+                  >
+                    Clear filters
+                  </button>
+                </div>
+              )}
             </motion.div>
           )}
 

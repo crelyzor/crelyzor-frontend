@@ -214,6 +214,14 @@ export default function Cards() {
             <p className="text-sm text-neutral-400 dark:text-neutral-500">
               Failed to load cards
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={() => window.location.reload()}
+            >
+              Try again
+            </Button>
           </div>
         ) : isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">

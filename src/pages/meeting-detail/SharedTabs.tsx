@@ -1348,13 +1348,13 @@ export function AskAITab({
         Ask AI
         {creditsLeft !== null && (
           <span
-            className={`ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+            className={`ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${
               creditsWarn
-                ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
-                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
+                ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/50 text-amber-700 dark:text-amber-400'
+                : 'bg-neutral-100 dark:bg-neutral-800 border-transparent text-neutral-500 dark:text-neutral-400'
             }`}
           >
-            {creditsLeft} credit{creditsLeft !== 1 ? 's' : ''} left
+            {creditsWarn && '⚠ '}{creditsLeft} credit{creditsLeft !== 1 ? 's' : ''} left
           </span>
         )}
         {messages.length > 0 && (

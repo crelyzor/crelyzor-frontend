@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-04-19 (Phase 4.2 complete ✅ — Ask AI Persistence shipped)
+Last updated: 2026-04-19 (Phase 4.4 complete ✅ — Polish & First-Run Experience shipped)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -699,28 +699,46 @@ See item 22 above for full checklist.
 
 ---
 
-## Phase 4.3 — Two-way GCal Push Webhooks
+## Phase 4.3 — Two-way GCal Push Webhooks ✅ Complete
 
-> Pull-based sync already works on every dashboard load. This phase wires real-time push delivery.
-> Frontend work is minimal — mostly a status badge + backfill trigger.
+> Pull-based sync already works on every dashboard load. Phase 4.3 adds real-time push delivery on top.
 
-### P0 — Integration Status Update
-
-- [ ] `GET /integrations/google/status` response: add `pushEnabled: boolean` field
-- [ ] `queryKeys.integrations.google.status()` — already exists, just needs type update
-- [ ] Update `GCalConnectionStatus` type in `src/services/integrationService.ts` (or wherever typed)
-
-### P1 — Settings > Integrations UI
-
-- [ ] Show "Real-time sync" status badge when `pushEnabled === true` (neutral treatment — no green)
-- [ ] On GCal connect success callback (`calendarConnected=true` in URL params): call backfill endpoint `POST /integrations/google/calendar/push/register` (fire-and-forget, no toast needed)
-- [ ] Invalidate `queryKeys.integrations.google.status()` after backfill call
+- [x] `pushEnabled: boolean` added to `GCalConnectionStatus` type in `integrationsService.ts`
+- [x] `registerGCalPushChannel()` API method added
+- [x] `useRegisterGCalPushChannel()` mutation hook (fail-open, no error toast)
+- [x] Settings > Integrations: auto-registers on mount when `connected && !pushEnabled`
+- [x] Settings > Integrations: "Real-time sync active" badge when `pushEnabled === true`
 
 ---
 
 ## Phase 4.4 — Polish & First-Run Experience
 
-> Scope defined after Phase 4.3 ships. A fresh product audit will surface the real gaps.
+> **Goal:** Fix the gaps a real user hits in their first week. Based on a full product audit (2026-04-19).
+
+### P0 — Backend prerequisite (must ship first)
+
+- [x] `CardContact` soft delete — add `isDeleted`/`deletedAt` to `CardContact` schema, `db:push`, update `cardService.ts` contact delete to soft delete instead of hard delete
+
+### P1 — First-run & onboarding
+
+- [x] **Setup page explanation** — add subtitle "Your public card lives at crelyzor.com/[username]" so user understands why this is required
+- [x] **Onboarding re-trigger** — add "Getting started" option in UserMenu that clears the onboarding localStorage key and navigates home, re-opening the overlay. Works even if user has cards/meetings.
+- [x] **Onboarding step tracking** — overlay shows when explicitly re-triggered (force flag) or when user has 0 cards + 0 meetings (new user)
+
+### P2 — Error states with no recovery (user gets stuck)
+
+- [x] **Cards page** — added "Try again" Retry button to error state
+- [x] **Voice notes** — failed transcription items now show a Trash2 Delete button that stops propagation; user can clear stuck notes
+- [x] **Meetings filter combo** — when filter combo produces 0 results, show active filter pills + "Clear filters" link
+- [ ] **Meeting detail — Generate tab** — already shows "Generate not available / A completed transcript is required" (done in earlier Phase)
+
+### P3 — UX rough edges
+
+- [ ] **Meeting creation — upfront link validation** — show inline warning "Auto-generate requires Google Calendar connection" before the user clicks Create, not as a post-submit error
+- [x] **Bookings — timezone display** — all booking times now show the local timezone label (e.g. "2:00 PM – 3:00 PM IST") via `Intl.DateTimeFormat`
+- [ ] **Pricing page — Upgrade CTA** — already present from Phase 3.x (confirmed 2026-04-19)
+- [x] **Home widgets — empty state CTAs** — "No recent meetings" has a "Schedule or import a meeting" link → `/meetings`
+- [x] **Ask AI — low credits warning** — credits badge is now amber with ⚠ prefix when < 10 credits remain, making it visually distinct
 
 ---
 

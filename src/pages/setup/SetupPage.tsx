@@ -117,7 +117,11 @@ export default function SetupPage() {
             Choose your username
           </h1>
           <p className="text-neutral-500 dark:text-neutral-400">
-            This will be your unique identifier and personal workspace name.
+            Your public card will live at{' '}
+            <span className="font-medium text-neutral-700 dark:text-neutral-300">
+              crelyzor.com/[username]
+            </span>
+            {' '}— pick something you'd share on a business card.
           </p>
         </div>
 

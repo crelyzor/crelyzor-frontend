@@ -8,14 +8,16 @@ import {
   Loader2,
   AlertCircle,
   Tag,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TagChip } from '@/components/ui/TagChip';
 import { motion } from 'motion/react';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
-import { useVoiceNotes } from '@/hooks/queries/useMeetingQueries';
+import { useVoiceNotes, useDeleteMeeting } from '@/hooks/queries/useMeetingQueries';
 import { useUserTags } from '@/hooks/queries/useTagQueries';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
+import { toast } from 'sonner';
 import type { TranscriptionStatus } from '@/types';
 
 function TranscriptBadge({ status }: { status: TranscriptionStatus }) {
@@ -78,6 +80,7 @@ export default function VoiceNotes() {
 
   const { data: rawNotes, isLoading, isError, refetch } = useVoiceNotes();
   const { data: userTags } = useUserTags();
+  const deleteMeeting = useDeleteMeeting();
 
   const notes = useMemo(
     () => (rawNotes ?? []).map(toDisplayMeeting),
@@ -251,7 +254,7 @@ export default function VoiceNotes() {
                                 hover:border-neutral-200 dark:hover:border-neutral-700
                                 hover:shadow-sm transition-[border-color,box-shadow] duration-200"
                       >
-                        <div className="px-4 py-3.5 flex items-start gap-3">
+                      <div className="px-4 py-3.5 flex items-start gap-3">
                           {/* Mic icon */}
                           <div className="shrink-0 w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mt-0.5">
                             <Mic className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
@@ -283,6 +286,24 @@ export default function VoiceNotes() {
                               />
                             </div>
                           </div>
+
+                          {/* Delete action — only for FAILED notes */}
+                          {note._raw.transcriptionStatus === 'FAILED' && (
+                            <button
+                              type="button"
+                              aria-label="Delete failed note"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteMeeting.mutate(note.id, {
+                                  onSuccess: () => toast.success('Voice note deleted'),
+                                });
+                              }}
+                              className="shrink-0 mt-0.5 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all"
+                              title="Delete failed note"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </motion.div>
                     );

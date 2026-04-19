@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Settings, User, ChevronDown } from 'lucide-react';
+import { LogOut, Settings, User, ChevronDown, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
 
@@ -89,6 +89,20 @@ export function UserMenu() {
                   onClick={() => {
                     close();
                     navigate('/settings?tab=appearance');
+                  }}
+                />
+
+                {/* Getting started — re-opens onboarding overlay */}
+                <MenuItem
+                  icon={Sparkles}
+                  label="Getting started"
+                  onClick={() => {
+                    close();
+                    if (user?.id) {
+                      localStorage.removeItem(`crelyzor_onboarding_done:${user.id}`);
+                      sessionStorage.setItem('crelyzor_onboarding_force', '1');
+                    }
+                    navigate('/');
                   }}
                 />
 

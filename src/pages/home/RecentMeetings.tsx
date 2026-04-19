@@ -122,6 +122,12 @@ export function RecentMeetings({ meetings, isLoading, isError }: Props) {
                 <p className="text-xs text-neutral-400 dark:text-neutral-600">
                   No recent meetings
                 </p>
+                <button
+                  onClick={() => navigate('/meetings')}
+                  className="mt-1.5 text-[11px] text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 underline underline-offset-2 transition-colors"
+                >
+                  Schedule or import a meeting
+                </button>
               </div>
             )}
 

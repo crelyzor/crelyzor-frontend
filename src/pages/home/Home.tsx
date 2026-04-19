@@ -30,6 +30,7 @@ export default function Home() {
 
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const [onboardingReady, setOnboardingReady] = useState(false);
+  const [onboardingForced, setOnboardingForced] = useState(false);
 
   const {
     data: allMeetingsData,
@@ -51,10 +52,17 @@ export default function Home() {
     if (!onboardingStorageKey) {
       setOnboardingDismissed(false);
       setOnboardingReady(false);
+      setOnboardingForced(false);
       return;
     }
 
-    setOnboardingDismissed(!!localStorage.getItem(onboardingStorageKey));
+    const isDismissed = !!localStorage.getItem(onboardingStorageKey);
+    setOnboardingDismissed(isDismissed);
+    // Only force-open if "Getting started" was explicitly clicked (sessionStorage flag)
+    if (sessionStorage.getItem('crelyzor_onboarding_force')) {
+      sessionStorage.removeItem('crelyzor_onboarding_force');
+      setOnboardingForced(true);
+    }
     setOnboardingReady(true);
   }, [onboardingStorageKey]);
 
@@ -140,15 +148,14 @@ export default function Home() {
       .at(0);
   }, [allMeetingsData]);
 
-  // Onboarding
+  // Onboarding: show on first use (no cards + no meetings), OR when explicitly re-triggered
   const showOnboarding =
     !meetingsLoading &&
     !cardsLoading &&
     !currentUserLoading &&
     onboardingReady &&
     !onboardingDismissed &&
-    activeCardCount === 0 &&
-    (allMeetingsData?.length ?? 0) === 0;
+    (onboardingForced || (activeCardCount === 0 && (allMeetingsData?.length ?? 0) === 0));
 
   // Compact sticky bar scroll values
   const barOpacity = useTransform(scrollY, [120, 170], [0, 1]);
@@ -266,6 +273,7 @@ export default function Home() {
             localStorage.setItem(onboardingStorageKey, '1');
           }
           setOnboardingDismissed(true);
+          setOnboardingForced(false);
         }}
       />
     </div>
