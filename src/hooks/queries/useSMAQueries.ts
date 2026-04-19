@@ -390,6 +390,8 @@ export function useAskAIHistory(meetingId: string, enabled = true) {
     queryFn: () => smaApi.getAskAIHistory(meetingId),
     enabled: !!meetingId && enabled,
     staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 }
 

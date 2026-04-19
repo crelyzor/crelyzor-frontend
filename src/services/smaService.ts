@@ -479,9 +479,9 @@ export const smaApi = {
     meetingId: string
   ): Promise<{ role: 'user' | 'assistant'; content: string }[]> => {
     const res = await apiClient.get<{
-      data: { messages: { role: 'user' | 'assistant'; content: string }[] };
+      messages: { role: 'user' | 'assistant'; content: string }[];
     }>(`/sma/meetings/${meetingId}/ask/history`);
-    return res.data.data.messages;
+    return res.messages;
   },
 
   clearAskAIHistory: async (meetingId: string): Promise<void> => {
