@@ -1,18 +1,24 @@
+import { Navigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { useGoogleLogin } from '@/hooks/queries/useAuthQueries';
+import { useAuthStore } from '@/stores';
+import { ThemeToggle } from '@/components/toolbar/ThemeToggle';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 const GOLD = '#d4af61';
 const PILLARS = ['CARDS', 'CALENDAR', 'MEETINGS', 'VOICE', 'TASKS', 'AI'];
 
 export default function SignIn() {
   const { login } = useGoogleLogin();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
-    <div
-      className="min-h-screen flex flex-col px-8 sm:px-16 md:px-24 relative overflow-hidden"
-      style={{ backgroundColor: '#0a0a0a' }}
-    >
+    <div className="min-h-screen flex flex-col px-8 sm:px-16 md:px-24 relative overflow-hidden bg-background text-foreground">
       {/* Ambient gold glow — top center */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] pointer-events-none"
@@ -20,6 +26,18 @@ export default function SignIn() {
           background: `radial-gradient(ellipse at top, ${GOLD}09 0%, transparent 65%)`,
         }}
       />
+
+      {/* Theme toggle — top right */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.05 }}
+        className="absolute top-5 right-8 sm:right-16 md:right-24 z-10"
+      >
+        <TooltipProvider>
+          <ThemeToggle />
+        </TooltipProvider>
+      </motion.div>
 
       {/* Logo — top left */}
       <motion.div
@@ -29,14 +47,14 @@ export default function SignIn() {
         className="flex items-center gap-2.5 pt-7 pb-0"
       >
         <div
-          className="w-6 h-6 rounded-lg border flex items-center justify-center flex-shrink-0"
-          style={{ borderColor: `${GOLD}60`, backgroundColor: '#0a0a0a' }}
+          className="w-6 h-6 rounded-lg border flex items-center justify-center flex-shrink-0 bg-background"
+          style={{ borderColor: `${GOLD}60` }}
         >
           <span style={{ color: GOLD }} className="text-[11px] font-semibold">
             C
           </span>
         </div>
-        <span className="text-sm tracking-wide" style={{ color: '#555' }}>
+        <span className="text-sm tracking-wide text-muted-foreground">
           Crelyzor
         </span>
       </motion.div>
@@ -52,10 +70,7 @@ export default function SignIn() {
         >
           {PILLARS.map((p, i) => (
             <span key={p} className="flex items-center gap-2">
-              <span
-                className="text-[13px] font-medium tracking-[0.18em]"
-                style={{ color: '#4a4a4a' }}
-              >
+              <span className="text-[13px] font-medium tracking-[0.18em] text-muted-foreground opacity-60">
                 {p}
               </span>
               {i < PILLARS.length - 1 && (
@@ -73,8 +88,8 @@ export default function SignIn() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.22 }}
-          className="font-semibold leading-[1.05] tracking-tight"
-          style={{ fontSize: 'clamp(42px, 6vw, 72px)', color: '#fff' }}
+          className="font-semibold leading-[1.05] tracking-tight text-foreground"
+          style={{ fontSize: 'clamp(42px, 6vw, 72px)' }}
         >
           your whole work life, <span style={{ color: GOLD }}>sorted.</span>
         </motion.h1>
@@ -85,8 +100,7 @@ export default function SignIn() {
         initial={{ scaleX: 0, originX: 0 }}
         animate={{ scaleX: 1 }}
         transition={{ duration: 0.6, delay: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
-        className="w-full h-px"
-        style={{ backgroundColor: '#1e1e1e' }}
+        className="w-full h-px bg-border"
       />
 
       {/* Bottom half — sign in block */}
@@ -95,8 +109,7 @@ export default function SignIn() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.55 }}
-          className="text-sm mb-6"
-          style={{ color: '#555' }}
+          className="text-sm mb-6 text-muted-foreground"
         >
           Sign in to your workspace.
         </motion.p>
@@ -109,7 +122,9 @@ export default function SignIn() {
           <Button
             onClick={login}
             variant="outline"
-            className="w-full h-11 rounded-xl border-neutral-800 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white font-medium text-[13px] transition-all duration-150"
+            className="w-full h-11 rounded-xl font-medium text-[13px] transition-all duration-150
+              border-border bg-surface text-foreground
+              hover:bg-surface-raised hover:text-foreground"
           >
             <svg className="w-4 h-4 mr-2.5 flex-shrink-0" viewBox="0 0 24 24">
               <path
@@ -137,20 +152,19 @@ export default function SignIn() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.75 }}
-          className="text-[11px] mt-5 leading-relaxed"
-          style={{ color: '#2e2e2e' }}
+          className="text-[11px] mt-5 leading-relaxed text-muted-foreground opacity-40"
         >
           By continuing you agree to our{' '}
           <a
             href="#"
-            className="underline underline-offset-2 hover:text-neutral-500 transition-colors"
+            className="underline underline-offset-2 hover:opacity-80 transition-opacity"
           >
             Terms
           </a>{' '}
           &{' '}
           <a
             href="#"
-            className="underline underline-offset-2 hover:text-neutral-500 transition-colors"
+            className="underline underline-offset-2 hover:opacity-80 transition-opacity"
           >
             Privacy Policy
           </a>
@@ -163,8 +177,7 @@ export default function SignIn() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3, delay: 0.8 }}
-        className="absolute bottom-6 right-8 sm:right-16 md:right-24 text-[10px] tracking-widest uppercase"
-        style={{ color: '#222' }}
+        className="absolute bottom-6 right-8 sm:right-16 md:right-24 text-[10px] tracking-widest uppercase text-muted-foreground opacity-20"
       >
         © {new Date().getFullYear()} Crelyzor
       </motion.p>
