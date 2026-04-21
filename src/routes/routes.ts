@@ -20,6 +20,7 @@ const Search = lazy(() => import('@/pages/search'));
 const Tags = lazy(() => import('@/pages/tags'));
 const TagDetail = lazy(() => import('@/pages/tags/TagDetailPage'));
 const Pricing = lazy(() => import('@/pages/pricing'));
+const NotFound = lazy(() => import('@/pages/not-found'));
 
 export type RouteConfig = {
   path: string;
@@ -47,4 +48,5 @@ export const routes = {
   Tags,
   TagDetail,
   Pricing,
+  NotFound,
 };

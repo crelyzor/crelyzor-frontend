@@ -33,6 +33,7 @@ const {
   Tags,
   TagDetail,
   Pricing,
+  NotFound,
 } = routes;
 
 function App() {
@@ -229,6 +230,7 @@ function App() {
                     </AuthGuard>
                   }
                 />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </BrowserRouter>
