@@ -8,6 +8,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 
 const GOLD = '#d4af61';
 const PILLARS = ['CARDS', 'CALENDAR', 'MEETINGS', 'VOICE', 'TASKS', 'AI'];
+const PUBLIC_URL = import.meta.env.VITE_CARDS_PUBLIC_URL as string;
 
 export default function SignIn() {
   const { login } = useGoogleLogin();
@@ -156,14 +157,18 @@ export default function SignIn() {
         >
           By continuing you agree to our{' '}
           <a
-            href="#"
+            href={`${PUBLIC_URL}/terms`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="underline underline-offset-2 hover:opacity-80 transition-opacity"
           >
             Terms
           </a>{' '}
           &{' '}
           <a
-            href="#"
+            href={`${PUBLIC_URL}/privacy`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="underline underline-offset-2 hover:opacity-80 transition-opacity"
           >
             Privacy Policy
