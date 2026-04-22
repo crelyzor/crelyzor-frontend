@@ -20,8 +20,7 @@ export const useAuthStore = create<AuthStore>()((set) => ({
   isAuthenticated: false,
   isInitializing: true,
 
-  setAccessToken: (token) =>
-    set({ accessToken: token, isAuthenticated: true }),
+  setAccessToken: (token) => set({ accessToken: token, isAuthenticated: true }),
 
   logout: () => set({ accessToken: null, isAuthenticated: false }),
 

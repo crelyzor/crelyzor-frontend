@@ -9,7 +9,10 @@ export const queryClient = new QueryClient({
       gcTime: 1000 * 60 * 30, // 30 minutes (formerly cacheTime)
       // Never retry auth/permission errors — they will not resolve on their own
       retry: (failureCount, error) => {
-        if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+        if (
+          error instanceof ApiError &&
+          (error.status === 401 || error.status === 403)
+        ) {
           return false;
         }
         return failureCount < 2;
