@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { DateTimePicker } from '@/components/ui/DateTimePicker';
+import { DateTimePicker, TimePicker } from '@/components/ui/DateTimePicker';
 import {
   Popover,
   PopoverContent,
@@ -19,8 +19,10 @@ import {
 import { useCreateMeeting } from '@/hooks/queries/useMeetingQueries';
 import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
 import { useUserSearch } from '@/hooks/queries/useUserQueries';
+import { useUserSettings } from '@/hooks/queries/useSettingsQueries';
+import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
 import { toast } from 'sonner';
-import { CalendarDays, UserPlus, X } from 'lucide-react';
+import { CalendarDays, Clock, UserPlus, X } from 'lucide-react';
 import type { UserSearchResult } from '@/services/userService';
 
 type Props = {
@@ -50,26 +52,73 @@ function toLocalTimeStr(d: Date): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
-function formatMeetingDateTime(date: string, time: string): string {
-  if (!date) return 'Set date & time';
-  const d = new Date(`${date}T${time || '00:00'}`);
-  const datePart = d.toLocaleDateString('en-US', {
+function formatDate(date: string): string {
+  if (!date) return 'Pick a date';
+  const d = new Date(`${date}T00:00`);
+  return d.toLocaleDateString('en-US', {
+    weekday: 'short',
     month: 'short',
     day: 'numeric',
   });
-  if (!time) return datePart;
-  const h = d.getHours();
-  const m = d.getMinutes();
-  const period = h >= 12 ? 'PM' : 'AM';
-  const h12 = h % 12 || 12;
-  const minStr = m > 0 ? `:${String(m).padStart(2, '0')}` : '';
-  return `${datePart} · ${h12}${minStr} ${period}`;
 }
+
 
 function buildISO(date: string, time: string): string {
   const [year, month, day] = date.split('-').map(Number);
   const [hours, minutes] = (time || '00:00').split(':').map(Number);
   return new Date(year, month - 1, day, hours, minutes).toISOString();
+}
+
+
+function formatTime(t: string): string {
+  if (!t) return 'Set time';
+  const [hh, mm] = t.split(':').map(Number);
+  const period = hh >= 12 ? 'PM' : 'AM';
+  const h12 = hh % 12 || 12;
+  const minStr = mm > 0 ? `:${String(mm).padStart(2, '0')}` : '';
+  return `${h12}${minStr} ${period}`;
+}
+
+function TimeField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 w-full h-9 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-900 dark:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors"
+      >
+        <Clock className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+        <span className={value ? '' : 'text-neutral-400 dark:text-neutral-500'}>
+          {formatTime(value)}
+        </span>
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div
+            className="absolute top-full left-0 mt-1 z-50 rounded-2xl overflow-hidden px-3 py-2.5 bg-white dark:bg-[#1c1c1e] border border-neutral-200 dark:border-white/[0.08] shadow-lg dark:shadow-[0_16px_40px_rgba(0,0,0,0.6)]"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <TimePicker
+              time={value}
+              clearable={false}
+              onChange={(t) => {
+                if (t) onChange(t);
+              }}
+            />
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
 
 function ParticipantPicker({
@@ -273,50 +322,47 @@ export function ScheduleMeetingDialog({
   defaultStartTime,
 }: Props) {
   const [title, setTitle] = useState('');
-  const [startDate, setStartDate] = useState('');
+  const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
-  const [endDate, setEndDate] = useState('');
   const [endTime, setEndTime] = useState('');
-  const [location, setLocation] = useState('');
   const [autoGenerateMeet, setAutoGenerateMeet] = useState(true);
   const [participants, setParticipants] = useState<SelectedParticipant[]>([]);
-  const [openPicker, setOpenPicker] = useState<'start' | 'end' | null>(null);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   const createMeeting = useCreateMeeting();
   const { data: gcalStatus } = useGoogleCalendarStatus();
+  const { data: settings } = useUserSettings();
+  const { data: billingData } = useBillingUsage();
 
   useEffect(() => {
     if (!open) {
       setTitle('');
-      setStartDate('');
+      setDate('');
       setStartTime('');
-      setEndDate('');
       setEndTime('');
-      setLocation('');
       setAutoGenerateMeet(true);
       setParticipants([]);
-      setOpenPicker(null);
+      setDatePickerOpen(false);
       return;
     }
 
     if (defaultStartTime) {
       const start = new Date(defaultStartTime);
       const end = new Date(start.getTime() + 60 * 60 * 1000);
-      setStartDate(toLocalDateStr(start));
+      setDate(toLocalDateStr(start));
       setStartTime(toLocalTimeStr(start));
-      setEndDate(toLocalDateStr(end));
       setEndTime(toLocalTimeStr(end));
     }
   }, [open, defaultStartTime]);
 
-  const handleCreateScheduled = useCallback(() => {
-    if (!title.trim() || !startDate || !startTime || !endDate || !endTime) {
-      toast.error('Title, start time, and end time are required');
+  const handleCreate = useCallback(() => {
+    if (!title.trim() || !date || !startTime || !endTime) {
+      toast.error('Title, date, start time, and end time are required');
       return;
     }
 
-    const startISO = buildISO(startDate, startTime);
-    const endISO = buildISO(endDate, endTime);
+    const startISO = buildISO(date, startTime);
+    const endISO = buildISO(date, endTime);
 
     if (new Date(startISO) >= new Date(endISO)) {
       toast.error('End time must be after start time');
@@ -330,7 +376,6 @@ export function ScheduleMeetingDialog({
         startTime: startISO,
         endTime: endISO,
         timezone: 'UTC',
-        location: location.trim() || undefined,
         addToCalendar: gcalStatus?.connected ? autoGenerateMeet : undefined,
         participantUserIds: participants
           .filter(
@@ -354,11 +399,9 @@ export function ScheduleMeetingDialog({
     );
   }, [
     title,
-    startDate,
+    date,
     startTime,
-    endDate,
     endTime,
-    location,
     autoGenerateMeet,
     createMeeting,
     gcalStatus?.connected,
@@ -374,34 +417,34 @@ export function ScheduleMeetingDialog({
           <DialogTitle>Schedule a Meet</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
+          {/* Title */}
           <div className="space-y-1.5">
             <Label className="text-xs text-neutral-500">Title</Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               placeholder="Meeting title"
               className="text-sm"
+              autoFocus
             />
           </div>
 
-          {/* Start time */}
+          {/* Date */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-neutral-500">Start time</Label>
-            <Popover
-              open={openPicker === 'start'}
-              onOpenChange={(open) => setOpenPicker(open ? 'start' : null)}
-            >
+            <Label className="text-xs text-neutral-500">Date</Label>
+            <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
               <PopoverTrigger asChild>
                 <button
                   type="button"
                   className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
-                    startDate
+                    date
                       ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
                       : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
                   } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
                 >
                   <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
-                  <span>{formatMeetingDateTime(startDate, startTime)}</span>
+                  <span>{formatDate(date)}</span>
                 </button>
               </PopoverTrigger>
               <PopoverContent
@@ -409,60 +452,32 @@ export function ScheduleMeetingDialog({
                 align="start"
               >
                 <DateTimePicker
-                  date={startDate || null}
-                  time={startTime}
-                  onDateChange={(iso) => setStartDate(iso)}
-                  onTimeChange={(t) => setStartTime(t)}
+                  date={date || null}
+                  time=""
+                  showTime={false}
+                  onDateChange={(iso) => {
+                    setDate(iso);
+                    setDatePickerOpen(false);
+                  }}
+                  onTimeChange={() => {}}
                 />
               </PopoverContent>
             </Popover>
           </div>
 
-          {/* End time */}
-          <div className="space-y-1.5">
-            <Label className="text-xs text-neutral-500">End time</Label>
-            <Popover
-              open={openPicker === 'end'}
-              onOpenChange={(open) => setOpenPicker(open ? 'end' : null)}
-            >
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
-                    endDate
-                      ? 'border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100'
-                      : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500'
-                  } bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600`}
-                >
-                  <CalendarDays className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
-                  <span>{formatMeetingDateTime(endDate, endTime)}</span>
-                </button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="p-0 border-0 shadow-none bg-transparent w-auto"
-                align="start"
-              >
-                <DateTimePicker
-                  date={endDate || null}
-                  time={endTime}
-                  onDateChange={(iso) => setEndDate(iso)}
-                  onTimeChange={(t) => setEndTime(t)}
-                />
-              </PopoverContent>
-            </Popover>
+          {/* Start / End time */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-neutral-500">Start time</Label>
+              <TimeField value={startTime} onChange={setStartTime} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-neutral-500">End time</Label>
+              <TimeField value={endTime} onChange={setEndTime} />
+            </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs text-neutral-500">
-              Location <span className="text-neutral-400">(optional)</span>
-            </Label>
-            <Input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. Google Meet, office, link…"
-              className="text-sm"
-            />
-          </div>
+          {/* Participants */}
           <div className="space-y-1.5">
             <Label className="text-xs text-neutral-500">
               Participants <span className="text-neutral-400">(optional)</span>
@@ -472,6 +487,8 @@ export function ScheduleMeetingDialog({
               onChange={setParticipants}
             />
           </div>
+
+          {/* GCal toggle */}
           {gcalStatus?.connected && (
             <div className="flex items-center gap-2 pt-1">
               <Switch
@@ -487,6 +504,56 @@ export function ScheduleMeetingDialog({
               </Label>
             </div>
           )}
+
+          {/* Recall bot status */}
+          {settings?.recallAvailable && (() => {
+            const recallEnabled = settings?.recallEnabled ?? false;
+            const recallLimit = billingData?.limits.recallHours ?? 0;
+            const recallUsed = billingData?.usage.recallHours ?? 0;
+            // recallLimit === 0 → free plan (never had quota)
+            // recallLimit > 0 && used >= limit → paid plan, quota exhausted this month
+            const noPlan = recallLimit === 0;
+            const quotaExhausted = recallLimit > 0 && recallUsed >= recallLimit;
+
+            if (!recallEnabled) {
+              return (
+                <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                  Auto-record is off — enable it in{' '}
+                  <a
+                    href="/settings?tab=ai"
+                    className="underline hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                    onClick={(e) => { e.preventDefault(); onOpenChange(false); window.location.href = '/settings?tab=ai'; }}
+                  >
+                    Settings → AI
+                  </a>
+                </p>
+              );
+            }
+
+            if (noPlan) {
+              return (
+                <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                  Upgrade your plan to enable auto-record bot
+                </p>
+              );
+            }
+
+            if (quotaExhausted) {
+              return (
+                <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                  Auto-record quota reached for this month
+                </p>
+              );
+            }
+
+            return (
+              <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                Bot will auto-join and record this meeting
+              </p>
+            );
+          })()}
+
+          {/* Actions */}
           <div className="flex gap-2 justify-end pt-1">
             <Button
               variant="outline"
@@ -497,7 +564,7 @@ export function ScheduleMeetingDialog({
             </Button>
             <Button
               size="sm"
-              onClick={handleCreateScheduled}
+              onClick={handleCreate}
               disabled={createMeeting.isPending}
             >
               {createMeeting.isPending ? 'Creating…' : 'Create meeting'}

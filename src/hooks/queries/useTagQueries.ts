@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import { tagsApi } from '@/services/tagsService';
+import type { Tag, TagWithCounts } from '@/types/meeting';
 
 export function useUserTags() {
   return useQuery({
@@ -40,8 +41,32 @@ export function useCreateTag() {
   return useMutation({
     mutationFn: (data: { name: string; color?: string }) =>
       tagsApi.createTag(data),
-    onSuccess: () => {
+    onSuccess: (tag) => {
+      qc.setQueryData<Tag[]>(queryKeys.tags.userTags(), (current = []) => {
+        if (current.some((existing) => existing.id === tag.id)) return current;
+        return [...current, tag].sort((a, b) => a.name.localeCompare(b.name));
+      });
+      qc.setQueryData<TagWithCounts[]>(
+        queryKeys.tags.withCounts(),
+        (current = []) => {
+          if (current.some((existing) => existing.id === tag.id))
+            return current;
+          return [
+            ...current,
+            {
+              ...tag,
+              _count: {
+                meetingTags: 0,
+                cardTags: 0,
+                taskTags: 0,
+                contactTags: 0,
+              },
+            },
+          ].sort((a, b) => a.name.localeCompare(b.name));
+        }
+      );
       qc.invalidateQueries({ queryKey: queryKeys.tags.userTags() });
+      qc.invalidateQueries({ queryKey: queryKeys.tags.withCounts() });
     },
     onError: (err: Error) => {
       const msg = err.message?.includes('409')

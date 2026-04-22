@@ -13,7 +13,7 @@ import type { ToolbarItem, ToolbarItemGroup } from '@/types';
 
 export const TOOLBAR_STORAGE_KEY = 'toolbar-pinned-items';
 
-export const DEFAULT_PINNED_IDS = [
+export const LEGACY_DEFAULT_PINNED_IDS = [
   'home',
   'meetings',
   'calendar',
@@ -22,6 +22,17 @@ export const DEFAULT_PINNED_IDS = [
   'cards',
   'voice-notes',
   'settings',
+] as const;
+
+export const DEFAULT_PINNED_IDS = [
+  'home',
+  'meetings',
+  'calendar',
+  'tasks',
+  'bookings',
+  'cards',
+  'voice-notes',
+  'tags',
 ] as const;
 
 export const TOOLBAR_ITEMS: ToolbarItem[] = [

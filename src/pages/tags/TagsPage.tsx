@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import type { FormEvent } from 'react';
 import {
   Tag as TagIcon,
   Plus,
   MoreHorizontal,
   Trash2,
   Edit2,
-  Check,
 } from 'lucide-react';
 import { PageMotion } from '@/components/PageMotion';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,16 @@ import { Link } from 'react-router-dom';
 import type { TagWithCounts } from '@/types/meeting';
 
 const DEFAULT_TAG_COLOR = '#6b7280';
+const TAG_COLOR_PRESETS = [
+  '#6b7280',
+  '#ef4444',
+  '#f97316',
+  '#eab308',
+  '#22c55e',
+  '#3b82f6',
+  '#8b5cf6',
+  '#ec4899',
+];
 
 function TagCard({ tag }: { tag: TagWithCounts }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -143,17 +153,20 @@ function TagCard({ tag }: { tag: TagWithCounts }) {
 export function TagsPage() {
   const { data: tags = [], isLoading } = useTagsWithCounts();
   const { mutate: createTag, isPending: isCreating } = useCreateTag();
-  const [openCreate, setOpenCreate] = useState(false);
   const [newName, setNewName] = useState('');
+  const [newColor, setNewColor] = useState(DEFAULT_TAG_COLOR);
+  const createInputRef = useRef<HTMLInputElement>(null);
 
-  const handleCreate = () => {
+  const handleCreate = (event?: FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
     if (!newName.trim()) return;
     createTag(
-      { name: newName.trim(), color: DEFAULT_TAG_COLOR },
+      { name: newName.trim(), color: newColor },
       {
         onSuccess: () => {
-          setOpenCreate(false);
           setNewName('');
+          setNewColor(DEFAULT_TAG_COLOR);
+          createInputRef.current?.focus();
         },
       }
     );
@@ -162,7 +175,7 @@ export function TagsPage() {
   return (
     <PageMotion>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-full flex flex-col">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
               <TagIcon className="w-6 h-6 text-primary" />
@@ -172,39 +185,61 @@ export function TagsPage() {
               Organize everything across your workspace
             </p>
           </div>
-
-          <Popover open={openCreate} onOpenChange={setOpenCreate}>
-            <PopoverTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                New Tag
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-64 p-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-3">
-                Create Tag
-              </p>
-              <div className="flex gap-2">
-                <input
-                  autoFocus
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-                  placeholder="Tag name..."
-                  className="flex-1 w-full bg-neutral-100 dark:bg-neutral-800 border-none rounded px-3 py-1.5 text-sm outline-none"
-                />
-                <Button
-                  size="sm"
-                  onClick={handleCreate}
-                  disabled={!newName.trim() || isCreating}
-                >
-                  {isCreating ? '...' : <Check className="w-4 h-4" />}
-                  {isCreating ? '' : 'Add'}
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
         </div>
+
+        <form
+          onSubmit={handleCreate}
+          className="mb-8 grid gap-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 sm:grid-cols-[1fr_auto] sm:items-end"
+        >
+          <div className="flex-1">
+            <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+              Create a new tag
+            </p>
+            <input
+              ref={createInputRef}
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Tag name..."
+              maxLength={50}
+              className="mt-2 h-10 w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 text-sm text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:border-neutral-500"
+            />
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                Color
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {TAG_COLOR_PRESETS.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() => setNewColor(color)}
+                    className={`h-6 w-6 rounded-full border-2 transition-transform hover:scale-105 ${
+                      newColor === color
+                        ? 'border-neutral-900 dark:border-neutral-100'
+                        : 'border-transparent'
+                    }`}
+                    style={{ backgroundColor: color }}
+                    aria-label={`Use color ${color}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+          <Button
+            type="submit"
+            disabled={!newName.trim() || isCreating}
+            className="h-10 shrink-0"
+          >
+            {isCreating ? (
+              'Creating...'
+            ) : (
+              <>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Tag
+              </>
+            )}
+          </Button>
+        </form>
 
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -227,7 +262,7 @@ export function TagsPage() {
               Create tags to organize your meetings, contacts, tasks, and cards
               across Crelyzor.
             </p>
-            <Button onClick={() => setOpenCreate(true)}>
+            <Button onClick={() => createInputRef.current?.focus()}>
               <Plus className="w-4 h-4 mr-2" />
               Create Tag
             </Button>

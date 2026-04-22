@@ -205,6 +205,7 @@ export function CreateTaskModal({
     dueTime,
     priority,
     createTask,
+    defaultScheduledTime,
     onClose,
     navigateOnSuccess,
     navigate,

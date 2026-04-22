@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import type { CalendarEvent } from '@/services/integrationsService';
 import type { Meeting } from '@/types';
 import type { TaskWithMeeting } from '@/services/smaService';
@@ -33,6 +34,7 @@ export function CalendarMonthGrid({
   anchorYear,
   onDayClick,
 }: CalendarMonthGridProps) {
+  const navigate = useNavigate();
   const todayStr = toLocalDateStr(today);
 
   return (
@@ -115,7 +117,11 @@ export function CalendarMonthGrid({
                 {shownMeetings.map((m) => (
                   <div
                     key={m.id}
-                    className="truncate text-[10px] font-medium px-1 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 leading-tight"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/meetings/${m.id}`);
+                    }}
+                    className="truncate text-[10px] font-medium px-1 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 leading-tight hover:bg-neutral-300 dark:hover:bg-neutral-600 cursor-pointer transition-colors"
                     title={m.title}
                   >
                     {m.title}

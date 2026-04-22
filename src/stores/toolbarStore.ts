@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { DEFAULT_PINNED_IDS, TOOLBAR_ITEMS } from '@/constants';
+import {
+  DEFAULT_PINNED_IDS,
+  LEGACY_DEFAULT_PINNED_IDS,
+  TOOLBAR_ITEMS,
+} from '@/constants';
 import type { ToolbarItem } from '@/types';
 
 type ToolbarStore = {
@@ -17,6 +21,16 @@ type ToolbarStore = {
   isPinned: (id: string) => boolean;
   setControlCenterOpen: (open: boolean) => void;
 };
+
+type PersistedToolbarState = Partial<Pick<ToolbarStore, 'pinnedIds'>>;
+
+function isLegacyDefaultPinnedIds(pinnedIds: string[] | undefined) {
+  if (!pinnedIds || pinnedIds.length !== LEGACY_DEFAULT_PINNED_IDS.length) {
+    return false;
+  }
+
+  return pinnedIds.every((id, index) => id === LEGACY_DEFAULT_PINNED_IDS[index]);
+}
 
 export const useToolbarStore = create<ToolbarStore>()(
   persist(
@@ -44,8 +58,14 @@ export const useToolbarStore = create<ToolbarStore>()(
     }),
     {
       name: 'calendar-toolbar',
-      version: 1,
-      migrate: (persisted) => persisted,
+      version: 2,
+      migrate: (persisted) => {
+        const state = persisted as PersistedToolbarState;
+        if (isLegacyDefaultPinnedIds(state.pinnedIds)) {
+          return { ...state, pinnedIds: [...DEFAULT_PINNED_IDS] };
+        }
+        return persisted;
+      },
       partialize: (state) => ({ pinnedIds: state.pinnedIds }),
       onRehydrateStorage: () => (state) => {
         if (!state) return;
