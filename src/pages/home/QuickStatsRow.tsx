@@ -92,9 +92,7 @@ export function QuickStatsRow() {
   const { data: cards } = useCards();
   const { data: taskData } = useAllTasks({ status: 'pending', limit: 500 });
 
-  const activeCardCount = (cards ?? []).filter(
-    (card) => !card.isDeleted
-  ).length;
+  const activeCardCount = (cards ?? []).filter((card) => card.isActive).length;
 
   // Meetings this week
   const startOfWeek = new Date();

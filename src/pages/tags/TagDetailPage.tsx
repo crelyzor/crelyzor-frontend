@@ -13,12 +13,13 @@ import {
 import { PageMotion } from '@/components/PageMotion';
 import { useTagItems } from '@/hooks/queries/useTagQueries';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  formatMeetingDate,
-  getStatusStyle,
-  getStatusLabel,
-} from '@/types/meeting';
+import { getStatusStyle, getStatusLabel } from '@/types/meeting';
 import { formatTaskDue } from '@/lib/utils';
+
+function formatTaggedMeetingDate(meeting: { startTime?: string }) {
+  if (!meeting.startTime) return 'No date';
+  return new Date(meeting.startTime).toISOString().split('T')[0];
+}
 
 export default function TagDetailPage() {
   const { tagId } = useParams<{ tagId: string }>();
@@ -167,7 +168,7 @@ export default function TagDetailPage() {
                         {m.title}
                       </h4>
                       <p className="text-xs text-neutral-500">
-                        {m.startTime ? formatMeetingDate(m) : 'No date'}
+                        {formatTaggedMeetingDate(m)}
                       </p>
                     </div>
                     {m.status && m.type === 'SCHEDULED' && (
@@ -198,7 +199,7 @@ export default function TagDetailPage() {
                         {m.title}
                       </h4>
                       <p className="text-xs text-neutral-500">
-                        {m.startTime ? formatMeetingDate(m) : 'No date'}
+                        {formatTaggedMeetingDate(m)}
                       </p>
                     </div>
                   </Link>

@@ -7,6 +7,7 @@ import { useMeetingsAll } from '@/hooks/queries/useMeetingQueries';
 import { useAllTasks } from '@/hooks/queries/useSMAQueries';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { useCards } from '@/hooks/queries/useCardQueries';
+import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { HeroSection } from './HeroSection';
 import { TodayTimeline } from './TodayTimeline';
@@ -19,6 +20,7 @@ import { PublicLinksWidget } from './PublicLinksWidget';
 import { DefaultCardWidget } from './DefaultCardWidget';
 import { ThisWeekWidget } from './ThisWeekWidget';
 import { OnboardingOverlay } from './OnboardingOverlay';
+import { GettingStartedChecklist } from './GettingStartedChecklist';
 import { StartMeetingFab } from '@/components/home/StartMeetingFab';
 
 export default function Home() {
@@ -28,6 +30,7 @@ export default function Home() {
   const { data: currentUser, isLoading: currentUserLoading } = useCurrentUser();
 
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+  const [checklistDismissed, setChecklistDismissed] = useState(false);
   const [onboardingReady, setOnboardingReady] = useState(false);
   const [onboardingForced, setOnboardingForced] = useState(false);
 
@@ -38,6 +41,7 @@ export default function Home() {
   } = useMeetingsAll();
 
   const { data: cards, isLoading: cardsLoading } = useCards();
+  const { data: gcalStatus } = useGoogleCalendarStatus();
   const activeCardCount = useMemo(
     () => (cards ?? []).filter((card) => card.isActive).length,
     [cards]
@@ -46,10 +50,14 @@ export default function Home() {
   const onboardingStorageKey = currentUser?.id
     ? `crelyzor_onboarding_done:${currentUser.id}`
     : null;
+  const checklistStorageKey = currentUser?.id
+    ? `crelyzor_getting_started_done:${currentUser.id}`
+    : null;
 
   useEffect(() => {
     if (!onboardingStorageKey) {
       setOnboardingDismissed(false);
+      setChecklistDismissed(false);
       setOnboardingReady(false);
       setOnboardingForced(false);
       return;
@@ -57,13 +65,16 @@ export default function Home() {
 
     const isDismissed = !!localStorage.getItem(onboardingStorageKey);
     setOnboardingDismissed(isDismissed);
+    setChecklistDismissed(
+      checklistStorageKey ? !!localStorage.getItem(checklistStorageKey) : false
+    );
     // Only force-open if "Getting started" was explicitly clicked (sessionStorage flag)
     if (sessionStorage.getItem('crelyzor_onboarding_force')) {
       sessionStorage.removeItem('crelyzor_onboarding_force');
       setOnboardingForced(true);
     }
     setOnboardingReady(true);
-  }, [onboardingStorageKey]);
+  }, [checklistStorageKey, onboardingStorageKey]);
 
   const recentMeetings = useMemo(
     () =>
@@ -78,7 +89,13 @@ export default function Home() {
     status: 'pending',
     limit: 100,
   });
+  const { data: firstTaskData } = useAllTasks({
+    status: 'all',
+    limit: 1,
+  });
   const allPendingTasks = useMemo(() => taskData?.tasks ?? [], [taskData]);
+  const hasTask = (firstTaskData?.pagination.total ?? 0) > 0;
+  const hasMeetingOrVoiceNote = (allMeetingsData?.length ?? 0) > 0;
 
   // Tip — count today's meetings
   const tip = useMemo(() => {
@@ -215,6 +232,19 @@ export default function Home() {
               </span>
             </button>
           )}
+          <GettingStartedChecklist
+            activeCardCount={activeCardCount}
+            hasMeetingOrVoiceNote={hasMeetingOrVoiceNote}
+            calendarConnected={gcalStatus?.connected === true}
+            hasTask={hasTask}
+            dismissed={checklistDismissed}
+            onDismiss={() => {
+              if (checklistStorageKey) {
+                localStorage.setItem(checklistStorageKey, '1');
+              }
+              setChecklistDismissed(true);
+            }}
+          />
           <TodayTimeline
             meetings={allMeetingsData?.map(toDisplayMeeting) ?? []}
             tasks={todayTasks}

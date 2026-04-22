@@ -486,8 +486,8 @@ export function ScheduleMeetingDialog({
             />
           </div>
 
-          {/* GCal toggle */}
-          {gcalStatus?.connected && (
+          {/* GCal toggle / no-GCal warning */}
+          {gcalStatus?.connected ? (
             <div className="flex items-center gap-2 pt-1">
               <Switch
                 id="gcal-meet"
@@ -501,7 +501,19 @@ export function ScheduleMeetingDialog({
                 Add to Google Calendar with a Meet link
               </Label>
             </div>
-          )}
+          ) : gcalStatus !== undefined ? (
+            <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
+              No Meet link will be generated —{' '}
+              <a
+                href="/settings?tab=integrations"
+                className="underline hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                onClick={(e) => { e.preventDefault(); onOpenChange(false); window.location.href = '/settings?tab=integrations'; }}
+              >
+                connect Google Calendar
+              </a>{' '}
+              to enable this
+            </p>
+          ) : null}
 
           {/* Recall bot status */}
           {settings?.recallAvailable &&

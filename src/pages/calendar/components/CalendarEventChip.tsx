@@ -1,13 +1,16 @@
 import type { ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { CalendarDays, CheckSquare } from 'lucide-react';
-import type { DraggableAttributes, SyntheticListenerMap } from '@dnd-kit/core';
+import type {
+  DraggableAttributes,
+  DraggableSyntheticListeners,
+} from '@dnd-kit/core';
 
 export type CalendarItemType = 'gcal' | 'meeting' | 'task';
 
 export interface DraggableChipProps {
   attributes: DraggableAttributes;
-  listeners: SyntheticListenerMap | undefined;
+  listeners: DraggableSyntheticListeners;
   setNodeRef: (node: HTMLElement | null) => void;
   isDragging: boolean;
 }

@@ -7,6 +7,9 @@ import { Label } from '@/components/ui/label';
 import { authApi } from '@/services/authService';
 import { queryKeys } from '@/lib/queryKeys';
 
+const CARDS_PUBLIC_URL =
+  import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'https://cards.crelyzor.com';
+
 const usernameRegex = /^[a-z0-9][a-z0-9-]*[a-z0-9]$/;
 const consecutiveHyphens = /--/;
 
@@ -107,7 +110,7 @@ export default function SetupPage() {
             </span>
           </div>
           <span className="font-medium text-lg text-neutral-950 dark:text-white">
-            Calendar
+            Crelyzor
           </span>
         </div>
 
@@ -119,7 +122,7 @@ export default function SetupPage() {
           <p className="text-neutral-500 dark:text-neutral-400">
             Your public card will live at{' '}
             <span className="font-medium text-neutral-700 dark:text-neutral-300">
-              crelyzor.com/[username]
+              {CARDS_PUBLIC_URL.replace(/^https?:\/\//, '')}/[username]
             </span>{' '}
             — pick something you'd share on a business card.
           </p>

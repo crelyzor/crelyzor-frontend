@@ -132,7 +132,7 @@ export const smaApi = {
       return unwrap<SMAAISummary>(result);
     } catch (err) {
       // Fresh recordings can return 404 until AI processing persists summary.
-      if (err instanceof ApiError && err.statusCode === 404) {
+      if (err instanceof ApiError && err.status === 404) {
         return null;
       }
       throw err;

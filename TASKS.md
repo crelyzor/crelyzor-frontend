@@ -730,13 +730,13 @@ See item 22 above for full checklist.
 - [x] **Cards page** — added "Try again" Retry button to error state
 - [x] **Voice notes** — failed transcription items now show a Trash2 Delete button that stops propagation; user can clear stuck notes
 - [x] **Meetings filter combo** — when filter combo produces 0 results, show active filter pills + "Clear filters" link
-- [ ] **Meeting detail — Generate tab** — already shows "Generate not available / A completed transcript is required" (done in earlier Phase)
+- [x] **Meeting detail — Generate tab** — already shows "Generate not available / A completed transcript is required" (done in earlier Phase)
 
 ### P3 — UX rough edges
 
-- [ ] **Meeting creation — upfront link validation** — show inline warning "Auto-generate requires Google Calendar connection" before the user clicks Create, not as a post-submit error
+- [x] **Meeting creation — upfront link validation** — show inline warning "No Meet link will be generated — connect Google Calendar" before the user clicks Create
 - [x] **Bookings — timezone display** — all booking times now show the local timezone label (e.g. "2:00 PM – 3:00 PM IST") via `Intl.DateTimeFormat`
-- [ ] **Pricing page — Upgrade CTA** — already present from Phase 3.x (confirmed 2026-04-19)
+- [x] **Pricing page — Upgrade CTA** — already present from Phase 3.x (confirmed 2026-04-19)
 - [x] **Home widgets — empty state CTAs** — "No recent meetings" has a "Schedule or import a meeting" link → `/meetings`
 - [x] **Ask AI — low credits warning** — credits badge is now amber with ⚠ prefix when < 10 credits remain, making it visually distinct
 

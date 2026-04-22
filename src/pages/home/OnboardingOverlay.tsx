@@ -88,18 +88,14 @@ export function OnboardingOverlay({ show, onDismiss }: OnboardingOverlayProps) {
               </div>
 
               <div className="px-4 pb-4 mt-2 space-y-1">
-                {STEPS.map(
-                  ({
-                    icon: Icon,
-                    title,
-                    description,
-                    cta,
-                    route,
-                    featured,
-                  }) => (
+                {STEPS.map((step) => {
+                  const Icon = step.icon;
+                  const featured = 'featured' in step && step.featured;
+
+                  return (
                     <button
-                      key={route}
-                      onClick={() => navigate(route)}
+                      key={step.route}
+                      onClick={() => navigate(step.route)}
                       className={`w-full flex items-start gap-3 px-3 py-3 rounded-xl text-left transition-colors group ${
                         featured
                           ? 'bg-neutral-950 text-white dark:bg-neutral-50 dark:text-neutral-950'
@@ -129,7 +125,7 @@ export function OnboardingOverlay({ show, onDismiss }: OnboardingOverlayProps) {
                               : 'text-neutral-900 dark:text-neutral-100'
                           }`}
                         >
-                          {title}
+                          {step.title}
                         </p>
                         <p
                           className={`text-xs mt-0.5 leading-relaxed ${
@@ -138,7 +134,7 @@ export function OnboardingOverlay({ show, onDismiss }: OnboardingOverlayProps) {
                               : 'text-neutral-500 dark:text-neutral-400'
                           }`}
                         >
-                          {description}
+                          {step.description}
                         </p>
                       </div>
                       <span
@@ -148,12 +144,12 @@ export function OnboardingOverlay({ show, onDismiss }: OnboardingOverlayProps) {
                             : 'text-neutral-500 dark:text-neutral-400'
                         }`}
                       >
-                        {cta}
+                        {step.cta}
                         <ArrowRight className="w-3 h-3" />
                       </span>
                     </button>
-                  )
-                )}
+                  );
+                })}
               </div>
 
               <div className="px-6 pb-5 pt-1 border-t border-neutral-100 dark:border-neutral-800">

@@ -70,6 +70,16 @@ export const meetingsApi = {
   cancel: (id: string, reason?: string) =>
     apiClient.patch<Meeting>(`/meetings/${id}/cancel`, { reason }),
 
+  /** Meeting invite response is not supported by the backend yet. */
+  accept: async (): Promise<Meeting> => {
+    throw new Error('Meeting acceptance is not available yet');
+  },
+
+  /** Meeting invite response is not supported by the backend yet. */
+  decline: async (): Promise<Meeting> => {
+    throw new Error('Meeting decline is not available yet');
+  },
+
   /** PATCH /meetings/:id/complete */
   complete: (id: string) =>
     apiClient.patch<Meeting>(`/meetings/${id}/complete`),
@@ -83,9 +93,6 @@ export const meetingsApi = {
     form.append('file', file);
     return apiClient.postForm<IcsImportResult>('/meetings/import/ics', form);
   },
-
-  // Phase 2 methods (accept, decline, reschedule, public booking) are not yet
-  // implemented in the backend — removed to prevent silent 404 errors.
 
   /** POST /sma/meetings/:id/recordings — upload audio blob */
   uploadRecording: async (
