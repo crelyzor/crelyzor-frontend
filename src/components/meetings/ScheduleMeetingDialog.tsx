@@ -507,7 +507,11 @@ export function ScheduleMeetingDialog({
               <a
                 href="/settings?tab=integrations"
                 className="underline hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-                onClick={(e) => { e.preventDefault(); onOpenChange(false); window.location.href = '/settings?tab=integrations'; }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onOpenChange(false);
+                  window.location.href = '/settings?tab=integrations';
+                }}
               >
                 connect Google Calendar
               </a>{' '}
