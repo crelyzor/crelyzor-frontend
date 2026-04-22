@@ -1,10 +1,6 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { CalendarPlus, CheckSquare, ChevronLeft, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useCreateStandaloneTask } from '@/hooks/queries/useSMAQueries';
-import { toast } from 'sonner';
+import { CalendarPlus, CheckSquare, X } from 'lucide-react';
 
 interface QuickCreatePopoverProps {
   time: Date;
@@ -12,6 +8,7 @@ interface QuickCreatePopoverProps {
   y: number;
   onClose: () => void;
   onNewMeeting: (time: Date) => void;
+  onNewTask: (time: Date) => void;
 }
 
 const POPOVER_W = 220;
@@ -22,11 +19,8 @@ export function QuickCreatePopover({
   y,
   onClose,
   onNewMeeting,
+  onNewTask,
 }: QuickCreatePopoverProps) {
-  const createTask = useCreateStandaloneTask();
-  const [mode, setMode] = useState<'pick' | 'task'>('pick');
-  const [title, setTitle] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   // Clamp to viewport so the popover never clips off screen
@@ -61,28 +55,6 @@ export function QuickCreatePopover({
     return () => document.removeEventListener('mousedown', onMouseDown);
   }, [onClose]);
 
-  // Auto-focus input when task mode opens
-  useEffect(() => {
-    if (mode === 'task') {
-      const t = setTimeout(() => inputRef.current?.focus(), 40);
-      return () => clearTimeout(t);
-    }
-  }, [mode]);
-
-  function handleCreateTask(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim()) return;
-    createTask.mutate(
-      { title: title.trim(), scheduledTime: time.toISOString() },
-      {
-        onSuccess: () => {
-          toast.success('Task created');
-          onClose();
-        },
-      }
-    );
-  }
-
   return (
     <motion.div
       ref={popoverRef}
@@ -97,19 +69,9 @@ export function QuickCreatePopover({
     >
       {/* Header */}
       <div className="flex items-center justify-between px-3 pt-2.5 pb-2 border-b border-neutral-100 dark:border-neutral-800">
-        <div className="flex items-center gap-1.5">
-          {mode === 'task' && (
-            <button
-              onClick={() => setMode('pick')}
-              className="text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
-            >
-              <ChevronLeft className="w-3 h-3" />
-            </button>
-          )}
-          <span className="text-[10px] text-neutral-400 dark:text-neutral-500 uppercase tracking-wider font-medium">
-            {timeLabel}
-          </span>
-        </div>
+        <span className="text-[10px] text-neutral-400 dark:text-neutral-500 uppercase tracking-wider font-medium">
+          {timeLabel}
+        </span>
         <button
           onClick={onClose}
           className="text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
@@ -118,49 +80,32 @@ export function QuickCreatePopover({
         </button>
       </div>
 
-      {mode === 'pick' ? (
-        <div className="p-1.5 flex flex-col gap-0.5">
-          <button
-            onClick={() => setMode('task')}
-            className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors group"
-          >
-            <CheckSquare className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 shrink-0 transition-colors" />
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
-              New task
-            </span>
-          </button>
-          <button
-            onClick={() => {
-              onNewMeeting(time);
-              onClose();
-            }}
-            className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors group"
-          >
-            <CalendarPlus className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 shrink-0 transition-colors" />
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
-              New meeting
-            </span>
-          </button>
-        </div>
-      ) : (
-        <form onSubmit={handleCreateTask} className="p-2 flex flex-col gap-2">
-          <Input
-            ref={inputRef}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Task name…"
-            className="h-8 text-sm bg-transparent"
-          />
-          <Button
-            type="submit"
-            size="sm"
-            className="h-7 text-xs w-full"
-            disabled={!title.trim() || createTask.isPending}
-          >
-            {createTask.isPending ? 'Creating…' : 'Create task'}
-          </Button>
-        </form>
-      )}
+      <div className="p-1.5 flex flex-col gap-0.5">
+        <button
+          onClick={() => {
+            onNewTask(time);
+            onClose();
+          }}
+          className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors group"
+        >
+          <CheckSquare className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 shrink-0 transition-colors" />
+          <span className="text-sm text-neutral-700 dark:text-neutral-300">
+            New task
+          </span>
+        </button>
+        <button
+          onClick={() => {
+            onNewMeeting(time);
+            onClose();
+          }}
+          className="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-left hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors group"
+        >
+          <CalendarPlus className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 shrink-0 transition-colors" />
+          <span className="text-sm text-neutral-700 dark:text-neutral-300">
+            New meeting
+          </span>
+        </button>
+      </div>
     </motion.div>
   );
 }

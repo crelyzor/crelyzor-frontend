@@ -7,6 +7,7 @@ import { DateTimePicker } from '@/components/ui/DateTimePicker';
 import { Button } from '@/components/ui/button';
 import PageMotion from '@/components/PageMotion';
 import { ScheduleMeetingDialog } from '@/components/meetings/ScheduleMeetingDialog';
+import { CreateTaskModal } from '@/pages/tasks/components/CreateTaskModal';
 import { CalendarGrid } from './components/CalendarGrid';
 import { CalendarMonthGrid } from './components/CalendarMonthGrid';
 import { QuickCreatePopover } from './components/QuickCreatePopover';
@@ -47,6 +48,8 @@ export default function CalendarPage() {
   const [scheduleMeetingStart, setScheduleMeetingStart] = useState<Date | null>(
     null
   );
+  const [showCreateTask, setShowCreateTask] = useState(false);
+  const [createTaskTime, setCreateTaskTime] = useState<Date | null>(null);
   const [showDateJump, setShowDateJump] = useState(false);
 
   // Fixed "today" reference — never drifts within a render session
@@ -290,6 +293,11 @@ export default function CalendarPage() {
     setShowScheduleMeeting(true);
   }
 
+  function handleNewTask(time: Date) {
+    setCreateTaskTime(time);
+    setShowCreateTask(true);
+  }
+
   const gcalConnected = gcalStatus?.connected;
 
   return (
@@ -435,6 +443,7 @@ export default function CalendarPage() {
             y={slotClick.y}
             onClose={() => setSlotClick(null)}
             onNewMeeting={handleNewMeeting}
+            onNewTask={handleNewTask}
           />
         )}
       </AnimatePresence>
@@ -445,6 +454,15 @@ export default function CalendarPage() {
         onOpenChange={(open) => {
           setShowScheduleMeeting(open);
           if (!open) setScheduleMeetingStart(null);
+        }}
+      />
+
+      <CreateTaskModal
+        open={showCreateTask}
+        defaultScheduledTime={createTaskTime ?? undefined}
+        onClose={() => {
+          setShowCreateTask(false);
+          setCreateTaskTime(null);
         }}
       />
     </PageMotion>

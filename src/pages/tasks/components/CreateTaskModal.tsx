@@ -45,9 +45,11 @@ type Props = {
   onClose: () => void;
   /** If provided, navigate to task detail after creation instead of just closing */
   navigateOnSuccess?: boolean;
+  /** Pre-fill the scheduled time (e.g. when creating from a calendar slot) */
+  defaultScheduledTime?: Date;
 };
 
-export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
+export function CreateTaskModal({ open, onClose, navigateOnSuccess, defaultScheduledTime }: Props) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueLabel, setDueLabel] = useState<string | null>(null);
@@ -67,6 +69,20 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
   // Auto-focus on open, full reset on close
   useEffect(() => {
     if (open) {
+      if (defaultScheduledTime) {
+        const d = defaultScheduledTime;
+        const dateOnly = [
+          d.getFullYear(),
+          String(d.getMonth() + 1).padStart(2, '0'),
+          String(d.getDate()).padStart(2, '0'),
+        ].join('-');
+        const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        setDueDate(dateOnly);
+        setDueTime(timeStr);
+        setDueLabel(label);
+        setManualDue(true);
+      }
       setTimeout(() => titleRef.current?.focus(), 60);
     } else {
       setTitle('');
@@ -79,7 +95,7 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
       setManualDue(false);
       setManualPriority(false);
     }
-  }, [open]);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // NL parse — only fills chips if user hasn't manually set them
   useEffect(() => {
@@ -163,6 +179,9 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess }: Props) {
         description: description.trim() || undefined,
         dueDate: finalDueDate,
         priority: priority ?? parsed.priority,
+        ...(defaultScheduledTime
+          ? { scheduledTime: defaultScheduledTime.toISOString() }
+          : {}),
       },
       {
         onSuccess: (task) => {

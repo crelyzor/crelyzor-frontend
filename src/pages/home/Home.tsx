@@ -8,7 +8,6 @@ import { useAllTasks } from '@/hooks/queries/useSMAQueries';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { useCards } from '@/hooks/queries/useCardQueries';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
-import { CompactStickyBar } from './CompactStickyBar';
 import { HeroSection } from './HeroSection';
 import { TodayTimeline } from './TodayTimeline';
 import { RecentMeetings } from './RecentMeetings';
@@ -158,15 +157,6 @@ export default function Home() {
     (onboardingForced ||
       (activeCardCount === 0 && (allMeetingsData?.length ?? 0) === 0));
 
-  // Compact sticky bar scroll values
-  const barOpacity = useTransform(scrollY, [120, 170], [0, 1]);
-  const barY = useTransform(scrollY, [120, 170], [-6, 0]);
-  const barDateX = useTransform(scrollY, [130, 180], [-8, 0]);
-  const barBorder = useTransform(scrollY, [120, 170], [0, 1]);
-  const barPointerEvents = useTransform(barOpacity, (v) =>
-    v > 0.3 ? ('auto' as string) : ('none' as string)
-  );
-
   // Hero scroll transforms
   const greetingOpacity = useTransform(scrollY, [0, 80], [1, 0]);
   const greetingY = useTransform(scrollY, [0, 80], [0, -12]);
@@ -175,17 +165,6 @@ export default function Home() {
 
   return (
     <div className="space-y-2.5 pb-8">
-      {/* Compact sticky header (appears on scroll) */}
-      <CompactStickyBar
-        barOpacity={barOpacity}
-        barY={barY}
-        barBorder={barBorder}
-        barPointerEvents={barPointerEvents}
-        barDateX={barDateX}
-        dayName={dayName}
-        monthDay={monthDay}
-      />
-
       {/* Hero */}
       <HeroSection
         greeting={greeting}
