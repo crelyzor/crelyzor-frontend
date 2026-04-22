@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { meetingsApi } from '@/services/meetingsService';
 import type { MeetingKind } from '@/types';
 import { CreateTaskModal } from '@/pages/tasks/components/CreateTaskModal';
+import { ScheduleMeetingDialog } from '@/components/meetings/ScheduleMeetingDialog';
 import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
 
 type FabState =
@@ -114,6 +115,7 @@ export function StartMeetingFab() {
   const [elapsed, setElapsed] = useState(0);
   const [recording, setRecording] = useState<RecordingResult | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showScheduleMeeting, setShowScheduleMeeting] = useState(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: billing } = useBillingUsage();
@@ -378,7 +380,7 @@ export function StartMeetingFab() {
                 description="Plan a meeting for later"
                 onClick={() => {
                   setState('idle');
-                  navigate('/meetings?create=scheduled');
+                  setShowScheduleMeeting(true);
                 }}
                 delay={0.08}
               />
@@ -541,6 +543,12 @@ export function StartMeetingFab() {
         open={showTaskModal}
         onClose={() => setShowTaskModal(false)}
         navigateOnSuccess
+      />
+
+      {/* ── Schedule meeting modal ───────────────────────────────────────── */}
+      <ScheduleMeetingDialog
+        open={showScheduleMeeting}
+        onOpenChange={setShowScheduleMeeting}
       />
     </>
   );

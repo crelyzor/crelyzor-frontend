@@ -1365,7 +1365,7 @@ export default function Meetings() {
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   {canAutoGenerateMeet
                     ? 'Google Meet link will be created automatically when the meeting is created.'
-                    : 'Use a manual meeting URL for Recall until Google Calendar write access is restored.'}
+                    : 'Use a manual Google Meet URL until Google Calendar write access is restored.'}
                 </p>
               </div>
             )}

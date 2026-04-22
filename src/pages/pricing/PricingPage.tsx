@@ -33,7 +33,12 @@ const PLAN_FEATURES: Array<{
     pro: '600 min / mo',
   },
   { icon: Sparkles, label: 'AI Credits', free: '50 / mo', pro: '1,000 / mo' },
-  { icon: Bot, label: 'Auto-record (Recall.ai)', free: '—', pro: '5 hrs / mo' },
+  {
+    icon: Bot,
+    label: 'Auto-record & Transcribe (Google Meet)',
+    free: '—',
+    pro: '5 hrs / mo',
+  },
   { icon: HardDrive, label: 'Storage', free: '2 GB', pro: '20 GB' },
 ];
 
@@ -49,7 +54,7 @@ const FREE_BULLETS = [
 const PRO_BULLETS = [
   '600 transcription min / month',
   '1,000 AI credits / month',
-  '5 hrs auto-record (Recall.ai)',
+  '5 hrs auto-record & transcribe on Google Meet',
   '20 GB storage',
   'Everything in Free',
   'Priority support',
@@ -62,7 +67,7 @@ const FAQS = [
   },
   {
     q: 'Do credits roll over?',
-    a: 'No. Transcription minutes, AI credits, and Recall hours all reset on the 1st of each month.',
+    a: 'No. Transcription minutes, AI credits, and auto-record hours all reset on the 1st of each month.',
   },
   {
     q: 'How do I upgrade?',
@@ -207,7 +212,7 @@ export default function PricingPage() {
                 unit="credits"
               />
               <MiniMeter
-                label="Auto-record (Recall.ai)"
+                label="Auto-record & Transcribe (Google Meet)"
                 used={data.usage.recallHours}
                 limit={data.limits.recallHours}
                 unit="hrs"

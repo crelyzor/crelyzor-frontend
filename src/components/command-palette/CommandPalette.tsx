@@ -24,6 +24,7 @@ import { TOOLBAR_ITEMS } from '@/constants/toolbar';
 import { PRIORITY_LABELS, PRIORITY_STYLES } from '@/constants/task';
 import { useCreateStandaloneTask } from '@/hooks/queries/useSMAQueries';
 import { parseTaskInput } from '@/lib/parseTaskInput';
+import { ScheduleMeetingDialog } from '@/components/meetings/ScheduleMeetingDialog';
 
 // Navigation items are derived from TOOLBAR_ITEMS — single source of truth
 const NAV_ITEMS = TOOLBAR_ITEMS.filter((item) => item.action === 'navigate');
@@ -31,6 +32,7 @@ const NAV_ITEMS = TOOLBAR_ITEMS.filter((item) => item.action === 'navigate');
 export function CommandPalette() {
   const open = useUIStore((s) => s.commandPaletteOpen);
   const [search, setSearch] = useState('');
+  const [showScheduleMeeting, setShowScheduleMeeting] = useState(false);
   const navigate = useNavigate();
   const createTask = useCreateStandaloneTask();
 
@@ -77,6 +79,7 @@ export function CommandPalette() {
   const parsed = search.trim() ? parseTaskInput(search.trim()) : null;
 
   return (
+    <>
     <CommandDialog
       open={open}
       onOpenChange={handleOpenChange}
@@ -147,9 +150,7 @@ export function CommandPalette() {
           </CommandItem>
 
           <CommandItem
-            onSelect={() =>
-              runCommand(() => navigate('/meetings?create=scheduled'))
-            }
+            onSelect={() => runCommand(() => setShowScheduleMeeting(true))}
           >
             <Plus className="text-neutral-500 dark:text-neutral-400" />
             <span>Schedule Meeting</span>
@@ -237,5 +238,11 @@ export function CommandPalette() {
         )}
       </div>
     </CommandDialog>
+
+    <ScheduleMeetingDialog
+      open={showScheduleMeeting}
+      onOpenChange={setShowScheduleMeeting}
+    />
+    </>
   );
 }

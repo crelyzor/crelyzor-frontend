@@ -344,8 +344,8 @@ export function EditMeetingModal({ meeting, open, onOpenChange }: Props) {
                 </p>
               ) : (
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  Use a manual meeting URL for Recall until Google Calendar
-                  write access is restored.
+                  Use a manual Google Meet URL until Google Calendar write
+                  access is restored.
                 </p>
               )}
             </div>

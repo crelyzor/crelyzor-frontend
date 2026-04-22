@@ -2234,7 +2234,7 @@ function IntegrationsSection() {
         </CardContent>
       </Card>
 
-      {/* Auto-record online meetings */}
+      {/* Auto-record and transcribe Google Meet meetings */}
       <Card className="border-neutral-200 dark:border-neutral-800">
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
@@ -2243,11 +2243,11 @@ function IntegrationsSection() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-0.5">
-                Meeting Recording Bot
+                Auto-record & Transcribe
               </p>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
-                A bot will automatically join your scheduled online meetings to
-                record and transcribe them
+                A bot will automatically join your scheduled Google Meet calls
+                to record and transcribe them
               </p>
 
               {isLoading ? (
@@ -2257,8 +2257,8 @@ function IntegrationsSection() {
               ) : settings?.recallAvailable ? (
                 <>
                   <SettingRow
-                    label="Auto-record online meetings"
-                    description="Bot joins your Google Meet, Zoom, or Teams calls automatically"
+                    label="Auto-record & Transcribe (Google Meet)"
+                    description="Bot joins your Google Meet calls automatically"
                   >
                     <Switch
                       checked={settings?.recallEnabled ?? false}
@@ -2267,7 +2267,7 @@ function IntegrationsSection() {
                       }
                     />
                   </SettingRow>
-                  {/* In-context Recall hours quota */}
+                  {/* In-context auto-record hours quota */}
                   {billingData && billingData.limits.recallHours !== -1 && (
                     <p
                       className={`text-xs mt-2 ${
@@ -2285,13 +2285,13 @@ function IntegrationsSection() {
                         billingData.limits.recallHours -
                         billingData.usage.recallHours
                       ).toFixed(1)}{' '}
-                      hrs auto-record remaining this month
+                      hrs auto-record & transcribe remaining this month
                     </p>
                   )}
                 </>
               ) : (
                 <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                  Recording bot is not available on this instance
+                  Auto-record & transcribe is not available on this instance
                 </p>
               )}
             </div>
@@ -3091,7 +3091,7 @@ function BillingSection() {
               />
               <div className="border-t border-neutral-100 dark:border-neutral-800" />
               <UsageMeter
-                label="Auto-record (Recall.ai)"
+                label="Auto-record & Transcribe (Google Meet)"
                 icon={Bot}
                 used={usage.recallHours}
                 limit={limits.recallHours}
@@ -3128,7 +3128,7 @@ function BillingSection() {
                   {[
                     '5× transcription',
                     '20× AI credits',
-                    'Auto-record',
+                    'Auto-record & transcribe',
                     '10× storage',
                   ].map((item) => (
                     <span

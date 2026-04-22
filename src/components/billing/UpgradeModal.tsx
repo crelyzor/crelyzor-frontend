@@ -23,9 +23,9 @@ const LIMIT_COPY: Record<
   },
   RECALL_LIMIT_REACHED: {
     icon: Bot,
-    title: 'Auto-record not available',
+    title: 'Auto-record & transcribe not available',
     description:
-      'Auto-recording with Recall.ai is a Pro feature. Upgrade to record your online meetings automatically.',
+      'Auto-recording and transcription for Google Meet is a Pro feature. Upgrade to record your meetings automatically.',
   },
   AI_CREDITS_EXHAUSTED: {
     icon: Sparkles,
@@ -59,7 +59,11 @@ const DEFAULT_COPY = {
 const PLAN_FEATURES = [
   { label: 'Transcription', free: '120 min / mo', pro: '600 min / mo' },
   { label: 'AI Credits', free: '50 / mo', pro: '1,000 / mo' },
-  { label: 'Auto-record (Recall.ai)', free: '—', pro: '5 hrs / mo' },
+  {
+    label: 'Auto-record & Transcribe (Google Meet)',
+    free: '—',
+    pro: '5 hrs / mo',
+  },
   { label: 'Storage', free: '2 GB', pro: '20 GB' },
 ];
 

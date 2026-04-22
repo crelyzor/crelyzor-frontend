@@ -459,7 +459,7 @@ export function ScheduleMeetingDialog({
             <Input
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Zoom link or address"
+              placeholder="e.g. Google Meet, office, link…"
               className="text-sm"
             />
           </div>
