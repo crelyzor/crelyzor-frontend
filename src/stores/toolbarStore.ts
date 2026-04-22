@@ -29,7 +29,9 @@ function isLegacyDefaultPinnedIds(pinnedIds: string[] | undefined) {
     return false;
   }
 
-  return pinnedIds.every((id, index) => id === LEGACY_DEFAULT_PINNED_IDS[index]);
+  return pinnedIds.every(
+    (id, index) => id === LEGACY_DEFAULT_PINNED_IDS[index]
+  );
 }
 
 export const useToolbarStore = create<ToolbarStore>()(

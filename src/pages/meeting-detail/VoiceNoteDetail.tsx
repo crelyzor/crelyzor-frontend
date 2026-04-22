@@ -48,13 +48,13 @@ import { ChangeLanguageDialog } from './ChangeLanguageDialog';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const VOICE_NOTE_TABS = [
-  { id: 'recording',  label: 'Recording',  Icon: Mic },
+  { id: 'recording', label: 'Recording', Icon: Mic },
   { id: 'transcript', label: 'Transcript', Icon: FileText },
-  { id: 'summary',    label: 'AI Summary', Icon: Sparkles },
-  { id: 'actions',    label: 'Tasks',      Icon: ListTodo },
-  { id: 'notes',      label: 'Notes',      Icon: PenLine },
-  { id: 'ask',        label: 'Ask AI',     Icon: MessageSquare },
-  { id: 'generate',   label: 'Generate',   Icon: Zap },
+  { id: 'summary', label: 'AI Summary', Icon: Sparkles },
+  { id: 'actions', label: 'Tasks', Icon: ListTodo },
+  { id: 'notes', label: 'Notes', Icon: PenLine },
+  { id: 'ask', label: 'Ask AI', Icon: MessageSquare },
+  { id: 'generate', label: 'Generate', Icon: Zap },
 ] as const;
 
 type VoiceNoteTab = (typeof VOICE_NOTE_TABS)[number]['id'];
@@ -76,17 +76,24 @@ export function VoiceNoteDetail({
   const isCompleted = transcriptionStatus === 'COMPLETED';
 
   const { data: summary } = useSummary(rawMeeting.id, isCompleted);
-  const { mutate: triggerAI, isPending: isRetrying } = useTriggerAI(rawMeeting.id);
-  const { mutate: regenerateTitle, isPending: isRegeneratingTitle } = useRegenerateTitle(rawMeeting.id);
-  const { mutate: regenerateTranscript, isPending: isRegeneratingTranscript } = useRegenerateTranscript(rawMeeting.id);
+  const { mutate: triggerAI, isPending: isRetrying } = useTriggerAI(
+    rawMeeting.id
+  );
+  const { mutate: regenerateTitle, isPending: isRegeneratingTitle } =
+    useRegenerateTitle(rawMeeting.id);
+  const { mutate: regenerateTranscript, isPending: isRegeneratingTranscript } =
+    useRegenerateTranscript(rawMeeting.id);
   const aiMissing = isCompleted && !summary;
 
-  const recordedOn = new Date(rawMeeting.startTime).toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const recordedOn = new Date(rawMeeting.startTime).toLocaleDateString(
+    'en-US',
+    {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    }
+  );
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -143,7 +150,11 @@ export function VoiceNoteDetail({
               />
               <Popover open={moreOpen} onOpenChange={setMoreOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 h-8 w-8"
+                  >
                     <MoreHorizontal className="w-4 h-4 text-neutral-500" />
                   </Button>
                 </PopoverTrigger>
@@ -155,34 +166,50 @@ export function VoiceNoteDetail({
                     <button
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                       disabled={isRegeneratingTitle}
-                      onClick={() => { regenerateTitle(); setMoreOpen(false); }}
+                      onClick={() => {
+                        regenerateTitle();
+                        setMoreOpen(false);
+                      }}
                     >
-                      {isRegeneratingTitle
-                        ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        : <RefreshCcw className="w-3.5 h-3.5" />}
+                      {isRegeneratingTitle ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <RefreshCcw className="w-3.5 h-3.5" />
+                      )}
                       Regenerate Title
                     </button>
                   )}
                   <button
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                     disabled={isRegeneratingTranscript}
-                    onClick={() => { regenerateTranscript(); setMoreOpen(false); }}
+                    onClick={() => {
+                      regenerateTranscript();
+                      setMoreOpen(false);
+                    }}
                   >
-                    {isRegeneratingTranscript
-                      ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      : <RefreshCcw className="w-3.5 h-3.5" />}
+                    {isRegeneratingTranscript ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCcw className="w-3.5 h-3.5" />
+                    )}
                     Regenerate Transcript
                   </button>
                   <button
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                    onClick={() => { setLangOpen(true); setMoreOpen(false); }}
+                    onClick={() => {
+                      setLangOpen(true);
+                      setMoreOpen(false);
+                    }}
                   >
                     <Languages className="w-3.5 h-3.5" />
                     Change Language
                   </button>
                   <button
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                    onClick={() => { setDeleteOpen(true); setMoreOpen(false); }}
+                    onClick={() => {
+                      setDeleteOpen(true);
+                      setMoreOpen(false);
+                    }}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     Delete
@@ -205,9 +232,11 @@ export function VoiceNoteDetail({
                 onClick={() => triggerAI()}
                 disabled={isRetrying}
               >
-                {isRetrying
-                  ? <Loader2 className="w-3 h-3 animate-spin" />
-                  : <RefreshCcw className="w-3 h-3" />}
+                {isRetrying ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <RefreshCcw className="w-3 h-3" />
+                )}
                 {isRetrying ? 'Running…' : 'Retry AI'}
               </Button>
             </div>
@@ -227,12 +256,15 @@ export function VoiceNoteDetail({
                   key={id}
                   onClick={() => setActiveTab(id)}
                   className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors text-left w-full
-                    ${isActive
-                      ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
-                      : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 hover:text-neutral-700 dark:hover:text-neutral-300'
+                    ${
+                      isActive
+                        ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
+                        : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 hover:text-neutral-700 dark:hover:text-neutral-300'
                     }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-400 dark:text-neutral-500'}`} />
+                  <Icon
+                    className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-neutral-700 dark:text-neutral-300' : 'text-neutral-400 dark:text-neutral-500'}`}
+                  />
                   {label}
                 </button>
               );
@@ -269,9 +301,7 @@ export function VoiceNoteDetail({
               {activeTab === 'actions' && (
                 <ActionsTab meetingId={rawMeeting.id} />
               )}
-              {activeTab === 'notes' && (
-                <NotesTab meetingId={rawMeeting.id} />
-              )}
+              {activeTab === 'notes' && <NotesTab meetingId={rawMeeting.id} />}
               {activeTab === 'ask' && (
                 <AskAITab
                   meetingId={rawMeeting.id}

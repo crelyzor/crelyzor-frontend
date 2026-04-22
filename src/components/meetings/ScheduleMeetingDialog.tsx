@@ -62,13 +62,11 @@ function formatDate(date: string): string {
   });
 }
 
-
 function buildISO(date: string, time: string): string {
   const [year, month, day] = date.split('-').map(Number);
   const [hours, minutes] = (time || '00:00').split(':').map(Number);
   return new Date(year, month - 1, day, hours, minutes).toISOString();
 }
-
 
 function formatTime(t: string): string {
   if (!t) return 'Set time';
@@ -506,52 +504,58 @@ export function ScheduleMeetingDialog({
           )}
 
           {/* Recall bot status */}
-          {settings?.recallAvailable && (() => {
-            const recallEnabled = settings?.recallEnabled ?? false;
-            const recallLimit = billingData?.limits.recallHours ?? 0;
-            const recallUsed = billingData?.usage.recallHours ?? 0;
-            // recallLimit === 0 → free plan (never had quota)
-            // recallLimit > 0 && used >= limit → paid plan, quota exhausted this month
-            const noPlan = recallLimit === 0;
-            const quotaExhausted = recallLimit > 0 && recallUsed >= recallLimit;
+          {settings?.recallAvailable &&
+            (() => {
+              const recallEnabled = settings?.recallEnabled ?? false;
+              const recallLimit = billingData?.limits.recallHours ?? 0;
+              const recallUsed = billingData?.usage.recallHours ?? 0;
+              // recallLimit === 0 → free plan (never had quota)
+              // recallLimit > 0 && used >= limit → paid plan, quota exhausted this month
+              const noPlan = recallLimit === 0;
+              const quotaExhausted =
+                recallLimit > 0 && recallUsed >= recallLimit;
 
-            if (!recallEnabled) {
+              if (!recallEnabled) {
+                return (
+                  <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                    Auto-record is off — enable it in{' '}
+                    <a
+                      href="/settings?tab=ai"
+                      className="underline hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onOpenChange(false);
+                        window.location.href = '/settings?tab=ai';
+                      }}
+                    >
+                      Settings → AI
+                    </a>
+                  </p>
+                );
+              }
+
+              if (noPlan) {
+                return (
+                  <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                    Upgrade your plan to enable auto-record bot
+                  </p>
+                );
+              }
+
+              if (quotaExhausted) {
+                return (
+                  <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                    Auto-record quota reached for this month
+                  </p>
+                );
+              }
+
               return (
                 <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
-                  Auto-record is off — enable it in{' '}
-                  <a
-                    href="/settings?tab=ai"
-                    className="underline hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-                    onClick={(e) => { e.preventDefault(); onOpenChange(false); window.location.href = '/settings?tab=ai'; }}
-                  >
-                    Settings → AI
-                  </a>
+                  Bot will auto-join and record this meeting
                 </p>
               );
-            }
-
-            if (noPlan) {
-              return (
-                <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
-                  Upgrade your plan to enable auto-record bot
-                </p>
-              );
-            }
-
-            if (quotaExhausted) {
-              return (
-                <p className="text-[11px] text-amber-600 dark:text-amber-400">
-                  Auto-record quota reached for this month
-                </p>
-              );
-            }
-
-            return (
-              <p className="text-[11px] text-neutral-400 dark:text-neutral-500">
-                Bot will auto-join and record this meeting
-              </p>
-            );
-          })()}
+            })()}
 
           {/* Actions */}
           <div className="flex gap-2 justify-end pt-1">

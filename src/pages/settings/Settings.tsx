@@ -2295,7 +2295,6 @@ function IntegrationsSection() {
           </div>
         </CardContent>
       </Card>
-
     </div>
   );
 }
