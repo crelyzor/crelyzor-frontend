@@ -56,7 +56,7 @@ export function CalendarEventChip({
     icon = <CalendarDays className="w-2.5 h-2.5 shrink-0 opacity-60 mt-px" />;
   } else {
     chipClass =
-      'border-l-2 border-l-neutral-400 dark:border-l-neutral-500 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800';
+      'border-l-2 border-l-neutral-400 dark:border-l-neutral-500 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer';
     icon = <CheckSquare className="w-2.5 h-2.5 shrink-0 opacity-60 mt-px" />;
   }
 

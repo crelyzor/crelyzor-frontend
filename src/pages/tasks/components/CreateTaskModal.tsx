@@ -49,7 +49,12 @@ type Props = {
   defaultScheduledTime?: Date;
 };
 
-export function CreateTaskModal({ open, onClose, navigateOnSuccess, defaultScheduledTime }: Props) {
+export function CreateTaskModal({
+  open,
+  onClose,
+  navigateOnSuccess,
+  defaultScheduledTime,
+}: Props) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueLabel, setDueLabel] = useState<string | null>(null);
@@ -77,7 +82,10 @@ export function CreateTaskModal({ open, onClose, navigateOnSuccess, defaultSched
           String(d.getDate()).padStart(2, '0'),
         ].join('-');
         const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-        const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const label = d.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        });
         setDueDate(dateOnly);
         setDueTime(timeStr);
         setDueLabel(label);

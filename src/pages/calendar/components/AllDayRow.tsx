@@ -1,4 +1,5 @@
 import { CheckSquare } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { TaskWithMeeting } from '@/services/smaService';
 
 interface AllDayRowProps {
@@ -14,6 +15,7 @@ function toLocalDateStr(d: Date): string {
 }
 
 export function AllDayRow({ days, tasks }: AllDayRowProps) {
+  const navigate = useNavigate();
   const tasksByDay = days.map((day) => {
     const dateStr = toLocalDateStr(day);
     return tasks.filter(
@@ -39,14 +41,15 @@ export function AllDayRow({ days, tasks }: AllDayRowProps) {
           className="flex-1 border-l border-neutral-100 dark:border-neutral-800 px-1 py-1 flex flex-wrap gap-0.5 min-h-[26px]"
         >
           {tasksByDay[i].map((task) => (
-            <span
+            <button
               key={task.id}
-              className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 max-w-full"
+              onClick={() => navigate(`/tasks?selected=${task.id}`)}
+              className="flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors max-w-full cursor-pointer"
               title={task.title}
             >
               <CheckSquare className="w-2.5 h-2.5 shrink-0 opacity-70" />
               <span className="truncate">{task.title}</span>
-            </span>
+            </button>
           ))}
         </div>
       ))}

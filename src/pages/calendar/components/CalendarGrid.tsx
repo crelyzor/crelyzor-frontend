@@ -106,6 +106,7 @@ interface DraggableTaskChipProps {
 }
 
 function DraggableTaskChip({ item, day }: DraggableTaskChipProps) {
+  const navigate = useNavigate();
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: item.id,
     data: { startMs: item.startMs },
@@ -123,6 +124,9 @@ function DraggableTaskChip({ item, day }: DraggableTaskChipProps) {
         height={pos.height}
         leftPct={0}
         widthPct={100}
+        onClick={() => {
+          if (!isDragging) navigate(`/tasks?selected=${item.id}`);
+        }}
         draggableProps={{ attributes, listeners, setNodeRef, isDragging }}
       />
     </span>
