@@ -11,6 +11,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PageLoader } from '@/components/PageLoader';
 import Layout from '@/layout/Layout';
 import { AuthGuard } from '@/components/AuthGuard';
+import { AppInitializer } from '@/components/AppInitializer';
 import { routes } from '@/routes/routes';
 
 const {
@@ -42,6 +43,7 @@ function App() {
       <ErrorBoundary>
         <ThemeProvider>
           <BrowserRouter>
+            <AppInitializer>
             <CommandPalette />
             <UpgradeModal />
 
@@ -233,6 +235,7 @@ function App() {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            </AppInitializer>
           </BrowserRouter>
           <Toaster
             position="bottom-right"

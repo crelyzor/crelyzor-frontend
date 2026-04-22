@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import { settingsApi } from '@/services/settingsService';
 import { ApiError } from '@/lib/apiClient';
+import { useAuthStore } from '@/stores';
 import type { UserSettings, PatchUserSettingsPayload } from '@/types/settings';
 
 /** Extracts the backend's error message from an ApiError, falling back to a default. */
@@ -18,9 +19,12 @@ function getApiErrorMessage(err: unknown, fallback: string): string {
 }
 
 export function useUserSettings() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
   return useQuery({
     queryKey: queryKeys.settings.user(),
     queryFn: settingsApi.getUserSettings,
+    enabled: isAuthenticated,
   });
 }
 
