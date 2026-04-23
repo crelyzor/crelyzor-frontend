@@ -71,13 +71,13 @@ export const meetingsApi = {
     apiClient.patch<Meeting>(`/meetings/${id}/cancel`, { reason }),
 
   /** Meeting invite response is not supported by the backend yet. */
-  accept: async (): Promise<Meeting> => {
-    throw new Error('Meeting acceptance is not available yet');
+  accept: async (id: string): Promise<Meeting> => {
+    throw new Error('Meeting acceptance is not available yet for ' + id);
   },
 
   /** Meeting invite response is not supported by the backend yet. */
-  decline: async (): Promise<Meeting> => {
-    throw new Error('Meeting decline is not available yet');
+  decline: async (id: string): Promise<Meeting> => {
+    throw new Error('Meeting decline is not available yet for ' + id);
   },
 
   /** PATCH /meetings/:id/complete */

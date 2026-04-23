@@ -71,7 +71,7 @@ export function useUpdateMeeting() {
 export function useAcceptMeeting() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: () => meetingsApi.accept(),
+    mutationFn: (id: string) => meetingsApi.accept(id),
     onSuccess: (_, id) => {
       qc.invalidateQueries({ queryKey: queryKeys.meetings.detail(id) });
       qc.invalidateQueries({ queryKey: queryKeys.meetings.list() });
@@ -85,7 +85,7 @@ export function useAcceptMeeting() {
 export function useDeclineMeeting() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: () => meetingsApi.decline(),
+    mutationFn: ({ id }: { id: string }) => meetingsApi.decline(id),
     onSuccess: (_, { id }) => {
       qc.invalidateQueries({ queryKey: queryKeys.meetings.detail(id) });
       qc.invalidateQueries({ queryKey: queryKeys.meetings.list() });
