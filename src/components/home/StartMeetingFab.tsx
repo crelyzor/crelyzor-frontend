@@ -75,17 +75,15 @@ function ActionRow({
         ease: [0.25, 0.1, 0.25, 1],
       }}
       onClick={onClick}
-      className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98] text-left group ${
-        highlight
-          ? 'bg-white hover:bg-neutral-100 active:bg-neutral-200'
-          : 'hover:bg-white/6 active:bg-white/10'
-      }`}
+      className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98] text-left group ${highlight
+        ? 'bg-white hover:bg-neutral-100 active:bg-neutral-200'
+        : 'hover:bg-white/6 active:bg-white/10'
+        }`}
       style={highlight ? {} : {}}
     >
       <div
-        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
-          highlight ? 'bg-neutral-900' : 'bg-white/10'
-        }`}
+        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${highlight ? 'bg-neutral-900' : 'bg-white/10'
+          }`}
       >
         <Icon
           className={`w-5 h-5 ${highlight ? 'text-white' : 'text-neutral-300'}`}
@@ -124,13 +122,16 @@ export function StartMeetingFab() {
   const chunksRef = useRef<Blob[]>([]);
   const startedAtRef = useRef<Date | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       mediaRecorderRef.current?.stream?.getTracks().forEach((t) => t.stop());
+      wakeLockRef.current?.release().catch(() => { });
     };
   }, []);
+
 
   const startRecording = useCallback(async (type: MeetingKind) => {
     setRecordingType(type);
@@ -163,7 +164,29 @@ export function StartMeetingFab() {
     };
     recorder.start(500);
     setElapsed(0);
-    timerRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
+
+    // Fix: calculate from wall-clock time so the timer never drifts
+    // when the tab is throttled in the background
+    timerRef.current = setInterval(() => {
+      const started = startedAtRef.current?.getTime() ?? Date.now();
+      setElapsed(Math.floor((Date.now() - started) / 1000));
+    }, 1000);
+
+    // Evaluate before TypeScript narrows navigator — avoids 'never' on maxTouchPoints
+    const hasWakeLock = 'wakeLock' in navigator;
+    const isMobile = navigator.maxTouchPoints > 0;
+
+    // iOS Safari doesn't support Wake Lock — warn user to keep screen on
+    if (!hasWakeLock && isMobile) {
+      toast.info('Keep your screen on while recording', { duration: 4500 });
+    }
+
+    // Request wake lock to keep the screen alive during recording (Chrome/Android)
+    if (hasWakeLock) {
+      try {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+      } catch { /* denied or unsupported — continue anyway */ }
+    }
   }, []);
 
   useEffect(() => {
@@ -193,7 +216,33 @@ export function StartMeetingFab() {
       recorder.stop();
       recorder.stream.getTracks().forEach((t) => t.stop());
     }
+    // Release wake lock when recording stops
+    wakeLockRef.current?.release().catch(() => { });
+    wakeLockRef.current = null;
   }, []);
+
+  // Detect backgrounding (tab hidden / phone screen off) during recording
+  useEffect(() => {
+    if (state !== 'recording') return;
+
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'hidden') {
+        // Auto-stop and preserve whatever was captured so far
+        stopRecording();
+        toast.warning('Recording stopped — app went to background');
+      } else if (document.visibilityState === 'visible') {
+        // Re-acquire wake lock when user returns to the tab
+        if ('wakeLock' in navigator && wakeLockRef.current === null) {
+          try {
+            wakeLockRef.current = await navigator.wakeLock.request('screen');
+          } catch { /* ignore */ }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [state, stopRecording]);
 
   const handleDiscard = useCallback(() => {
     setRecording(null);
@@ -457,7 +506,7 @@ export function StartMeetingFab() {
                         const minsLeft = Math.max(
                           0,
                           billing.limits.transcriptionMinutes -
-                            billing.usage.transcriptionMinutes
+                          billing.usage.transcriptionMinutes
                         );
                         const thisRecordingMins = Math.ceil(
                           recording.durationSeconds / 60
@@ -465,9 +514,8 @@ export function StartMeetingFab() {
                         const willExceed = thisRecordingMins > minsLeft;
                         return (
                           <p
-                            className={`text-[10px] mt-1 font-medium ${
-                              willExceed ? 'text-amber-400' : 'text-neutral-500'
-                            }`}
+                            className={`text-[10px] mt-1 font-medium ${willExceed ? 'text-amber-400' : 'text-neutral-500'
+                              }`}
                           >
                             {willExceed
                               ? `⚠ Only ${minsLeft} min left — this recording may hit your limit`

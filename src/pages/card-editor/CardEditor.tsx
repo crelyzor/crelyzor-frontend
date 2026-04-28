@@ -26,6 +26,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   useCard,
   useCreateCard,
   useUpdateCard,
@@ -57,6 +64,24 @@ const LINK_TYPES = [
 ];
 
 const MAX_LINKS = 5;
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const URL_RE = /^https?:\/\/.+\..+/;
+
+function sanitizeContactFieldsForPreview(
+  fields: CardContactFields
+): CardContactFields {
+  const out: CardContactFields = {};
+  if (fields.phone?.trim()) out.phone = fields.phone.trim();
+  if (fields.location?.trim()) out.location = fields.location.trim();
+  if (fields.email?.trim() && EMAIL_RE.test(fields.email.trim()))
+    out.email = fields.email.trim();
+  if (fields.website?.trim() && URL_RE.test(fields.website.trim()))
+    out.website = fields.website.trim();
+  if (fields.bookingUrl?.trim() && URL_RE.test(fields.bookingUrl.trim()))
+    out.bookingUrl = fields.bookingUrl.trim();
+  return out;
+}
 
 function normalizeContactFields(fields: CardContactFields): CardContactFields {
   const normalized = Object.fromEntries(
@@ -128,24 +153,32 @@ export default function CardEditor() {
 
   // Debounced preview generation
   const debounceRef = useRef<NodeJS.Timeout>(null);
+  const lastPreviewKey = useRef<string>('');
   const fetchPreview = useCallback(() => {
     if (!displayName.trim()) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     debounceRef.current = setTimeout(() => {
-      const normalizedContactFields = normalizeContactFields(contactFields);
+      const normalizedContactFields =
+        sanitizeContactFieldsForPreview(contactFields);
+
+      const payload = {
+        templateId,
+        displayName: displayName.trim(),
+        title: title.trim() || undefined,
+        bio: bio.trim() || undefined,
+        links: links.filter((l) => l.url.trim()),
+        contactFields: normalizedContactFields,
+        showQr,
+        slug: slug.trim() || undefined,
+      };
+
+      const key = JSON.stringify(payload);
+      if (key === lastPreviewKey.current) return;
+      lastPreviewKey.current = key;
 
       previewCard.mutate(
-        {
-          templateId,
-          displayName: displayName.trim(),
-          title: title.trim() || undefined,
-          bio: bio.trim() || undefined,
-          links: links.filter((l) => l.url.trim()),
-          contactFields: normalizedContactFields,
-          showQr,
-          slug: slug.trim() || undefined,
-        },
+        payload,
         {
           onSuccess: (data) => {
             setPreviewHtml({
@@ -155,7 +188,7 @@ export default function CardEditor() {
           },
         }
       );
-    }, 600);
+    }, 1000);
   }, [
     templateId,
     displayName,
@@ -392,33 +425,26 @@ export default function CardEditor() {
             )}
 
             {/* Template Picker */}
-            <section className="space-y-4">
+            <section className="space-y-3">
               <h2 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">
                 Template
               </h2>
-              <div className="grid grid-cols-3 gap-3">
-                {(templates ?? []).map((tpl) => (
-                  <button
-                    key={tpl.id}
-                    onClick={() => setTemplateId(tpl.id)}
-                    className={`relative p-3 rounded-xl border-2 transition-all text-left ${
-                      templateId === tpl.id
-                        ? 'border-neutral-900 dark:border-neutral-100 bg-neutral-50 dark:bg-neutral-900'
-                        : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700'
-                    }`}
-                  >
-                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+              <Select value={templateId} onValueChange={setTemplateId}>
+                <SelectTrigger className="h-11 w-full">
+                  <SelectValue placeholder="Choose a template" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(templates ?? []).map((tpl) => (
+                    <SelectItem
+                      key={tpl.id}
+                      value={tpl.id}
+                      description={tpl.description}
+                    >
                       {tpl.name}
-                    </p>
-                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-2">
-                      {tpl.description}
-                    </p>
-                    {templateId === tpl.id && (
-                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-neutral-900 dark:bg-neutral-100" />
-                    )}
-                  </button>
-                ))}
-              </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </section>
 
             {/* Basic Info */}
