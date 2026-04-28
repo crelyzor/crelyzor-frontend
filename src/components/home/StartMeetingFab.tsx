@@ -124,11 +124,13 @@ export function StartMeetingFab() {
   const chunksRef = useRef<Blob[]>([]);
   const startedAtRef = useRef<Date | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       mediaRecorderRef.current?.stream?.getTracks().forEach((t) => t.stop());
+      wakeLockRef.current?.release().catch(() => {});
     };
   }, []);
 
@@ -163,7 +165,31 @@ export function StartMeetingFab() {
     };
     recorder.start(500);
     setElapsed(0);
-    timerRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
+
+    // Fix: calculate from wall-clock time so the timer never drifts
+    // when the tab is throttled in the background
+    timerRef.current = setInterval(() => {
+      const started = startedAtRef.current?.getTime() ?? Date.now();
+      setElapsed(Math.floor((Date.now() - started) / 1000));
+    }, 1000);
+
+    // Evaluate before TypeScript narrows navigator — avoids 'never' on maxTouchPoints
+    const hasWakeLock = 'wakeLock' in navigator;
+    const isMobile = navigator.maxTouchPoints > 0;
+
+    // iOS Safari doesn't support Wake Lock — warn user to keep screen on
+    if (!hasWakeLock && isMobile) {
+      toast.info('Keep your screen on while recording', { duration: 4500 });
+    }
+
+    // Request wake lock to keep the screen alive during recording (Chrome/Android)
+    if (hasWakeLock) {
+      try {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+      } catch {
+        /* denied or unsupported — continue anyway */
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -193,7 +219,36 @@ export function StartMeetingFab() {
       recorder.stop();
       recorder.stream.getTracks().forEach((t) => t.stop());
     }
+    // Release wake lock when recording stops
+    wakeLockRef.current?.release().catch(() => {});
+    wakeLockRef.current = null;
   }, []);
+
+  // Detect backgrounding (tab hidden / phone screen off) during recording
+  useEffect(() => {
+    if (state !== 'recording') return;
+
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'hidden') {
+        // Auto-stop and preserve whatever was captured so far
+        stopRecording();
+        toast.warning('Recording stopped — app went to background');
+      } else if (document.visibilityState === 'visible') {
+        // Re-acquire wake lock when user returns to the tab
+        if ('wakeLock' in navigator && wakeLockRef.current === null) {
+          try {
+            wakeLockRef.current = await navigator.wakeLock.request('screen');
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [state, stopRecording]);
 
   const handleDiscard = useCallback(() => {
     setRecording(null);
