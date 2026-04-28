@@ -75,15 +75,17 @@ function ActionRow({
         ease: [0.25, 0.1, 0.25, 1],
       }}
       onClick={onClick}
-      className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98] text-left group ${highlight
-        ? 'bg-white hover:bg-neutral-100 active:bg-neutral-200'
-        : 'hover:bg-white/6 active:bg-white/10'
-        }`}
+      className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all active:scale-[0.98] text-left group ${
+        highlight
+          ? 'bg-white hover:bg-neutral-100 active:bg-neutral-200'
+          : 'hover:bg-white/6 active:bg-white/10'
+      }`}
       style={highlight ? {} : {}}
     >
       <div
-        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${highlight ? 'bg-neutral-900' : 'bg-white/10'
-          }`}
+        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+          highlight ? 'bg-neutral-900' : 'bg-white/10'
+        }`}
       >
         <Icon
           className={`w-5 h-5 ${highlight ? 'text-white' : 'text-neutral-300'}`}
@@ -128,10 +130,9 @@ export function StartMeetingFab() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       mediaRecorderRef.current?.stream?.getTracks().forEach((t) => t.stop());
-      wakeLockRef.current?.release().catch(() => { });
+      wakeLockRef.current?.release().catch(() => {});
     };
   }, []);
-
 
   const startRecording = useCallback(async (type: MeetingKind) => {
     setRecordingType(type);
@@ -185,7 +186,9 @@ export function StartMeetingFab() {
     if (hasWakeLock) {
       try {
         wakeLockRef.current = await navigator.wakeLock.request('screen');
-      } catch { /* denied or unsupported — continue anyway */ }
+      } catch {
+        /* denied or unsupported — continue anyway */
+      }
     }
   }, []);
 
@@ -217,7 +220,7 @@ export function StartMeetingFab() {
       recorder.stream.getTracks().forEach((t) => t.stop());
     }
     // Release wake lock when recording stops
-    wakeLockRef.current?.release().catch(() => { });
+    wakeLockRef.current?.release().catch(() => {});
     wakeLockRef.current = null;
   }, []);
 
@@ -235,13 +238,16 @@ export function StartMeetingFab() {
         if ('wakeLock' in navigator && wakeLockRef.current === null) {
           try {
             wakeLockRef.current = await navigator.wakeLock.request('screen');
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [state, stopRecording]);
 
   const handleDiscard = useCallback(() => {
@@ -506,7 +512,7 @@ export function StartMeetingFab() {
                         const minsLeft = Math.max(
                           0,
                           billing.limits.transcriptionMinutes -
-                          billing.usage.transcriptionMinutes
+                            billing.usage.transcriptionMinutes
                         );
                         const thisRecordingMins = Math.ceil(
                           recording.durationSeconds / 60
@@ -514,8 +520,9 @@ export function StartMeetingFab() {
                         const willExceed = thisRecordingMins > minsLeft;
                         return (
                           <p
-                            className={`text-[10px] mt-1 font-medium ${willExceed ? 'text-amber-400' : 'text-neutral-500'
-                              }`}
+                            className={`text-[10px] mt-1 font-medium ${
+                              willExceed ? 'text-amber-400' : 'text-neutral-500'
+                            }`}
                           >
                             {willExceed
                               ? `⚠ Only ${minsLeft} min left — this recording may hit your limit`

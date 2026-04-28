@@ -177,17 +177,14 @@ export default function CardEditor() {
       if (key === lastPreviewKey.current) return;
       lastPreviewKey.current = key;
 
-      previewCard.mutate(
-        payload,
-        {
-          onSuccess: (data) => {
-            setPreviewHtml({
-              front: data.htmlContent,
-              back: data.htmlBackContent,
-            });
-          },
-        }
-      );
+      previewCard.mutate(payload, {
+        onSuccess: (data) => {
+          setPreviewHtml({
+            front: data.htmlContent,
+            back: data.htmlBackContent,
+          });
+        },
+      });
     }, 1000);
   }, [
     templateId,
