@@ -50,12 +50,12 @@ export default function SignIn() {
         <img
           src="/assets/logo-light.svg"
           alt="Crelyzor"
-          className="h-5 block dark:hidden"
+          className="h-7 block dark:hidden"
         />
         <img
           src="/assets/logo-dark.svg"
           alt="Crelyzor"
-          className="h-5 hidden dark:block"
+          className="h-7 hidden dark:block"
         />
       </motion.div>
 
