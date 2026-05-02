@@ -102,9 +102,8 @@ export function UserMenu() {
                       localStorage.removeItem(
                         `crelyzor_onboarding_done:${user.id}`
                       );
-                      sessionStorage.setItem('crelyzor_onboarding_force', '1');
                     }
-                    navigate('/');
+                    navigate('/', { state: { forceOnboarding: true } });
                   }}
                 />
 

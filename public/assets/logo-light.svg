@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="412" height="80" viewBox="0 0 412 80">
+  <defs>
+    
+  </defs>
+  <line x1="40.00" y1="5.63" x2="40.00" y2="13.05" stroke="#111110" stroke-width="2.81" stroke-linecap="round" opacity="0.8"></line>
+  <line x1="57.18" y1="10.24" x2="55.06" y2="13.91" stroke="#D4A030" stroke-width="1.75" stroke-linecap="round" opacity="1"></line>
+  <line x1="69.76" y1="22.82" x2="66.09" y2="24.94" stroke="#111110" stroke-width="1.75" stroke-linecap="round" opacity="0.35"></line>
+  <line x1="74.37" y1="40.00" x2="66.95" y2="40.00" stroke="#111110" stroke-width="2.81" stroke-linecap="round" opacity="0.8"></line>
+  <line x1="69.76" y1="57.18" x2="66.09" y2="55.06" stroke="#111110" stroke-width="1.75" stroke-linecap="round" opacity="0.35"></line>
+  <line x1="57.18" y1="69.76" x2="55.06" y2="66.09" stroke="#111110" stroke-width="1.75" stroke-linecap="round" opacity="0.35"></line>
+  <line x1="40.00" y1="74.37" x2="40.00" y2="66.95" stroke="#111110" stroke-width="2.81" stroke-linecap="round" opacity="0.8"></line>
+  <line x1="22.82" y1="69.76" x2="24.94" y2="66.09" stroke="#111110" stroke-width="1.75" stroke-linecap="round" opacity="0.35"></line>
+  <line x1="10.24" y1="57.18" x2="13.91" y2="55.06" stroke="#111110" stroke-width="1.75" stroke-linecap="round" opacity="0.35"></line>
+  <line x1="5.63" y1="40.00" x2="13.05" y2="40.00" stroke="#111110" stroke-width="2.81" stroke-linecap="round" opacity="0.8"></line>
+  <line x1="10.24" y1="22.82" x2="13.91" y2="24.94" stroke="#111110" stroke-width="1.75" stroke-linecap="round" opacity="0.35"></line>
+  <line x1="22.82" y1="10.24" x2="24.94" y2="13.91" stroke="#111110" stroke-width="1.75" stroke-linecap="round" opacity="0.35"></line>
+  <circle cx="40" cy="40" r="26.48" stroke="#111110" stroke-width="6.24" fill="none"></circle>
+  <line x1="40" y1="40" x2="34.97" y2="48.71" stroke="#111110" stroke-width="3.12" stroke-linecap="round" opacity="0.65"></line>
+  <line x1="40" y1="40" x2="52.61" y2="32.72" stroke="#D4A030" stroke-width="2.62" stroke-linecap="round"></line>
+  <circle cx="40" cy="40" r="3.74" fill="#D4A030"></circle>
+  <text x="102" y="60.0" font-family="&#39;Space Grotesk&#39;, sans-serif" font-weight="600" font-size="52" letter-spacing="-0.3" fill="#111110">crelyzor</text>
+</svg>

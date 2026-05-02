@@ -221,6 +221,36 @@ async function requestForm<T>(path: string, formData: FormData): Promise<T> {
   return json as T;
 }
 
+async function requestText(
+  path: string,
+  options: Omit<RequestOptions, 'method' | 'body'> = {}
+): Promise<string> {
+  const { headers = {}, params, signal } = options;
+  const token = useAuthStore.getState().accessToken;
+
+  const res = await fetch(buildUrl(path, params), {
+    method: 'GET',
+    signal,
+    headers: {
+      Accept: 'text/csv',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...headers,
+    },
+  });
+
+  if (res.status === 401) {
+    clearAuthAndRedirect();
+    throw new ApiError(res.status, res.statusText, null);
+  }
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new ApiError(res.status, res.statusText, data);
+  }
+
+  return res.text();
+}
+
 export const apiClient = {
   get: <T>(path: string, options?: Omit<RequestOptions, 'method' | 'body'>) =>
     request<T>(path, { ...options, method: 'GET' }),
@@ -250,6 +280,9 @@ export const apiClient = {
 
   postForm: <T>(path: string, formData: FormData) =>
     requestForm<T>(path, formData),
+
+  getText: (path: string, options?: Omit<RequestOptions, 'method' | 'body'>) =>
+    requestText(path, options),
 };
 
 export { ApiError };

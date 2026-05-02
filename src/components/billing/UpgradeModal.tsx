@@ -79,8 +79,8 @@ export function UpgradeModal() {
   const Icon = copy.icon;
 
   const handleContactSupport = () => {
-    navigator.clipboard.writeText('support@crelyzor.com');
-    toast.success('Email copied — support@crelyzor.com');
+    navigator.clipboard.writeText('harshkeshari100@gmail.com');
+    toast.success('Email copied — harshkeshari100@gmail.com');
     closeUpgradeModal();
   };
 

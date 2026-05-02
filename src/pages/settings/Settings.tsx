@@ -67,6 +67,7 @@ import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
 import { useUpdateProfile } from '@/hooks/queries/useUserQueries';
 import {
   useSessions,
+  useRevokeSession,
   useGoogleCalendarStatus,
   useDisconnectGoogleCalendar,
   useRegisterGCalPushChannel,
@@ -2482,6 +2483,7 @@ function SecuritySection() {
     isLoading: sessionsLoading,
     isError: sessionsError,
   } = useSessions();
+  const revokeSession = useRevokeSession();
 
   return (
     <div className="space-y-6">
@@ -2561,10 +2563,20 @@ function SecuritySection() {
                           {session.ipAddress ? ` · ${session.ipAddress}` : ''}
                         </p>
                       </div>
-                      {session.isCurrent && (
+                      {session.isCurrent ? (
                         <span className="text-[10px] font-medium text-emerald-500">
                           Active
                         </span>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 h-7 px-2"
+                          disabled={revokeSession.isPending}
+                          onClick={() => revokeSession.mutate(session.id)}
+                        >
+                          Revoke
+                        </Button>
                       )}
                     </div>
                   )
@@ -2831,12 +2843,12 @@ function BillingSection() {
                   size="xs"
                   className="mt-3 px-0 text-neutral-300 hover:text-white hover:bg-transparent gap-1.5"
                   onClick={() => {
-                    navigator.clipboard.writeText('support@crelyzor.com');
-                    toast.success('Email copied — support@crelyzor.com');
+                    navigator.clipboard.writeText('harshkeshari100@gmail.com');
+                    toast.success('Email copied — harshkeshari100@gmail.com');
                   }}
                 >
                   <Mail className="w-3.5 h-3.5" />
-                  Email us to upgrade — support@crelyzor.com
+                  Email us to upgrade — harshkeshari100@gmail.com
                 </Button>
               </div>
             </div>

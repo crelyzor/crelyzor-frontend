@@ -47,17 +47,8 @@ export default function SignIn() {
         transition={{ duration: 0.4, delay: 0.05 }}
         className="flex items-center gap-2.5 pt-7 pb-0"
       >
-        <div
-          className="w-6 h-6 rounded-lg border flex items-center justify-center flex-shrink-0 bg-background"
-          style={{ borderColor: `${GOLD}60` }}
-        >
-          <span style={{ color: GOLD }} className="text-[11px] font-semibold">
-            C
-          </span>
-        </div>
-        <span className="text-sm tracking-wide text-muted-foreground">
-          Crelyzor
-        </span>
+        <img src="/assets/logo-light.svg" alt="Crelyzor" className="h-5 block dark:hidden" />
+        <img src="/assets/logo-dark.svg" alt="Crelyzor" className="h-5 hidden dark:block" />
       </motion.div>
 
       {/* Top half — headline block */}
