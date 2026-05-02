@@ -47,8 +47,16 @@ export default function SignIn() {
         transition={{ duration: 0.4, delay: 0.05 }}
         className="flex items-center gap-2.5 pt-7 pb-0"
       >
-        <img src="/assets/logo-light.svg" alt="Crelyzor" className="h-5 block dark:hidden" />
-        <img src="/assets/logo-dark.svg" alt="Crelyzor" className="h-5 hidden dark:block" />
+        <img
+          src="/assets/logo-light.svg"
+          alt="Crelyzor"
+          className="h-5 block dark:hidden"
+        />
+        <img
+          src="/assets/logo-dark.svg"
+          alt="Crelyzor"
+          className="h-5 hidden dark:block"
+        />
       </motion.div>
 
       {/* Top half — headline block */}

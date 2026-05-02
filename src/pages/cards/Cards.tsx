@@ -633,10 +633,7 @@ export default function Cards() {
                   onClick={() => {
                     closeCard();
                     setTimeout(
-                      () =>
-                        navigate(
-                          `/cards/contacts?card=${selectedCard.id}`
-                        ),
+                      () => navigate(`/cards/contacts?card=${selectedCard.id}`),
                       200
                     );
                   }}

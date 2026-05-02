@@ -24,7 +24,10 @@ import {
 } from '@/components/ui/popover';
 import type { Meeting, TranscriptionStatus } from '@/types';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
-import { useCompleteMeeting, useUpdateMeeting } from '@/hooks/queries/useMeetingQueries';
+import {
+  useCompleteMeeting,
+  useUpdateMeeting,
+} from '@/hooks/queries/useMeetingQueries';
 import {
   useSpeakers,
   useSummary,

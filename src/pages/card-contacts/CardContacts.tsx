@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   Popover,
   PopoverContent,
@@ -304,7 +303,10 @@ export default function CardContacts() {
             />
             {search && (
               <button
-                onClick={() => { setSearch(''); setPage(1); }}
+                onClick={() => {
+                  setSearch('');
+                  setPage(1);
+                }}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
               >
                 <X className="w-3.5 h-3.5" />
@@ -323,9 +325,15 @@ export default function CardContacts() {
               <SelectValue placeholder="All cards" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all" className="text-xs">All cards</SelectItem>
+              <SelectItem value="all" className="text-xs">
+                All cards
+              </SelectItem>
               {cards.map((card) => (
-                <SelectItem key={card.id} value={card.id} className="text-xs font-mono">
+                <SelectItem
+                  key={card.id}
+                  value={card.id}
+                  className="text-xs font-mono"
+                >
                   /{card.slug}
                 </SelectItem>
               ))}
@@ -360,7 +368,10 @@ export default function CardContacts() {
             })}
             {filterTags.length > 0 && (
               <button
-                onClick={() => { setFilterTags([]); setPage(1); }}
+                onClick={() => {
+                  setFilterTags([]);
+                  setPage(1);
+                }}
                 className="text-[11px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors ml-0.5"
               >
                 Clear

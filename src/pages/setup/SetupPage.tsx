@@ -104,8 +104,16 @@ export default function SetupPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-12">
-          <img src="/assets/logo-light.svg" alt="Crelyzor" className="h-6 block dark:hidden" />
-          <img src="/assets/logo-dark.svg" alt="Crelyzor" className="h-6 hidden dark:block" />
+          <img
+            src="/assets/logo-light.svg"
+            alt="Crelyzor"
+            className="h-6 block dark:hidden"
+          />
+          <img
+            src="/assets/logo-dark.svg"
+            alt="Crelyzor"
+            className="h-6 hidden dark:block"
+          />
         </div>
 
         {/* Heading */}
