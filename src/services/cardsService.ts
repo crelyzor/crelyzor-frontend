@@ -71,11 +71,19 @@ export const cardsApi = {
   /** DELETE /cards/contacts/:id — delete a contact */
   deleteContact: (id: string) => apiClient.delete(`/cards/contacts/${id}`),
 
-  /** GET /cards/contacts/export — export CSV */
-  exportContacts: (cardId?: string) => {
-    const params = cardId ? `?cardId=${cardId}` : '';
-    return apiClient.get<string>(`/cards/contacts/export${params}`);
-  },
+  /** GET /cards/contacts/export — export CSV with active filters */
+  exportContacts: (filters?: {
+    cardId?: string;
+    search?: string;
+    tags?: string;
+  }) =>
+    apiClient.getText('/cards/contacts/export', {
+      params: {
+        cardId: filters?.cardId,
+        search: filters?.search,
+        tags: filters?.tags,
+      },
+    }),
 
   /** GET /cards/:cardId/meetings — meetings linked to this card via participant email matching */
   getCardMeetings: (cardId: string) =>

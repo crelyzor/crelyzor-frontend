@@ -14,7 +14,7 @@ import { PageMotion } from '@/components/PageMotion';
 import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
 import { useUIStore } from '@/stores/uiStore';
 
-const SUPPORT_EMAIL = 'support@crelyzor.com';
+const SUPPORT_EMAIL = 'harshkeshari100@gmail.com';
 const PUBLIC_URL =
   import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'https://cards.crelyzor.com';
 

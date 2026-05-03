@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useScroll, useTransform, motion } from 'motion/react';
 import { MessageSquare, Sparkles } from 'lucide-react';
 import { useGreeting } from '@/hooks';
@@ -25,6 +25,7 @@ import { StartMeetingFab } from '@/components/home/StartMeetingFab';
 
 export default function Home() {
   const navigate = useNavigate();
+  const { state: locationState } = useLocation();
   const { scrollY } = useScroll();
   const { greeting, dayName, monthDay } = useGreeting();
   const { data: currentUser, isLoading: currentUserLoading } = useCurrentUser();
@@ -68,13 +69,11 @@ export default function Home() {
     setChecklistDismissed(
       checklistStorageKey ? !!localStorage.getItem(checklistStorageKey) : false
     );
-    // Only force-open if "Getting started" was explicitly clicked (sessionStorage flag)
-    if (sessionStorage.getItem('crelyzor_onboarding_force')) {
-      sessionStorage.removeItem('crelyzor_onboarding_force');
+    if (locationState?.forceOnboarding) {
       setOnboardingForced(true);
     }
     setOnboardingReady(true);
-  }, [checklistStorageKey, onboardingStorageKey]);
+  }, [checklistStorageKey, onboardingStorageKey, locationState]);
 
   const recentMeetings = useMemo(
     () =>

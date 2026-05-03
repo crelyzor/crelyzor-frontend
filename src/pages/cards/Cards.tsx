@@ -39,8 +39,7 @@ import { EmailSignatureDialog } from '@/components/cards/EmailSignatureDialog';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { TagChip } from '@/components/ui/TagChip';
 
-const CARDS_PUBLIC_URL =
-  import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
+const CARDS_PUBLIC_URL = import.meta.env.VITE_CARDS_PUBLIC_URL ?? '';
 
 export default function Cards() {
   const navigate = useNavigate();
@@ -617,14 +616,32 @@ export default function Cards() {
 
               {/* Stats */}
               <div className="flex items-center gap-4 mb-5">
-                <div className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                <button
+                  onClick={() => {
+                    closeCard();
+                    setTimeout(
+                      () => navigate(`/cards/${selectedCard.id}/analytics`),
+                      200
+                    );
+                  }}
+                  className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors"
+                >
                   <Eye className="w-3.5 h-3.5" />
                   <span>{selectedCard._count?.views ?? 0} views</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                </button>
+                <button
+                  onClick={() => {
+                    closeCard();
+                    setTimeout(
+                      () => navigate(`/cards/contacts?card=${selectedCard.id}`),
+                      200
+                    );
+                  }}
+                  className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors"
+                >
                   <Users className="w-3.5 h-3.5" />
                   <span>{selectedCard._count?.contacts ?? 0} contacts</span>
-                </div>
+                </button>
               </div>
 
               {/* Actions */}

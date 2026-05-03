@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { PageMotion } from '@/components/PageMotion';
 import {
@@ -12,19 +12,25 @@ import {
   Building,
   Calendar,
   Users,
-  Tag,
   X,
   CheckSquare,
   Square,
+  Tag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { tagsApi } from '@/services/tagsService';
 import {
   useCardContacts,
@@ -77,10 +83,13 @@ function formatDate(dateString: string) {
 
 export default function CardContacts() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [filterTags, setFilterTags] = useState<string[]>([]);
-  const [selectedCardId, setSelectedCardId] = useState<string>('all');
+  const [selectedCardId, setSelectedCardId] = useState<string>(
+    searchParams.get('card') ?? 'all'
+  );
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const csvInputRef = useRef<HTMLInputElement>(null);
 
@@ -122,9 +131,11 @@ export default function CardContacts() {
 
   const handleExport = async () => {
     try {
-      const csv = await cardsApi.exportContacts(
-        selectedCardId !== 'all' ? selectedCardId : undefined
-      );
+      const csv = await cardsApi.exportContacts({
+        cardId: selectedCardId !== 'all' ? selectedCardId : undefined,
+        search: search || undefined,
+        tags: filterTags.length > 0 ? filterTags.join(',') : undefined,
+      });
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -273,71 +284,98 @@ export default function CardContacts() {
           />
         </div>
 
-        <div className="mb-4">
-          <select
-            value={selectedCardId}
-            onChange={(e) => {
-              setSelectedCardId(e.target.value);
-              setPage(1);
-            }}
-            className="h-10 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-3 text-sm text-neutral-700 dark:text-neutral-300"
-          >
-            <option value="all">All cards</option>
-            {cards.map((card) => (
-              <option key={card.id} value={card.id}>
-                {card.displayName}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Filter bar */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search by name, email, or company..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="w-full h-9 pl-9 pr-8 rounded-lg border border-neutral-200 dark:border-neutral-800
+                       bg-white dark:bg-neutral-900 text-sm text-neutral-950 dark:text-neutral-50
+                       placeholder:text-neutral-400 dark:placeholder:text-neutral-500
+                       focus:outline-none focus:ring-1 focus:ring-neutral-300 dark:focus:ring-neutral-700
+                       transition-shadow"
+            />
+            {search && (
+              <button
+                onClick={() => {
+                  setSearch('');
+                  setPage(1);
+                }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
 
-        {/* Search */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-          <input
-            type="text"
-            placeholder="Search by name, email, or company..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
+          <Select
+            value={selectedCardId}
+            onValueChange={(v) => {
+              setSelectedCardId(v);
               setPage(1);
             }}
-            className="w-full h-10 pl-10 pr-4 rounded-lg border border-neutral-200 dark:border-neutral-800
-                     bg-white dark:bg-neutral-900 text-sm text-neutral-950 dark:text-neutral-50
-                     placeholder:text-neutral-400 dark:placeholder:text-neutral-500
-                     focus:outline-none focus:ring-2 focus:ring-neutral-900/10 dark:focus:ring-neutral-100/10
-                     transition-shadow"
-          />
+          >
+            <SelectTrigger className="w-[160px] h-9 text-xs rounded-lg border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shrink-0">
+              <SelectValue placeholder="All cards" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all" className="text-xs">
+                All cards
+              </SelectItem>
+              {cards.map((card) => (
+                <SelectItem
+                  key={card.id}
+                  value={card.id}
+                  className="text-xs font-mono"
+                >
+                  /{card.slug}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Tag filters */}
         {allTags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 mb-6">
-            <Tag className="w-3.5 h-3.5 text-neutral-400 mr-1" />
-            {allTags.map((tag) => (
-              <Badge
-                key={tag}
-                variant={filterTags.includes(tag) ? 'default' : 'outline'}
-                className="text-[10px] px-2 py-0.5 cursor-pointer"
-                onClick={() => {
-                  setFilterTags((prev) =>
-                    prev.includes(tag)
-                      ? prev.filter((t) => t !== tag)
-                      : [...prev, tag]
-                  );
-                  setPage(1);
-                }}
-              >
-                {tag}
-                {filterTags.includes(tag) && <X className="w-2.5 h-2.5 ml-1" />}
-              </Badge>
-            ))}
+          <div className="flex flex-wrap items-center gap-1.5 mb-5">
+            {allTags.map((tag) => {
+              const active = filterTags.includes(tag);
+              return (
+                <button
+                  key={tag}
+                  onClick={() => {
+                    setFilterTags((prev) =>
+                      active ? prev.filter((t) => t !== tag) : [...prev, tag]
+                    );
+                    setPage(1);
+                  }}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                    active
+                      ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
+                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  {tag}
+                  {active && <X className="w-2.5 h-2.5 shrink-0" />}
+                </button>
+              );
+            })}
             {filterTags.length > 0 && (
               <button
-                onClick={() => setFilterTags([])}
-                className="text-[10px] text-neutral-400 hover:text-neutral-600 ml-1"
+                onClick={() => {
+                  setFilterTags([]);
+                  setPage(1);
+                }}
+                className="text-[11px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors ml-0.5"
               >
-                Clear all
+                Clear
               </button>
             )}
           </div>

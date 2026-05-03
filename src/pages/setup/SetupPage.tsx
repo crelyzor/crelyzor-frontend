@@ -104,14 +104,16 @@ export default function SetupPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-12">
-          <div className="w-10 h-10 bg-neutral-950 dark:bg-white rounded-xl flex items-center justify-center">
-            <span className="text-white dark:text-neutral-950 font-bold text-lg">
-              C
-            </span>
-          </div>
-          <span className="font-medium text-lg text-neutral-950 dark:text-white">
-            Crelyzor
-          </span>
+          <img
+            src="/assets/logo-light.svg"
+            alt="Crelyzor"
+            className="h-6 block dark:hidden"
+          />
+          <img
+            src="/assets/logo-dark.svg"
+            alt="Crelyzor"
+            className="h-6 hidden dark:block"
+          />
         </div>
 
         {/* Heading */}
