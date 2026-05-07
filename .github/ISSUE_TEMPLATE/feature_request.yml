@@ -1,7 +1,7 @@
 name: Feature Request
 description: Propose a brand new capability or product surface
-title: "[Feature] "
-labels: ["feature", "triage"]
+title: '[Feature] '
+labels: ['feature', 'triage']
 body:
   - type: markdown
     attributes:
@@ -26,7 +26,7 @@ body:
     attributes:
       label: What problem does this solve?
       description: Describe the pain point or gap. Be specific — who hits this and when?
-      placeholder: "As a [user type], I need to [do X] but currently I have to [workaround Y]."
+      placeholder: 'As a [user type], I need to [do X] but currently I have to [workaround Y].'
     validations:
       required: true
 

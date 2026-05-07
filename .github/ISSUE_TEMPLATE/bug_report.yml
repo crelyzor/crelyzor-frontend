@@ -1,7 +1,7 @@
 name: Bug Report
 description: Something is broken or behaving unexpectedly
-title: "[Bug] "
-labels: ["bug", "triage"]
+title: '[Bug] '
+labels: ['bug', 'triage']
 body:
   - type: markdown
     attributes:
@@ -27,7 +27,7 @@ body:
     attributes:
       label: What happened?
       description: A clear description of the bug.
-      placeholder: "When I do X, Y happens instead of Z."
+      placeholder: 'When I do X, Y happens instead of Z.'
     validations:
       required: true
 
@@ -56,7 +56,7 @@ body:
     attributes:
       label: Environment
       description: OS, browser, device — anything relevant.
-      placeholder: "macOS 14, Chrome 124, iPhone 15 Pro, etc."
+      placeholder: 'macOS 14, Chrome 124, iPhone 15 Pro, etc.'
 
   - type: textarea
     id: logs

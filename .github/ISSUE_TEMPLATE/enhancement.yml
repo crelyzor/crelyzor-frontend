@@ -1,7 +1,7 @@
 name: Enhancement
 description: Improve something that already exists — UX, performance, DX
-title: "[Enhancement] "
-labels: ["enhancement", "triage"]
+title: '[Enhancement] '
+labels: ['enhancement', 'triage']
 body:
   - type: markdown
     attributes:
