@@ -16,6 +16,7 @@ import {
   X,
   ArrowUpRight,
   Tag,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -53,6 +54,7 @@ export default function Cards() {
   const [qrDialogCard, setQrDialogCard] = useState<CardType | null>(null);
   const [sigCard, setSigCard] = useState<CardType | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
+  const [flipped, setFlipped] = useState(false);
   const [closing, setClosing] = useState(false);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -82,6 +84,7 @@ export default function Cards() {
 
   const openCard = (card: CardType) => {
     setClosing(false);
+    setFlipped(false);
     setSelectedCard(card);
   };
 
@@ -562,20 +565,66 @@ export default function Cards() {
               rounded-2xl overflow-hidden
               ${closing ? 'card-spring-out' : 'card-spring-in'}`}
           >
-            {/* Card preview at top */}
-            <div className="p-4 bg-neutral-950">
-              <CardPreview
-                displayName={selectedCard.displayName}
-                title={selectedCard.title ?? undefined}
-                bio={selectedCard.bio ?? undefined}
-                avatarUrl={selectedCard.avatarUrl}
-                coverUrl={selectedCard.coverUrl}
-                links={selectedCard.links}
-                contactFields={selectedCard.contactFields}
-                theme={selectedCard.theme}
-                htmlContent={selectedCard.htmlContent}
-                htmlBackContent={selectedCard.htmlBackContent}
-              />
+            {/* Card preview at top — click to flip */}
+            <div
+              className="p-4 bg-neutral-950 cursor-pointer relative select-none"
+              onClick={() => setFlipped((f) => !f)}
+              title={flipped ? 'Click to see front' : 'Click to flip'}
+            >
+              <div style={{ perspective: '1200px' }}>
+                <div
+                  style={{
+                    position: 'relative',
+                    transformStyle: 'preserve-3d',
+                    transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                    transition: 'transform 0.55s cubic-bezier(0.4, 0, 0.2, 1)',
+                  }}
+                >
+                  {/* Front face */}
+                  <div style={{ backfaceVisibility: 'hidden' }}>
+                    <CardPreview
+                      displayName={selectedCard.displayName}
+                      title={selectedCard.title ?? undefined}
+                      bio={selectedCard.bio ?? undefined}
+                      avatarUrl={selectedCard.avatarUrl}
+                      coverUrl={selectedCard.coverUrl}
+                      links={selectedCard.links}
+                      contactFields={selectedCard.contactFields}
+                      theme={selectedCard.theme}
+                      htmlContent={selectedCard.htmlContent}
+                      htmlBackContent={selectedCard.htmlBackContent}
+                      face="front"
+                    />
+                  </div>
+                  {/* Back face */}
+                  <div
+                    style={{
+                      backfaceVisibility: 'hidden',
+                      transform: 'rotateY(180deg)',
+                      position: 'absolute',
+                      inset: 0,
+                    }}
+                  >
+                    <CardPreview
+                      displayName={selectedCard.displayName}
+                      title={selectedCard.title ?? undefined}
+                      bio={selectedCard.bio ?? undefined}
+                      avatarUrl={selectedCard.avatarUrl}
+                      coverUrl={selectedCard.coverUrl}
+                      links={selectedCard.links}
+                      contactFields={selectedCard.contactFields}
+                      theme={selectedCard.theme}
+                      htmlContent={selectedCard.htmlContent}
+                      htmlBackContent={selectedCard.htmlBackContent}
+                      face="back"
+                    />
+                  </div>
+                </div>
+              </div>
+              {/* Flip hint */}
+              <div className="absolute bottom-6 right-6 pointer-events-none">
+                <RotateCcw className="w-3 h-3 text-white/25" />
+              </div>
             </div>
 
             {/* Card info + actions */}
@@ -659,6 +708,21 @@ export default function Cards() {
                 >
                   <ArrowUpRight className="w-3.5 h-3.5" />
                   Edit card
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-9 w-9 rounded-xl p-0 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200"
+                  title="Open public card"
+                  onClick={() =>
+                    window.open(
+                      getCardUrl(selectedCard),
+                      '_blank',
+                      'noopener,noreferrer'
+                    )
+                  }
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </Button>
                 <Button
                   size="sm"
