@@ -51,31 +51,26 @@ let pendingCallbacks: Array<{
 }> = [];
 
 async function attemptTokenRefresh(): Promise<boolean> {
-  const storedRefreshToken = localStorage.getItem('calendar-refresh-token');
-  if (!storedRefreshToken) return false;
-
   try {
     const res = await fetch(buildUrl('/auth/refresh-token'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken: storedRefreshToken }),
+      credentials: 'include', // send httpOnly refresh_token cookie
     });
 
     if (!res.ok) return false;
 
     const json = await res.json();
-    // Response shape: { status, statusCode, message, data: { accessToken, refreshToken, expiresIn } }
+    // Response shape: { status, statusCode, message, data: { accessToken, expiresIn } }
     const data = json.data ?? json;
-    if (!data?.accessToken || !data?.refreshToken) return false;
+    if (!data?.accessToken) return false;
 
     useAuthStore.getState().setAccessToken(data.accessToken);
-    localStorage.setItem('calendar-refresh-token', data.refreshToken);
     return true;
   } catch (err) {
     const isNetworkError =
       err instanceof TypeError && err.message.toLowerCase().includes('fetch');
     if (!isNetworkError && import.meta.env.DEV) {
-      // In development only — token refresh failed unexpectedly
       console.warn('[apiClient] Token refresh failed unexpectedly', err);
     }
     return false;
@@ -84,7 +79,6 @@ async function attemptTokenRefresh(): Promise<boolean> {
 
 function clearAuthAndRedirect() {
   useAuthStore.getState().logout();
-  localStorage.removeItem('calendar-refresh-token');
   window.location.replace('/signin');
 }
 

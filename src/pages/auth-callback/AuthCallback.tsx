@@ -18,15 +18,10 @@ export default function AuthCallback() {
     const hash = window.location.hash.slice(1);
     const hashParams = new URLSearchParams(hash);
     const accessToken = hashParams.get('accessToken');
-    const refreshToken = hashParams.get('refreshToken');
 
     if (accessToken) {
-      // Store tokens
       setAccessToken(accessToken);
-      if (refreshToken) {
-        localStorage.setItem('calendar-refresh-token', refreshToken);
-      }
-      // Navigate to home — useCurrentUser hook will fetch profile
+      // Refresh token is set as httpOnly cookie by the backend — no localStorage needed
       navigate('/', { replace: true });
     } else {
       // No token — OAuth failed or was cancelled
