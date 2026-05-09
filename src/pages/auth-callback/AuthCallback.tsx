@@ -30,11 +30,7 @@ export default function AuthCallback() {
       navigate('/', { replace: true });
     } else {
       // No token — OAuth failed or was cancelled
-      const oauthError = searchParams.get('error');
-      const errorMessage = oauthError
-        ? `Sign-in failed: ${oauthError.replace(/_/g, ' ')}`
-        : 'Sign-in failed. Please try again.';
-      toast.error(errorMessage);
+      toast.error('Sign-in failed. Please try again.');
       navigate('/signin', { replace: true });
     }
   }, [searchParams, setAccessToken, navigate]);
