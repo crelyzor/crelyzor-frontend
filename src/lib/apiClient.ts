@@ -157,7 +157,10 @@ async function request<T>(
         'STORAGE_LIMIT_REACHED',
         'FEATURE_GATE',
       ]);
-      if (typeof code === 'string' && BILLING_CODES.has(code as BillingLimitCode)) {
+      if (
+        typeof code === 'string' &&
+        BILLING_CODES.has(code as BillingLimitCode)
+      ) {
         useUIStore.getState().openUpgradeModal(code as BillingLimitCode);
       } else {
         useUIStore.getState().openUpgradeModal();

@@ -106,7 +106,6 @@ export function useDeleteCard() {
   });
 }
 
-
 export function useDeleteContact() {
   const qc = useQueryClient();
   return useMutation({
