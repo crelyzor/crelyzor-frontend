@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { getTimeZones } from '@vvo/tzdb';
 import { useQueryClient } from '@tanstack/react-query';
 import { PageMotion } from '@/components/PageMotion';
+import { PlanBadge } from '@/components/PlanBadge';
 import {
   User,
   Palette,
@@ -2302,6 +2303,7 @@ function IntegrationsSection() {
 
 // ── Profile ──
 function ProfileSection() {
+  const navigate = useNavigate();
   const { data: profile } = useCurrentUser();
   const updateProfile = useUpdateProfile();
 
@@ -2369,6 +2371,26 @@ function ProfileSection() {
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                 {profile?.email ?? ''}
               </p>
+              <div className="flex items-center gap-1.5 mt-2">
+                {!profile?.plan || profile.plan === 'FREE' ? (
+                  <>
+                    <span className="text-[11px] text-neutral-400 dark:text-neutral-500">
+                      Free plan
+                    </span>
+                    <span className="text-neutral-300 dark:text-neutral-600">
+                      ·
+                    </span>
+                    <button
+                      onClick={() => navigate('/pricing')}
+                      className="text-[11px] text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 underline underline-offset-2 transition-colors"
+                    >
+                      Upgrade
+                    </button>
+                  </>
+                ) : (
+                  <PlanBadge plan={profile.plan} />
+                )}
+              </div>
             </div>
           </div>
 
