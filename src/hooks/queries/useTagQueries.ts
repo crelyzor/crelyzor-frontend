@@ -16,6 +16,7 @@ export function useTagsWithCounts() {
   return useQuery({
     queryKey: queryKeys.tags.withCounts(),
     queryFn: () => tagsApi.getTagsWithCounts(),
+    staleTime: 5 * 60 * 1000,
   });
 }
 

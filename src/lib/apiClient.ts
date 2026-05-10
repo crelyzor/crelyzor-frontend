@@ -1,4 +1,5 @@
 import { useAuthStore, useUIStore } from '@/stores';
+import type { BillingLimitCode } from '@/stores/uiStore';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
@@ -149,15 +150,15 @@ async function request<T>(
     // still receive the ApiError, but the modal will have already opened.
     if (res.status === 402) {
       const code = (data as Record<string, unknown>)?.code;
-      const BILLING_CODES = new Set([
+      const BILLING_CODES = new Set<BillingLimitCode>([
         'TRANSCRIPTION_LIMIT_REACHED',
         'RECALL_LIMIT_REACHED',
         'AI_CREDITS_EXHAUSTED',
         'STORAGE_LIMIT_REACHED',
+        'FEATURE_GATE',
       ]);
-      if (typeof code === 'string' && BILLING_CODES.has(code)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        useUIStore.getState().openUpgradeModal(code as any);
+      if (typeof code === 'string' && BILLING_CODES.has(code as BillingLimitCode)) {
+        useUIStore.getState().openUpgradeModal(code as BillingLimitCode);
       } else {
         useUIStore.getState().openUpgradeModal();
       }
