@@ -25,6 +25,7 @@ export function useUserSettings() {
     queryKey: queryKeys.settings.user(),
     queryFn: settingsApi.getUserSettings,
     enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

@@ -12,6 +12,7 @@ import { PageLoader } from '@/components/PageLoader';
 import Layout from '@/layout/Layout';
 import { AuthGuard } from '@/components/AuthGuard';
 import { AppInitializer } from '@/components/AppInitializer';
+import { PlanCelebrationOverlay } from '@/components/PlanCelebrationOverlay';
 import { routes } from '@/routes/routes';
 
 const {
@@ -46,6 +47,7 @@ function App() {
             <AppInitializer>
               <CommandPalette />
               <UpgradeModal />
+              <PlanCelebrationOverlay />
 
               <Suspense fallback={<PageLoader />}>
                 <Routes>

@@ -12,17 +12,14 @@ export const authApi = {
   // Get current user profile (includes organizations)
   profile: () => apiClient.get<ProfileResponse>('/auth/profile'),
 
-  // Logout
-  logout: (refreshToken?: string) =>
-    apiClient.post<void>('/auth/logout', { refreshToken }),
+  // Logout — refresh token is in httpOnly cookie, no need to pass it in body
+  logout: () => apiClient.post<void>('/auth/logout'),
 
-  // Refresh access token
-  refreshToken: (refreshToken: string) =>
-    apiClient.post<{
-      accessToken: string;
-      refreshToken: string;
-      expiresIn: number;
-    }>('/auth/refresh-token', { refreshToken }),
+  // Refresh access token — cookie-based, returns only access token
+  refreshToken: () =>
+    apiClient.post<{ accessToken: string; expiresIn: number }>(
+      '/auth/refresh-token'
+    ),
 
   // Check username availability
   checkUsername: (username: string) =>

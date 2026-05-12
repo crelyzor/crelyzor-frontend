@@ -1,4 +1,5 @@
 import { useAuthStore, useUIStore } from '@/stores';
+import type { BillingLimitCode } from '@/stores/uiStore';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
@@ -51,31 +52,26 @@ let pendingCallbacks: Array<{
 }> = [];
 
 async function attemptTokenRefresh(): Promise<boolean> {
-  const storedRefreshToken = localStorage.getItem('calendar-refresh-token');
-  if (!storedRefreshToken) return false;
-
   try {
     const res = await fetch(buildUrl('/auth/refresh-token'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken: storedRefreshToken }),
+      credentials: 'include', // send httpOnly refresh_token cookie
     });
 
     if (!res.ok) return false;
 
     const json = await res.json();
-    // Response shape: { status, statusCode, message, data: { accessToken, refreshToken, expiresIn } }
+    // Response shape: { status, statusCode, message, data: { accessToken, expiresIn } }
     const data = json.data ?? json;
-    if (!data?.accessToken || !data?.refreshToken) return false;
+    if (!data?.accessToken) return false;
 
     useAuthStore.getState().setAccessToken(data.accessToken);
-    localStorage.setItem('calendar-refresh-token', data.refreshToken);
     return true;
   } catch (err) {
     const isNetworkError =
       err instanceof TypeError && err.message.toLowerCase().includes('fetch');
     if (!isNetworkError && import.meta.env.DEV) {
-      // In development only — token refresh failed unexpectedly
       console.warn('[apiClient] Token refresh failed unexpectedly', err);
     }
     return false;
@@ -84,7 +80,6 @@ async function attemptTokenRefresh(): Promise<boolean> {
 
 function clearAuthAndRedirect() {
   useAuthStore.getState().logout();
-  localStorage.removeItem('calendar-refresh-token');
   window.location.replace('/signin');
 }
 
@@ -108,6 +103,7 @@ async function request<T>(
     method,
     signal,
     headers: requestHeaders,
+    credentials: 'include', // send httpOnly cookies (refresh_token, admin_token) on all API requests
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
 
@@ -155,15 +151,18 @@ async function request<T>(
     // still receive the ApiError, but the modal will have already opened.
     if (res.status === 402) {
       const code = (data as Record<string, unknown>)?.code;
-      const BILLING_CODES = new Set([
+      const BILLING_CODES = new Set<BillingLimitCode>([
         'TRANSCRIPTION_LIMIT_REACHED',
         'RECALL_LIMIT_REACHED',
         'AI_CREDITS_EXHAUSTED',
         'STORAGE_LIMIT_REACHED',
+        'FEATURE_GATE',
       ]);
-      if (typeof code === 'string' && BILLING_CODES.has(code)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        useUIStore.getState().openUpgradeModal(code as any);
+      if (
+        typeof code === 'string' &&
+        BILLING_CODES.has(code as BillingLimitCode)
+      ) {
+        useUIStore.getState().openUpgradeModal(code as BillingLimitCode);
       } else {
         useUIStore.getState().openUpgradeModal();
       }
@@ -197,6 +196,7 @@ async function requestForm<T>(path: string, formData: FormData): Promise<T> {
 
   const res = await fetch(buildUrl(path), {
     method: 'POST',
+    credentials: 'include',
     headers: {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       // Do NOT set Content-Type — browser sets it with multipart boundary
@@ -231,6 +231,7 @@ async function requestText(
   const res = await fetch(buildUrl(path, params), {
     method: 'GET',
     signal,
+    credentials: 'include',
     headers: {
       Accept: 'text/csv',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

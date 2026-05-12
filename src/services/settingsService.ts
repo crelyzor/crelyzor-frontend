@@ -191,14 +191,3 @@ export const bookingsApi = {
       >;
     }>(`/scheduling/bookings/${id}/cancel`, { reason }),
 };
-
-// Legacy — kept for type compatibility only. No longer has backend routes.
-// Use schedulesApi instead.
-export const availabilityApi = {
-  get: (): Promise<never[]> => Promise.resolve([]),
-  patch: (): Promise<never[]> => Promise.resolve([]),
-  getOverrides: (): Promise<never[]> => Promise.resolve([]),
-  createOverride: (): Promise<AvailabilityOverride> =>
-    Promise.reject(new Error('Use schedulesApi.createOverride')),
-  deleteOverride: (): Promise<void> => Promise.resolve(),
-};

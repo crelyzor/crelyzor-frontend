@@ -106,34 +106,6 @@ export function useDeleteCard() {
   });
 }
 
-export function useDuplicateCard() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, slug }: { id: string; slug: string }) =>
-      cardsApi.duplicate(id, slug),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.cards.all });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to duplicate card');
-    },
-  });
-}
-
-export function useUpdateContactTags() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, tags }: { id: string; tags: string[] }) =>
-      cardsApi.updateContactTags(id, tags),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.cards.contacts() });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update contact tags');
-    },
-  });
-}
-
 export function useDeleteContact() {
   const qc = useQueryClient();
   return useMutation({
