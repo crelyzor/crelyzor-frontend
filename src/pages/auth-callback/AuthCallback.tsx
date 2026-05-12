@@ -1,12 +1,11 @@
 import { useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/stores';
 import { PageLoader } from '@/components/PageLoader';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
   const processed = useRef(false);
 
@@ -28,7 +27,7 @@ export default function AuthCallback() {
       toast.error('Sign-in failed. Please try again.');
       navigate('/signin', { replace: true });
     }
-  }, [searchParams, setAccessToken, navigate]);
+  }, [setAccessToken, navigate]);
 
   return <PageLoader />;
 }

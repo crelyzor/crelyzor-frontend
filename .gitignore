@@ -26,3 +26,6 @@ dist-ssr
 .env.local
 .env.staging
 .env.prod
+
+# TypeScript build artifacts
+*.tsbuildinfo

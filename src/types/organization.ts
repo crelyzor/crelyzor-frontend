@@ -21,5 +21,7 @@ export type ProfileResponse = {
   lastLoginAt?: string;
   isActive: boolean;
   timezone: string;
-  plan: 'FREE' | 'PRO' | 'BUSINESS';
+  plan: Plan;
 };
+
+export type Plan = 'FREE' | 'PRO' | 'BUSINESS';

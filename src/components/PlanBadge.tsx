@@ -1,4 +1,4 @@
-type Plan = 'FREE' | 'PRO' | 'BUSINESS';
+import type { Plan } from '@/types/organization';
 
 const BADGE_CONFIG = {
   PRO: {

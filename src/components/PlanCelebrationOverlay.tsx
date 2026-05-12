@@ -12,12 +12,14 @@ export function PlanCelebrationOverlay() {
   const { data: user } = useCurrentUser();
   const [visible, setVisible] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const userIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
     if (!user.plan || user.plan === 'FREE') return;
-    if (localStorage.getItem('plan_celebrated')) return;
+    if (localStorage.getItem(`plan_celebrated_${user.id}`)) return;
 
+    userIdRef.current = user.id;
     setVisible(true);
 
     confetti({
@@ -39,7 +41,7 @@ export function PlanCelebrationOverlay() {
 
   function dismiss() {
     if (timerRef.current) clearTimeout(timerRef.current);
-    localStorage.setItem('plan_celebrated', 'true');
+    if (userIdRef.current) localStorage.setItem(`plan_celebrated_${userIdRef.current}`, 'true');
     setVisible(false);
   }
 

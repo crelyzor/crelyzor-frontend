@@ -103,6 +103,7 @@ async function request<T>(
     method,
     signal,
     headers: requestHeaders,
+    credentials: 'include', // send httpOnly cookies (refresh_token, admin_token) on all API requests
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
 
