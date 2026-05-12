@@ -38,14 +38,10 @@ export function useLogout() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: () => {
-      const refreshToken = localStorage.getItem('calendar-refresh-token');
-      return authApi.logout(refreshToken || undefined);
-    },
+    mutationFn: () => authApi.logout(), // backend clears the httpOnly cookie
     onSettled: () => {
       logout();
       qc.clear();
-      localStorage.removeItem('calendar-refresh-token');
     },
   });
 }

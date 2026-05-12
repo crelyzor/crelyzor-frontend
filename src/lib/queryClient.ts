@@ -21,12 +21,8 @@ export const queryClient = new QueryClient({
     },
     mutations: {
       retry: 0,
-      onError: (error: unknown) => {
-        const message =
-          import.meta.env.PROD || !(error instanceof Error)
-            ? 'Something went wrong'
-            : error.message;
-        toast.error(message);
+      onError: () => {
+        toast.error('Something went wrong');
       },
     },
   },

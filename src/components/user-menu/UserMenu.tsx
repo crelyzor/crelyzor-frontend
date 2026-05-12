@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut, Settings, User, ChevronDown, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
+import { PlanBadge } from '@/components/PlanBadge';
 
 export function UserMenu() {
   const [open, setOpen] = useState(false);
@@ -68,6 +69,15 @@ export function UserMenu() {
                   <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
                     {user?.email}
                   </p>
+                  <div className="mt-1.5">
+                    {!user?.plan || user.plan === 'FREE' ? (
+                      <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                        Free plan
+                      </span>
+                    ) : (
+                      <PlanBadge plan={user.plan} />
+                    )}
+                  </div>
                 </div>
 
                 <div className="h-px bg-neutral-100 dark:bg-white/[0.06] mx-1 my-0.5" />
@@ -148,6 +158,7 @@ export function UserMenu() {
         <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200 max-w-[110px] truncate">
           {user?.name ?? '…'}
         </span>
+        <PlanBadge plan={user?.plan ?? 'FREE'} />
         <motion.div
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.2 }}

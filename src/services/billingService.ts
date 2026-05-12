@@ -1,6 +1,7 @@
 import { apiClient } from '@/lib/apiClient';
+import type { Plan } from '@/types/organization';
 
-export type Plan = 'FREE' | 'PRO' | 'BUSINESS';
+export type { Plan };
 
 export interface BillingUsage {
   transcriptionMinutes: number;

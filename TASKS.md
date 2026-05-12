@@ -748,6 +748,91 @@ Account blocked. Do not start.
 
 ---
 
+## Phase 7 — Teams (Frontend)
+
+> Full design spec: `docs/superpowers/specs/2026-05-09-teams-design.md`
+
+---
+
+### P0 — Team Store + API Layer
+
+- [ ] **`teamStore.ts`** (Zustand) — `activeTeamId: string | null`, `setActiveTeam(id: string | null)`, persisted to `sessionStorage` (not localStorage — clears on browser close)
+- [ ] **`teamService.ts`** — API methods: `createTeam`, `listTeams`, `updateTeam`, `deleteTeam`, `listMembers`, `inviteMember`, `removeMember`, `leaveTeam`, `getTeamUsage`
+- [ ] **`useTeamQueries.ts`** — `useTeams()`, `useTeamMembers(teamId)`, `useTeamUsage(teamId)`
+- [ ] **`queryKeys.ts`** additions — `queryKeys.teams.all()`, `queryKeys.teams.members(teamId)`, `queryKeys.teams.usage(teamId)`
+- [ ] **`apiClient.ts`** — inject `X-Team-Id` header automatically when `activeTeamId` is set in store
+
+---
+
+### P1 — Workspace Switcher
+
+- [ ] Replace top-left user name + avatar area with `<WorkspaceSwitcher />` component
+- [ ] Dropdown shows: **Personal** (top, always first) + each team with avatar/logo + **+ Create team** (if user is Pro + under limit)
+- [ ] Active workspace has a checkmark indicator
+- [ ] Switching calls `teamStore.setActiveTeam(id)` — page does not hard-reload but React Query refetches all active queries (invalidate all on switch)
+- [ ] When in team context: show team name + logo in switcher. When personal: show user name + avatar.
+- [ ] `useTeams()` query drives the list — loaded on app mount
+
+---
+
+### P2 — Team Creation Flow
+
+- [ ] **"+ Create team" option** in workspace switcher dropdown (only shown when user.plan === PRO and teams.length < max)
+- [ ] Opens `<CreateTeamModal />` — fields: Team name (required), Slug (auto-derived from name, editable, validated unique inline via debounced API call), Logo (optional file upload)
+- [ ] On success: invalidate `queryKeys.teams.all()`, `setActiveTeam(newTeamId)`, close modal
+- [ ] Non-Pro users see disabled option with tooltip "Upgrade to Pro to create teams"
+
+---
+
+### P3 — Team Settings Page
+
+New page: `src/pages/teams/TeamSettingsPage.tsx`. Route: `/teams/:teamId/settings`.
+
+- [ ] **General tab** — team name, slug, logo. Save via `updateTeam`. Owner/Admin only can edit.
+- [ ] **Members tab** — table of members: avatar, name, email, role badge, usage snapshot (transcription min, AI credits), joined date. Actions: Change role (Owner only), Remove (Admin+). Invite button opens `<InviteModal />`.
+- [ ] **Usage tab** — per-member consumption breakdown. Visual table: member name + usage bars for transcription/AI/storage. Owner only.
+- [ ] **Danger zone tab** — "Leave team" (non-Owner), "Delete team" (Owner only, confirm dialog)
+- [ ] Handle 403 gracefully — redirect non-admin members away from settings
+
+---
+
+### P4 — Invite Modal
+
+- [ ] `<InviteModal />` — two modes toggled by tab: **Search users** (search by name/email → shows existing Crelyzor users → click to invite) / **Email invite** (enter any email → sends invite link)
+- [ ] Pending invites section in Members tab — shows email + "Cancel invite" button
+
+---
+
+### P5 — Team Context Indicator
+
+- [ ] When `activeTeamId` is set, all pages show a subtle team badge in the header or sidebar: "Viewing: Acme Corp" with a switch link
+- [ ] Sidebar nav header area shows team logo when in team context
+- [ ] All data fetching hooks pass `teamId` param when in team context (meetings, cards, tasks, etc.)
+
+---
+
+### P6 — Team-aware Data Pages
+
+These pages need no new routes — just conditional `teamId` injection:
+
+- [ ] **Meetings page** — `GET /meetings?teamId=...`. Members see only own meetings; OWNER/ADMIN see all (backend enforces, frontend shows what it gets)
+- [ ] **Cards page** — `GET /cards?teamId=...`. Show team cards. Team card creation stays in team context.
+- [ ] **Tasks page** — `GET /tasks?teamId=...`. Same pattern.
+- [ ] **Calendar page** — meetings/tasks scoped to team context when active.
+- [ ] **Settings page** — when in team context, "Settings" in sidebar navigates to team settings, not personal settings
+
+---
+
+### P7 — Internal Team Booking
+
+From meetings page or scheduling section (in team context):
+
+- [ ] **"Book with team member" button** — shown in meetings page header when in team context
+- [ ] Opens `<BookTeamMemberModal />` — step 1: pick team member (dropdown of active members). Step 2: calendar slot picker (fetches `/public/scheduling/team/:slug/:username` slots). Step 3: booking form. Step 4: confirmation.
+- [ ] On success: creates meeting in team context, invalidates meetings query.
+
+---
+
 ## Phase 5 — Big Brain ⛔ BLOCKED
 
 Requires vector infra + all Phase 4.x complete first.

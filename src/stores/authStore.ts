@@ -12,9 +12,10 @@ type AuthStore = {
   setInitializing: (value: boolean) => void;
 };
 
-// Nothing is persisted to localStorage — auth state lives in memory only.
-// The refresh token (stored separately in localStorage as 'calendar-refresh-token')
-// is used on startup to silently restore the session via AppInitializer.
+// Nothing is persisted to localStorage — auth state lives entirely in memory.
+// The refresh token is stored as an httpOnly cookie by the backend and is never
+// accessible to JS. AppInitializer calls /auth/refresh-token on startup to
+// silently restore the session using that cookie.
 export const useAuthStore = create<AuthStore>()((set) => ({
   accessToken: null,
   isAuthenticated: false,

@@ -1,12 +1,11 @@
 import { useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/stores';
 import { PageLoader } from '@/components/PageLoader';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
   const processed = useRef(false);
 
@@ -18,26 +17,17 @@ export default function AuthCallback() {
     const hash = window.location.hash.slice(1);
     const hashParams = new URLSearchParams(hash);
     const accessToken = hashParams.get('accessToken');
-    const refreshToken = hashParams.get('refreshToken');
 
     if (accessToken) {
-      // Store tokens
       setAccessToken(accessToken);
-      if (refreshToken) {
-        localStorage.setItem('calendar-refresh-token', refreshToken);
-      }
-      // Navigate to home — useCurrentUser hook will fetch profile
+      // Refresh token is set as httpOnly cookie by the backend — no localStorage needed
       navigate('/', { replace: true });
     } else {
       // No token — OAuth failed or was cancelled
-      const oauthError = searchParams.get('error');
-      const errorMessage = oauthError
-        ? `Sign-in failed: ${oauthError.replace(/_/g, ' ')}`
-        : 'Sign-in failed. Please try again.';
-      toast.error(errorMessage);
+      toast.error('Sign-in failed. Please try again.');
       navigate('/signin', { replace: true });
     }
-  }, [searchParams, setAccessToken, navigate]);
+  }, [setAccessToken, navigate]);
 
   return <PageLoader />;
 }
