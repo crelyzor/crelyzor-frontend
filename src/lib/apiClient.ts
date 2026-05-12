@@ -196,6 +196,7 @@ async function requestForm<T>(path: string, formData: FormData): Promise<T> {
 
   const res = await fetch(buildUrl(path), {
     method: 'POST',
+    credentials: 'include',
     headers: {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       // Do NOT set Content-Type — browser sets it with multipart boundary
@@ -230,6 +231,7 @@ async function requestText(
   const res = await fetch(buildUrl(path, params), {
     method: 'GET',
     signal,
+    credentials: 'include',
     headers: {
       Accept: 'text/csv',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

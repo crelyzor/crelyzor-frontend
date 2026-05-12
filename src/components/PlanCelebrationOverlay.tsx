@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
@@ -13,12 +15,16 @@ export function PlanCelebrationOverlay() {
   const [visible, setVisible] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const userIdRef = useRef<string | null>(null);
+  const hasFiredRef = useRef(false);
+  const dismissBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!user) return;
     if (!user.plan || user.plan === 'FREE') return;
     if (localStorage.getItem(`plan_celebrated_${user.id}`)) return;
+    if (hasFiredRef.current) return;
 
+    hasFiredRef.current = true;
     userIdRef.current = user.id;
     setVisible(true);
 
@@ -39,6 +45,21 @@ export function PlanCelebrationOverlay() {
     };
   }, [user]);
 
+  // Focus dismiss button when overlay appears
+  useEffect(() => {
+    if (visible) dismissBtnRef.current?.focus();
+  }, [visible]);
+
+  // Dismiss on Escape
+  useEffect(() => {
+    if (!visible) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') dismiss();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [visible]);
+
   function dismiss() {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (userIdRef.current)
@@ -52,6 +73,9 @@ export function PlanCelebrationOverlay() {
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Plan upgrade: ${user.plan}`}
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={dismiss}
     >
@@ -64,6 +88,7 @@ export function PlanCelebrationOverlay() {
           {message}
         </p>
         <button
+          ref={dismissBtnRef}
           onClick={dismiss}
           className="mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
