@@ -41,7 +41,8 @@ export function PlanCelebrationOverlay() {
 
   function dismiss() {
     if (timerRef.current) clearTimeout(timerRef.current);
-    if (userIdRef.current) localStorage.setItem(`plan_celebrated_${userIdRef.current}`, 'true');
+    if (userIdRef.current)
+      localStorage.setItem(`plan_celebrated_${userIdRef.current}`, 'true');
     setVisible(false);
   }
 
