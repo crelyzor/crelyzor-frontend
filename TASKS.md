@@ -742,13 +742,27 @@ See item 22 above for full checklist.
 
 ---
 
-## Phase 4.5 — Razorpay ⛔ BLOCKED
+## Phase 5 — Encryption at Rest
 
-Account blocked. Do not start.
+> Full design spec: `../docs/superpowers/specs/2026-05-16-encryption-at-rest-design.md`
+> Backend owns the encryption. Frontend just surfaces the trust story.
+
+**What changes on the frontend:** almost nothing. API responses still return plaintext over TLS — encryption is at rest in the DB, decrypted server-side before the response is sent. The work here is trust-surface copy + handling the rare decrypt-fail error.
+
+### P0 — Trust surfacing
+
+- [ ] **Privacy section in Settings** — add (or expand) `/settings/privacy` with an "Encryption" subsection. Copy: *"Your meeting transcripts, notes, AI content, tasks, contacts, and booking PII are encrypted at rest using Google Cloud KMS. Crelyzor can decrypt for AI features and your own access; a leaked database alone cannot be read."*
+- [ ] **"Encrypted" badge on meeting detail** — a small lock-icon badge near the transcript / notes section header (`text-[10px] text-muted-foreground uppercase tracking-wider`, neutral, no color). Pure trust signal, no interaction.
+- [ ] **Account-deletion confirmation modal** — update copy to call out crypto-shredding: *"Deleting your account destroys your encryption key. Your data — including in our backups — becomes permanently unrecoverable. This cannot be undone."*
+
+### P1 — Error handling
+
+- [ ] **Decrypt-failure error path** — when the backend returns the new `DECRYPT_FAILED` error code (very rare; likely indicates a KMS/IAM issue or a row missing a DEK), render the empty-state pattern: *"This content couldn't be loaded. Contact support."* No raw error text. Log to Sentry with full context.
+- [ ] React Query global `onError` handler — handle `DECRYPT_FAILED` as a non-toast error (don't spam toasts on a content-render failure — the empty state inline is enough)
 
 ---
 
-## Phase 7 — Teams (Frontend)
+## Phase 6 — Teams (Frontend)
 
 > Full design spec: `docs/superpowers/specs/2026-05-09-teams-design.md`
 
@@ -833,8 +847,14 @@ From meetings page or scheduling section (in team context):
 
 ---
 
-## Phase 5 — Big Brain ⛔ BLOCKED
+## Phase 7 — Razorpay ⛔ BLOCKED
 
-Requires vector infra + all Phase 4.x complete first.
+Account blocked. Do not start.
+
+---
+
+## Phase 8 — Big Brain ⛔ BLOCKED
+
+Requires vector infra + Phase 5 (Encryption at Rest) live in prod.
 
 - [ ] Global Ask AI / Big Brain chat interface (RAG — requires vector infra first)
