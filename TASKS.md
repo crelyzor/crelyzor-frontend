@@ -779,8 +779,8 @@ New component: `src/components/notifications/NotificationPanel.tsx`
 - [ ] Header: "Notifications" label + "Mark all read" button (ghost, `text-xs`) — hidden when list is empty
 - [ ] **Skeleton:** 3 placeholder rows while `isLoading`
 - [ ] **Empty state:** Bell icon + "You're all caught up" text + `text-xs text-muted-foreground`
-- [ ] **Notification rows:** 
-  - Left: type icon (BellRing for booking, Sparkles for AI complete, CheckSquare for task, etc.) in `w-8 h-8 rounded-lg bg-muted` 
+- [ ] **Notification rows:**
+  - Left: type icon (BellRing for booking, Sparkles for AI complete, CheckSquare for task, etc.) in `w-8 h-8 rounded-lg bg-muted`
   - Center: `title` (`text-sm font-medium`) + `body` (`text-xs text-muted-foreground line-clamp-1`) + relative timestamp (`text-[10px] text-muted-foreground`)
   - Right: unread dot (`w-2 h-2 rounded-full bg-blue-500`) when `!isRead`
   - Click row → `markRead(id)` + navigate to entity (meeting detail, task, booking)
