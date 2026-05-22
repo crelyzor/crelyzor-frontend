@@ -10,7 +10,9 @@ function getWsUrl(): string {
     (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
 
   if (apiBase.startsWith('http')) {
-    return apiBase.replace(/^http/, 'ws').replace(/\/api\/?$/, '') + '/ws';
+    // Strip everything from /api onwards to get the server origin
+    const origin = apiBase.replace(/\/api.*$/, '');
+    return origin.replace(/^http/, 'ws') + '/ws';
   }
 
   // Relative path — build from current origin
