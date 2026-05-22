@@ -611,16 +611,22 @@ function NotificationsSection() {
   }
 
   const isMasterEnabled = settings?.emailNotificationsEnabled ?? true;
+  const isInAppMasterEnabled = settings?.inAppNotificationsEnabled ?? true;
 
   return (
     <div className="space-y-6">
       <SectionHeader
         title="Notifications"
-        description="Manage your email alerts and digests"
+        description="Manage your email alerts and in-app notifications"
       />
 
+      {/* Email */}
       <Card className="border-neutral-200 dark:border-neutral-800">
         <CardContent className="p-6 space-y-6">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Email
+          </p>
+
           <SettingRow
             label="Enable email notifications"
             description="Master switch for all transactional emails"
@@ -681,6 +687,82 @@ function NotificationsSection() {
                   checked={settings?.dailyDigestEnabled ?? false}
                   onCheckedChange={(v) => handleToggle('dailyDigestEnabled', v)}
                   disabled={!isMasterEnabled}
+                />
+              </SettingRow>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* In-App */}
+      <Card className="border-neutral-200 dark:border-neutral-800">
+        <CardContent className="p-6 space-y-6">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            In-App
+          </p>
+
+          <SettingRow
+            label="Enable in-app notifications"
+            description="Show notifications in the bell menu"
+          >
+            <Switch
+              checked={isInAppMasterEnabled}
+              onCheckedChange={(v) =>
+                handleToggle('inAppNotificationsEnabled', v)
+              }
+            />
+          </SettingRow>
+
+          <div className="border-t border-neutral-100 dark:border-neutral-800" />
+
+          <div
+            className={
+              !isInAppMasterEnabled
+                ? 'opacity-50 pointer-events-none transition-opacity'
+                : 'transition-opacity'
+            }
+          >
+            <div className="space-y-6">
+              <SettingRow
+                label="Bookings"
+                description="Notify when someone books, cancels, or a session is coming up"
+              >
+                <Switch
+                  checked={settings?.inAppBookingEnabled ?? true}
+                  onCheckedChange={(v) =>
+                    handleToggle('inAppBookingEnabled', v)
+                  }
+                  disabled={!isInAppMasterEnabled}
+                />
+              </SettingRow>
+
+              <div className="border-t border-neutral-100 dark:border-neutral-800" />
+
+              <SettingRow
+                label="Meeting AI ready"
+                description="Notify when AI finishes processing a meeting"
+              >
+                <Switch
+                  checked={settings?.inAppMeetingReadyEnabled ?? true}
+                  onCheckedChange={(v) =>
+                    handleToggle('inAppMeetingReadyEnabled', v)
+                  }
+                  disabled={!isInAppMasterEnabled}
+                />
+              </SettingRow>
+
+              <div className="border-t border-neutral-100 dark:border-neutral-800" />
+
+              <SettingRow
+                label="Task reminders"
+                description="Daily nudge when you have tasks due today"
+              >
+                <Switch
+                  checked={settings?.inAppTaskDueEnabled ?? true}
+                  onCheckedChange={(v) =>
+                    handleToggle('inAppTaskDueEnabled', v)
+                  }
+                  disabled={!isInAppMasterEnabled}
                 />
               </SettingRow>
             </div>
