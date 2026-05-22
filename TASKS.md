@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-04-19 (Phase 4.4 complete ✅ — Polish & First-Run Experience shipped)
+Last updated: 2026-05-22 (Phase 4.9 complete ✅ — In-App Notifications + WebSocket client shipped)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -746,66 +746,62 @@ See item 22 above for full checklist.
 
 > Bell icon in the app header + notification panel + real-time SSE updates. Backend delivers notifications via `GET /notifications/stream` (SSE). Frontend subscribes on mount, shows a badge, and lets the user open a panel to read/dismiss. All within the existing header + settings structure.
 
-### P0 — Service + Query Layer
+### P0 — Service + Query Layer ✅
 
-- [ ] `src/services/notificationService.ts`:
+- [x] `src/services/notificationService.ts`:
   - `listNotifications(cursor?, limit?)` — `GET /notifications`
   - `getUnreadCount()` — `GET /notifications/unread-count`
   - `markRead(id)` — `PATCH /notifications/:id/read`
   - `markAllRead()` — `PATCH /notifications/read-all`
   - `deleteNotification(id)` — `DELETE /notifications/:id`
-- [ ] `queryKeys.notifications.list()`, `queryKeys.notifications.unreadCount()` in `src/lib/queryKeys.ts`
-- [ ] Hooks in `src/hooks/queries/useNotificationQueries.ts`:
+- [x] `queryKeys.notifications.list()`, `queryKeys.notifications.unreadCount()` in `src/lib/queryKeys.ts`
+- [x] Hooks in `src/hooks/queries/useNotificationQueries.ts`:
   - `useNotifications()` — `useInfiniteQuery` with cursor pagination
   - `useUnreadCount()` — `useQuery`, `staleTime: 60_000`, `refetchInterval: 60_000`
   - `useMarkRead()` — `useMutation`, optimistically sets `isRead: true` in cache
   - `useMarkAllRead()` — `useMutation`, invalidates `queryKeys.notifications.*`
   - `useDeleteNotification()` — `useMutation`, optimistically removes from list
 
-### P1 — Notification Bell
+### P1 — Notification Bell ✅
 
 New component: `src/components/notifications/NotificationBell.tsx`
 
-- [ ] Bell icon (`Bell` from lucide) in app header, right side (alongside existing icons)
-- [ ] Badge overlay — red dot when `unreadCount > 0`, shows count when `< 100`, "99+" when ≥ 100. Badge: `text-[9px]`, `min-w-[16px] h-4`, `rounded-full`, `bg-red-500 text-white`
-- [ ] Click → opens `<NotificationPanel />`
-- [ ] Badge animates in with a small scale spring when count goes 0 → >0
+- [x] Bell icon (`Bell` from lucide) in app header, right side (alongside existing icons)
+- [x] Badge overlay — red dot when `unreadCount > 0`, shows count when `< 100`, "99+" when ≥ 100. Badge: `text-[9px]`, `min-w-[16px] h-4`, `rounded-full`, `bg-red-500 text-white`
+- [x] Click → opens `<NotificationPanel />`
+- [x] Badge animates in with a small scale spring when count goes 0 → >0
 
-### P2 — Notification Panel
+### P2 — Notification Panel ✅
 
 New component: `src/components/notifications/NotificationPanel.tsx`
 
-- [ ] Popover anchored to bell icon — `w-80`, `max-h-[480px]`, overflow scroll, `rounded-2xl`, glassmorphism (`bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl`)
-- [ ] Header: "Notifications" label + "Mark all read" button (ghost, `text-xs`) — hidden when list is empty
-- [ ] **Skeleton:** 3 placeholder rows while `isLoading`
-- [ ] **Empty state:** Bell icon + "You're all caught up" text + `text-xs text-muted-foreground`
-- [ ] **Notification rows:**
-  - Left: type icon (BellRing for booking, Sparkles for AI complete, CheckSquare for task, etc.) in `w-8 h-8 rounded-lg bg-muted`
-  - Center: `title` (`text-sm font-medium`) + `body` (`text-xs text-muted-foreground line-clamp-1`) + relative timestamp (`text-[10px] text-muted-foreground`)
-  - Right: unread dot (`w-2 h-2 rounded-full bg-blue-500`) when `!isRead`
-  - Click row → `markRead(id)` + navigate to entity (meeting detail, task, booking)
-  - Hover: `bg-neutral-50 dark:bg-neutral-800/50`
-- [ ] **Grouped sections:** "Today" / "Earlier" — date-based grouping, `text-[10px] uppercase tracking-wider text-muted-foreground` section headers
-- [ ] **"Clear all" button** at bottom — calls `deleteNotification` on each read notification
-- [ ] Infinite scroll: load more when user scrolls near bottom (intersect sentinel)
+- [x] Popover anchored to bell icon — `w-80`, `max-h-[480px]`, overflow scroll, `rounded-2xl`, glassmorphism (`bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl`)
+- [x] Header: "Notifications" label + "Mark all read" button (ghost, `text-xs`) — hidden when no unread
+- [x] **Skeleton:** 3 placeholder rows while `isLoading`
+- [x] **Empty state:** Bell icon + "You're all caught up" text + `text-xs text-muted-foreground`
+- [x] **Notification rows:** type icon + title/body/timestamp + unread dot
+- [x] Click row → `markRead(id)` + navigate to entity (meeting detail, task, booking)
+- [x] **Grouped sections:** "Today" / "Earlier" with date-based grouping
+- [x] **"Clear read" button** at bottom — calls `deleteNotification` on each read notification
+- [x] Infinite scroll via IntersectionObserver sentinel
 
-### P3 — Real-time SSE Hook
+### P3 — Real-time WebSocket Hook ✅
 
-New hook: `src/hooks/useNotificationStream.ts`
+New hook: `src/hooks/useNotificationSocket.ts` (WebSocket, not SSE — backend uses WS)
 
-- [ ] Opens `EventSource` to `/api/v1/notifications/stream` with auth (`withCredentials: true`)
-- [ ] On `message` event: parse JSON, invalidate `queryKeys.notifications.list()` + `queryKeys.notifications.unreadCount()`
-- [ ] Show subtle Sonner toast: `toast.info(notification.title, { description: notification.body, duration: 4000 })` — not intrusive, just a nudge
-- [ ] Auto-reconnect on error: exponential backoff starting at 3s, doubling each attempt, capped at 60s
-- [ ] `EventSource` closed in cleanup function — call in `useEffect` return
-- [ ] Mount `useNotificationStream()` in `AppLayout` (or equivalent root layout component) — runs for the whole session
+- [x] Derives WS URL from `VITE_API_BASE_URL` (http→ws, strips `/api` path)
+- [x] Sends AUTH message on open, handles CONNECTED / NOTIFICATION / PING
+- [x] On NOTIFICATION: invalidates `queryKeys.notifications.all` + shows Sonner toast
+- [x] Exponential backoff reconnect: 3s → 60s cap
+- [x] Mounted in `Layout.tsx` — runs for whole authenticated session
 
-### P4 — Settings: In-App Notification Preferences
+### P4 — Settings: In-App Notification Preferences ✅
 
-- [ ] Expand `src/pages/settings/NotificationsSettings.tsx` (or equivalent) — add "In-App" toggle column alongside existing "Email" toggles
-- [ ] Rows: master "In-App Notifications" toggle (disables all below when off), then per-type: "Bookings", "Meeting AI ready", "Task due soon"
-- [ ] Backed by `useUpdateSettings()` mutation — persist `inAppNotificationsEnabled`, `inAppBookingEnabled`, `inAppMeetingReadyEnabled`, `inAppTaskDueEnabled`
-- [ ] Toggles disabled (with tooltip "Enable in-app notifications first") when master is off
+- [x] `src/pages/settings/Settings.tsx` — new "In-App" Card section in `NotificationsSection`
+- [x] Master toggle (`inAppNotificationsEnabled`) + 3 per-type toggles (booking / meeting ready / task due)
+- [x] Backed by `useUpdateSettings()` — persists all 4 `inApp*` fields
+- [x] Toggles disabled when master is off (same opacity/pointer-events pattern as email section)
+- [x] `src/types/settings.ts` — 4 `inApp*` fields added to `UserSettings` + `PatchUserSettingsPayload`
 
 ---
 

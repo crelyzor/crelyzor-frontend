@@ -5,6 +5,8 @@ import { Toolbar } from '@/components/toolbar';
 import { UserMenu } from '@/components/user-menu/UserMenu';
 import { MobileNav } from '@/components/MobileNav';
 import { UsageWarningBanner } from '@/components/billing/UsageWarningBanner';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { useNotificationSocket } from '@/hooks/useNotificationSocket';
 
 type LayoutProps = {
   children: ReactNode;
@@ -12,6 +14,7 @@ type LayoutProps = {
 
 export default function Layout({ children }: LayoutProps) {
   const { openCommandPalette } = useCommandPalette();
+  useNotificationSocket();
 
   return (
     <div className="min-h-screen bg-neutral-50/40 dark:bg-neutral-950">
@@ -50,8 +53,9 @@ export default function Layout({ children }: LayoutProps) {
             <Search className="w-4 h-4" />
           </button>
 
-          {/* Right - Toolbar */}
-          <div className="flex items-center shrink-0">
+          {/* Right - Notifications + Toolbar */}
+          <div className="flex items-center gap-1 shrink-0">
+            <NotificationBell />
             <Toolbar />
           </div>
         </div>

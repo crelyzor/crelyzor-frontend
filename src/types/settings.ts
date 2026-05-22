@@ -15,6 +15,10 @@ export interface UserSettings {
   bookingEmailsEnabled: boolean;
   meetingReadyEmailEnabled: boolean;
   dailyDigestEnabled: boolean;
+  inAppNotificationsEnabled: boolean;
+  inAppBookingEnabled: boolean;
+  inAppMeetingReadyEnabled: boolean;
+  inAppTaskDueEnabled: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -34,6 +38,10 @@ export type PatchUserSettingsPayload = Partial<
     | 'bookingEmailsEnabled'
     | 'meetingReadyEmailEnabled'
     | 'dailyDigestEnabled'
+    | 'inAppNotificationsEnabled'
+    | 'inAppBookingEnabled'
+    | 'inAppMeetingReadyEnabled'
+    | 'inAppTaskDueEnabled'
   >
 >;
 

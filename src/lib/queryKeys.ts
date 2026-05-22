@@ -165,6 +165,13 @@ export const queryKeys = {
     results: (q: string) => [...queryKeys.search.all, 'results', q] as const,
   },
 
+  // Notifications
+  notifications: {
+    all: ['notifications'] as const,
+    list: () => [...queryKeys.notifications.all, 'list'] as const,
+    unreadCount: () => [...queryKeys.notifications.all, 'unreadCount'] as const,
+  },
+
   // Cards
   cards: {
     all: ['cards'] as const,
