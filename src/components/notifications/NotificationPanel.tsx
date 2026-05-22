@@ -16,7 +16,10 @@ import {
   useMarkAllRead,
   useDeleteNotification,
 } from '@/hooks/queries/useNotificationQueries';
-import type { Notification, NotificationType } from '@/services/notificationService';
+import type {
+  Notification,
+  NotificationType,
+} from '@/services/notificationService';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -170,8 +173,7 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
     [hasNextPage, isFetchingNextPage, fetchNextPage]
   );
 
-  const allNotifications =
-    data?.pages.flatMap((p) => p.notifications) ?? [];
+  const allNotifications = data?.pages.flatMap((p) => p.notifications) ?? [];
 
   const todayItems = allNotifications.filter((n) => isToday(n.createdAt));
   const earlierItems = allNotifications.filter((n) => !isToday(n.createdAt));
