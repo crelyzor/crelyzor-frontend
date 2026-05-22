@@ -59,7 +59,17 @@ export function useDeleteNotification() {
   return useMutation({
     mutationFn: (id: string) => notificationsApi.delete(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.notifications.list() });
+      qc.invalidateQueries({ queryKey: queryKeys.notifications.all });
+    },
+  });
+}
+
+export function useDeleteAllRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => notificationsApi.deleteAllRead(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.notifications.all });
     },
   });
 }

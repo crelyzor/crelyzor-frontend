@@ -45,4 +45,7 @@ export const notificationsApi = {
     apiClient.patch<{ count: number }>('/notifications/read-all'),
 
   delete: (id: string) => apiClient.delete<void>(`/notifications/${id}`),
+
+  deleteAllRead: () =>
+    apiClient.delete<{ count: number }>('/notifications/read'),
 };

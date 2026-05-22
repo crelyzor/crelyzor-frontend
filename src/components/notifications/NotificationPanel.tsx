@@ -14,7 +14,7 @@ import {
   useNotifications,
   useMarkRead,
   useMarkAllRead,
-  useDeleteNotification,
+  useDeleteAllRead,
 } from '@/hooks/queries/useNotificationQueries';
 import type {
   Notification,
@@ -62,9 +62,10 @@ function typeIcon(type: NotificationType) {
 }
 
 function entityPath(n: Notification): string | null {
+  if (n.type === 'TASK_DUE_SOON') return `/tasks`;
   if (!n.entityType || !n.entityId) return null;
   if (n.entityType === 'meeting') return `/meetings/${n.entityId}`;
-  if (n.entityType === 'booking') return `/settings?section=bookings`;
+  if (n.entityType === 'booking') return `/bookings`;
   if (n.entityType === 'task') return `/tasks`;
   return null;
 }
@@ -149,7 +150,7 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
     useNotifications();
   const markRead = useMarkRead();
   const markAllRead = useMarkAllRead();
-  const deleteNotification = useDeleteNotification();
+  const deleteAllRead = useDeleteAllRead();
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -186,13 +187,13 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
   };
 
   const handleClearAll = () => {
-    readItems.forEach((n) => deleteNotification.mutate(n.id));
+    deleteAllRead.mutate();
   };
 
   return (
     <div
-      className="w-80 rounded-2xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl
-                 border border-neutral-200/60 dark:border-neutral-800/60
+      className="w-80 rounded-2xl bg-white dark:bg-neutral-900
+                 border border-neutral-200 dark:border-neutral-800
                  shadow-2xl shadow-black/10 dark:shadow-black/40
                  flex flex-col overflow-hidden"
       style={{ maxHeight: 480 }}
@@ -286,7 +287,7 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
             size="sm"
             className="w-full text-xs text-muted-foreground hover:text-foreground h-7 gap-1.5"
             onClick={handleClearAll}
-            disabled={deleteNotification.isPending}
+            disabled={deleteAllRead.isPending}
           >
             <Trash2 className="w-3 h-3" />
             Clear {readItems.length} read

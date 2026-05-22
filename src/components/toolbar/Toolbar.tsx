@@ -15,6 +15,7 @@ import {
 import { ToolbarButton } from './ToolbarButton';
 import { ThemeToggle } from './ThemeToggle';
 import { ControlCenter } from './ControlCenter';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 const CARDS_PUBLIC_URL =
   import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
@@ -74,8 +75,9 @@ export function Toolbar() {
           <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />
         </div>
 
-        {/* Theme Toggle */}
+        {/* Theme Toggle + Notifications */}
         <ThemeToggle />
+        <NotificationBell />
 
         {/* Separator + Control Center trigger */}
         <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />

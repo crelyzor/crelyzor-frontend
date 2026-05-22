@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/stores';
 import { queryKeys } from '@/lib/queryKeys';
+import type { Notification } from '@/services/notificationService';
 
 function getWsUrl(): string {
   const apiBase =
@@ -17,10 +18,17 @@ function getWsUrl(): string {
   return `${origin}/ws`;
 }
 
+const TOAST_BURST_WINDOW_MS = 3_000;
+const TOAST_BURST_THRESHOLD = 2;
+
 export function useNotificationSocket() {
   const qc = useQueryClient();
   const accessToken = useAuthStore((s) => s.accessToken);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  // Toast burst de-dup state — lives outside the effect so it persists across re-renders
+  const burstCountRef = useRef(0);
+  const burstTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated || !accessToken) return;
@@ -30,13 +38,36 @@ export function useNotificationSocket() {
     let retryDelay = 3_000;
     let unmounted = false;
 
+    const showToast = (notification: Notification) => {
+      burstCountRef.current += 1;
+
+      if (burstTimerRef.current) clearTimeout(burstTimerRef.current);
+
+      if (burstCountRef.current > TOAST_BURST_THRESHOLD) {
+        // Grouped toast — will be shown when burst window expires
+        burstTimerRef.current = setTimeout(() => {
+          toast.info(`${burstCountRef.current} new notifications`);
+          burstCountRef.current = 0;
+        }, TOAST_BURST_WINDOW_MS);
+        return;
+      }
+
+      burstTimerRef.current = setTimeout(() => {
+        burstCountRef.current = 0;
+      }, TOAST_BURST_WINDOW_MS);
+
+      toast.info(notification.title, {
+        description: notification.body ?? undefined,
+        duration: 4_000,
+      });
+    };
+
     const connect = () => {
       if (unmounted) return;
 
       try {
         ws = new WebSocket(getWsUrl());
       } catch {
-        // WebSocket constructor can throw if URL is invalid — bail out
         return;
       }
 
@@ -52,15 +83,11 @@ export function useNotificationSocket() {
           if (msg.type === 'CONNECTED') {
             const unreadCount = msg.unreadCount as number;
             qc.setQueryData(queryKeys.notifications.unreadCount(), unreadCount);
+            // Re-sync list in case notifications arrived while disconnected
+            qc.invalidateQueries({ queryKey: queryKeys.notifications.list() });
           } else if (msg.type === 'NOTIFICATION') {
-            qc.invalidateQueries({
-              queryKey: queryKeys.notifications.all,
-            });
-            const data = msg.data as Record<string, unknown>;
-            toast.info(data.title as string, {
-              description: (data.body as string | null) ?? undefined,
-              duration: 4_000,
-            });
+            qc.invalidateQueries({ queryKey: queryKeys.notifications.all });
+            showToast(msg.data as Notification);
           } else if (msg.type === 'PING') {
             ws!.send(JSON.stringify({ type: 'PONG' }));
           }
@@ -78,7 +105,6 @@ export function useNotificationSocket() {
       };
 
       ws.onerror = () => {
-        // onclose fires after onerror — let it handle the reconnect
         ws?.close();
       };
     };
@@ -88,8 +114,9 @@ export function useNotificationSocket() {
     return () => {
       unmounted = true;
       if (retryTimeout) clearTimeout(retryTimeout);
+      if (burstTimerRef.current) clearTimeout(burstTimerRef.current);
       if (ws) {
-        ws.onclose = null; // suppress reconnect on intentional close
+        ws.onclose = null;
         ws.close();
       }
     };
