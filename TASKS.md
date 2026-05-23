@@ -848,12 +848,14 @@ New hook: `src/hooks/useNotificationSocket.ts` (WebSocket, not SSE — backend u
 Replaces existing `<UserMenu />` trigger. New component: `src/components/workspace-switcher/WorkspaceSwitcher.tsx`.
 
 **Trigger button (32px tall):**
+
 - Personal: 24px avatar + display name + `ChevronDown` (12px text-muted-foreground)
 - Team: 24px team logo (`rounded-lg`) + team name + role pill (`text-[10px] text-muted-foreground` — `OWNER`/`ADMIN`/`MEMBER`) + chevron
 - Hover: `bg-muted/40`
 - Pending invites dot indicator (`bg-foreground h-1.5 w-1.5 rounded-full`) on the avatar/logo when `pendingInvites.count > 0`
 
 **Dropdown panel** (`bg-[#1C1C1E] dark:bg-[#1C1C1E] border border-white/[0.06] rounded-[20px] shadow-2xl shadow-black/40 p-1.5 w-[280px]`, spring entry):
+
 - [ ] **Pending invites section** (only if count > 0) — collapsible header "2 pending invitations" → list with Accept (primary xs) + Decline (ghost xs) per invite. Below: divider.
 - [ ] **Workspaces label** — `text-[10px] uppercase tracking-wider text-muted-foreground px-3 py-1.5`.
 - [ ] **Personal row** — avatar + name + `Check` icon (12px) if active.
@@ -862,6 +864,7 @@ Replaces existing `<UserMenu />` trigger. New component: `src/components/workspa
 - [ ] **Divider** + account actions (Profile / Settings / Logout) — preserve existing `UserMenu` items.
 
 **Behavior:**
+
 - [ ] Click team row → `teamStore.setActiveTeam(id)` → `queryClient.invalidateQueries()` (broad) → toast "Switched to [Team name]" (2s).
 - [ ] Click Personal → `teamStore.setActiveTeam(null)` → broad invalidate → toast "Switched to Personal" (2s).
 - [ ] **Route outlet wrapper:** wrap the dashboard route outlet in `<motion.div key={activeTeamId ?? 'personal'}>` with opacity 0→1 and y 4→0 over 250ms. This produces the cross-fade on workspace switch.
@@ -894,8 +897,8 @@ Route: `/teams/:teamId/settings`. New page: `src/pages/teams/TeamSettingsPage.ts
 
 - [ ] **General tab** — name input / slug input (Owner-only editable, disabled+tooltip for Admin) / description textarea (200 char) / logo upload. Save button bottom-right of card, disabled until dirty.
 - [ ] **Members tab** — header with `Invite member` button (top-right primary, Admin+ only). Table:
-  | Member (28px avatar + name/email) | Role (pill, clickable for Owner) | Joined (relative) | Last active (relative, from WS presence) | Kebab |
-  Row hover `bg-muted/30`. Empty state: `Users2` (40px muted) + "Just you for now" + Invite CTA.
+      | Member (28px avatar + name/email) | Role (pill, clickable for Owner) | Joined (relative) | Last active (relative, from WS presence) | Kebab |
+      Row hover `bg-muted/30`. Empty state: `Users2` (40px muted) + "Just you for now" + Invite CTA.
 - [ ] **Invite member modal** (`<InviteMembersModal />`) — Tabs `Search users` / `By email`.
   - Search: debounced 200ms typeahead. Results list (32px avatar + name/email) with role select per row + `Send invite` button. Empty: "No users found. Try inviting by email instead."
   - By email: chip input with email validation. Single role select for the batch. Optional message textarea (200 char). `Send invites` button.
@@ -917,7 +920,7 @@ Route: `/teams/:teamId/settings`. New page: `src/pages/teams/TeamSettingsPage.ts
   - Big number `text-2xl font-semibold` (e.g. "1,243")
   - Subtitle `text-xs muted` (e.g. "of 5,000")
   - `h-1 bg-muted rounded-full` with `bg-foreground` fill (only when quota exists)
-  Cards: Transcription minutes / AI tokens / Storage GB / Meetings (no quota).
+    Cards: Transcription minutes / AI tokens / Storage GB / Meetings (no quota).
 - [ ] **Period selector** (right-aligned above breakdown table) — `<Select>`: This month / Last month / Last 7 days / Custom range (opens date range picker).
 - [ ] **Per-member breakdown table** — sortable columns. Right-align numerics. Subtle row hover.
 - [ ] **`Export CSV`** (`text-xs` link, top-right of table) — downloads current period CSV.
