@@ -21,6 +21,7 @@ export function useEventTypes() {
   return useQuery({
     queryKey: queryKeys.scheduling.eventTypes(),
     queryFn: eventTypesApi.list,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -95,6 +96,7 @@ export function useSchedules() {
   return useQuery({
     queryKey: queryKeys.scheduling.schedules(),
     queryFn: schedulesApi.list,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -194,6 +196,7 @@ export function useScheduleSlots(scheduleId: string | null) {
     queryKey: queryKeys.scheduling.scheduleSlots(scheduleId ?? ''),
     queryFn: () => schedulesApi.getSlots(scheduleId!),
     enabled: !!scheduleId,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -240,6 +243,7 @@ export function useScheduleOverrides(scheduleId: string | null) {
     queryKey: queryKeys.scheduling.scheduleOverrides(scheduleId ?? ''),
     queryFn: () => schedulesApi.getOverrides(scheduleId!),
     enabled: !!scheduleId,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -283,6 +287,7 @@ export function useBookings(params: ListBookingsParams = {}) {
   return useQuery({
     queryKey: queryKeys.scheduling.bookings(params as Record<string, unknown>),
     queryFn: () => bookingsApi.list(params),
+    staleTime: 60 * 1000,
   });
 }
 
