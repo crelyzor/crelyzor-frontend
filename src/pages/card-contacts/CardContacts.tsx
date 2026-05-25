@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { tagsApi } from '@/services/tagsService';
+import { queryKeys } from '@/lib/queryKeys';
 import {
   useCardContacts,
   useCardMeetings,
@@ -188,19 +189,21 @@ export default function CardContacts() {
     }
   };
 
-  const handleBulkDelete = () => {
-    let completed = 0;
-    selected.forEach((id) => {
-      deleteContact.mutate(id, {
-        onSuccess: () => {
-          completed++;
-          if (completed === selected.size) {
-            toast.success(`${completed} contacts deleted`);
-            setSelected(new Set());
-          }
-        },
-      });
-    });
+  const handleBulkDelete = async () => {
+    const ids = [...selected];
+    const results = await Promise.allSettled(
+      ids.map((id) => deleteContact.mutateAsync(id))
+    );
+    const failCount = results.filter((r) => r.status === 'rejected').length;
+    const successCount = ids.length - failCount;
+    if (failCount === 0) {
+      toast.success(`${successCount} contact${successCount !== 1 ? 's' : ''} deleted`);
+    } else if (failCount === ids.length) {
+      toast.error('Failed to delete contacts');
+    } else {
+      toast.success(`${successCount} of ${ids.length} contacts deleted`);
+    }
+    setSelected(new Set());
   };
 
   // Bulk tagging
@@ -208,18 +211,25 @@ export default function CardContacts() {
     // We already have `contacts: CardContact[]` in the component scope.
     const selectedContacts = contacts.filter((c) => selected.has(c.id));
 
-    // Process attaches in parallel
-    await Promise.all(
+    // Process attaches in parallel, tracking failures
+    const results = await Promise.allSettled(
       selectedContacts.map((c) =>
-        tagsApi.attachTagToContact(c.cardId, c.id, tagId).catch(() => {})
+        tagsApi.attachTagToContact(c.cardId, c.id, tagId)
       )
     );
+    const failCount = results.filter((r) => r.status === 'rejected').length;
 
     // Invalidate queries so that the contacts list refetches
-    qc.invalidateQueries({ queryKey: ['cards', 'contacts'] });
-    qc.invalidateQueries({ queryKey: ['tags', 'contact'] }); // Invalidate individual row tags
+    qc.invalidateQueries({ queryKey: queryKeys.cards.contacts() });
+    qc.invalidateQueries({ queryKey: queryKeys.tags.all });
 
-    toast.success(`Tag applied to ${selected.size} contacts`);
+    if (failCount === 0) {
+      toast.success(`Tag applied to ${selected.size} contacts`);
+    } else if (failCount === selected.size) {
+      toast.error('Failed to apply tag');
+    } else {
+      toast.success(`Tag applied to ${selected.size - failCount} of ${selected.size} contacts`);
+    }
     setBulkTagOpen(false);
     setSelected(new Set());
     setBulkSearch('');

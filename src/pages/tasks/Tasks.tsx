@@ -532,57 +532,60 @@ export default function Tasks() {
 
   const handleBulkComplete = useCallback(async () => {
     setBulkPending(true);
-    try {
-      await Promise.all(
-        [...selectedIds].map((id) =>
-          smaApi.updateTask(id, { isCompleted: true })
-        )
-      );
-      qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
-      exitSelectMode();
-      toast.success(
-        `${selectedIds.size} task${selectedIds.size !== 1 ? 's' : ''} completed`
-      );
-    } catch {
-      toast.error('Some tasks could not be updated');
-    } finally {
-      setBulkPending(false);
+    const ids = [...selectedIds];
+    const results = await Promise.allSettled(
+      ids.map((id) => smaApi.updateTask(id, { isCompleted: true }))
+    );
+    const failCount = results.filter((r) => r.status === 'rejected').length;
+    qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
+    exitSelectMode();
+    if (failCount === 0) {
+      toast.success(`${ids.length} task${ids.length !== 1 ? 's' : ''} completed`);
+    } else if (failCount === ids.length) {
+      toast.error('Failed to complete tasks');
+    } else {
+      toast.success(`${ids.length - failCount} of ${ids.length} tasks completed`);
     }
+    setBulkPending(false);
   }, [selectedIds, qc, exitSelectMode]);
 
   const handleBulkDelete = useCallback(async () => {
     setBulkPending(true);
-    try {
-      await Promise.all([...selectedIds].map((id) => smaApi.deleteTask(id)));
-      qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
-      exitSelectMode();
-      toast.success(
-        `${selectedIds.size} task${selectedIds.size !== 1 ? 's' : ''} deleted`
-      );
-    } catch {
-      toast.error('Some tasks could not be deleted');
-    } finally {
-      setBulkPending(false);
+    const ids = [...selectedIds];
+    const results = await Promise.allSettled(
+      ids.map((id) => smaApi.deleteTask(id))
+    );
+    const failCount = results.filter((r) => r.status === 'rejected').length;
+    qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
+    exitSelectMode();
+    if (failCount === 0) {
+      toast.success(`${ids.length} task${ids.length !== 1 ? 's' : ''} deleted`);
+    } else if (failCount === ids.length) {
+      toast.error('Failed to delete tasks');
+    } else {
+      toast.success(`${ids.length - failCount} of ${ids.length} tasks deleted`);
     }
+    setBulkPending(false);
   }, [selectedIds, qc, exitSelectMode]);
 
   const handleBulkPriority = useCallback(
     async (priority: 'HIGH' | 'MEDIUM' | 'LOW') => {
       setBulkPending(true);
-      try {
-        await Promise.all(
-          [...selectedIds].map((id) => smaApi.updateTask(id, { priority }))
-        );
-        qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
-        exitSelectMode();
-        toast.success(
-          `Priority set for ${selectedIds.size} task${selectedIds.size !== 1 ? 's' : ''}`
-        );
-      } catch {
-        toast.error('Some tasks could not be updated');
-      } finally {
-        setBulkPending(false);
+      const ids = [...selectedIds];
+      const results = await Promise.allSettled(
+        ids.map((id) => smaApi.updateTask(id, { priority }))
+      );
+      const failCount = results.filter((r) => r.status === 'rejected').length;
+      qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
+      exitSelectMode();
+      if (failCount === 0) {
+        toast.success(`Priority set for ${ids.length} task${ids.length !== 1 ? 's' : ''}`);
+      } else if (failCount === ids.length) {
+        toast.error('Failed to update task priority');
+      } else {
+        toast.success(`Priority set for ${ids.length - failCount} of ${ids.length} tasks`);
       }
+      setBulkPending(false);
     },
     [selectedIds, qc, exitSelectMode]
   );

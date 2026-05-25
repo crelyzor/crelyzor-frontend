@@ -16,7 +16,7 @@ import { useUIStore } from '@/stores/uiStore';
 
 const SUPPORT_EMAIL = 'harshkeshari100@gmail.com';
 const PUBLIC_URL =
-  import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'https://cards.crelyzor.com';
+  import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
 
 // ── Plan comparison ──────────────────────────────────────────────────────────
 

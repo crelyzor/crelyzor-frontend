@@ -24,7 +24,7 @@ function formatTaggedMeetingDate(meeting: { startTime?: string }) {
 export default function TagDetailPage() {
   const { tagId } = useParams<{ tagId: string }>();
   const navigate = useNavigate();
-  const { data, isLoading } = useTagItems(tagId || '');
+  const { data, isLoading, isError, refetch } = useTagItems(tagId || '');
 
   if (isLoading) {
     return (
@@ -38,6 +38,26 @@ export default function TagDetailPage() {
                 className="h-16 w-full bg-neutral-100 dark:bg-neutral-800 rounded-xl animate-pulse"
               />
             ))}
+          </div>
+        </div>
+      </PageMotion>
+    );
+  }
+
+  if (isError) {
+    return (
+      <PageMotion>
+        <div className="max-w-5xl mx-auto px-4 py-8">
+          <div className="text-center py-20 max-w-md mx-auto">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+              Failed to load tag
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="mt-4 px-4 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-sm font-medium text-neutral-700 dark:text-neutral-200"
+            >
+              Try again
+            </button>
           </div>
         </div>
       </PageMotion>

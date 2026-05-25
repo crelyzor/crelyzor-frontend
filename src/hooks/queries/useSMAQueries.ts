@@ -55,7 +55,7 @@ export function useCreateStandaloneTask() {
       cardId?: string;
     }) => smaApi.createStandaloneTask(data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.sma.all });
+      qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
     },
     onError: () => toast.error('Failed to create task'),
   });

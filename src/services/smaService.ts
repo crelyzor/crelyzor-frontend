@@ -13,7 +13,7 @@ export type SMATranscriptSegment = {
 
 export type SMATranscript = {
   id: string;
-  fullText: string;
+  fullText?: string;
   segments: SMATranscriptSegment[];
 };
 

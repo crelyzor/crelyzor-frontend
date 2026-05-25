@@ -10,8 +10,9 @@ import {
   extractTimeFromISO,
 } from '@/lib/utils';
 import { DateTimePicker } from '@/components/ui/DateTimePicker';
+import type { TaskPriority } from '@/types/meeting';
 
-type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
+type Priority = TaskPriority;
 type ActivePopover = 'date' | 'priority' | null;
 
 const PRIORITY_OPTIONS: {

@@ -8,7 +8,7 @@ import { authApi } from '@/services/authService';
 import { queryKeys } from '@/lib/queryKeys';
 
 const CARDS_PUBLIC_URL =
-  import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'https://cards.crelyzor.com';
+  import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
 
 const usernameRegex = /^[a-z0-9][a-z0-9-]*[a-z0-9]$/;
 const consecutiveHyphens = /--/;
