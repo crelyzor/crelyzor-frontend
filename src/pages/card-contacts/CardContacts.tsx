@@ -197,7 +197,9 @@ export default function CardContacts() {
     const failCount = results.filter((r) => r.status === 'rejected').length;
     const successCount = ids.length - failCount;
     if (failCount === 0) {
-      toast.success(`${successCount} contact${successCount !== 1 ? 's' : ''} deleted`);
+      toast.success(
+        `${successCount} contact${successCount !== 1 ? 's' : ''} deleted`
+      );
     } else if (failCount === ids.length) {
       toast.error('Failed to delete contacts');
     } else {
@@ -228,7 +230,9 @@ export default function CardContacts() {
     } else if (failCount === selected.size) {
       toast.error('Failed to apply tag');
     } else {
-      toast.success(`Tag applied to ${selected.size - failCount} of ${selected.size} contacts`);
+      toast.success(
+        `Tag applied to ${selected.size - failCount} of ${selected.size} contacts`
+      );
     }
     setBulkTagOpen(false);
     setSelected(new Set());

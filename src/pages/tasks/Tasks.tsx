@@ -540,11 +540,15 @@ export default function Tasks() {
     qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
     exitSelectMode();
     if (failCount === 0) {
-      toast.success(`${ids.length} task${ids.length !== 1 ? 's' : ''} completed`);
+      toast.success(
+        `${ids.length} task${ids.length !== 1 ? 's' : ''} completed`
+      );
     } else if (failCount === ids.length) {
       toast.error('Failed to complete tasks');
     } else {
-      toast.success(`${ids.length - failCount} of ${ids.length} tasks completed`);
+      toast.success(
+        `${ids.length - failCount} of ${ids.length} tasks completed`
+      );
     }
     setBulkPending(false);
   }, [selectedIds, qc, exitSelectMode]);
@@ -579,11 +583,15 @@ export default function Tasks() {
       qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
       exitSelectMode();
       if (failCount === 0) {
-        toast.success(`Priority set for ${ids.length} task${ids.length !== 1 ? 's' : ''}`);
+        toast.success(
+          `Priority set for ${ids.length} task${ids.length !== 1 ? 's' : ''}`
+        );
       } else if (failCount === ids.length) {
         toast.error('Failed to update task priority');
       } else {
-        toast.success(`Priority set for ${ids.length - failCount} of ${ids.length} tasks`);
+        toast.success(
+          `Priority set for ${ids.length - failCount} of ${ids.length} tasks`
+        );
       }
       setBulkPending(false);
     },
