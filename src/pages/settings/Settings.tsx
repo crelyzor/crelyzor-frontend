@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { CARDS_PUBLIC_URL } from '@/lib/publicUrl';
 import { getTimeZones } from '@vvo/tzdb';
 import { useQueryClient } from '@tanstack/react-query';
 import { PageMotion } from '@/components/PageMotion';
@@ -929,8 +930,7 @@ function EventTypesSection() {
 
   const handleCopySlug = useCallback(
     (slug: string) => {
-      const publicBase =
-        import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
+      const publicBase = CARDS_PUBLIC_URL;
       const username = profile?.username ?? '';
       const url = `${publicBase}/schedule/${username}/${slug}`;
       navigator.clipboard.writeText(url);

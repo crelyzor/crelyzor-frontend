@@ -160,11 +160,11 @@ export const smaApi = {
     return result.task;
   },
 
-  getTasks: async (meetingId: string): Promise<Task[]> => {
-    const result = await apiClient.get<{ tasks: Task[] }>(
+  getTasks: async (meetingId: string): Promise<{ tasks: Task[]; total: number; hasMore: boolean }> => {
+    const result = await apiClient.get<{ tasks: Task[]; total: number; hasMore: boolean }>(
       `/sma/meetings/${meetingId}/tasks`
     );
-    return result.tasks;
+    return result;
   },
 
   createTask: async (

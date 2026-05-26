@@ -39,8 +39,7 @@ import { QRCodeDialog } from '@/components/cards/QRCodeDialog';
 import { EmailSignatureDialog } from '@/components/cards/EmailSignatureDialog';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { TagChip } from '@/components/ui/TagChip';
-
-const CARDS_PUBLIC_URL = import.meta.env.VITE_CARDS_PUBLIC_URL ?? '';
+import { CARDS_PUBLIC_URL } from '@/lib/publicUrl';
 
 export default function Cards() {
   const navigate = useNavigate();

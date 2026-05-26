@@ -27,16 +27,13 @@ import {
 } from '@/hooks/queries/useSMAQueries';
 import { smaApi } from '@/services/smaService';
 import { formatTimestamp } from './meetingDetailHelpers';
+import { CARDS_PUBLIC_URL as CARDS_BASE } from '@/lib/publicUrl';
 
 interface ShareSheetProps {
   meetingId: string;
   meetingTitle: string;
   transcriptionStatus: TranscriptionStatus;
 }
-
-const CARDS_BASE =
-  (import.meta.env.VITE_CARDS_PUBLIC_URL as string | undefined) ??
-  'http://localhost:5174';
 
 export function ShareSheet({
   meetingId,

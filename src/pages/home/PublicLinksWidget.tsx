@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Link2,
   Copy,
@@ -11,9 +11,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
-
-const CARDS_PUBLIC_URL =
-  import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
+import { CARDS_PUBLIC_URL } from '@/lib/publicUrl';
 
 function LinkRow({
   label,
@@ -25,13 +23,16 @@ function LinkRow({
   icon: React.ElementType;
 }) {
   const [copied, setCopied] = useState(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => { if (resetTimerRef.current) clearTimeout(resetTimerRef.current); }, []);
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(url);
     toast.success(`${label} link copied`);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    resetTimerRef.current = setTimeout(() => setCopied(false), 2000);
   };
 
   const displayPath = url.replace(/^https?:\/\/[^/]+/, '');

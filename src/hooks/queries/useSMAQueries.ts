@@ -73,7 +73,7 @@ export function useTasks(meetingId: string, enabled = true) {
     staleTime: 2 * 60 * 1000, // 2 minutes — tasks change more often than tags
     refetchInterval: (query) => {
       if (!enabled) return false;
-      return query.state.data && query.state.data.length > 0 ? false : 4000;
+      return query.state.data && query.state.data.tasks.length > 0 ? false : 4000;
     },
   });
 }

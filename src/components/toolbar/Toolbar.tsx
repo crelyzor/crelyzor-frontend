@@ -16,9 +16,7 @@ import { ToolbarButton } from './ToolbarButton';
 import { ThemeToggle } from './ThemeToggle';
 import { ControlCenter } from './ControlCenter';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-
-const CARDS_PUBLIC_URL =
-  import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'http://localhost:5174';
+import { CARDS_PUBLIC_URL } from '@/lib/publicUrl';
 
 export function Toolbar() {
   const [controlCenterOpen, setControlCenterOpen] = useState(false);
