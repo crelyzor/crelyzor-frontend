@@ -35,7 +35,8 @@ export default function SetupPage() {
   }, [username]);
 
   const validationError = getValidationError(username);
-  const canCheck = debouncedUsername.length >= 3 && !getValidationError(debouncedUsername);
+  const canCheck =
+    debouncedUsername.length >= 3 && !getValidationError(debouncedUsername);
 
   const { data: availabilityData, isFetching: isChecking } = useQuery({
     queryKey: ['username-check', debouncedUsername],
@@ -86,7 +87,10 @@ export default function SetupPage() {
   };
 
   const canSubmit =
-    username.length >= 3 && !validationError && isAvailable === true && !isChecking;
+    username.length >= 3 &&
+    !validationError &&
+    isAvailable === true &&
+    !isChecking;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950 p-8">

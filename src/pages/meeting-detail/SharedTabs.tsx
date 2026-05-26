@@ -753,8 +753,17 @@ export function ActionsTab({
   const handleToggle = (task: Task) => {
     const newCompleted = !task.isCompleted;
     // Optimistic update
-    qc.setQueryData(queryKeys.sma.tasks(meetingId), (old: { tasks: Task[]; total: number; hasMore: boolean } | undefined) =>
-      old ? { ...old, tasks: old.tasks.map((t) => t.id === task.id ? { ...t, isCompleted: newCompleted } : t) } : old
+    qc.setQueryData(
+      queryKeys.sma.tasks(meetingId),
+      (old: { tasks: Task[]; total: number; hasMore: boolean } | undefined) =>
+        old
+          ? {
+              ...old,
+              tasks: old.tasks.map((t) =>
+                t.id === task.id ? { ...t, isCompleted: newCompleted } : t
+              ),
+            }
+          : old
     );
     updateTask(
       { taskId: task.id, data: { isCompleted: newCompleted } },
@@ -763,8 +772,21 @@ export function ActionsTab({
           // Roll back on failure
           qc.setQueryData(
             queryKeys.sma.tasks(meetingId),
-            (old: { tasks: Task[]; total: number; hasMore: boolean } | undefined) =>
-              old ? { ...old, tasks: old.tasks.map((t) => t.id === task.id ? { ...t, isCompleted: task.isCompleted } : t) } : old
+            (
+              old:
+                | { tasks: Task[]; total: number; hasMore: boolean }
+                | undefined
+            ) =>
+              old
+                ? {
+                    ...old,
+                    tasks: old.tasks.map((t) =>
+                      t.id === task.id
+                        ? { ...t, isCompleted: task.isCompleted }
+                        : t
+                    ),
+                  }
+                : old
           );
         },
       }

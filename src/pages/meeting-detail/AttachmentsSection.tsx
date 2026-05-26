@@ -82,7 +82,12 @@ function AttachmentRow({
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const href = getAttachmentHref(attachment);
 
-  useEffect(() => () => { if (resetTimerRef.current) clearTimeout(resetTimerRef.current); }, []);
+  useEffect(
+    () => () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    },
+    []
+  );
 
   function handleDeleteClick() {
     if (!pendingDelete) {

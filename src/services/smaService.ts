@@ -160,10 +160,14 @@ export const smaApi = {
     return result.task;
   },
 
-  getTasks: async (meetingId: string): Promise<{ tasks: Task[]; total: number; hasMore: boolean }> => {
-    const result = await apiClient.get<{ tasks: Task[]; total: number; hasMore: boolean }>(
-      `/sma/meetings/${meetingId}/tasks`
-    );
+  getTasks: async (
+    meetingId: string
+  ): Promise<{ tasks: Task[]; total: number; hasMore: boolean }> => {
+    const result = await apiClient.get<{
+      tasks: Task[];
+      total: number;
+      hasMore: boolean;
+    }>(`/sma/meetings/${meetingId}/tasks`);
     return result;
   },
 
