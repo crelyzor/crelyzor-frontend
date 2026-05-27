@@ -669,7 +669,8 @@ export default function Cards() {
                 <button
                   onClick={() => {
                     closeCard();
-                    if (actionTimerRef.current) clearTimeout(actionTimerRef.current);
+                    if (actionTimerRef.current)
+                      clearTimeout(actionTimerRef.current);
                     actionTimerRef.current = setTimeout(
                       () => navigate(`/cards/${selectedCard.id}/analytics`),
                       200
@@ -683,7 +684,8 @@ export default function Cards() {
                 <button
                   onClick={() => {
                     closeCard();
-                    if (actionTimerRef.current) clearTimeout(actionTimerRef.current);
+                    if (actionTimerRef.current)
+                      clearTimeout(actionTimerRef.current);
                     actionTimerRef.current = setTimeout(
                       () => navigate(`/cards/contacts?card=${selectedCard.id}`),
                       200
@@ -703,7 +705,8 @@ export default function Cards() {
                   className="flex-1 h-9 rounded-xl text-xs font-medium bg-neutral-950 dark:bg-neutral-50 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 gap-1.5"
                   onClick={() => {
                     closeCard();
-                    if (actionTimerRef.current) clearTimeout(actionTimerRef.current);
+                    if (actionTimerRef.current)
+                      clearTimeout(actionTimerRef.current);
                     actionTimerRef.current = setTimeout(
                       () => navigate(`/cards/${selectedCard.id}`),
                       200
@@ -745,8 +748,12 @@ export default function Cards() {
                   className="h-9 w-9 rounded-xl p-0 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200"
                   onClick={() => {
                     closeCard();
-                    if (actionTimerRef.current) clearTimeout(actionTimerRef.current);
-                    actionTimerRef.current = setTimeout(() => setQrDialogCard(selectedCard), 200);
+                    if (actionTimerRef.current)
+                      clearTimeout(actionTimerRef.current);
+                    actionTimerRef.current = setTimeout(
+                      () => setQrDialogCard(selectedCard),
+                      200
+                    );
                   }}
                 >
                   <QrCode className="w-3.5 h-3.5" />

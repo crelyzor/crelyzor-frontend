@@ -4,7 +4,8 @@ import type { Task } from '@/types';
 import { ApiError } from '@/lib/apiClient';
 
 function getApiBase(): string {
-  const raw = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
+  const raw =
+    (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
   return raw.startsWith('http') ? raw : `${window.location.origin}${raw}`;
 }
 
@@ -425,8 +426,15 @@ export const smaApi = {
 
     if (!res.ok) {
       if (res.status === 402 || res.status === 429) {
-        const body = await res.json().catch(() => ({})) as { message?: string };
-        onError(body.message ?? (res.status === 429 ? 'Rate limit reached — please wait' : 'Usage limit reached'));
+        const body = (await res.json().catch(() => ({}))) as {
+          message?: string;
+        };
+        onError(
+          body.message ??
+            (res.status === 429
+              ? 'Rate limit reached — please wait'
+              : 'Usage limit reached')
+        );
       } else {
         onError('Failed to get AI response');
       }
