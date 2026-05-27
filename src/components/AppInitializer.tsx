@@ -35,7 +35,12 @@ export function AppInitializer({ children }: { children: React.ReactNode }) {
           logout();
         }
       })
-      .catch(() => {
+      .catch((err: unknown) => {
+        // Network error (fetch itself failed) — treat as unauthenticated; an
+        // actual 401 from the server resolves via the .then branch above (res.ok === false).
+        if (import.meta.env.DEV) {
+          console.warn('[AppInitializer] Token refresh network error:', err);
+        }
         logout();
       })
       .finally(() => {

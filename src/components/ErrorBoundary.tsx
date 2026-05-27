@@ -32,6 +32,7 @@ export class ErrorBoundary extends Component<
         info.componentStack
       );
     }
+    // TODO: send to production error reporting (Sentry / Datadog) when integrated
   }
 
   render() {

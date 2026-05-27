@@ -39,7 +39,7 @@ export default function SetupPage() {
     debouncedUsername.length >= 3 && !getValidationError(debouncedUsername);
 
   const { data: availabilityData, isFetching: isChecking } = useQuery({
-    queryKey: ['username-check', debouncedUsername],
+    queryKey: queryKeys.users.usernameCheck(debouncedUsername),
     queryFn: () => authApi.checkUsername(debouncedUsername),
     enabled: canCheck,
     staleTime: 30_000,

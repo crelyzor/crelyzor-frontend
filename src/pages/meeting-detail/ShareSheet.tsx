@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import {
   Share2,
@@ -43,6 +43,13 @@ export function ShareSheet({
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [exporting, setExporting] = useState<string | null>(null);
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+    };
+  }, []);
 
   const isCompleted = transcriptionStatus === 'COMPLETED';
   const { data: transcript } = useTranscript(meetingId, isCompleted);
@@ -64,7 +71,8 @@ export function ShareSheet({
       await navigator.clipboard.writeText(text);
       setCopied(key);
       toast.success('Copied to clipboard');
-      setTimeout(() => setCopied(null), 2000);
+      if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+      copiedTimerRef.current = setTimeout(() => setCopied(null), 2000);
     } catch {
       toast.error('Failed to copy');
     }
