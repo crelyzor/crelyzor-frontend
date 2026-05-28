@@ -17,8 +17,7 @@ import { TagChip } from '@/components/ui/TagChip';
 import type { TaskWithMeeting } from '@/services/smaService';
 import type { useUpdateTask } from '@/hooks/queries/useSMAQueries';
 import { formatTaskDue } from '@/lib/utils';
-
-type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
+import type { TaskStatus } from '@/types/meeting';
 
 interface Column {
   id: TaskStatus;

@@ -5,10 +5,10 @@ import { useGoogleLogin } from '@/hooks/queries/useAuthQueries';
 import { useAuthStore } from '@/stores';
 import { ThemeToggle } from '@/components/toolbar/ThemeToggle';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { CARDS_PUBLIC_URL as PUBLIC_URL } from '@/lib/publicUrl';
 
 const GOLD = '#d4af61';
 const PILLARS = ['CARDS', 'CALENDAR', 'MEETINGS', 'VOICE', 'TASKS', 'AI'];
-const PUBLIC_URL = import.meta.env.VITE_CARDS_PUBLIC_URL as string;
 
 export default function SignIn() {
   const { login } = useGoogleLogin();

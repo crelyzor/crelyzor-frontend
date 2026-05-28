@@ -13,10 +13,9 @@ import { Button } from '@/components/ui/button';
 import { PageMotion } from '@/components/PageMotion';
 import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
 import { useUIStore } from '@/stores/uiStore';
+import { CARDS_PUBLIC_URL as PUBLIC_URL } from '@/lib/publicUrl';
 
 const SUPPORT_EMAIL = 'harshkeshari100@gmail.com';
-const PUBLIC_URL =
-  import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'https://cards.crelyzor.com';
 
 // ── Plan comparison ──────────────────────────────────────────────────────────
 

@@ -151,7 +151,7 @@ function TagCard({ tag }: { tag: TagWithCounts }) {
 }
 
 export function TagsPage() {
-  const { data: tags = [], isLoading } = useTagsWithCounts();
+  const { data: tags = [], isLoading, isError, refetch } = useTagsWithCounts();
   const { mutate: createTag, isPending: isCreating } = useCreateTag();
   const [newName, setNewName] = useState('');
   const [newColor, setNewColor] = useState(DEFAULT_TAG_COLOR);
@@ -241,7 +241,16 @@ export function TagsPage() {
           </Button>
         </form>
 
-        {isLoading ? (
+        {isError ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-3">
+              Failed to load tags
+            </p>
+            <Button variant="outline" size="sm" onClick={() => void refetch()}>
+              Try again
+            </Button>
+          </div>
+        ) : isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div

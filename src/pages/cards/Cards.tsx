@@ -39,8 +39,7 @@ import { QRCodeDialog } from '@/components/cards/QRCodeDialog';
 import { EmailSignatureDialog } from '@/components/cards/EmailSignatureDialog';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { TagChip } from '@/components/ui/TagChip';
-
-const CARDS_PUBLIC_URL = import.meta.env.VITE_CARDS_PUBLIC_URL ?? '';
+import { CARDS_PUBLIC_URL } from '@/lib/publicUrl';
 
 export default function Cards() {
   const navigate = useNavigate();
@@ -57,6 +56,7 @@ export default function Cards() {
   const [flipped, setFlipped] = useState(false);
   const [closing, setClosing] = useState(false);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const actionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Batch-fetch tags for all cards in parallel
   const cardTagsMap = useQueries({
@@ -100,6 +100,7 @@ export default function Cards() {
   useEffect(() => {
     return () => {
       if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+      if (actionTimerRef.current) clearTimeout(actionTimerRef.current);
     };
   }, []);
 
@@ -668,7 +669,9 @@ export default function Cards() {
                 <button
                   onClick={() => {
                     closeCard();
-                    setTimeout(
+                    if (actionTimerRef.current)
+                      clearTimeout(actionTimerRef.current);
+                    actionTimerRef.current = setTimeout(
                       () => navigate(`/cards/${selectedCard.id}/analytics`),
                       200
                     );
@@ -681,7 +684,9 @@ export default function Cards() {
                 <button
                   onClick={() => {
                     closeCard();
-                    setTimeout(
+                    if (actionTimerRef.current)
+                      clearTimeout(actionTimerRef.current);
+                    actionTimerRef.current = setTimeout(
                       () => navigate(`/cards/contacts?card=${selectedCard.id}`),
                       200
                     );
@@ -700,7 +705,9 @@ export default function Cards() {
                   className="flex-1 h-9 rounded-xl text-xs font-medium bg-neutral-950 dark:bg-neutral-50 text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200 gap-1.5"
                   onClick={() => {
                     closeCard();
-                    setTimeout(
+                    if (actionTimerRef.current)
+                      clearTimeout(actionTimerRef.current);
+                    actionTimerRef.current = setTimeout(
                       () => navigate(`/cards/${selectedCard.id}`),
                       200
                     );
@@ -741,7 +748,12 @@ export default function Cards() {
                   className="h-9 w-9 rounded-xl p-0 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200"
                   onClick={() => {
                     closeCard();
-                    setTimeout(() => setQrDialogCard(selectedCard), 200);
+                    if (actionTimerRef.current)
+                      clearTimeout(actionTimerRef.current);
+                    actionTimerRef.current = setTimeout(
+                      () => setQrDialogCard(selectedCard),
+                      200
+                    );
                   }}
                 >
                   <QrCode className="w-3.5 h-3.5" />

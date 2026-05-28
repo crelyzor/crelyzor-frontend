@@ -69,7 +69,10 @@ export function useNotificationSocket() {
 
       try {
         ws = new WebSocket(getWsUrl());
-      } catch {
+      } catch (err) {
+        if (import.meta.env.DEV) {
+          console.warn('[useNotificationSocket] WebSocket init failed:', err);
+        }
         return;
       }
 
@@ -93,8 +96,10 @@ export function useNotificationSocket() {
           } else if (msg.type === 'PING') {
             ws!.send(JSON.stringify({ type: 'PONG' }));
           }
-        } catch {
-          // Ignore malformed messages
+        } catch (err) {
+          if (import.meta.env.DEV) {
+            console.warn('[useNotificationSocket] Malformed WS message:', err);
+          }
         }
       };
 

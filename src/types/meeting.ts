@@ -84,9 +84,6 @@ export type Meeting = {
   googleEventId?: string;
   recordingLink?: string;
   notes?: string;
-  guestEmail?: string;
-  guestName?: string;
-  guestMessage?: string;
   createdById: string;
   isDeleted: boolean;
   transcriptionStatus: TranscriptionStatus;
@@ -188,6 +185,7 @@ export type Attachment = {
 };
 
 export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
+export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export type Task = {
   id: string;

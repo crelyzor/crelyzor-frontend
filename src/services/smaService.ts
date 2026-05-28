@@ -3,6 +3,12 @@ import { useAuthStore } from '@/stores';
 import type { Task } from '@/types';
 import { ApiError } from '@/lib/apiClient';
 
+function getApiBase(): string {
+  const raw =
+    (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
+  return raw.startsWith('http') ? raw : `${window.location.origin}${raw}`;
+}
+
 export type SMATranscriptSegment = {
   id: string;
   startTime: number;
@@ -13,7 +19,7 @@ export type SMATranscriptSegment = {
 
 export type SMATranscript = {
   id: string;
-  fullText: string;
+  fullText?: string;
   segments: SMATranscriptSegment[];
 };
 
@@ -160,11 +166,15 @@ export const smaApi = {
     return result.task;
   },
 
-  getTasks: async (meetingId: string): Promise<Task[]> => {
-    const result = await apiClient.get<{ tasks: Task[] }>(
-      `/sma/meetings/${meetingId}/tasks`
-    );
-    return result.tasks;
+  getTasks: async (
+    meetingId: string
+  ): Promise<{ tasks: Task[]; total: number; hasMore: boolean }> => {
+    const result = await apiClient.get<{
+      tasks: Task[];
+      total: number;
+      hasMore: boolean;
+    }>(`/sma/meetings/${meetingId}/tasks`);
+    return result;
   },
 
   createTask: async (
@@ -395,11 +405,7 @@ export const smaApi = {
     signal?: AbortSignal
   ): Promise<void> => {
     const token = useAuthStore.getState().accessToken;
-    const API_BASE =
-      (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
-    const base = API_BASE.startsWith('http')
-      ? API_BASE
-      : `${window.location.origin}${API_BASE}`;
+    const base = getApiBase();
 
     let res: Response;
     try {
@@ -419,7 +425,19 @@ export const smaApi = {
     }
 
     if (!res.ok) {
-      onError('Failed to get AI response');
+      if (res.status === 402 || res.status === 429) {
+        const body = (await res.json().catch(() => ({}))) as {
+          message?: string;
+        };
+        onError(
+          body.message ??
+            (res.status === 429
+              ? 'Rate limit reached — please wait'
+              : 'Usage limit reached')
+        );
+      } else {
+        onError('Failed to get AI response');
+      }
       return;
     }
 
@@ -495,11 +513,7 @@ export const smaApi = {
     content: 'transcript' | 'summary'
   ): Promise<void> => {
     const token = useAuthStore.getState().accessToken;
-    const API_BASE =
-      (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
-    const base = API_BASE.startsWith('http')
-      ? API_BASE
-      : `${window.location.origin}${API_BASE}`;
+    const base = getApiBase();
 
     const res = await fetch(
       `${base}/sma/meetings/${meetingId}/export?format=${format}&content=${content}`,
@@ -537,11 +551,7 @@ export const smaApi = {
     // Backend multer expects field name "file"
     form.append('file', file, file.name);
 
-    const API_BASE =
-      (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '/api';
-    const base = API_BASE.startsWith('http')
-      ? API_BASE
-      : `${window.location.origin}${API_BASE}`;
+    const base = getApiBase();
 
     const res = await fetch(`${base}/sma/meetings/${meetingId}/recordings`, {
       method: 'POST',

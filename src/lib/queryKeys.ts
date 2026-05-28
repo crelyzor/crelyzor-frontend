@@ -157,6 +157,8 @@ export const queryKeys = {
   users: {
     all: ['users'] as const,
     search: (q: string) => [...queryKeys.users.all, 'search', q] as const,
+    usernameCheck: (username: string) =>
+      [...queryKeys.users.all, 'username-check', username] as const,
   },
 
   // Global search
