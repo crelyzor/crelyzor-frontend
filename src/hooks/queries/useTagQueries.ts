@@ -25,6 +25,7 @@ export function useTagItems(tagId: string) {
     queryKey: queryKeys.tags.items(tagId),
     queryFn: () => tagsApi.getTagItems(tagId),
     enabled: !!tagId,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -89,17 +90,8 @@ export function useUpdateTag() {
       data: { name?: string; color?: string };
     }) => tagsApi.updateTag(tagId, data),
     onSuccess: () => {
-      // Invalidate user tag list and all per-meeting/per-card caches since
-      // tag name/color may be rendered in those views. Use partial prefix keys
-      // so every ['tags', 'meeting', *] and ['tags', 'card', *] query is
-      // invalidated without blowing up unrelated caches.
-      qc.invalidateQueries({ queryKey: queryKeys.tags.userTags() });
-      qc.invalidateQueries({ queryKey: queryKeys.tags.withCounts() });
-      qc.invalidateQueries({ queryKey: ['tags', 'meeting'] });
-      qc.invalidateQueries({ queryKey: ['tags', 'card'] });
-      qc.invalidateQueries({ queryKey: ['tags', 'task'] });
-      qc.invalidateQueries({ queryKey: ['tags', 'contact'] });
-      qc.invalidateQueries({ queryKey: ['tags', 'items'] });
+      toast.success('Tag updated');
+      qc.invalidateQueries({ queryKey: queryKeys.tags.all });
     },
     onError: () => toast.error('Failed to update tag'),
   });
@@ -110,13 +102,8 @@ export function useDeleteTag() {
   return useMutation({
     mutationFn: (tagId: string) => tagsApi.deleteTag(tagId),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.tags.userTags() });
-      qc.invalidateQueries({ queryKey: queryKeys.tags.withCounts() });
-      qc.invalidateQueries({ queryKey: ['tags', 'meeting'] });
-      qc.invalidateQueries({ queryKey: ['tags', 'card'] });
-      qc.invalidateQueries({ queryKey: ['tags', 'task'] });
-      qc.invalidateQueries({ queryKey: ['tags', 'contact'] });
-      qc.invalidateQueries({ queryKey: ['tags', 'items'] });
+      toast.success('Tag deleted');
+      qc.invalidateQueries({ queryKey: queryKeys.tags.all });
     },
     onError: () => toast.error('Failed to delete tag'),
   });

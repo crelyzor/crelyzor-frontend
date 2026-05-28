@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-04-19 (Phase 4.4 complete ✅ — Polish & First-Run Experience shipped)
+Last updated: 2026-05-22 (Phase 4.9 complete ✅ — In-App Notifications + WebSocket client shipped)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -746,66 +746,62 @@ See item 22 above for full checklist.
 
 > Bell icon in the app header + notification panel + real-time SSE updates. Backend delivers notifications via `GET /notifications/stream` (SSE). Frontend subscribes on mount, shows a badge, and lets the user open a panel to read/dismiss. All within the existing header + settings structure.
 
-### P0 — Service + Query Layer
+### P0 — Service + Query Layer ✅
 
-- [ ] `src/services/notificationService.ts`:
+- [x] `src/services/notificationService.ts`:
   - `listNotifications(cursor?, limit?)` — `GET /notifications`
   - `getUnreadCount()` — `GET /notifications/unread-count`
   - `markRead(id)` — `PATCH /notifications/:id/read`
   - `markAllRead()` — `PATCH /notifications/read-all`
   - `deleteNotification(id)` — `DELETE /notifications/:id`
-- [ ] `queryKeys.notifications.list()`, `queryKeys.notifications.unreadCount()` in `src/lib/queryKeys.ts`
-- [ ] Hooks in `src/hooks/queries/useNotificationQueries.ts`:
+- [x] `queryKeys.notifications.list()`, `queryKeys.notifications.unreadCount()` in `src/lib/queryKeys.ts`
+- [x] Hooks in `src/hooks/queries/useNotificationQueries.ts`:
   - `useNotifications()` — `useInfiniteQuery` with cursor pagination
   - `useUnreadCount()` — `useQuery`, `staleTime: 60_000`, `refetchInterval: 60_000`
   - `useMarkRead()` — `useMutation`, optimistically sets `isRead: true` in cache
   - `useMarkAllRead()` — `useMutation`, invalidates `queryKeys.notifications.*`
   - `useDeleteNotification()` — `useMutation`, optimistically removes from list
 
-### P1 — Notification Bell
+### P1 — Notification Bell ✅
 
 New component: `src/components/notifications/NotificationBell.tsx`
 
-- [ ] Bell icon (`Bell` from lucide) in app header, right side (alongside existing icons)
-- [ ] Badge overlay — red dot when `unreadCount > 0`, shows count when `< 100`, "99+" when ≥ 100. Badge: `text-[9px]`, `min-w-[16px] h-4`, `rounded-full`, `bg-red-500 text-white`
-- [ ] Click → opens `<NotificationPanel />`
-- [ ] Badge animates in with a small scale spring when count goes 0 → >0
+- [x] Bell icon (`Bell` from lucide) in app header, right side (alongside existing icons)
+- [x] Badge overlay — red dot when `unreadCount > 0`, shows count when `< 100`, "99+" when ≥ 100. Badge: `text-[9px]`, `min-w-[16px] h-4`, `rounded-full`, `bg-red-500 text-white`
+- [x] Click → opens `<NotificationPanel />`
+- [x] Badge animates in with a small scale spring when count goes 0 → >0
 
-### P2 — Notification Panel
+### P2 — Notification Panel ✅
 
 New component: `src/components/notifications/NotificationPanel.tsx`
 
-- [ ] Popover anchored to bell icon — `w-80`, `max-h-[480px]`, overflow scroll, `rounded-2xl`, glassmorphism (`bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl`)
-- [ ] Header: "Notifications" label + "Mark all read" button (ghost, `text-xs`) — hidden when list is empty
-- [ ] **Skeleton:** 3 placeholder rows while `isLoading`
-- [ ] **Empty state:** Bell icon + "You're all caught up" text + `text-xs text-muted-foreground`
-- [ ] **Notification rows:**
-  - Left: type icon (BellRing for booking, Sparkles for AI complete, CheckSquare for task, etc.) in `w-8 h-8 rounded-lg bg-muted`
-  - Center: `title` (`text-sm font-medium`) + `body` (`text-xs text-muted-foreground line-clamp-1`) + relative timestamp (`text-[10px] text-muted-foreground`)
-  - Right: unread dot (`w-2 h-2 rounded-full bg-blue-500`) when `!isRead`
-  - Click row → `markRead(id)` + navigate to entity (meeting detail, task, booking)
-  - Hover: `bg-neutral-50 dark:bg-neutral-800/50`
-- [ ] **Grouped sections:** "Today" / "Earlier" — date-based grouping, `text-[10px] uppercase tracking-wider text-muted-foreground` section headers
-- [ ] **"Clear all" button** at bottom — calls `deleteNotification` on each read notification
-- [ ] Infinite scroll: load more when user scrolls near bottom (intersect sentinel)
+- [x] Popover anchored to bell icon — `w-80`, `max-h-[480px]`, overflow scroll, `rounded-2xl`, glassmorphism (`bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl`)
+- [x] Header: "Notifications" label + "Mark all read" button (ghost, `text-xs`) — hidden when no unread
+- [x] **Skeleton:** 3 placeholder rows while `isLoading`
+- [x] **Empty state:** Bell icon + "You're all caught up" text + `text-xs text-muted-foreground`
+- [x] **Notification rows:** type icon + title/body/timestamp + unread dot
+- [x] Click row → `markRead(id)` + navigate to entity (meeting detail, task, booking)
+- [x] **Grouped sections:** "Today" / "Earlier" with date-based grouping
+- [x] **"Clear read" button** at bottom — calls `deleteNotification` on each read notification
+- [x] Infinite scroll via IntersectionObserver sentinel
 
-### P3 — Real-time SSE Hook
+### P3 — Real-time WebSocket Hook ✅
 
-New hook: `src/hooks/useNotificationStream.ts`
+New hook: `src/hooks/useNotificationSocket.ts` (WebSocket, not SSE — backend uses WS)
 
-- [ ] Opens `EventSource` to `/api/v1/notifications/stream` with auth (`withCredentials: true`)
-- [ ] On `message` event: parse JSON, invalidate `queryKeys.notifications.list()` + `queryKeys.notifications.unreadCount()`
-- [ ] Show subtle Sonner toast: `toast.info(notification.title, { description: notification.body, duration: 4000 })` — not intrusive, just a nudge
-- [ ] Auto-reconnect on error: exponential backoff starting at 3s, doubling each attempt, capped at 60s
-- [ ] `EventSource` closed in cleanup function — call in `useEffect` return
-- [ ] Mount `useNotificationStream()` in `AppLayout` (or equivalent root layout component) — runs for the whole session
+- [x] Derives WS URL from `VITE_API_BASE_URL` (http→ws, strips `/api` path)
+- [x] Sends AUTH message on open, handles CONNECTED / NOTIFICATION / PING
+- [x] On NOTIFICATION: invalidates `queryKeys.notifications.all` + shows Sonner toast
+- [x] Exponential backoff reconnect: 3s → 60s cap
+- [x] Mounted in `Layout.tsx` — runs for whole authenticated session
 
-### P4 — Settings: In-App Notification Preferences
+### P4 — Settings: In-App Notification Preferences ✅
 
-- [ ] Expand `src/pages/settings/NotificationsSettings.tsx` (or equivalent) — add "In-App" toggle column alongside existing "Email" toggles
-- [ ] Rows: master "In-App Notifications" toggle (disables all below when off), then per-type: "Bookings", "Meeting AI ready", "Task due soon"
-- [ ] Backed by `useUpdateSettings()` mutation — persist `inAppNotificationsEnabled`, `inAppBookingEnabled`, `inAppMeetingReadyEnabled`, `inAppTaskDueEnabled`
-- [ ] Toggles disabled (with tooltip "Enable in-app notifications first") when master is off
+- [x] `src/pages/settings/Settings.tsx` — new "In-App" Card section in `NotificationsSection`
+- [x] Master toggle (`inAppNotificationsEnabled`) + 3 per-type toggles (booking / meeting ready / task due)
+- [x] Backed by `useUpdateSettings()` — persists all 4 `inApp*` fields
+- [x] Toggles disabled when master is off (same opacity/pointer-events pattern as email section)
+- [x] `src/types/settings.ts` — 4 `inApp*` fields added to `UserSettings` + `PatchUserSettingsPayload`
 
 ---
 
@@ -831,86 +827,144 @@ New hook: `src/hooks/useNotificationStream.ts`
 
 ## Phase 6 — Teams (Frontend)
 
-> Full design spec: `docs/superpowers/specs/2026-05-09-teams-design.md`
+> Full design spec: `../docs/internal/superpowers/specs/2026-05-09-teams-design.md`
+> Aesthetic: **Minimal. Precise. Alive.** — DM Sans, neutral grays only, spring physics, glassmorphism on floating surfaces. Match existing dashboard exactly. No new visual language.
 
 ---
 
 ### P0 — Team Store + API Layer
 
-- [ ] **`teamStore.ts`** (Zustand) — `activeTeamId: string | null`, `setActiveTeam(id: string | null)`, persisted to `sessionStorage` (not localStorage — clears on browser close)
-- [ ] **`teamService.ts`** — API methods: `createTeam`, `listTeams`, `updateTeam`, `deleteTeam`, `listMembers`, `inviteMember`, `removeMember`, `leaveTeam`, `getTeamUsage`
-- [ ] **`useTeamQueries.ts`** — `useTeams()`, `useTeamMembers(teamId)`, `useTeamUsage(teamId)`
-- [ ] **`queryKeys.ts`** additions — `queryKeys.teams.all()`, `queryKeys.teams.members(teamId)`, `queryKeys.teams.usage(teamId)`
-- [ ] **`apiClient.ts`** — inject `X-Team-Id` header automatically when `activeTeamId` is set in store
+- [ ] **`teamStore.ts`** (Zustand) — `activeTeamId: string | null`, `setActiveTeam(id)`. Persisted to `sessionStorage` (tab-scoped — new tabs start in Personal).
+- [ ] **`teamService.ts`** — `createTeam`, `listTeams`, `getTeam`, `updateTeam`, `deleteTeam`, `transferOwnership`, `listMembers`, `inviteMembers`, `listInvites`, `resendInvite`, `cancelInvite`, `acceptInvite`, `declineInvite`, `changeRole`, `removeMember`, `leaveTeam`, `getTeamUsage`, `bookTeamMember`.
+- [ ] **`useTeamQueries.ts`** — `useTeams()`, `useTeam(teamId)`, `useTeamMembers(teamId)`, `useTeamInvites(teamId)`, `useTeamUsage(teamId, period)`, `usePendingInvites()`.
+- [ ] **`queryKeys.ts`** additions — `queryKeys.teams.{all, byId, members, invites, usage, pendingInvites}()`.
+- [ ] **`apiClient.ts`** — request interceptor injects `X-Team-Id: <activeTeamId>` when set. Reads directly from `teamStore.getState()`.
+- [ ] **WS handlers** (extend `useWebSocket` consumer) — `TEAM_INVITE_RECEIVED` → invalidate `pendingInvites`; `TEAM_MEMBER_*` → invalidate `teams.byId` + `members`; `TEAM_MEETING_BOOKED` → invalidate meetings list.
 
 ---
 
 ### P1 — Workspace Switcher
 
-- [ ] Replace top-left user name + avatar area with `<WorkspaceSwitcher />` component
-- [ ] Dropdown shows: **Personal** (top, always first) + each team with avatar/logo + **+ Create team** (if user is Pro + under limit)
-- [ ] Active workspace has a checkmark indicator
-- [ ] Switching calls `teamStore.setActiveTeam(id)` — page does not hard-reload but React Query refetches all active queries (invalidate all on switch)
-- [ ] When in team context: show team name + logo in switcher. When personal: show user name + avatar.
-- [ ] `useTeams()` query drives the list — loaded on app mount
+Replaces existing `<UserMenu />` trigger. New component: `src/components/workspace-switcher/WorkspaceSwitcher.tsx`.
+
+**Trigger button (32px tall):**
+
+- Personal: 24px avatar + display name + `ChevronDown` (12px text-muted-foreground)
+- Team: 24px team logo (`rounded-lg`) + team name + role pill (`text-[10px] text-muted-foreground` — `OWNER`/`ADMIN`/`MEMBER`) + chevron
+- Hover: `bg-muted/40`
+- Pending invites dot indicator (`bg-foreground h-1.5 w-1.5 rounded-full`) on the avatar/logo when `pendingInvites.count > 0`
+
+**Dropdown panel** (`bg-[#1C1C1E] dark:bg-[#1C1C1E] border border-white/[0.06] rounded-[20px] shadow-2xl shadow-black/40 p-1.5 w-[280px]`, spring entry):
+
+- [ ] **Pending invites section** (only if count > 0) — collapsible header "2 pending invitations" → list with Accept (primary xs) + Decline (ghost xs) per invite. Below: divider.
+- [ ] **Workspaces label** — `text-[10px] uppercase tracking-wider text-muted-foreground px-3 py-1.5`.
+- [ ] **Personal row** — avatar + name + `Check` icon (12px) if active.
+- [ ] **Team rows** — logo + name + role pill + right-side "6 members" (text-xs muted) + `Check` if active.
+- [ ] **Divider** + **`+ Create team`** row — `Plus` (14px) + label. Disabled for Free users with tooltip "Teams are a Pro feature". Disabled for Pro users at team limit with tooltip "Upgrade to Business for more teams".
+- [ ] **Divider** + account actions (Profile / Settings / Logout) — preserve existing `UserMenu` items.
+
+**Behavior:**
+
+- [ ] Click team row → `teamStore.setActiveTeam(id)` → `queryClient.invalidateQueries()` (broad) → toast "Switched to [Team name]" (2s).
+- [ ] Click Personal → `teamStore.setActiveTeam(null)` → broad invalidate → toast "Switched to Personal" (2s).
+- [ ] **Route outlet wrapper:** wrap the dashboard route outlet in `<motion.div key={activeTeamId ?? 'personal'}>` with opacity 0→1 and y 4→0 over 250ms. This produces the cross-fade on workspace switch.
+- [ ] **Command palette** (`src/components/command-palette`): add "Switch workspace" command group listing all workspaces. `Cmd+1..9` keybinds switch to nth workspace (Personal = 1).
 
 ---
 
-### P2 — Team Creation Flow
+### P2 — Team Creation + Plan Gate
 
-- [ ] **"+ Create team" option** in workspace switcher dropdown (only shown when user.plan === PRO and teams.length < max)
-- [ ] Opens `<CreateTeamModal />` — fields: Team name (required), Slug (auto-derived from name, editable, validated unique inline via debounced API call), Logo (optional file upload)
-- [ ] On success: invalidate `queryKeys.teams.all()`, `setActiveTeam(newTeamId)`, close modal
-- [ ] Non-Pro users see disabled option with tooltip "Upgrade to Pro to create teams"
+- [ ] **`<CreateTeamModal />`** (`src/components/teams/CreateTeamModal.tsx`) — `Dialog` 480px wide, `rounded-2xl`. Single page (no wizard).
+  - Header: `Sparkles` (16px muted) + "Create your workspace" (text-base font-semibold).
+  - Subhead text-xs muted: "A team gets its own meetings, cards, tasks, and scheduling — separate from your personal space."
+  - Logo dropzone (72px square, dashed border when empty; click or drag-drop). Placeholder shows first 2 chars of team name.
+  - "Team name" input — autofocus.
+  - "Team URL" — `crelyzor.app/t/` prefix (muted) + slug input. Auto-derives from name with `slugify`. Debounced 300ms availability check → green `Check` (12px) when available, red helper text when taken.
+  - "Add a description" link → reveals textarea, 200 char max with counter.
+  - Footer (right-aligned): `Cancel` (ghost) + `Create team` (primary, disabled until valid name + slug).
+  - On submit: inline spinner on primary → on success, `invalidateQueries(teams.all())`, `setActiveTeam(newId)`, close modal, toast "Team created", navigate to `/teams/:teamId/settings`.
+
+- [ ] **`<UpgradeToProModal />`** — Free user clicking Create team OR Pro user at limit. Same 480px modal:
+  - Header: `Sparkles` + dynamic title ("Upgrade to Pro to create teams" or "You've hit the Pro team limit").
+  - Body: 3-bullet feature list.
+  - Footer: `Maybe later` (ghost) + `See Pro plans` (primary → `/pricing`).
 
 ---
 
 ### P3 — Team Settings Page
 
-New page: `src/pages/teams/TeamSettingsPage.tsx`. Route: `/teams/:teamId/settings`.
+Route: `/teams/:teamId/settings`. New page: `src/pages/teams/TeamSettingsPage.tsx`. Layout: vertical tab nav (left, w-[200px]) + content (flex-1). Wrap in `PageMotion`.
 
-- [ ] **General tab** — team name, slug, logo. Save via `updateTeam`. Owner/Admin only can edit.
-- [ ] **Members tab** — table of members: avatar, name, email, role badge, usage snapshot (transcription min, AI credits), joined date. Actions: Change role (Owner only), Remove (Admin+). Invite button opens `<InviteModal />`.
-- [ ] **Usage tab** — per-member consumption breakdown. Visual table: member name + usage bars for transcription/AI/storage. Owner only.
-- [ ] **Danger zone tab** — "Leave team" (non-Owner), "Delete team" (Owner only, confirm dialog)
-- [ ] Handle 403 gracefully — redirect non-admin members away from settings
-
----
-
-### P4 — Invite Modal
-
-- [ ] `<InviteModal />` — two modes toggled by tab: **Search users** (search by name/email → shows existing Crelyzor users → click to invite) / **Email invite** (enter any email → sends invite link)
-- [ ] Pending invites section in Members tab — shows email + "Cancel invite" button
-
----
-
-### P5 — Team Context Indicator
-
-- [ ] When `activeTeamId` is set, all pages show a subtle team badge in the header or sidebar: "Viewing: Acme Corp" with a switch link
-- [ ] Sidebar nav header area shows team logo when in team context
-- [ ] All data fetching hooks pass `teamId` param when in team context (meetings, cards, tasks, etc.)
+- [ ] **General tab** — name input / slug input (Owner-only editable, disabled+tooltip for Admin) / description textarea (200 char) / logo upload. Save button bottom-right of card, disabled until dirty.
+- [ ] **Members tab** — header with `Invite member` button (top-right primary, Admin+ only). Table:
+      | Member (28px avatar + name/email) | Role (pill, clickable for Owner) | Joined (relative) | Last active (relative, from WS presence) | Kebab |
+      Row hover `bg-muted/30`. Empty state: `Users2` (40px muted) + "Just you for now" + Invite CTA.
+- [ ] **Invite member modal** (`<InviteMembersModal />`) — Tabs `Search users` / `By email`.
+  - Search: debounced 200ms typeahead. Results list (32px avatar + name/email) with role select per row + `Send invite` button. Empty: "No users found. Try inviting by email instead."
+  - By email: chip input with email validation. Single role select for the batch. Optional message textarea (200 char). `Send invites` button.
+  - On submit: invalidate `teams.invites`, toast "3 invites sent", close.
+- [ ] **Invites tab** — pending invites table (Email / Role / Sent / Expires / Resend|Cancel). Empty state.
+- [ ] **Usage tab** — see P4 below.
+- [ ] **Billing tab** — Owner-only. "All team consumption is billed to your Pro plan." + link to `/settings/billing`.
+- [ ] **Danger zone tab**:
+  - Member view: `Leave team` (destructive ghost) with confirm dialog.
+  - Owner view: `Transfer ownership` (select active member → type team name to confirm) + `Delete team` (destructive, type team name to confirm).
+- [ ] Handle 403 — non-members redirect to `/teams` list page (or home).
 
 ---
 
-### P6 — Team-aware Data Pages
+### P4 — Usage Tab (Owner + Admin only)
 
-These pages need no new routes — just conditional `teamId` injection:
+- [ ] **4 summary cards** in `grid-cols-2 md:grid-cols-4 gap-3`. Each card `rounded-xl border bg-card p-4`:
+  - Micro-label uppercase tracking-wider (`text-[10px] text-muted-foreground`) e.g. "Transcription minutes"
+  - Big number `text-2xl font-semibold` (e.g. "1,243")
+  - Subtitle `text-xs muted` (e.g. "of 5,000")
+  - `h-1 bg-muted rounded-full` with `bg-foreground` fill (only when quota exists)
+    Cards: Transcription minutes / AI tokens / Storage GB / Meetings (no quota).
+- [ ] **Period selector** (right-aligned above breakdown table) — `<Select>`: This month / Last month / Last 7 days / Custom range (opens date range picker).
+- [ ] **Per-member breakdown table** — sortable columns. Right-align numerics. Subtle row hover.
+- [ ] **`Export CSV`** (`text-xs` link, top-right of table) — downloads current period CSV.
+- [ ] Empty state: "No usage yet this period. Activity will appear here once team members start working." (text-xs muted, centered, py-12).
 
-- [ ] **Meetings page** — `GET /meetings?teamId=...`. Members see only own meetings; OWNER/ADMIN see all (backend enforces, frontend shows what it gets)
-- [ ] **Cards page** — `GET /cards?teamId=...`. Show team cards. Team card creation stays in team context.
-- [ ] **Tasks page** — `GET /tasks?teamId=...`. Same pattern.
-- [ ] **Calendar page** — meetings/tasks scoped to team context when active.
-- [ ] **Settings page** — when in team context, "Settings" in sidebar navigates to team settings, not personal settings
+---
+
+### P5 — Team Context Indicator (subtle)
+
+- [ ] Sidebar header (top of nav) swaps: when `activeTeamId` is set → 28px team logo + team name + role pill. Personal mode → existing user identity block.
+- [ ] Settings link in sidebar: when in team context, navigates to `/teams/:teamId/settings`; otherwise `/settings`.
+- [ ] Do NOT add a top-strip indicator across the main content area — the workspace switcher is the single source of truth. Avoid chrome pollution.
+
+---
+
+### P6 — Team-aware Content Pages
+
+These pages need no new routes — the `X-Team-Id` header carries context, and existing services use it server-side. Frontend changes:
+
+- [ ] **Meetings page** — remove any client-side `userId` filter; backend enforces visibility. Members see only own meetings; Owner/Admin see all. Add `Book with team member` button in header (P7) when in team context.
+- [ ] **Cards page** — shows team-scoped cards. Card editor public URL preview: `crelyzor.app/t/[team-slug]/[card-slug]` when in team context.
+- [ ] **Tasks page** — Members see only assigned. Owner/Admin see all + `Filter by assignee` chip.
+- [ ] **Calendar page** — meetings/tasks scoped by team.
+- [ ] **Search / Tags / Voice notes / Card analytics / Card contacts** — verify each page passes through header (no per-page code change needed beyond removing personal-scope assumptions).
 
 ---
 
 ### P7 — Internal Team Booking
 
-From meetings page or scheduling section (in team context):
+- [ ] **`Book with team member` button** in Meetings page header (team context only) — ghost variant with `CalendarPlus` icon (16px).
+- [ ] **`<BookTeamMemberModal />`** — `rounded-2xl`, 560px wide, internal step state (no URL change).
+  - **Step 1 — Pick member:** Search input top (debounced). Grid `grid-cols-3 gap-3` of avatars (48px) + name + role pill. Self-row excluded. Hover `ring-2 ring-foreground/20`. Click → animate to step 2.
+  - **Step 2 — Pick slot:** Header with selected member (avatar + name + back arrow). Week view: 7 columns × time slots. Available slots clickable with subtle bg, unavailable empty. `< This week >` pagination. Click slot → step 3.
+  - **Step 3 — Details:** Subject input (pre-filled `Sync with [member name]`, editable, autofocus). Duration select (15/30/45/60, default 30). Location select (auto-create Meet / no location / custom URL). Notes textarea (200 char). `Back` (ghost) + `Send invite` (primary).
+  - **Step 4 — Confirmation:** `Check` (32px) + "Meeting booked" + summary card (subject / member / time / location). `Done` button → closes modal, lands on Meetings with new meeting visible.
+- [ ] On send: `POST /teams/:teamId/bookings/internal` → invalidate meetings query → WS event delivers to booked member.
 
-- [ ] **"Book with team member" button** — shown in meetings page header when in team context
-- [ ] Opens `<BookTeamMemberModal />` — step 1: pick team member (dropdown of active members). Step 2: calendar slot picker (fetches `/public/scheduling/team/:slug/:username` slots). Step 3: booking form. Step 4: confirmation.
-- [ ] On success: creates meeting in team context, invalidates meetings query.
+---
+
+### P8 — In-app Invite Surfaces
+
+- [ ] **Workspace switcher pending invites section** (see P1).
+- [ ] **Notifications panel** — render `TEAM_INVITE_RECEIVED` items inline with title "[Inviter] invited you to [Team] as [Role]" + subtitle (relative time) + Accept (primary xs) + Decline (ghost xs).
+- [ ] **WS handler** wires `TEAM_INVITE_RECEIVED` → invalidate `pendingInvites` + toast `"You've been invited to [Team]"` (5s, with View action that opens the workspace switcher).
 
 ---
 

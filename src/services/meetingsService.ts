@@ -58,9 +58,14 @@ export const meetingsApi = {
   /** GET /meetings/:id */
   getById: (id: string) => apiClient.get<Meeting>(`/meetings/${id}`),
 
-  /** POST /meetings — create meeting (auto-accepted) */
-  create: (data: CreateMeetingPayload) =>
-    apiClient.post<Meeting>('/meetings', data),
+  /** POST /meetings — create meeting (auto-accepted). Backend returns { meeting, gcalSynced } — unwrap to Meeting for callers. */
+  create: async (data: CreateMeetingPayload): Promise<Meeting> => {
+    const res = await apiClient.post<{ meeting: Meeting; gcalSynced: boolean }>(
+      '/meetings',
+      data
+    );
+    return res.meeting;
+  },
 
   /** PATCH /meetings/:id */
   update: (id: string, data: UpdateMeetingPayload) =>

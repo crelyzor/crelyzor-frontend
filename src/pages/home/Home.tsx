@@ -154,6 +154,11 @@ export default function Home() {
     );
   }, [allPendingTasks]);
 
+  const allDisplayMeetings = useMemo(
+    () => allMeetingsData?.map(toDisplayMeeting) ?? [],
+    [allMeetingsData]
+  );
+
   const askAiCandidateMeeting = useMemo(() => {
     const transcriptReady = (allMeetingsData ?? []).filter(
       (m) => m.type !== 'VOICE_NOTE' && m.transcriptionStatus === 'COMPLETED'
@@ -245,7 +250,7 @@ export default function Home() {
             }}
           />
           <TodayTimeline
-            meetings={allMeetingsData?.map(toDisplayMeeting) ?? []}
+            meetings={allDisplayMeetings}
             tasks={todayTasks}
             isLoading={meetingsLoading}
             isTasksLoading={tasksLoading}

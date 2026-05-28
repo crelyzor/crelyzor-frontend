@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { Check, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import type { TaskPriority } from '@/types/meeting';
 
-type Priority = 'HIGH' | 'MEDIUM' | 'LOW';
+type Priority = TaskPriority;
 
 interface BulkActionBarProps {
   count: number;

@@ -157,12 +157,21 @@ export const queryKeys = {
   users: {
     all: ['users'] as const,
     search: (q: string) => [...queryKeys.users.all, 'search', q] as const,
+    usernameCheck: (username: string) =>
+      [...queryKeys.users.all, 'username-check', username] as const,
   },
 
   // Global search
   search: {
     all: ['search'] as const,
     results: (q: string) => [...queryKeys.search.all, 'results', q] as const,
+  },
+
+  // Notifications
+  notifications: {
+    all: ['notifications'] as const,
+    list: () => [...queryKeys.notifications.all, 'list'] as const,
+    unreadCount: () => [...queryKeys.notifications.all, 'unreadCount'] as const,
   },
 
   // Cards

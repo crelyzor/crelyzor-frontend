@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Paperclip,
   Link2,
@@ -79,13 +79,21 @@ function AttachmentRow({
   isDeleting: boolean;
 }) {
   const [pendingDelete, setPendingDelete] = useState(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const href = getAttachmentHref(attachment);
+
+  useEffect(
+    () => () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    },
+    []
+  );
 
   function handleDeleteClick() {
     if (!pendingDelete) {
       setPendingDelete(true);
       // Auto-reset after 2.5s if user doesn't confirm
-      setTimeout(() => setPendingDelete(false), 2500);
+      resetTimerRef.current = setTimeout(() => setPendingDelete(false), 2500);
       return;
     }
     onDelete();

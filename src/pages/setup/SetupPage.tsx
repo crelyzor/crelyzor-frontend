@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { authApi } from '@/services/authService';
 import { queryKeys } from '@/lib/queryKeys';
-
-const CARDS_PUBLIC_URL =
-  import.meta.env.VITE_CARDS_PUBLIC_URL ?? 'https://cards.crelyzor.com';
+import { CARDS_PUBLIC_URL } from '@/lib/publicUrl';
 
 const usernameRegex = /^[a-z0-9][a-z0-9-]*[a-z0-9]$/;
 const consecutiveHyphens = /--/;
@@ -25,11 +23,29 @@ function getValidationError(value: string): string | null {
 
 export default function SetupPage() {
   const [username, setUsername] = useState('');
-  const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
-  const [isChecking, setIsChecking] = useState(false);
+  const [debouncedUsername, setDebouncedUsername] = useState('');
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const qc = useQueryClient();
+
+  // Debounce username → debouncedUsername
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedUsername(username), 300);
+    return () => clearTimeout(timer);
+  }, [username]);
+
+  const validationError = getValidationError(username);
+  const canCheck =
+    debouncedUsername.length >= 3 && !getValidationError(debouncedUsername);
+
+  const { data: availabilityData, isFetching: isChecking } = useQuery({
+    queryKey: queryKeys.users.usernameCheck(debouncedUsername),
+    queryFn: () => authApi.checkUsername(debouncedUsername),
+    enabled: canCheck,
+    staleTime: 30_000,
+  });
+
+  const isAvailable = canCheck ? (availabilityData?.available ?? null) : null;
 
   const submitMutation = useMutation({
     mutationFn: () => authApi.setUsername(username),
@@ -46,31 +62,6 @@ export default function SetupPage() {
     },
   });
 
-  // Debounced availability check
-  useEffect(() => {
-    const validationError = getValidationError(username);
-    if (validationError || username.length < 3) {
-      setIsAvailable(null);
-      return;
-    }
-
-    setIsChecking(true);
-    const timer = setTimeout(async () => {
-      try {
-        const result = await authApi.checkUsername(username);
-        setIsAvailable(result.available);
-      } catch {
-        setIsAvailable(null);
-      }
-      setIsChecking(false);
-    }, 300);
-
-    return () => {
-      clearTimeout(timer);
-      setIsChecking(false);
-    };
-  }, [username]);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
     setUsername(value);
@@ -80,9 +71,9 @@ export default function SetupPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const validationError = getValidationError(username);
-    if (validationError) {
-      setError(validationError);
+    const validErr = getValidationError(username);
+    if (validErr) {
+      setError(validErr);
       return;
     }
 
@@ -95,9 +86,11 @@ export default function SetupPage() {
     submitMutation.mutate();
   };
 
-  const validationError = getValidationError(username);
   const canSubmit =
-    username.length >= 3 && !validationError && isAvailable && !isChecking;
+    username.length >= 3 &&
+    !validationError &&
+    isAvailable === true &&
+    !isChecking;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-neutral-950 p-8">
