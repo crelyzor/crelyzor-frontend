@@ -11,6 +11,8 @@ import {
   type TransferOwnershipPayload,
   type UpdateTeamPayload,
 } from '@/services/teamService';
+import { useTeamStore } from '@/stores';
+import { useAuthStore } from '@/stores';
 import { toast } from 'sonner';
 
 export const useMyTeams = () =>
@@ -225,6 +227,56 @@ export const useRemoveMember = (teamId: string) => {
     onError: (err: unknown) => {
       const msg =
         err instanceof Error ? err.message : 'Failed to remove member';
+      toast.error(msg);
+    },
+  });
+};
+
+// ── Phase 6 P13 — invitee-side hooks ─────────────────────────────────────────
+
+export const useMyPendingInvites = () => {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
+    queryKey: queryKeys.teams.myInvites(),
+    queryFn: () => teamService.listMyInvites(),
+    enabled: isAuthenticated,
+    staleTime: 60_000,
+  });
+};
+
+export const useAcceptInvite = () => {
+  const queryClient = useQueryClient();
+  const setActiveTeam = useTeamStore((s) => s.setActiveTeam);
+  return useMutation({
+    mutationFn: (teamId: string) => teamService.acceptInvite(teamId),
+    onSuccess: (_data, teamId) => {
+      // Switch into the new team BEFORE the broad invalidation — the active
+      // scope drives X-Team-Id on the next request and we want the refetch to
+      // land in the new scope.
+      setActiveTeam(teamId);
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
+      toast.success('Joined team');
+    },
+    onError: (err: unknown) => {
+      const msg =
+        err instanceof Error ? err.message : 'Failed to accept invite';
+      toast.error(msg);
+    },
+  });
+};
+
+export const useDeclineInvite = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (teamId: string) => teamService.declineInvite(teamId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.myInvites() });
+      toast.success('Invite declined');
+    },
+    onError: (err: unknown) => {
+      const msg =
+        err instanceof Error ? err.message : 'Failed to decline invite';
       toast.error(msg);
     },
   });

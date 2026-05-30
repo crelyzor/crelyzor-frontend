@@ -22,6 +22,7 @@ import {
   Check,
   ChevronDown,
   LogOut,
+  Mail,
   Plus,
   Settings,
   Settings2,
@@ -30,10 +31,15 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
-import { useMyTeams } from '@/hooks/queries/useTeamQueries';
+import {
+  useAcceptInvite,
+  useDeclineInvite,
+  useMyPendingInvites,
+  useMyTeams,
+} from '@/hooks/queries/useTeamQueries';
 import { useTeamStore } from '@/stores';
 import { PlanBadge } from '@/components/PlanBadge';
-import type { TeamRole } from '@/services/teamService';
+import type { MyPendingInvite, TeamRole } from '@/services/teamService';
 
 const ROLE_LABEL: Record<TeamRole, string> = {
   OWNER: 'Owner',
@@ -51,10 +57,15 @@ export function WorkspaceSwitcher() {
 
   const { data: user } = useCurrentUser();
   const { data: teamsData } = useMyTeams();
+  const { data: invitesData } = useMyPendingInvites();
+  const acceptInvite = useAcceptInvite();
+  const declineInvite = useDeclineInvite();
   const logoutMutation = useLogout();
 
   const { activeTeamId, setActiveTeam } = useTeamStore();
   const teams = teamsData?.teams ?? [];
+  const pendingInvites = invitesData?.invites ?? [];
+  const hasPendingInvites = pendingInvites.length > 0;
   const active = activeTeamId
     ? teams.find((t) => t.team.id === activeTeamId)
     : null;
@@ -138,6 +149,31 @@ export function WorkspaceSwitcher() {
               </div>
 
               <div className="h-px bg-neutral-100 dark:bg-white/[0.06] mx-1 my-0.5" />
+
+              {/* Pending invites (P13) */}
+              {hasPendingInvites && (
+                <>
+                  <p className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                    Pending invitations
+                  </p>
+                  {pendingInvites.map((invite) => (
+                    <PendingInviteRow
+                      key={invite.id}
+                      invite={invite}
+                      onAccept={() => {
+                        acceptInvite.mutate(invite.team.id, {
+                          onSuccess: () => close(),
+                        });
+                      }}
+                      onDecline={() => {
+                        declineInvite.mutate(invite.team.id);
+                      }}
+                      busy={acceptInvite.isPending || declineInvite.isPending}
+                    />
+                  ))}
+                  <div className="h-px bg-neutral-100 dark:bg-white/[0.06] mx-1 my-0.5" />
+                </>
+              )}
 
               {/* Workspaces label */}
               <p className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
@@ -251,31 +287,41 @@ export function WorkspaceSwitcher() {
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
       >
-        {active ? (
-          active.team.logoUrl ? (
+        <div className="relative">
+          {active ? (
+            active.team.logoUrl ? (
+              <img
+                src={active.team.logoUrl}
+                alt={active.team.name}
+                className="w-6 h-6 rounded-md object-cover"
+              />
+            ) : (
+              <div className="w-6 h-6 rounded-md bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-semibold text-neutral-600 dark:text-neutral-300">
+                <Building2 className="w-3.5 h-3.5" />
+              </div>
+            )
+          ) : showAvatar ? (
             <img
-              src={active.team.logoUrl}
-              alt={active.team.name}
-              className="w-6 h-6 rounded-md object-cover"
+              src={user!.avatarUrl!}
+              alt={user!.name}
+              referrerPolicy="no-referrer"
+              className="w-6 h-6 rounded-full object-cover"
+              onError={() => setImgError(true)}
             />
           ) : (
-            <div className="w-6 h-6 rounded-md bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-semibold text-neutral-600 dark:text-neutral-300">
-              <Building2 className="w-3.5 h-3.5" />
+            <div className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-semibold text-neutral-600 dark:text-neutral-300">
+              {initials}
             </div>
-          )
-        ) : showAvatar ? (
-          <img
-            src={user!.avatarUrl!}
-            alt={user!.name}
-            referrerPolicy="no-referrer"
-            className="w-6 h-6 rounded-full object-cover"
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <div className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[10px] font-semibold text-neutral-600 dark:text-neutral-300">
-            {initials}
-          </div>
-        )}
+          )}
+          {hasPendingInvites && (
+            <span
+              aria-label={`${pendingInvites.length} pending invitation${
+                pendingInvites.length === 1 ? '' : 's'
+              }`}
+              className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-neutral-900 dark:bg-white ring-2 ring-white dark:ring-[#0a0a0a]"
+            />
+          )}
+        </div>
         <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200 max-w-[140px] truncate">
           {displayName}
         </span>
@@ -335,6 +381,69 @@ function WorkspaceRow({
         <Check className="w-4 h-4 text-neutral-600 dark:text-neutral-300 shrink-0" />
       )}
     </button>
+  );
+}
+
+function PendingInviteRow({
+  invite,
+  onAccept,
+  onDecline,
+  busy,
+}: {
+  invite: MyPendingInvite;
+  onAccept: () => void;
+  onDecline: () => void;
+  busy: boolean;
+}) {
+  const initials = invite.team.name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+  const inviter = invite.invitedBy?.name ?? 'A teammate';
+  const role = invite.role === 'ADMIN' ? 'admin' : 'member';
+
+  return (
+    <div className="flex items-center gap-2.5 px-3 py-2 rounded-[14px] hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors">
+      {invite.team.logoUrl ? (
+        <img
+          src={invite.team.logoUrl}
+          alt={invite.team.name}
+          className="w-7 h-7 rounded-md object-cover shrink-0"
+          referrerPolicy="no-referrer"
+        />
+      ) : (
+        <div className="w-7 h-7 rounded-md bg-neutral-100 dark:bg-white/5 flex items-center justify-center shrink-0">
+          <Mail className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
+          <span className="sr-only">{initials}</span>
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="text-[13px] font-medium text-neutral-900 dark:text-white truncate leading-tight">
+          {invite.team.name}
+        </p>
+        <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
+          {inviter} invited you as {role}
+        </p>
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          onClick={onDecline}
+          disabled={busy}
+          className="px-2 py-1 rounded-md text-[11px] text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+        >
+          Decline
+        </button>
+        <button
+          onClick={onAccept}
+          disabled={busy}
+          className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 transition-opacity disabled:opacity-50"
+        >
+          Accept
+        </button>
+      </div>
+    </div>
   );
 }
 

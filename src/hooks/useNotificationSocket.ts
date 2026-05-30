@@ -93,6 +93,43 @@ export function useNotificationSocket() {
           } else if (msg.type === 'NOTIFICATION') {
             qc.invalidateQueries({ queryKey: queryKeys.notifications.all });
             showToast(msg.data as Notification);
+          } else if (msg.type === 'TEAM_INVITE_RECEIVED') {
+            const data = msg.data as {
+              invite: {
+                teamName: string;
+                role: 'ADMIN' | 'MEMBER';
+                invitedByName: string | null;
+              };
+            };
+            qc.invalidateQueries({ queryKey: queryKeys.teams.myInvites() });
+            const inviter = data.invite.invitedByName ?? 'A teammate';
+            const role = data.invite.role === 'ADMIN' ? 'admin' : 'member';
+            toast.info(`You've been invited to ${data.invite.teamName}`, {
+              description: `${inviter} invited you as a ${role}`,
+              duration: 5_000,
+            });
+          } else if (msg.type === 'TEAM_MEMBER_JOINED') {
+            const data = msg.data as { teamId: string };
+            qc.invalidateQueries({
+              queryKey: queryKeys.teams.members(data.teamId),
+            });
+            qc.invalidateQueries({ queryKey: queryKeys.teams.list() });
+          } else if (msg.type === 'TEAM_MEMBER_LEFT') {
+            const data = msg.data as { teamId: string };
+            qc.invalidateQueries({
+              queryKey: queryKeys.teams.members(data.teamId),
+            });
+          } else if (msg.type === 'TEAM_MEMBER_ROLE_CHANGED') {
+            const data = msg.data as { teamId: string };
+            qc.invalidateQueries({
+              queryKey: queryKeys.teams.members(data.teamId),
+            });
+            qc.invalidateQueries({ queryKey: queryKeys.teams.list() });
+          } else if (msg.type === 'TEAM_MEETING_BOOKED') {
+            // Broadcast-to-team includes the booker — toast would echo on the
+            // actor's own tab. Silent cache invalidation only; the new
+            // booking lands in their existing list refresh.
+            qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
           } else if (msg.type === 'PING') {
             ws!.send(JSON.stringify({ type: 'PONG' }));
           }

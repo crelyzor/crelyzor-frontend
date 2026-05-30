@@ -7,6 +7,7 @@ import {
   Sparkles,
   CheckSquare,
   Calendar,
+  Mail,
   Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,10 +17,16 @@ import {
   useMarkAllRead,
   useDeleteAllRead,
 } from '@/hooks/queries/useNotificationQueries';
+import {
+  useAcceptInvite,
+  useDeclineInvite,
+  useMyPendingInvites,
+} from '@/hooks/queries/useTeamQueries';
 import type {
   Notification,
   NotificationType,
 } from '@/services/notificationService';
+import type { MyPendingInvite } from '@/services/teamService';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -143,14 +150,80 @@ function SectionLabel({ label }: { label: string }) {
   );
 }
 
+// ── Pending invite row (Phase 6 P13) ──────────────────────────────────────────
+
+function InviteRow({
+  invite,
+  onAccept,
+  onDecline,
+  busy,
+}: {
+  invite: MyPendingInvite;
+  onAccept: () => void;
+  onDecline: () => void;
+  busy: boolean;
+}) {
+  const inviter = invite.invitedBy?.name ?? 'A teammate';
+  const role = invite.role === 'ADMIN' ? 'admin' : 'member';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex items-start gap-3 px-4 py-3"
+    >
+      <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0 mt-0.5 overflow-hidden">
+        {invite.team.logoUrl ? (
+          <img
+            src={invite.team.logoUrl}
+            alt={invite.team.name}
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <Mail className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 leading-snug truncate">
+          {invite.team.name}
+        </p>
+        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+          {inviter} invited you as {role}
+        </p>
+        <div className="flex items-center gap-1.5 mt-2">
+          <Button
+            size="xs"
+            variant="default"
+            disabled={busy}
+            onClick={onAccept}
+          >
+            Accept
+          </Button>
+          <Button size="xs" variant="ghost" disabled={busy} onClick={onDecline}>
+            Decline
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // ── Main panel ────────────────────────────────────────────────────────────────
 
 export function NotificationPanel({ onClose }: { onClose: () => void }) {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useNotifications();
+  const { data: invitesData } = useMyPendingInvites();
+  const acceptInvite = useAcceptInvite();
+  const declineInvite = useDeclineInvite();
   const markRead = useMarkRead();
   const markAllRead = useMarkAllRead();
   const deleteAllRead = useDeleteAllRead();
+
+  const pendingInvites = invitesData?.invites ?? [];
+  const hasPendingInvites = pendingInvites.length > 0;
+  const inviteBusy = acceptInvite.isPending || declineInvite.isPending;
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -218,13 +291,33 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
 
       {/* Body */}
       <div className="flex-1 overflow-y-auto">
+        {hasPendingInvites && (
+          <>
+            <SectionLabel label="Pending invitations" />
+            {pendingInvites.map((invite) => (
+              <InviteRow
+                key={invite.id}
+                invite={invite}
+                busy={inviteBusy}
+                onAccept={() => {
+                  acceptInvite.mutate(invite.team.id, {
+                    onSuccess: () => onClose(),
+                  });
+                }}
+                onDecline={() => {
+                  declineInvite.mutate(invite.team.id);
+                }}
+              />
+            ))}
+          </>
+        )}
         {isLoading ? (
           <div>
             <SkeletonRow />
             <SkeletonRow />
             <SkeletonRow />
           </div>
-        ) : allNotifications.length === 0 ? (
+        ) : allNotifications.length === 0 && !hasPendingInvites ? (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
             <Bell className="w-8 h-8 text-muted-foreground mb-3 opacity-40" />
             <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">

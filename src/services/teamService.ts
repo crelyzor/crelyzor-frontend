@@ -126,6 +126,26 @@ export interface TeamUsageResponse {
   resetAt: string | null;
 }
 
+// Phase 6 P13 — invitee-side. Returned by GET /teams/me/invites and rendered
+// in the workspace switcher dropdown + notifications panel.
+export interface MyPendingInvite {
+  id: string;
+  role: InviteRole;
+  expiresAt: string;
+  createdAt: string;
+  team: {
+    id: string;
+    name: string;
+    slug: string;
+    logoUrl: string | null;
+  };
+  invitedBy: { id: string; name: string | null } | null;
+}
+
+export interface MyPendingInvitesResponse {
+  invites: MyPendingInvite[];
+}
+
 export const teamService = {
   /** GET /teams — returns the user's active memberships */
   listMyTeams: () => apiClient.get<{ teams: TeamMembership[] }>('/teams'),
@@ -199,4 +219,18 @@ export const teamService = {
   /** GET /teams/:teamId/usage — Admin+. Per-member breakdown + owner plan limits. */
   getTeamUsage: (teamId: string) =>
     apiClient.get<TeamUsageResponse>(`/teams/${teamId}/usage`),
+
+  /** GET /teams/me/invites — invitee-side pending invites (current user). */
+  listMyInvites: () =>
+    apiClient.get<MyPendingInvitesResponse>('/teams/me/invites'),
+
+  /** POST /teams/:teamId/invites/accept — invitee-only. Joins the team. */
+  acceptInvite: (teamId: string) =>
+    apiClient.post<{ membership: TeamMembership }>(
+      `/teams/${teamId}/invites/accept`
+    ),
+
+  /** POST /teams/:teamId/invites/decline — invitee-only. */
+  declineInvite: (teamId: string) =>
+    apiClient.post<void>(`/teams/${teamId}/invites/decline`),
 };

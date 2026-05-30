@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-05-30 (Phase 6 P9.a + P10 + P11 (all sub-chunks) + P12 shipped — Team Settings end-to-end + Internal booking modal (Meetings header) + content audit confirmed no client-side filter changes needed. P13 (WS-driven invite surfaces) is next.)
+Last updated: 2026-05-30 (Phase 6 P13 shipped — WS handlers for all 5 team events wired into useNotificationSocket, GET /teams/me/invites surfaces invites that arrived offline, and Accept/Decline rows are live in both the workspace switcher dropdown and the notifications panel. P14.b dashboard accept handler is next.)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -956,11 +956,15 @@ Dev notes: `docs/dev-notes/phase-6-p12-team-aware-content-internal-booking.md`.
 
 ---
 
-### P8 — In-app Invite Surfaces
+### P8 — In-app Invite Surfaces ✅ Complete (2026-05-30)
 
-- [ ] **Workspace switcher pending invites section** (see P1).
-- [ ] **Notifications panel** — render `TEAM_INVITE_RECEIVED` items inline with title "[Inviter] invited you to [Team] as [Role]" + subtitle (relative time) + Accept (primary xs) + Decline (ghost xs).
-- [ ] **WS handler** wires `TEAM_INVITE_RECEIVED` → invalidate `pendingInvites` + toast `"You've been invited to [Team]"` (5s, with View action that opens the workspace switcher).
+Dev notes: `docs/dev-notes/phase-6-p13-in-app-invite-surfaces.md`.
+
+- [x] **Workspace switcher pending invites section** — new "Pending invitations" section above the Workspaces label (only when count > 0). Each row: team avatar + name + "Invited by X as role" + Accept (primary xs) + Decline (ghost xs). Indicator dot on trigger avatar.
+- [x] **Notifications panel** — "Pending invitations" section above Today/Earlier with the same useMyPendingInvites hook + inline Accept/Decline. Hidden empty state if no invites AND no notifications.
+- [x] **WS handlers (5 events)**: TEAM_INVITE_RECEIVED → invalidate teams.myInvites + 5s toast; TEAM_MEMBER_JOINED/LEFT/ROLE_CHANGED → invalidate teams.members(teamId) + teams.list() on JOINED/ROLE_CHANGED; TEAM_MEETING_BOOKED → silent invalidation of meetings.all (no toast since the broadcast includes the booker).
+- [x] **Backend `GET /teams/me/invites`** — invitee-side discovery so invites that arrived while offline still surface. Service + controller + route registered ABOVE `/:teamId/*` to avoid Express collision.
+- [x] **Accept/decline mutations** — `useAcceptInvite` sets active team BEFORE broad invalidation (so X-Team-Id header on the refetch carries the new scope); invalidates teams.all + cards.all. `useDeclineInvite` invalidates teams.myInvites only.
 
 ---
 
