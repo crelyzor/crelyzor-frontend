@@ -61,6 +61,9 @@ import { useUserTags } from '@/hooks/queries/useTagQueries';
 import { useBookings } from '@/hooks/queries/useSchedulingQueries';
 import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
 import { useUserSearch } from '@/hooks/queries/useUserQueries';
+import { useMyTeams } from '@/hooks/queries/useTeamQueries';
+import { useTeamStore } from '@/stores';
+import { BookTeamMemberModal } from '@/components/teams/BookTeamMemberModal';
 import { toDisplayMeeting, type DisplayMeeting } from '@/lib/meetingHelpers';
 import { getStatusStyle, getStatusLabel, getDisplayStatus } from '@/types';
 import type { MeetingStatus } from '@/types';
@@ -548,6 +551,13 @@ export default function Meetings() {
     'date' | 'start' | 'end' | null
   >(null);
   const [participants, setParticipants] = useState<SelectedParticipant[]>([]);
+  // Phase 6 P12 — internal team-member booking
+  const [bookTeamOpen, setBookTeamOpen] = useState(false);
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
+  const { data: teamsData } = useMyTeams();
+  const activeTeam = activeTeamId
+    ? teamsData?.teams.find((m) => m.team.id === activeTeamId)?.team
+    : null;
 
   const createMeeting = useCreateMeeting();
   const importIcs = useImportMeetingsIcs();
@@ -709,16 +719,29 @@ export default function Meetings() {
               {scopedMeetings.length} total
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs gap-1.5"
-            onClick={() => icsInputRef.current?.click()}
-            disabled={importIcs.isPending}
-          >
-            <Upload className="w-3.5 h-3.5" />
-            Import calendar
-          </Button>
+          <div className="flex items-center gap-2">
+            {activeTeam && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5"
+                onClick={() => setBookTeamOpen(true)}
+              >
+                <Users className="w-3.5 h-3.5" />
+                Book teammate
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs gap-1.5"
+              onClick={() => icsInputRef.current?.click()}
+              disabled={importIcs.isPending}
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Import calendar
+            </Button>
+          </div>
           <input
             ref={icsInputRef}
             type="file"
@@ -1388,6 +1411,16 @@ export default function Meetings() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Phase 6 P12 — Internal team-member booking */}
+      {activeTeam && (
+        <BookTeamMemberModal
+          teamId={activeTeam.id}
+          teamSlug={activeTeam.slug}
+          open={bookTeamOpen}
+          onOpenChange={setBookTeamOpen}
+        />
+      )}
     </PageMotion>
   );
 }

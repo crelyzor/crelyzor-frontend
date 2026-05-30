@@ -22,9 +22,10 @@ import { PageMotion } from '@/components/PageMotion';
 import { useMyTeams } from '@/hooks/queries/useTeamQueries';
 import { GeneralSection } from './sections/GeneralSection';
 import { DangerSection } from './sections/DangerSection';
-import { StubSection } from './sections/StubSection';
 import { MembersSection } from './sections/MembersSection';
 import { InvitesSection } from './sections/InvitesSection';
+import { UsageSection } from './sections/UsageSection';
+import { BillingSection } from './sections/BillingSection';
 
 type TeamSettingsSection =
   | 'general'
@@ -162,16 +163,10 @@ export default function TeamSettings() {
               <InvitesSection teamId={teamId} role={membership.role} />
             )}
             {activeSection === 'usage' && (
-              <StubSection
-                title="Team usage"
-                description="Per-member consumption breakdown against the owner's plan limits. Shipping in P11.b."
-              />
+              <UsageSection teamId={teamId} role={membership.role} />
             )}
             {activeSection === 'billing' && (
-              <StubSection
-                title="Team billing"
-                description="The team owner pays for everything. Billing surface ships with P11.b."
-              />
+              <BillingSection teamId={teamId} role={membership.role} />
             )}
             {activeSection === 'danger' && (
               <DangerSection

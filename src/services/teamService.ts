@@ -95,6 +95,37 @@ export interface ChangeRolePayload {
   role: InviteRole;
 }
 
+export interface TeamUsageMemberRow {
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    username: string | null;
+    avatarUrl: string | null;
+  };
+  role: TeamRole;
+  transcriptionMinutes: number;
+  recallHours: number;
+  aiCredits: number;
+  storageGb: number;
+}
+
+export interface TeamUsageLimits {
+  transcriptionMinutes: number;
+  recallHours: number;
+  aiCredits: number;
+  storageGb: number;
+}
+
+export interface TeamUsageResponse {
+  team: { id: string; name: string; slug: string };
+  summary: TeamUsageLimits;
+  breakdown: TeamUsageMemberRow[];
+  ownerLimits: TeamUsageLimits;
+  periodStart: string | null;
+  resetAt: string | null;
+}
+
 export const teamService = {
   /** GET /teams — returns the user's active memberships */
   listMyTeams: () => apiClient.get<{ teams: TeamMembership[] }>('/teams'),
@@ -164,4 +195,8 @@ export const teamService = {
   /** DELETE /teams/:teamId/members/:userId — Admin+. Owner is protected server-side. */
   removeMember: (teamId: string, userId: string) =>
     apiClient.delete<void>(`/teams/${teamId}/members/${userId}`),
+
+  /** GET /teams/:teamId/usage — Admin+. Per-member breakdown + owner plan limits. */
+  getTeamUsage: (teamId: string) =>
+    apiClient.get<TeamUsageResponse>(`/teams/${teamId}/usage`),
 };

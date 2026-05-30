@@ -207,6 +207,13 @@ export const useChangeMemberRole = (teamId: string) => {
   });
 };
 
+export const useTeamUsage = (teamId: string | null) =>
+  useQuery({
+    queryKey: teamId ? ['teams', 'usage', teamId] : ['teams', 'usage', 'null'],
+    queryFn: () => teamService.getTeamUsage(teamId!),
+    enabled: !!teamId,
+  });
+
 export const useRemoveMember = (teamId: string) => {
   const queryClient = useQueryClient();
   return useMutation({

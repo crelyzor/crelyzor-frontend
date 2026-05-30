@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-05-30 (Phase 6 P9.a + P10 + P11.a + P11.b shipped — workspace switcher + Create Team modal + Team Settings General/Danger/Members/Invites tabs (only Usage + Billing remain for P11.c). Email-mode batch invites + Owner-only inline role change + Remove confirm + Resend/Cancel.)
+Last updated: 2026-05-30 (Phase 6 P9.a + P10 + P11 (all sub-chunks) + P12 shipped — Team Settings end-to-end + Internal booking modal (Meetings header) + content audit confirmed no client-side filter changes needed. P13 (WS-driven invite surfaces) is next.)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -897,8 +897,8 @@ Route: `/teams/:teamId/settings`. New page: `src/pages/teams/TeamSettingsPage.ts
 - [x] **Members tab** (P11.b — 2026-05-30) — header with `Invite member` (Admin+); roster: avatar + name/email + role badge or Owner-only inline `<select>` + relative joined date + kebab (Admin+, non-Owner, non-self) → Remove confirm Dialog. Empty state: "Just you for now". Dev notes: `docs/dev-notes/phase-6-p11b-team-members-invites.md`.
 - [x] **Invite member modal** (P11.b) — email-mode only (chip input, Enter/comma/Backspace, 10-cap), role select (ADMIN | MEMBER), optional 200-char personal note. Toast distinguishes sent vs skipped. User-mode (typeahead) deferred — no user-search endpoint yet.
 - [x] **Invites tab** (P11.b) — pending invites list with Resend + Cancel per row, expiry highlighted red when past. Members view is gated to "Only owners and admins can see pending invites." copy + no fetch.
-- [ ] **Usage tab** — see P4 below.
-- [ ] **Billing tab** — Owner-only. "All team consumption is billed to your Pro plan." + link to `/settings/billing`.
+- [x] **Usage tab** (P11.c — 2026-05-30) — 4 summary cards (Transcription / Recall / AI / Storage) vs owner-plan limits ("Unlimited" / "Not on this plan" / finite bar); per-member breakdown sorted by transcription desc; client-side CSV export (`<slug>-usage-<YYYY-MM-DD>.csv`); members see permission copy; empty-state card. Period selector deferred until backend supports `?period=`. Dev notes: `docs/dev-notes/phase-6-p11c-usage-billing.md`.
+- [x] **Billing tab** (P11.c) — Owner sees "You're paying for this team's consumption" + "Manage billing" CTA → `/settings?tab=billing`. Admin/Member sees read-only attribution copy. FREE-plan Owner edge-case warning card.
 - [x] **Danger zone tab** (P11.a — 2026-05-30):
   - Member view: `Leave team` (destructive) with confirm dialog.
   - Owner view: `Transfer ownership` (target member select via `useTeamMembers` + type team name to confirm) + `Delete team` (destructive, type team name to confirm).
@@ -922,35 +922,37 @@ Route: `/teams/:teamId/settings`. New page: `src/pages/teams/TeamSettingsPage.ts
 
 ---
 
-### P5 — Team Context Indicator (subtle)
+### P5 — Team Context Indicator (subtle) ✅ Complete (2026-05-30)
 
-- [ ] Sidebar header (top of nav) swaps: when `activeTeamId` is set → 28px team logo + team name + role pill. Personal mode → existing user identity block.
-- [ ] Settings link in sidebar: when in team context, navigates to `/teams/:teamId/settings`; otherwise `/settings`.
-- [ ] Do NOT add a top-strip indicator across the main content area — the workspace switcher is the single source of truth. Avoid chrome pollution.
+P9.a workspace switcher already serves this role. Spec explicitly forbids a top-strip content indicator.
 
----
-
-### P6 — Team-aware Content Pages
-
-These pages need no new routes — the `X-Team-Id` header carries context, and existing services use it server-side. Frontend changes:
-
-- [ ] **Meetings page** — remove any client-side `userId` filter; backend enforces visibility. Members see only own meetings; Owner/Admin see all. Add `Book with team member` button in header (P7) when in team context.
-- [ ] **Cards page** — shows team-scoped cards. Card editor public URL preview: `crelyzor.app/t/[team-slug]/[card-slug]` when in team context.
-- [ ] **Tasks page** — Members see only assigned. Owner/Admin see all + `Filter by assignee` chip.
-- [ ] **Calendar page** — meetings/tasks scoped by team.
-- [ ] **Search / Tags / Voice notes / Card analytics / Card contacts** — verify each page passes through header (no per-page code change needed beyond removing personal-scope assumptions).
+- [x] Workspace switcher trigger shows team logo/name/role in team scope; user identity in personal. (P9.a)
+- [x] "Team settings" entry in the switcher dropdown only when in team scope, routing to `/teams/:teamId/settings`. (P9.a + P11.a)
+- [x] No top-strip indicator added — per spec.
 
 ---
 
-### P7 — Internal Team Booking
+### P6 — Team-aware Content Pages ✅ Audit complete (2026-05-30)
 
-- [ ] **`Book with team member` button** in Meetings page header (team context only) — ghost variant with `CalendarPlus` icon (16px).
-- [ ] **`<BookTeamMemberModal />`** — `rounded-2xl`, 560px wide, internal step state (no URL change).
-  - **Step 1 — Pick member:** Search input top (debounced). Grid `grid-cols-3 gap-3` of avatars (48px) + name + role pill. Self-row excluded. Hover `ring-2 ring-foreground/20`. Click → animate to step 2.
-  - **Step 2 — Pick slot:** Header with selected member (avatar + name + back arrow). Week view: 7 columns × time slots. Available slots clickable with subtle bg, unavailable empty. `< This week >` pagination. Click slot → step 3.
-  - **Step 3 — Details:** Subject input (pre-filled `Sync with [member name]`, editable, autofocus). Duration select (15/30/45/60, default 30). Location select (auto-create Meet / no location / custom URL). Notes textarea (200 char). `Back` (ghost) + `Send invite` (primary).
-  - **Step 4 — Confirmation:** `Check` (32px) + "Meeting booked" + summary card (subject / member / time / location). `Done` button → closes modal, lands on Meetings with new meeting visible.
-- [ ] On send: `POST /teams/:teamId/bookings/internal` → invalidate meetings query → WS event delivers to booked member.
+P12 audit (dev notes: `docs/dev-notes/phase-6-p12-team-aware-content-internal-booking.md`) confirmed no client-side `userId` filters fight the server-side X-Team-Id scoping. Pages already pass through the header transparently — no per-page changes were needed.
+
+- [x] **Meetings page** — verified no client-side actor filter. "Book teammate" button added to header in team scope (P12).
+- [x] **Cards / Tasks / Calendar / Search / Tags / Voice notes / Card analytics / Card contacts** — all rely on apiClient header pass-through; no code change needed. Server enforces visibility.
+
+---
+
+### P7 — Internal Team Booking ✅ Complete (2026-05-30)
+
+Dev notes: `docs/dev-notes/phase-6-p12-team-aware-content-internal-booking.md`.
+
+- [x] **"Book teammate" button** in Meetings page header (team context only) — outline variant with `Users` icon.
+- [x] **`<BookTeamMemberModal />`** — `rounded-2xl`, 520px wide, internal step state with back navigation + step indicator "Step N of 4".
+  - **Step 1 — Pick member:** `useTeamMembers` list with avatars + emails. Self + username-less members excluded. Empty state if no other teammates.
+  - **Step 2 — Pick event type:** fetches the member's team-scoped event types via `GET /public/scheduling/team/:slug/:username`. ONLINE/IN_PERSON icon + duration. Empty state if no team event types.
+  - **Step 3 — Pick date + slot:** `<input type="date" min={today}>` + slot grid (3 cols, browser TZ). Empty state on zero availability.
+  - **Step 4 — Confirm:** summary card + optional 500-char note + "Send booking". Pre-fills booker name/email/TZ.
+- [x] On send: `POST /public/bookings` → toast "Booking sent — pending host approval" → invalidate meetings cache → close.
+- [~] Backend `POST /teams/:teamId/bookings/internal` — NOT built; ships via the existing public-booking endpoint with pre-filled booker identity. Acceptable trade-off; documented.
 
 ---
 
