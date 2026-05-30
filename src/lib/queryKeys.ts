@@ -191,4 +191,12 @@ export const queryKeys = {
     meetings: (cardId: string) =>
       [...queryKeys.cards.all, 'meetings', cardId] as const,
   },
+
+  // Teams (Phase 6 P9)
+  teams: {
+    all: ['teams'] as const,
+    list: () => [...queryKeys.teams.all, 'list'] as const,
+    detail: (teamId: string) =>
+      [...queryKeys.teams.all, 'detail', teamId] as const,
+  },
 } as const;

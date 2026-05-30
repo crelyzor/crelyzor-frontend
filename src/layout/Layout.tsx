@@ -1,11 +1,13 @@
 import { Search, Command } from 'lucide-react';
 import { ReactNode } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useCommandPalette } from '@/hooks';
 import { Toolbar } from '@/components/toolbar';
-import { UserMenu } from '@/components/user-menu/UserMenu';
+import { WorkspaceSwitcher } from '@/components/workspace-switcher/WorkspaceSwitcher';
 import { MobileNav } from '@/components/MobileNav';
 import { UsageWarningBanner } from '@/components/billing/UsageWarningBanner';
 import { useNotificationSocket } from '@/hooks/useNotificationSocket';
+import { useTeamStore } from '@/stores';
 
 type LayoutProps = {
   children: ReactNode;
@@ -14,14 +16,17 @@ type LayoutProps = {
 export default function Layout({ children }: LayoutProps) {
   const { openCommandPalette } = useCommandPalette();
   useNotificationSocket();
+  // Phase 6 P9 — cross-fade the route subtree on workspace switch.
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
+  const scopeKey = activeTeamId ?? 'personal';
 
   return (
     <div className="min-h-screen bg-neutral-50/40 dark:bg-neutral-950">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 h-14 flex items-center justify-between gap-3 sm:gap-6">
-          {/* Left - User Menu */}
-          <UserMenu />
+          {/* Left - Workspace switcher (replaces legacy UserMenu) */}
+          <WorkspaceSwitcher />
 
           {/* Center - Search Bar (desktop only) */}
           <button
@@ -64,7 +69,17 @@ export default function Layout({ children }: LayoutProps) {
 
       {/* Main Content — extra bottom padding on mobile to clear the nav bar */}
       <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6 sm:py-10 pb-20 sm:pb-10">
-        {children}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={scopeKey}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       <MobileNav />

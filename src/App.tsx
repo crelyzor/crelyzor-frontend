@@ -35,6 +35,8 @@ const {
   Tags,
   TagDetail,
   Pricing,
+  CreateTeam,
+  TeamSettings,
   NotFound,
 } = routes;
 
@@ -230,6 +232,26 @@ function App() {
                       <AuthGuard>
                         <Layout>
                           <Pricing />
+                        </Layout>
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/teams/new"
+                    element={
+                      <AuthGuard>
+                        <Layout>
+                          <CreateTeam />
+                        </Layout>
+                      </AuthGuard>
+                    }
+                  />
+                  <Route
+                    path="/teams/:teamId/settings"
+                    element={
+                      <AuthGuard>
+                        <Layout>
+                          <TeamSettings />
                         </Layout>
                       </AuthGuard>
                     }

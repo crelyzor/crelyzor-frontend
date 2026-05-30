@@ -1,4 +1,4 @@
-import { useAuthStore, useUIStore } from '@/stores';
+import { useAuthStore, useTeamStore, useUIStore } from '@/stores';
 import type { BillingLimitCode } from '@/stores/uiStore';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
@@ -92,10 +92,14 @@ async function request<T>(
   const { method = 'GET', body, headers = {}, params, signal } = options;
 
   const token = useAuthStore.getState().accessToken;
+  // Phase 6 P9 — inject X-Team-Id when the workspace switcher has put the
+  // session into team scope. Null = personal scope (no header).
+  const activeTeamId = useTeamStore.getState().activeTeamId;
 
   const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(activeTeamId ? { 'X-Team-Id': activeTeamId } : {}),
     ...headers,
   };
 
@@ -193,12 +197,14 @@ async function request<T>(
 // ── FormData upload (bypasses JSON serialization, no Content-Type override) ──
 async function requestForm<T>(path: string, formData: FormData): Promise<T> {
   const token = useAuthStore.getState().accessToken;
+  const activeTeamId = useTeamStore.getState().activeTeamId;
 
   const res = await fetch(buildUrl(path), {
     method: 'POST',
     credentials: 'include',
     headers: {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(activeTeamId ? { 'X-Team-Id': activeTeamId } : {}),
       // Do NOT set Content-Type — browser sets it with multipart boundary
     },
     body: formData,
@@ -227,6 +233,7 @@ async function requestText(
 ): Promise<string> {
   const { headers = {}, params, signal } = options;
   const token = useAuthStore.getState().accessToken;
+  const activeTeamId = useTeamStore.getState().activeTeamId;
 
   const res = await fetch(buildUrl(path, params), {
     method: 'GET',
@@ -235,6 +242,7 @@ async function requestText(
     headers: {
       Accept: 'text/csv',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(activeTeamId ? { 'X-Team-Id': activeTeamId } : {}),
       ...headers,
     },
   });

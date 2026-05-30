@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-05-22 (Phase 4.9 complete ✅ — In-App Notifications + WebSocket client shipped)
+Last updated: 2026-05-30 (Phase 6 P9.a + P10 + P11.a + P11.b shipped — workspace switcher + Create Team modal + Team Settings General/Danger/Members/Invites tabs (only Usage + Billing remain for P11.c). Email-mode batch invites + Owner-only inline role change + Remove confirm + Resend/Cancel.)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -834,12 +834,14 @@ New hook: `src/hooks/useNotificationSocket.ts` (WebSocket, not SSE — backend u
 
 ### P0 — Team Store + API Layer
 
-- [ ] **`teamStore.ts`** (Zustand) — `activeTeamId: string | null`, `setActiveTeam(id)`. Persisted to `sessionStorage` (tab-scoped — new tabs start in Personal).
-- [ ] **`teamService.ts`** — `createTeam`, `listTeams`, `getTeam`, `updateTeam`, `deleteTeam`, `transferOwnership`, `listMembers`, `inviteMembers`, `listInvites`, `resendInvite`, `cancelInvite`, `acceptInvite`, `declineInvite`, `changeRole`, `removeMember`, `leaveTeam`, `getTeamUsage`, `bookTeamMember`.
-- [ ] **`useTeamQueries.ts`** — `useTeams()`, `useTeam(teamId)`, `useTeamMembers(teamId)`, `useTeamInvites(teamId)`, `useTeamUsage(teamId, period)`, `usePendingInvites()`.
-- [ ] **`queryKeys.ts`** additions — `queryKeys.teams.{all, byId, members, invites, usage, pendingInvites}()`.
-- [ ] **`apiClient.ts`** — request interceptor injects `X-Team-Id: <activeTeamId>` when set. Reads directly from `teamStore.getState()`.
-- [ ] **WS handlers** (extend `useWebSocket` consumer) — `TEAM_INVITE_RECEIVED` → invalidate `pendingInvites`; `TEAM_MEMBER_*` → invalidate `teams.byId` + `members`; `TEAM_MEETING_BOOKED` → invalidate meetings list.
+Foundation shipped 2026-05-30. Dev notes: `docs/dev-notes/phase-6-p9a-workspace-switcher.md`.
+
+- [x] **`teamStore.ts`** (Zustand, `persist` + `sessionStorage`) — `activeTeamId: string | null`, `setActiveTeam(id)`.
+- [~] **`teamService.ts`** — shipped `createTeam`, `listMyTeams`, `getTeam`. Remaining methods (member/invite/usage/booking) will land alongside the consuming UI chunks (P10 → P12).
+- [~] **`useTeamQueries.ts`** — `useMyTeams`, `useTeam`, `useCreateTeam` shipped. Remaining hooks land with their consumers.
+- [x] **`queryKeys.ts`** additions — `queryKeys.teams.{all, list, detail}()`. Additional sub-keys land with their domains.
+- [x] **`apiClient.ts`** — injects `X-Team-Id` from `teamStore.getState()` into all three request fns (JSON, FormData, text).
+- [ ] **WS handlers** — `TEAM_INVITE_RECEIVED`, `TEAM_MEMBER_*`, `TEAM_MEETING_BOOKED` invalidation routing. Deferred to P13 (invite UI infra).
 
 ---
 
@@ -865,29 +867,25 @@ Replaces existing `<UserMenu />` trigger. New component: `src/components/workspa
 
 **Behavior:**
 
-- [ ] Click team row → `teamStore.setActiveTeam(id)` → `queryClient.invalidateQueries()` (broad) → toast "Switched to [Team name]" (2s).
-- [ ] Click Personal → `teamStore.setActiveTeam(null)` → broad invalidate → toast "Switched to Personal" (2s).
-- [ ] **Route outlet wrapper:** wrap the dashboard route outlet in `<motion.div key={activeTeamId ?? 'personal'}>` with opacity 0→1 and y 4→0 over 250ms. This produces the cross-fade on workspace switch.
-- [ ] **Command palette** (`src/components/command-palette`): add "Switch workspace" command group listing all workspaces. `Cmd+1..9` keybinds switch to nth workspace (Personal = 1).
+- [x] Click team row → `teamStore.setActiveTeam(id)` → `queryClient.invalidateQueries()` (broad). Toast deferred — the cross-fade alone signals scope change clearly.
+- [x] Click Personal → `teamStore.setActiveTeam(null)` → broad invalidate.
+- [x] **Route outlet wrapper:** `<AnimatePresence mode="wait">` + `<motion.div key={scopeKey}>` in Layout.tsx — 220ms cross-fade on workspace switch.
+- [ ] **P9.b — Command palette** "Switch workspace" command group + `Cmd+1..9` keybinds. Deferred.
+- [ ] **P9.b — Pending invites surface** in switcher header. Deferred (waits for P13 infra).
 
 ---
 
-### P2 — Team Creation + Plan Gate
+### P2 — Team Creation + Plan Gate ✅ Complete (2026-05-30)
 
-- [ ] **`<CreateTeamModal />`** (`src/components/teams/CreateTeamModal.tsx`) — `Dialog` 480px wide, `rounded-2xl`. Single page (no wizard).
-  - Header: `Sparkles` (16px muted) + "Create your workspace" (text-base font-semibold).
-  - Subhead text-xs muted: "A team gets its own meetings, cards, tasks, and scheduling — separate from your personal space."
-  - Logo dropzone (72px square, dashed border when empty; click or drag-drop). Placeholder shows first 2 chars of team name.
-  - "Team name" input — autofocus.
-  - "Team URL" — `crelyzor.app/t/` prefix (muted) + slug input. Auto-derives from name with `slugify`. Debounced 300ms availability check → green `Check` (12px) when available, red helper text when taken.
-  - "Add a description" link → reveals textarea, 200 char max with counter.
-  - Footer (right-aligned): `Cancel` (ghost) + `Create team` (primary, disabled until valid name + slug).
-  - On submit: inline spinner on primary → on success, `invalidateQueries(teams.all())`, `setActiveTeam(newId)`, close modal, toast "Team created", navigate to `/teams/:teamId/settings`.
+Dev notes: `docs/dev-notes/phase-6-p10-create-team-modal.md`.
 
-- [ ] **`<UpgradeToProModal />`** — Free user clicking Create team OR Pro user at limit. Same 480px modal:
-  - Header: `Sparkles` + dynamic title ("Upgrade to Pro to create teams" or "You've hit the Pro team limit").
-  - Body: 3-bullet feature list.
-  - Footer: `Maybe later` (ghost) + `See Pro plans` (primary → `/pricing`).
+- [x] **`<CreateTeamModal />`** at `src/components/teams/CreateTeamModal.tsx` + `<CreateTeam />` modal-as-page at `src/pages/create-team/CreateTeam.tsx`. Route `/teams/new` registered in App.tsx with AuthGuard + Layout.
+- [x] Sparkles header + "Create your workspace" + subhead copy.
+- [x] Team name (autofocus) + auto-derived slug with `crelyzor.app/t/` prefix + `slugManuallyEdited` flag to preserve user edits.
+- [x] Optional description (textarea, max 500) + optional logo URL input.
+- [x] Submit handles 4 outcomes: 201 → setActiveTeam + navigate / ; 402 → close + openUpgradeModal('FEATURE_GATE') ; 409 → inline slug error ; other 4xx → toast.
+- [~] **Logo dropzone + slug-availability pre-check deferred** — dropzone waits for a backend team-logo upload endpoint; pre-check waits for a `GET /teams/check-slug` endpoint. Both ship with P11/P3 (team settings).
+- [x] **`<UpgradeToProModal />` handled via existing `<UpgradeModal />` with `FEATURE_GATE` code** — no new component needed since the apiClient interceptor already routes 402 responses through the shared modal.
 
 ---
 
@@ -895,21 +893,17 @@ Replaces existing `<UserMenu />` trigger. New component: `src/components/workspa
 
 Route: `/teams/:teamId/settings`. New page: `src/pages/teams/TeamSettingsPage.tsx`. Layout: vertical tab nav (left, w-[200px]) + content (flex-1). Wrap in `PageMotion`.
 
-- [ ] **General tab** — name input / slug input (Owner-only editable, disabled+tooltip for Admin) / description textarea (200 char) / logo upload. Save button bottom-right of card, disabled until dirty.
-- [ ] **Members tab** — header with `Invite member` button (top-right primary, Admin+ only). Table:
-      | Member (28px avatar + name/email) | Role (pill, clickable for Owner) | Joined (relative) | Last active (relative, from WS presence) | Kebab |
-      Row hover `bg-muted/30`. Empty state: `Users2` (40px muted) + "Just you for now" + Invite CTA.
-- [ ] **Invite member modal** (`<InviteMembersModal />`) — Tabs `Search users` / `By email`.
-  - Search: debounced 200ms typeahead. Results list (32px avatar + name/email) with role select per row + `Send invite` button. Empty: "No users found. Try inviting by email instead."
-  - By email: chip input with email validation. Single role select for the batch. Optional message textarea (200 char). `Send invites` button.
-  - On submit: invalidate `teams.invites`, toast "3 invites sent", close.
-- [ ] **Invites tab** — pending invites table (Email / Role / Sent / Expires / Resend|Cancel). Empty state.
+- [x] **General tab** — name / slug (Owner-only editable, disabled+hint for Admin/Member) / description / logo URL input. Save button disabled until dirty. 200/403/409 handling inline. Logo upload UX still needs a backend endpoint — URL input ships now. P11.a (2026-05-30). Dev notes: `docs/dev-notes/phase-6-p11a-team-settings-foundation.md`.
+- [x] **Members tab** (P11.b — 2026-05-30) — header with `Invite member` (Admin+); roster: avatar + name/email + role badge or Owner-only inline `<select>` + relative joined date + kebab (Admin+, non-Owner, non-self) → Remove confirm Dialog. Empty state: "Just you for now". Dev notes: `docs/dev-notes/phase-6-p11b-team-members-invites.md`.
+- [x] **Invite member modal** (P11.b) — email-mode only (chip input, Enter/comma/Backspace, 10-cap), role select (ADMIN | MEMBER), optional 200-char personal note. Toast distinguishes sent vs skipped. User-mode (typeahead) deferred — no user-search endpoint yet.
+- [x] **Invites tab** (P11.b) — pending invites list with Resend + Cancel per row, expiry highlighted red when past. Members view is gated to "Only owners and admins can see pending invites." copy + no fetch.
 - [ ] **Usage tab** — see P4 below.
 - [ ] **Billing tab** — Owner-only. "All team consumption is billed to your Pro plan." + link to `/settings/billing`.
-- [ ] **Danger zone tab**:
-  - Member view: `Leave team` (destructive ghost) with confirm dialog.
-  - Owner view: `Transfer ownership` (select active member → type team name to confirm) + `Delete team` (destructive, type team name to confirm).
-- [ ] Handle 403 — non-members redirect to `/teams` list page (or home).
+- [x] **Danger zone tab** (P11.a — 2026-05-30):
+  - Member view: `Leave team` (destructive) with confirm dialog.
+  - Owner view: `Transfer ownership` (target member select via `useTeamMembers` + type team name to confirm) + `Delete team` (destructive, type team name to confirm).
+  - Post-success: setActiveTeam(null) → navigate('/') so stale scope can't 403 the next request.
+- [x] Handle non-member — auto-redirect to `/` (P11.a — 2026-05-30).
 
 ---
 
