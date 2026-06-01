@@ -37,6 +37,7 @@ const {
   Pricing,
   CreateTeam,
   TeamSettings,
+  InvitePage,
   NotFound,
 } = routes;
 
@@ -55,6 +56,10 @@ function App() {
                 <Routes>
                   <Route path="/signin" element={<SignIn />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
+
+                  {/* Phase 6 P14.b — handles its own auth (redirects to /signin
+                      if not authenticated). Must NOT be wrapped in AuthGuard. */}
+                  <Route path="/invite/:token" element={<InvitePage />} />
 
                   <Route
                     path="/setup"

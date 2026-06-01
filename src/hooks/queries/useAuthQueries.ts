@@ -19,12 +19,18 @@ export function useCurrentUser() {
 }
 
 /**
- * Redirect to Google OAuth login page.
+ * Redirect to Google OAuth login page. Pass `next` to round-trip an internal
+ * path that the AuthCallback should land on after a successful sign-in
+ * (e.g. `/invite/<token>` for the email-invite flow). The receiver re-
+ * validates `next` to prevent open-redirect via a tampered callback URL.
  */
 export function useGoogleLogin() {
   return {
-    login: () => {
-      const callbackUrl = `${window.location.origin}/auth/callback`;
+    login: (opts?: { next?: string }) => {
+      const base = `${window.location.origin}/auth/callback`;
+      const callbackUrl = opts?.next
+        ? `${base}?next=${encodeURIComponent(opts.next)}`
+        : base;
       window.location.href = authApi.getGoogleLoginUrl(callbackUrl);
     },
   };

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/stores';
 import { PageLoader } from '@/components/PageLoader';
+import { pickSafeNext } from '@/lib/safeNext';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -18,10 +19,17 @@ export default function AuthCallback() {
     const hashParams = new URLSearchParams(hash);
     const accessToken = hashParams.get('accessToken');
 
+    // `next` round-trips via the redirectUrl query string the SignIn page
+    // builds (Phase 6 P14.b — email-invite flow). Re-validate even though the
+    // SignIn side already does — never trust a query param to decide where
+    // to send a newly authenticated user.
+    const search = new URLSearchParams(window.location.search);
+    const next = pickSafeNext(search.get('next'), '/');
+
     if (accessToken) {
       setAccessToken(accessToken);
       // Refresh token is set as httpOnly cookie by the backend — no localStorage needed
-      navigate('/', { replace: true });
+      navigate(next, { replace: true });
     } else {
       // No token — OAuth failed or was cancelled
       toast.error('Sign-in failed. Please try again.');

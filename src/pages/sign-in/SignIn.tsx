@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { useGoogleLogin } from '@/hooks/queries/useAuthQueries';
@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores';
 import { ThemeToggle } from '@/components/toolbar/ThemeToggle';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { CARDS_PUBLIC_URL as PUBLIC_URL } from '@/lib/publicUrl';
+import { pickSafeNext } from '@/lib/safeNext';
 
 const GOLD = '#d4af61';
 const PILLARS = ['CARDS', 'CALENDAR', 'MEETINGS', 'VOICE', 'TASKS', 'AI'];
@@ -13,10 +14,14 @@ const PILLARS = ['CARDS', 'CALENDAR', 'MEETINGS', 'VOICE', 'TASKS', 'AI'];
 export default function SignIn() {
   const { login } = useGoogleLogin();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const [searchParams] = useSearchParams();
+  const next = pickSafeNext(searchParams.get('next'), '/');
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={next} replace />;
   }
+
+  const handleLogin = () => login({ next: next === '/' ? undefined : next });
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-background text-foreground">
@@ -132,7 +137,7 @@ export default function SignIn() {
             transition={{ duration: 0.4, delay: 0.63 }}
           >
             <Button
-              onClick={login}
+              onClick={handleLogin}
               variant="outline"
               className="w-full h-11 rounded-xl font-medium text-[13px] transition-all duration-150
                 border-border bg-surface text-foreground

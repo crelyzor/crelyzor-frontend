@@ -22,6 +22,7 @@ const TagDetail = lazy(() => import('@/pages/tags/TagDetailPage'));
 const Pricing = lazy(() => import('@/pages/pricing'));
 const CreateTeam = lazy(() => import('@/pages/create-team'));
 const TeamSettings = lazy(() => import('@/pages/team-settings'));
+const InvitePage = lazy(() => import('@/pages/invite'));
 const NotFound = lazy(() => import('@/pages/not-found'));
 
 export type RouteConfig = {
@@ -52,5 +53,6 @@ export const routes = {
   Pricing,
   CreateTeam,
   TeamSettings,
+  InvitePage,
   NotFound,
 };

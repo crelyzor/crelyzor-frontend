@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-05-30 (Phase 6 P13 shipped — WS handlers for all 5 team events wired into useNotificationSocket, GET /teams/me/invites surfaces invites that arrived offline, and Accept/Decline rows are live in both the workspace switcher dropdown and the notifications panel. P14.b dashboard accept handler is next.)
+Last updated: 2026-06-01 (Phase 6 P14.b shipped — dashboard /invite/:token route closes the email-invite loop with a safe ?next= round-trip through Google OAuth (URL-based same-origin validator at src/lib/safeNext.ts), strict-mode-safe accept-on-mount, and contextual 410 / 404 / 403 / unknown error cards. Crelyzor-public P14.c (team profile page) also live in the same push.)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -965,6 +965,21 @@ Dev notes: `docs/dev-notes/phase-6-p13-in-app-invite-surfaces.md`.
 - [x] **WS handlers (5 events)**: TEAM_INVITE_RECEIVED → invalidate teams.myInvites + 5s toast; TEAM_MEMBER_JOINED/LEFT/ROLE_CHANGED → invalidate teams.members(teamId) + teams.list() on JOINED/ROLE_CHANGED; TEAM_MEETING_BOOKED → silent invalidation of meetings.all (no toast since the broadcast includes the booker).
 - [x] **Backend `GET /teams/me/invites`** — invitee-side discovery so invites that arrived while offline still surface. Service + controller + route registered ABOVE `/:teamId/*` to avoid Express collision.
 - [x] **Accept/decline mutations** — `useAcceptInvite` sets active team BEFORE broad invalidation (so X-Team-Id header on the refetch carries the new scope); invalidates teams.all + cards.all. `useDeclineInvite` invalidates teams.myInvites only.
+
+---
+
+### P14.b — Dashboard /invite/:token accept handler ✅ Complete (2026-06-01)
+
+Dev notes: `docs/dev-notes/phase-6-p14b-dashboard-invite-accept.md`.
+
+- [x] **`src/lib/safeNext.ts`** — URL-based same-origin validator (isSafeNext / pickSafeNext) used at both write-site and read-site to prevent open-redirect via crafted `?next=`.
+- [x] **`src/services/teamService.ts`** — `acceptInviteByToken(token)` + `declineInviteByToken(token)`.
+- [x] **`src/hooks/queries/useTeamQueries.ts`** — `useAcceptInviteByToken` (setActiveTeam → invalidate teams.all + cards.all) + `useDeclineInviteByToken`.
+- [x] **`src/hooks/queries/useAuthQueries.ts`** — `useGoogleLogin({ next? })` round-trips an internal path through the OAuth callback URL.
+- [x] **`src/pages/sign-in/SignIn.tsx`** — reads + validates `?next=`, threads into login(), redirects already-authed users straight to next.
+- [x] **`src/pages/auth-callback/AuthCallback.tsx`** — re-validates `?next=`, navigates after token set.
+- [x] **`src/pages/invite/InvitePage.tsx` (NEW)** — top-level route. Not authenticated → Navigate to /signin?next=. Authenticated → strict-mode-safe accept-on-mount + contextual 410 / 404 / 403 / unknown error cards. "Sign out and sign in again" CTA for 403 wrong-account case. Success → /teams/:teamId/settings.
+- [x] **`src/App.tsx`** — `<Route path="/invite/:token">` registered BEFORE the AuthGuard tree.
 
 ---
 

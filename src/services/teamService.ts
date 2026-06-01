@@ -233,4 +233,12 @@ export const teamService = {
   /** POST /teams/:teamId/invites/decline — invitee-only. */
   declineInvite: (teamId: string) =>
     apiClient.post<void>(`/teams/${teamId}/invites/decline`),
+
+  /** POST /invites/:token/accept — email-flow accept (JWT required). */
+  acceptInviteByToken: (token: string) =>
+    apiClient.post<{ membership: TeamMembership }>(`/invites/${token}/accept`),
+
+  /** POST /invites/:token/decline — email-flow decline (JWT required). */
+  declineInviteByToken: (token: string) =>
+    apiClient.post<void>(`/invites/${token}/decline`),
 };

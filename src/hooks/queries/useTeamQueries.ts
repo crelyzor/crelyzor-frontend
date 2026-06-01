@@ -281,3 +281,31 @@ export const useDeclineInvite = () => {
     },
   });
 };
+
+// Phase 6 P14.b — email-flow accept/decline (token-scoped).
+
+export const useAcceptInviteByToken = () => {
+  const queryClient = useQueryClient();
+  const setActiveTeam = useTeamStore((s) => s.setActiveTeam);
+  return useMutation({
+    mutationFn: (token: string) => teamService.acceptInviteByToken(token),
+    onSuccess: (data) => {
+      // Switch into the new team scope BEFORE the broad invalidation so the
+      // X-Team-Id header on the refetch carries the new scope.
+      setActiveTeam(data.membership.team.id);
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
+    },
+    // No toast — the InvitePage renders its own success / error states inline.
+  });
+};
+
+export const useDeclineInviteByToken = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (token: string) => teamService.declineInviteByToken(token),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.myInvites() });
+    },
+  });
+};
