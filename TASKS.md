@@ -1,6 +1,6 @@
 # calendar-frontend — Task List
 
-Last updated: 2026-06-01 (Phase 6 P14.b shipped — dashboard /invite/:token route closes the email-invite loop with a safe ?next= round-trip through Google OAuth (URL-based same-origin validator at src/lib/safeNext.ts), strict-mode-safe accept-on-mount, and contextual 410 / 404 / 403 / unknown error cards. Crelyzor-public P14.c (team profile page) also live in the same push.)
+Last updated: 2026-06-01 (Phase 6 P9.b + P13 complete — Cmd+1..9 workspace keybinds (useWorkspaceKeybinds hook, Layout.tsx) + command palette "Switch Workspace" group. P13 invite surfaces confirmed shipped.)
 
 > **Rule:** When you complete a task, change `- [ ]` to `- [x]` and move it to the Done section.
 > **Legend:** `[ ]` Not started · `[~]` Has code but broken/incomplete · `[x]` Done and working
@@ -841,7 +841,7 @@ Foundation shipped 2026-05-30. Dev notes: `docs/dev-notes/phase-6-p9a-workspace-
 - [~] **`useTeamQueries.ts`** — `useMyTeams`, `useTeam`, `useCreateTeam` shipped. Remaining hooks land with their consumers.
 - [x] **`queryKeys.ts`** additions — `queryKeys.teams.{all, list, detail}()`. Additional sub-keys land with their domains.
 - [x] **`apiClient.ts`** — injects `X-Team-Id` from `teamStore.getState()` into all three request fns (JSON, FormData, text).
-- [ ] **WS handlers** — `TEAM_INVITE_RECEIVED`, `TEAM_MEMBER_*`, `TEAM_MEETING_BOOKED` invalidation routing. Deferred to P13 (invite UI infra).
+- [x] **WS handlers** — `TEAM_INVITE_RECEIVED`, `TEAM_MEMBER_*`, `TEAM_MEETING_BOOKED` invalidation routing. Shipped in P13 (useNotificationSocket.ts).
 
 ---
 
@@ -858,20 +858,20 @@ Replaces existing `<UserMenu />` trigger. New component: `src/components/workspa
 
 **Dropdown panel** (`bg-[#1C1C1E] dark:bg-[#1C1C1E] border border-white/[0.06] rounded-[20px] shadow-2xl shadow-black/40 p-1.5 w-[280px]`, spring entry):
 
-- [ ] **Pending invites section** (only if count > 0) — collapsible header "2 pending invitations" → list with Accept (primary xs) + Decline (ghost xs) per invite. Below: divider.
-- [ ] **Workspaces label** — `text-[10px] uppercase tracking-wider text-muted-foreground px-3 py-1.5`.
-- [ ] **Personal row** — avatar + name + `Check` icon (12px) if active.
-- [ ] **Team rows** — logo + name + role pill + right-side "6 members" (text-xs muted) + `Check` if active.
-- [ ] **Divider** + **`+ Create team`** row — `Plus` (14px) + label. Disabled for Free users with tooltip "Teams are a Pro feature". Disabled for Pro users at team limit with tooltip "Upgrade to Business for more teams".
-- [ ] **Divider** + account actions (Profile / Settings / Logout) — preserve existing `UserMenu` items.
+- [x] **Pending invites section** (only if count > 0) — shipped as part of P13. Accept/Decline inline.
+- [x] **Workspaces label** — `text-[10px] uppercase tracking-wider`.
+- [x] **Personal row** — avatar + name + `Check` icon if active.
+- [x] **Team rows** — logo/initials + name + role subtitle + `Check` if active. (Member count omitted — role subtitle used instead.)
+- [x] **Divider** + **`+ Create team`** row. Free-user plan gate handled via backend 402 → UpgradeModal flow (tooltip disabled state deferred).
+- [x] **Divider** + account actions (Profile / Settings / Getting started / Sign out).
 
 **Behavior:**
 
 - [x] Click team row → `teamStore.setActiveTeam(id)` → `queryClient.invalidateQueries()` (broad). Toast deferred — the cross-fade alone signals scope change clearly.
 - [x] Click Personal → `teamStore.setActiveTeam(null)` → broad invalidate.
 - [x] **Route outlet wrapper:** `<AnimatePresence mode="wait">` + `<motion.div key={scopeKey}>` in Layout.tsx — 220ms cross-fade on workspace switch.
-- [ ] **P9.b — Command palette** "Switch workspace" command group + `Cmd+1..9` keybinds. Deferred.
-- [ ] **P9.b — Pending invites surface** in switcher header. Deferred (waits for P13 infra).
+- [x] **P9.b — Command palette** "Switch workspace" command group + `Cmd+1..9` keybinds.
+- [x] **P9.b — Pending invites surface** in switcher header (shipped as P13).
 
 ---
 
@@ -907,18 +907,15 @@ Route: `/teams/:teamId/settings`. New page: `src/pages/teams/TeamSettingsPage.ts
 
 ---
 
-### P4 — Usage Tab (Owner + Admin only)
+### P4 — Usage Tab (Owner + Admin only) ✅ Complete (2026-05-30)
 
-- [ ] **4 summary cards** in `grid-cols-2 md:grid-cols-4 gap-3`. Each card `rounded-xl border bg-card p-4`:
-  - Micro-label uppercase tracking-wider (`text-[10px] text-muted-foreground`) e.g. "Transcription minutes"
-  - Big number `text-2xl font-semibold` (e.g. "1,243")
-  - Subtitle `text-xs muted` (e.g. "of 5,000")
-  - `h-1 bg-muted rounded-full` with `bg-foreground` fill (only when quota exists)
-    Cards: Transcription minutes / AI tokens / Storage GB / Meetings (no quota).
-- [ ] **Period selector** (right-aligned above breakdown table) — `<Select>`: This month / Last month / Last 7 days / Custom range (opens date range picker).
-- [ ] **Per-member breakdown table** — sortable columns. Right-align numerics. Subtle row hover.
-- [ ] **`Export CSV`** (`text-xs` link, top-right of table) — downloads current period CSV.
-- [ ] Empty state: "No usage yet this period. Activity will appear here once team members start working." (text-xs muted, centered, py-12).
+Shipped as part of P11.c (Team Settings → Usage tab). See P3 above for full details.
+
+- [x] **4 summary cards** — Transcription / Recall / AI / Storage vs owner-plan limits.
+- [ ] **Period selector** — deferred; backend does not support `?period=` yet.
+- [x] **Per-member breakdown table** — sorted by transcription desc.
+- [x] **`Export CSV`** — client-side download as `<slug>-usage-<date>.csv`.
+- [x] Empty state — "No usage yet this period" copy.
 
 ---
 

@@ -7,6 +7,7 @@ import { WorkspaceSwitcher } from '@/components/workspace-switcher/WorkspaceSwit
 import { MobileNav } from '@/components/MobileNav';
 import { UsageWarningBanner } from '@/components/billing/UsageWarningBanner';
 import { useNotificationSocket } from '@/hooks/useNotificationSocket';
+import { useWorkspaceKeybinds } from '@/hooks/useWorkspaceKeybinds';
 import { useTeamStore } from '@/stores';
 
 type LayoutProps = {
@@ -16,6 +17,7 @@ type LayoutProps = {
 export default function Layout({ children }: LayoutProps) {
   const { openCommandPalette } = useCommandPalette();
   useNotificationSocket();
+  useWorkspaceKeybinds();
   // Phase 6 P9 — cross-fade the route subtree on workspace switch.
   const activeTeamId = useTeamStore((s) => s.activeTeamId);
   const scopeKey = activeTeamId ?? 'personal';

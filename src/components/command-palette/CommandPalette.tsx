@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   CommandDialog,
   CommandEmpty,
@@ -11,15 +12,19 @@ import {
   CommandShortcut,
 } from '@/components/ui/command';
 import {
-  LogOut,
-  Plus,
+  Building2,
+  CalendarPlus,
+  Check,
   ArrowRight,
   CheckSquare,
+  LogOut,
   Mic,
-  CalendarPlus,
+  Plus,
+  User,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useUIStore } from '@/stores';
+import { useUIStore, useTeamStore } from '@/stores';
+import { useMyTeams } from '@/hooks/queries/useTeamQueries';
 import { TOOLBAR_ITEMS } from '@/constants/toolbar';
 import { PRIORITY_LABELS, PRIORITY_STYLES } from '@/constants/task';
 import { useCreateStandaloneTask } from '@/hooks/queries/useSMAQueries';
@@ -34,7 +39,11 @@ export function CommandPalette() {
   const [search, setSearch] = useState('');
   const [showScheduleMeeting, setShowScheduleMeeting] = useState(false);
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const createTask = useCreateStandaloneTask();
+  const { data: teamsData } = useMyTeams();
+  const { activeTeamId, setActiveTeam } = useTeamStore();
+  const teams = teamsData?.teams ?? [];
 
   const handleOpenChange = (v: boolean) => {
     if (v) {
@@ -61,6 +70,14 @@ export function CommandPalette() {
     useUIStore.getState().closeCommandPalette();
     setSearch('');
     command();
+  };
+
+  const switchWorkspace = (teamId: string | null) => {
+    runCommand(() => {
+      setActiveTeam(teamId);
+      // Broad invalidation — every cached key is implicitly team-scoped.
+      qc.invalidateQueries();
+    });
   };
 
   const handleCreateTask = () => {
@@ -198,6 +215,37 @@ export function CommandPalette() {
               </CommandItem>
             ))}
           </CommandGroup>
+
+          {teams.length > 0 && (
+            <>
+              <CommandSeparator className="my-1" />
+              <CommandGroup heading="Switch Workspace">
+                <CommandItem onSelect={() => switchWorkspace(null)}>
+                  {activeTeamId === null ? (
+                    <Check className="w-4 h-4 text-neutral-500 dark:text-neutral-400 shrink-0" />
+                  ) : (
+                    <User className="w-4 h-4 text-neutral-500 dark:text-neutral-400 shrink-0" />
+                  )}
+                  <span>Personal</span>
+                  <CommandShortcut>⌘1</CommandShortcut>
+                </CommandItem>
+                {teams.slice(0, 8).map((m, idx) => (
+                  <CommandItem
+                    key={m.team.id}
+                    onSelect={() => switchWorkspace(m.team.id)}
+                  >
+                    {activeTeamId === m.team.id ? (
+                      <Check className="w-4 h-4 text-neutral-500 dark:text-neutral-400 shrink-0" />
+                    ) : (
+                      <Building2 className="w-4 h-4 text-neutral-500 dark:text-neutral-400 shrink-0" />
+                    )}
+                    <span>{m.team.name}</span>
+                    <CommandShortcut>⌘{idx + 2}</CommandShortcut>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </>
+          )}
 
           <CommandSeparator className="my-1" />
 
