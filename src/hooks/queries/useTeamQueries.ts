@@ -15,12 +15,15 @@ import { useTeamStore } from '@/stores';
 import { useAuthStore } from '@/stores';
 import { toast } from 'sonner';
 
-export const useMyTeams = () =>
-  useQuery({
+export const useMyTeams = () => {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  return useQuery({
     queryKey: queryKeys.teams.list(),
     queryFn: () => teamService.listMyTeams(),
     staleTime: 60_000,
+    enabled: isAuthenticated,
   });
+};
 
 export const useTeam = (teamId: string | null) =>
   useQuery({
@@ -63,10 +66,12 @@ export const useUpdateTeam = (teamId: string) => {
 
 export const useDeleteTeam = (teamId: string) => {
   const queryClient = useQueryClient();
+  const { activeTeamId, setActiveTeam } = useTeamStore();
   return useMutation({
     mutationFn: () => teamService.deleteTeam(teamId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.teams.list() });
+      if (activeTeamId === teamId) setActiveTeam(null);
+      queryClient.invalidateQueries();
       toast.success('Team deleted');
     },
     onError: (err: unknown) => {
@@ -98,10 +103,12 @@ export const useTransferOwnership = (teamId: string) => {
 
 export const useLeaveTeam = (teamId: string) => {
   const queryClient = useQueryClient();
+  const { activeTeamId, setActiveTeam } = useTeamStore();
   return useMutation({
     mutationFn: () => teamService.leaveTeam(teamId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.teams.list() });
+      if (activeTeamId === teamId) setActiveTeam(null);
+      queryClient.invalidateQueries();
       toast.success('Left team');
     },
     onError: (err: unknown) => {
@@ -250,12 +257,8 @@ export const useAcceptInvite = () => {
   return useMutation({
     mutationFn: (teamId: string) => teamService.acceptInvite(teamId),
     onSuccess: (_data, teamId) => {
-      // Switch into the new team BEFORE the broad invalidation — the active
-      // scope drives X-Team-Id on the next request and we want the refetch to
-      // land in the new scope.
       setActiveTeam(teamId);
-      queryClient.invalidateQueries({ queryKey: queryKeys.teams.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
+      queryClient.invalidateQueries();
       toast.success('Joined team');
     },
     onError: (err: unknown) => {
@@ -290,11 +293,8 @@ export const useAcceptInviteByToken = () => {
   return useMutation({
     mutationFn: (token: string) => teamService.acceptInviteByToken(token),
     onSuccess: (data) => {
-      // Switch into the new team scope BEFORE the broad invalidation so the
-      // X-Team-Id header on the refetch carries the new scope.
       setActiveTeam(data.membership.team.id);
-      queryClient.invalidateQueries({ queryKey: queryKeys.teams.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.cards.all });
+      queryClient.invalidateQueries();
     },
     // No toast — the InvitePage renders its own success / error states inline.
   });

@@ -92,7 +92,23 @@ export function useNotificationSocket() {
             qc.invalidateQueries({ queryKey: queryKeys.notifications.list() });
           } else if (msg.type === 'NOTIFICATION') {
             qc.invalidateQueries({ queryKey: queryKeys.notifications.all });
-            showToast(msg.data as Notification);
+            const notif = msg.data as Notification;
+            if (
+              notif.type === 'MEETING_AI_COMPLETE' &&
+              notif.entityType === 'meeting' &&
+              notif.entityId
+            ) {
+              const meetingId = notif.entityId;
+              qc.invalidateQueries({
+                queryKey: queryKeys.meetings.detail(meetingId),
+              });
+              qc.invalidateQueries({ queryKey: queryKeys.sma.transcript(meetingId) });
+              qc.invalidateQueries({ queryKey: queryKeys.sma.summary(meetingId) });
+              qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
+              qc.invalidateQueries({ queryKey: queryKeys.sma.recordings(meetingId) });
+              qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
+            }
+            showToast(notif);
           } else if (msg.type === 'TEAM_INVITE_RECEIVED') {
             const data = msg.data as {
               invite: {

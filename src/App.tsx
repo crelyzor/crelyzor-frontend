@@ -11,6 +11,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PageLoader } from '@/components/PageLoader';
 import Layout from '@/layout/Layout';
 import { AuthGuard } from '@/components/AuthGuard';
+import { TeamGuard } from '@/components/TeamGuard';
 import { AppInitializer } from '@/components/AppInitializer';
 import { PlanCelebrationOverlay } from '@/components/PlanCelebrationOverlay';
 import { routes } from '@/routes/routes';
@@ -255,9 +256,11 @@ function App() {
                     path="/teams/:teamId/settings"
                     element={
                       <AuthGuard>
-                        <Layout>
-                          <TeamSettings />
-                        </Layout>
+                        <TeamGuard>
+                          <Layout>
+                            <TeamSettings />
+                          </Layout>
+                        </TeamGuard>
                       </AuthGuard>
                     }
                   />

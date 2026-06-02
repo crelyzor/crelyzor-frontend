@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCreateTeam } from '@/hooks/queries/useTeamQueries';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { useTeamStore, useUIStore } from '@/stores';
@@ -46,6 +47,7 @@ interface CreateTeamModalProps {
 
 export function CreateTeamModal({ open, onOpenChange }: CreateTeamModalProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: user } = useCurrentUser();
   const { setActiveTeam } = useTeamStore();
   const openUpgradeModal = useUIStore((s) => s.openUpgradeModal);
@@ -95,9 +97,8 @@ export function CreateTeamModal({ open, onOpenChange }: CreateTeamModalProps) {
       });
       const newTeamId = result.team.id;
 
-      // Switch the active workspace to the new team — user lands in team scope
-      // on the next page.
       setActiveTeam(newTeamId);
+      queryClient.invalidateQueries();
       onOpenChange(false);
       navigate('/', { replace: true });
     } catch (err) {

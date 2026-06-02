@@ -46,6 +46,7 @@ function buildUrl(
 // retried once the refresh resolves.
 
 let isRefreshing = false;
+let isRedirecting = false;
 let pendingCallbacks: Array<{
   resolve: () => void;
   reject: (err: unknown) => void;
@@ -79,6 +80,8 @@ async function attemptTokenRefresh(): Promise<boolean> {
 }
 
 function clearAuthAndRedirect() {
+  if (isRedirecting) return;
+  isRedirecting = true;
   useAuthStore.getState().logout();
   window.location.replace('/signin');
 }

@@ -70,6 +70,15 @@ export function WorkspaceSwitcher() {
     ? teams.find((t) => t.team.id === activeTeamId)
     : null;
 
+  // Reset stale activeTeamId — covers cases where the user was removed from
+  // a team or deleted it in another tab / session.
+  useEffect(() => {
+    if (teamsData && activeTeamId && !active) {
+      setActiveTeam(null);
+      queryClient.invalidateQueries();
+    }
+  }, [teamsData, activeTeamId, active, setActiveTeam, queryClient]);
+
   const initials = (user?.name ?? 'U')
     .split(' ')
     .map((n) => n[0])
