@@ -170,6 +170,7 @@ export const useResendInvite = (teamId: string) => {
       teamService.resendInvite(teamId, inviteId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams', 'invites', teamId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.teams.myInvites() });
       toast.success('Invite resent');
     },
     onError: (err: unknown) => {
@@ -306,6 +307,66 @@ export const useDeclineInviteByToken = () => {
     mutationFn: (token: string) => teamService.declineInviteByToken(token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.teams.myInvites() });
+    },
+  });
+};
+
+// ── Invite link (Phase 6 P16) ─────────────────────────────────────────────
+
+export const useTeamInviteLink = (teamId: string | null) =>
+  useQuery({
+    queryKey: teamId
+      ? queryKeys.teams.inviteLink(teamId)
+      : ['teams', 'invite-link', 'null'],
+    queryFn: () => teamService.getInviteLink(teamId!),
+    enabled: !!teamId,
+    staleTime: 30_000,
+  });
+
+export const useGenerateInviteLink = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => teamService.generateInviteLink(teamId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.teams.inviteLink(teamId),
+      });
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : 'Failed to generate link';
+      toast.error(msg);
+    },
+  });
+};
+
+export const useRevokeInviteLink = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => teamService.revokeInviteLink(teamId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.teams.inviteLink(teamId),
+      });
+      toast.success('Invite link revoked');
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : 'Failed to revoke link';
+      toast.error(msg);
+    },
+  });
+};
+
+export const useJoinByLink = () => {
+  const queryClient = useQueryClient();
+  const setActiveTeam = useTeamStore((s) => s.setActiveTeam);
+  return useMutation({
+    mutationFn: (token: string) => teamService.joinByLink(token),
+    onSuccess: (data) => {
+      setActiveTeam(data.membership.teamId);
+      queryClient.invalidateQueries();
+    },
+    onError: () => {
+      // InviteLinkPage renders its own error states inline — no toast here.
     },
   });
 };

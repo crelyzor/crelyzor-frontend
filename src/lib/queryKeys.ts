@@ -203,5 +203,7 @@ export const queryKeys = {
     invites: (teamId: string) =>
       [...queryKeys.teams.all, 'invites', teamId] as const,
     myInvites: () => [...queryKeys.teams.all, 'my-invites'] as const,
+    inviteLink: (teamId: string) =>
+      [...queryKeys.teams.all, 'invite-link', teamId] as const,
   },
 } as const;

@@ -146,6 +146,13 @@ export interface MyPendingInvitesResponse {
   invites: MyPendingInvite[];
 }
 
+export interface TeamInviteLink {
+  enabled: boolean;
+  token: string | null;
+  linkUrl: string | null;
+  expiresAt: string | null;
+}
+
 export const teamService = {
   /** GET /teams — returns the user's active memberships */
   listMyTeams: () => apiClient.get<{ teams: TeamMembership[] }>('/teams'),
@@ -241,4 +248,22 @@ export const teamService = {
   /** POST /invites/:token/decline — email-flow decline (JWT required). */
   declineInviteByToken: (token: string) =>
     apiClient.post<void>(`/invites/${token}/decline`),
+
+  /** GET /teams/:teamId/invite-link — Admin+. Current invite link state. */
+  getInviteLink: (teamId: string) =>
+    apiClient.get<TeamInviteLink>(`/teams/${teamId}/invite-link`),
+
+  /** POST /teams/:teamId/invite-link/generate — Admin+. Create or replace token. */
+  generateInviteLink: (teamId: string) =>
+    apiClient.post<TeamInviteLink>(`/teams/${teamId}/invite-link/generate`),
+
+  /** DELETE /teams/:teamId/invite-link — Admin+. Disable and clear token. */
+  revokeInviteLink: (teamId: string) =>
+    apiClient.delete<void>(`/teams/${teamId}/invite-link`),
+
+  /** POST /teams/join-by-link/:token — JWT required. Join team via invite link. */
+  joinByLink: (token: string) =>
+    apiClient.post<{ membership: { teamId: string; role: TeamRole; team: { id: string; name: string; slug: string } } }>(
+      `/teams/join-by-link/${token}`
+    ),
 };
