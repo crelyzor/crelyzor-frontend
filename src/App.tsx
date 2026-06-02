@@ -39,6 +39,7 @@ const {
   CreateTeam,
   TeamSettings,
   InvitePage,
+  InviteLinkPage,
   NotFound,
 } = routes;
 
@@ -61,6 +62,9 @@ function App() {
                   {/* Phase 6 P14.b — handles its own auth (redirects to /signin
                       if not authenticated). Must NOT be wrapped in AuthGuard. */}
                   <Route path="/invite/:token" element={<InvitePage />} />
+
+                  {/* Phase 6 P16 — shareable team invite link. Handles its own auth redirect. */}
+                  <Route path="/invite/link/:token" element={<InviteLinkPage />} />
 
                   <Route
                     path="/setup"
