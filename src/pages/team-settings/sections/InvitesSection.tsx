@@ -3,11 +3,18 @@
  *
  * Lists pending invites; per-row Resend + Cancel.
  */
-import { Mail, RotateCcw, X } from 'lucide-react';
+import { useState } from 'react';
+import { Copy, Link, Mail, RefreshCw, RotateCcw, Trash2, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 import {
   useCancelInvite,
+  useGenerateInviteLink,
   useResendInvite,
+  useRevokeInviteLink,
+  useTeamInviteLink,
   useTeamInvites,
 } from '@/hooks/queries/useTeamQueries';
 import type { TeamInvite, TeamRole } from '@/services/teamService';
@@ -36,6 +43,125 @@ function expiryLabel(iso: string): { label: string; expired: boolean } {
   if (days === 0) return { label: 'expires today', expired: false };
   if (days === 1) return { label: 'expires tomorrow', expired: false };
   return { label: `expires in ${days} days`, expired: false };
+}
+
+function InviteLinkCard({ teamId }: { teamId: string }) {
+  const { data: linkData, isLoading } = useTeamInviteLink(teamId);
+  const generateMutation = useGenerateInviteLink(teamId);
+  const revokeMutation = useRevokeInviteLink(teamId);
+  const [confirmRevoke, setConfirmRevoke] = useState(false);
+
+  const handleCopy = () => {
+    if (!linkData?.linkUrl) return;
+    navigator.clipboard.writeText(linkData.linkUrl).then(() => {
+      toast.success('Link copied to clipboard');
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 animate-pulse">
+        <div className="h-3 bg-neutral-200 dark:bg-neutral-800 rounded w-24 mb-3" />
+        <div className="h-8 bg-neutral-100 dark:bg-neutral-900 rounded-lg w-full" />
+      </div>
+    );
+  }
+
+  const hasLink = linkData?.enabled && linkData.linkUrl;
+
+  return (
+    <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Link className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-xs font-medium text-foreground">Invite link</span>
+        </div>
+        {hasLink && !confirmRevoke && (
+          <Button
+            variant="ghost"
+            size="xs"
+            className="text-muted-foreground hover:text-red-500 dark:hover:text-red-400 h-6 px-2"
+            onClick={() => setConfirmRevoke(true)}
+          >
+            <Trash2 className="w-3 h-3 mr-1" />
+            Revoke
+          </Button>
+        )}
+      </div>
+
+      {hasLink ? (
+        <>
+          <div className="flex items-center gap-2">
+            <Input
+              readOnly
+              value={linkData.linkUrl!}
+              className="text-xs h-8 font-mono bg-neutral-50 dark:bg-neutral-900 cursor-default select-all"
+              onFocus={(e) => e.target.select()}
+            />
+            <Button
+              variant="outline"
+              size="icon-sm"
+              onClick={handleCopy}
+              title="Copy link"
+            >
+              <Copy className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              onClick={() => generateMutation.mutate()}
+              disabled={generateMutation.isPending}
+              title="Regenerate link"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${generateMutation.isPending ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Anyone with this link can join as a member. Regenerating immediately invalidates the old link.
+          </p>
+          {confirmRevoke && (
+            <div className="flex items-center gap-2 pt-1">
+              <span className="text-[11px] text-muted-foreground flex-1">
+                Revoke this link? Anyone who has it won't be able to join.
+              </span>
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={() => setConfirmRevoke(false)}
+                className="h-6 px-2 text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                size="xs"
+                onClick={() => revokeMutation.mutate(undefined, { onSuccess: () => setConfirmRevoke(false) })}
+                disabled={revokeMutation.isPending}
+                className="h-6 px-2 text-xs"
+              >
+                {revokeMutation.isPending ? 'Revoking…' : 'Revoke'}
+              </Button>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] text-muted-foreground">
+            Generate a link anyone can use to join this team.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => generateMutation.mutate()}
+            disabled={generateMutation.isPending}
+            className="h-7 text-xs shrink-0 ml-3"
+          >
+            {generateMutation.isPending ? 'Generating…' : 'Generate link'}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 interface Props {
@@ -71,6 +197,8 @@ export function InvitesSection({ teamId, role }: Props) {
             : `${invites.length} pending invite${invites.length === 1 ? '' : 's'}`
         }
       />
+
+      {canManage && <InviteLinkCard teamId={teamId} />}
 
       {isLoading ? (
         <InvitesSkeleton />
