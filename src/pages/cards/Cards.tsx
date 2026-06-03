@@ -144,9 +144,31 @@ export default function Cards() {
   };
 
   if (activeMembership) {
+    const roleLabel =
+      activeMembership.role === 'OWNER'
+        ? 'Owner'
+        : activeMembership.role === 'ADMIN'
+          ? 'Admin'
+          : 'Member';
     return (
       <PageMotion>
         <div className="max-w-5xl mx-auto">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h1 className="text-2xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
+                Cards
+              </h1>
+              <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-1">
+                {activeMembership.team.name}
+              </p>
+            </div>
+            <Badge
+              variant="secondary"
+              className="text-[11px] px-2.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400"
+            >
+              {roleLabel}
+            </Badge>
+          </div>
           <CardsSection
             teamId={activeMembership.team.id}
             role={activeMembership.role}
