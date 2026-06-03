@@ -503,8 +503,9 @@ export default function CardEditor() {
                     className="h-11"
                   />
                   <p className="text-xs text-neutral-400">
-                    Your card will be accessible at /username/
-                    {slug || 'default'}
+                    {existingCard?.teamId && existingCard?.team?.slug
+                      ? `Your card will be accessible at /t/${existingCard.team.slug}/${slug || 'default'}`
+                      : `Your card will be accessible at /username/${slug || 'default'}`}
                   </p>
                 </div>
               </div>

@@ -25,6 +25,7 @@ export interface Card {
   id: string;
   userId: string;
   teamId: string | null;
+  team?: { id: string; slug: string } | null;
   slug: string;
   displayName: string;
   title: string | null;
