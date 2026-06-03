@@ -161,6 +161,7 @@ export const smaApi = {
     priority?: 'LOW' | 'MEDIUM' | 'HIGH';
     meetingId?: string;
     cardId?: string;
+    assigneeId?: string | null;
   }): Promise<Task> => {
     const result = await apiClient.post<{ task: Task }>('/sma/tasks', data);
     return result.task;
@@ -208,6 +209,7 @@ export const smaApi = {
       durationMinutes?: number | null;
       blockInCalendar?: boolean;
       recurringRule?: 'FREQ=DAILY' | 'FREQ=WEEKLY' | 'FREQ=MONTHLY' | null;
+      assigneeId?: string | null;
     }
   ): Promise<Task> => {
     const result = await apiClient.patch<{ task: Task }>(

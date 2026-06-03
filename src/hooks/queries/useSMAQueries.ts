@@ -53,6 +53,7 @@ export function useCreateStandaloneTask() {
       priority?: 'LOW' | 'MEDIUM' | 'HIGH';
       meetingId?: string;
       cardId?: string;
+      assigneeId?: string | null;
     }) => smaApi.createStandaloneTask(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.sma.allTasks() });
@@ -118,6 +119,7 @@ export function useUpdateTask(meetingId?: string) {
         durationMinutes?: number | null;
         blockInCalendar?: boolean;
         recurringRule?: 'FREQ=DAILY' | 'FREQ=WEEKLY' | 'FREQ=MONTHLY' | null;
+        assigneeId?: string | null;
       };
     }) => smaApi.updateTask(taskId, data),
     onSuccess: () => {
