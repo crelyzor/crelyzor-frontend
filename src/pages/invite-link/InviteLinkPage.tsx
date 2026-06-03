@@ -7,12 +7,13 @@ import { useAuthStore } from '@/stores';
 import { useJoinByLink } from '@/hooks/queries/useTeamQueries';
 import { ApiError } from '@/lib/apiClient';
 
-type ErrorKind = 'not-found' | 'expired' | 'unknown';
+type ErrorKind = 'not-found' | 'expired' | 'rate-limited' | 'unknown';
 
 function classifyError(err: unknown): ErrorKind {
   if (err instanceof ApiError) {
     if (err.status === 404) return 'not-found';
     if (err.status === 410) return 'expired';
+    if (err.status === 429) return 'rate-limited';
   }
   return 'unknown';
 }
@@ -110,6 +111,32 @@ export default function InviteLinkPage() {
             </h1>
             <p className="text-sm text-muted-foreground text-center mt-2">
               Ask the team admin to generate a new invite link.
+            </p>
+            <Button
+              variant="outline"
+              className="w-full mt-6"
+              onClick={() => navigate('/', { replace: true })}
+            >
+              Back to Crelyzor
+            </Button>
+          </Shell>
+        </PageMotion>
+      );
+    }
+
+    if (errorKind === 'rate-limited') {
+      return (
+        <PageMotion>
+          <Shell>
+            <IconDisc>
+              <Link2Off className="w-6 h-6 text-muted-foreground" />
+            </IconDisc>
+            <h1 className="text-lg font-medium text-foreground text-center mt-6 tracking-tight">
+              Too many attempts
+            </h1>
+            <p className="text-sm text-muted-foreground text-center mt-2">
+              You&apos;ve tried to join too many times. Wait a few minutes and
+              try again.
             </p>
             <Button
               variant="outline"
