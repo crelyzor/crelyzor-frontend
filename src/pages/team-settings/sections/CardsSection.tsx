@@ -80,14 +80,28 @@ function CardTile({
   );
 }
 
-function NoCardPlaceholder({ member }: { member: TeamCardEntry['member'] }) {
+function NoCardPlaceholder({
+  member,
+  canCreate,
+  onCreateCard,
+}: {
+  member: TeamCardEntry['member'];
+  canCreate?: boolean;
+  onCreateCard?: () => void;
+}) {
   return (
     <div className="relative">
       <div
-        className="rounded-2xl bg-neutral-100 dark:bg-neutral-800/60 border border-dashed border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center"
+        className={`rounded-2xl bg-neutral-100 dark:bg-neutral-800/60 border border-dashed border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center gap-1.5 ${canCreate ? 'cursor-pointer hover:bg-neutral-200/60 dark:hover:bg-neutral-800 transition-colors' : ''}`}
         style={{ aspectRatio: '1.586 / 1' }}
+        onClick={canCreate ? onCreateCard : undefined}
       >
         <CreditCard className="w-5 h-5 text-neutral-300 dark:text-neutral-600" />
+        {canCreate && (
+          <p className="text-[10px] text-neutral-400 dark:text-neutral-500">
+            Create card
+          </p>
+        )}
       </div>
       <div className="mt-2 px-1">
         <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 truncate">
@@ -240,7 +254,12 @@ export function CardsSection({ teamId, role, team }: Props) {
                     label={member.name ?? undefined}
                   />
                 ) : (
-                  <NoCardPlaceholder key={member.id} member={member} />
+                  <NoCardPlaceholder
+                    key={member.id}
+                    member={member}
+                    canCreate={member.id === myId}
+                    onCreateCard={() => navigate('/cards/create')}
+                  />
                 )
               )}
             </div>

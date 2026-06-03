@@ -162,12 +162,22 @@ export default function Cards() {
                 {activeMembership.team.name}
               </p>
             </div>
-            <Badge
-              variant="secondary"
-              className="text-[11px] px-2.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400"
-            >
-              {roleLabel}
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Badge
+                variant="secondary"
+                className="text-[11px] px-2.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400"
+              >
+                {roleLabel}
+              </Badge>
+              <Button
+                onClick={() => navigate('/cards/create')}
+                className="h-9 px-4 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200
+                         text-white dark:text-neutral-900 text-sm font-medium gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                New Card
+              </Button>
+            </div>
           </div>
           <CardsSection
             teamId={activeMembership.team.id}
