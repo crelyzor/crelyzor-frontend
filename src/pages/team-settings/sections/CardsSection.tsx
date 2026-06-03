@@ -1,5 +1,9 @@
+// Aesthetic: collapsed accordion rows per member — compact by default,
+// expands to show card grid on click. Dense, scannable, handles any card count.
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   CreditCard,
   ArrowUpRight,
@@ -7,12 +11,16 @@ import {
   Copy,
   QrCode,
   RotateCcw,
+  ChevronDown,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CardPreview } from '@/components/cards/CardPreview';
 import { QRCodeDialog } from '@/components/cards/QRCodeDialog';
 import { useTeamCards } from '@/hooks/queries/useTeamQueries';
+import { useDeleteCard } from '@/hooks/queries/useCardQueries';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
+import { queryKeys } from '@/lib/queryKeys';
 import { toast } from 'sonner';
 import { CARDS_PUBLIC_URL } from '@/lib/publicUrl';
 import type {
@@ -28,20 +36,20 @@ interface Props {
   team: TeamSummary;
 }
 
-function getCardUrl(card: TeamCardRow, teamSlug: string): string {
+function getCardUrl(card: TeamCardRow, teamSlug: string, username?: string | null): string {
+  if (card.isTeamCard) return `${CARDS_PUBLIC_URL}/t/${teamSlug}/${card.slug}`;
+  if (username) return `${CARDS_PUBLIC_URL}/t/${teamSlug}/${username}/${card.slug}`;
   return `${CARDS_PUBLIC_URL}/t/${teamSlug}/${card.slug}`;
 }
 
-function CardTile({
+function TeamCardTile({
   card,
   canEdit,
   onOpen,
-  label,
 }: {
   card: TeamCardRow;
   canEdit: boolean;
-  onOpen: (card: TeamCardRow) => void;
-  label?: string;
+  onOpen: (card: TeamCardRow, username?: string | null) => void;
 }) {
   return (
     <div className="relative group">
@@ -49,7 +57,7 @@ function CardTile({
         className="cursor-pointer rounded-2xl overflow-hidden active:scale-[0.97] transition-transform duration-150 ease-out"
         style={{
           boxShadow:
-            '0 4px 24px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.06)',
+            '0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.10), inset 0 1px 0 rgba(255,255,255,0.07)',
         }}
         onClick={() => onOpen(card)}
       >
@@ -68,7 +76,7 @@ function CardTile({
       </div>
       <div className="mt-2 px-1 flex items-center justify-between">
         <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">
-          {label ?? card.displayName}
+          {card.displayName}
         </p>
         {canEdit && (
           <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
@@ -80,50 +88,163 @@ function CardTile({
   );
 }
 
-function NoCardPlaceholder({
+function MemberAccordionRow({
   member,
-  canCreate,
+  role,
+  cards,
+  myId,
+  onOpen,
   onCreateCard,
+  defaultExpanded,
 }: {
   member: TeamCardEntry['member'];
-  canCreate?: boolean;
-  onCreateCard?: () => void;
+  role: TeamRole;
+  cards: TeamCardRow[];
+  myId: string | undefined;
+  onOpen: (card: TeamCardRow, username: string | null) => void;
+  onCreateCard: () => void;
+  defaultExpanded: boolean;
 }) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  const isMe = member.id === myId;
+  const hasCards = cards.length > 0;
+
+  const roleLabel =
+    role === 'OWNER' ? 'Owner' : role === 'ADMIN' ? 'Admin' : 'Member';
+  const initials = (member.name ?? '?')
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  const handleHeaderClick = () => {
+    if (hasCards) {
+      setExpanded((v) => !v);
+    } else if (isMe) {
+      onCreateCard();
+    }
+  };
+
   return (
-    <div className="relative">
-      <div
-        className={`rounded-2xl bg-neutral-100 dark:bg-neutral-800/60 border border-dashed border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center gap-1.5 ${canCreate ? 'cursor-pointer hover:bg-neutral-200/60 dark:hover:bg-neutral-800 transition-colors' : ''}`}
-        style={{ aspectRatio: '1.586 / 1' }}
-        onClick={canCreate ? onCreateCard : undefined}
+    <div className="border-b border-neutral-800/40 last:border-b-0">
+      {/* Collapsed header */}
+      <button
+        className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors duration-100
+          ${hasCards || isMe ? 'cursor-pointer hover:bg-neutral-900/40' : 'cursor-default'}`}
+        onClick={handleHeaderClick}
+        disabled={!hasCards && !isMe}
       >
-        <CreditCard className="w-5 h-5 text-neutral-300 dark:text-neutral-600" />
-        {canCreate && (
-          <p className="text-[10px] text-neutral-400 dark:text-neutral-500">
-            Create card
-          </p>
+        {/* Avatar */}
+        {member.avatarUrl ? (
+          <img
+            src={member.avatarUrl}
+            className="w-7 h-7 rounded-full object-cover shrink-0"
+            alt=""
+          />
+        ) : (
+          <div className="w-7 h-7 rounded-full bg-neutral-800 flex items-center justify-center text-[10px] font-semibold text-neutral-400 shrink-0 select-none">
+            {initials}
+          </div>
         )}
-      </div>
-      <div className="mt-2 px-1">
-        <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 truncate">
-          {member.name ?? 'Team member'}
-        </p>
-        <p className="text-[10px] text-neutral-400 dark:text-neutral-500">
-          No card yet
-        </p>
-      </div>
+
+        {/* Name + designation */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[12px] font-medium text-neutral-200 leading-tight truncate">
+              {member.name ?? 'Team member'}
+            </span>
+            {isMe && (
+              <span className="text-[9px] text-neutral-600 shrink-0 leading-tight">
+                you
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] text-neutral-600 leading-tight">
+            {member.designation ?? roleLabel}
+          </span>
+        </div>
+
+        {/* Right side */}
+        <div className="flex items-center gap-2 shrink-0">
+          {hasCards ? (
+            <>
+              <span className="text-[10px] text-neutral-600 tabular-nums">
+                {cards.length} card{cards.length !== 1 ? 's' : ''}
+              </span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-neutral-600 transition-transform duration-200 ${
+                  expanded ? 'rotate-180' : ''
+                }`}
+              />
+            </>
+          ) : isMe ? (
+            <span className="text-[10px] text-neutral-600">+ Add card</span>
+          ) : (
+            <span className="text-[10px] text-neutral-700">No card yet</span>
+          )}
+        </div>
+      </button>
+
+      {/* Expanded card grid */}
+      <AnimatePresence initial={false}>
+        {expanded && hasCards && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pt-1 pb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {cards.map((card) => (
+                  <div
+                    key={card.id}
+                    className="cursor-pointer rounded-2xl overflow-hidden active:scale-[0.97] transition-transform duration-150"
+                    style={{
+                      boxShadow:
+                        '0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.10), inset 0 1px 0 rgba(255,255,255,0.07)',
+                    }}
+                    onClick={() => onOpen(card, member.username)}
+                  >
+                    <CardPreview
+                      displayName={card.displayName}
+                      title={card.title ?? undefined}
+                      bio={card.bio ?? undefined}
+                      avatarUrl={card.avatarUrl}
+                      coverUrl={card.coverUrl}
+                      links={card.links}
+                      contactFields={card.contactFields}
+                      theme={card.theme}
+                      htmlContent={card.htmlContent}
+                      htmlBackContent={card.htmlBackContent}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 export function CardsSection({ teamId, role, team }: Props) {
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const { data: currentUser } = useCurrentUser();
   const { data, isLoading, isError } = useTeamCards(teamId);
+  const deleteCard = useDeleteCard();
 
   const [selectedCard, setSelectedCard] = useState<TeamCardRow | null>(null);
+  const [selectedUsername, setSelectedUsername] = useState<string | null>(null);
   const [flipped, setFlipped] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [qrDialogCard, setQrDialogCard] = useState<TeamCardRow | null>(null);
+  const [qrDialogUsername, setQrDialogUsername] = useState<string | null>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const actionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -142,14 +263,17 @@ export function CardsSection({ teamId, role, team }: Props) {
     return () => document.removeEventListener('keydown', onKey);
   }, [selectedCard]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const openCard = (card: TeamCardRow) => {
+  const openCard = (card: TeamCardRow, username?: string | null) => {
     setClosing(false);
     setFlipped(false);
+    setConfirmDelete(false);
     setSelectedCard(card);
+    setSelectedUsername(username ?? null);
   };
 
   const closeCard = () => {
     setClosing(true);
+    setConfirmDelete(false);
     closeTimerRef.current = setTimeout(() => {
       setSelectedCard(null);
       setClosing(false);
@@ -165,19 +289,25 @@ export function CardsSection({ teamId, role, team }: Props) {
   if (isLoading) {
     return (
       <div className="space-y-8 animate-pulse">
-        <div className="h-4 w-24 bg-neutral-100 dark:bg-neutral-800 rounded" />
+        <div className="h-3 w-20 bg-neutral-800 rounded" />
         <div
-          className="rounded-2xl bg-neutral-100 dark:bg-neutral-800 w-full"
+          className="rounded-2xl bg-neutral-800 w-72"
           style={{ aspectRatio: '1.586 / 1' }}
         />
-        <div className="h-4 w-28 bg-neutral-100 dark:bg-neutral-800 rounded mt-6" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="h-3 w-24 bg-neutral-800 rounded mt-6" />
+        <div className="rounded-2xl border border-neutral-800/50 overflow-hidden">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="rounded-2xl bg-neutral-100 dark:bg-neutral-800"
-              style={{ aspectRatio: '1.586 / 1' }}
-            />
+              className="flex items-center gap-3 px-4 py-3.5 border-b border-neutral-800/30 last:border-b-0"
+            >
+              <div className="w-7 h-7 rounded-full bg-neutral-800 shrink-0" />
+              <div className="flex-1 space-y-1.5">
+                <div className="h-3 w-28 bg-neutral-800 rounded" />
+                <div className="h-2.5 w-16 bg-neutral-800/60 rounded" />
+              </div>
+              <div className="h-2.5 w-12 bg-neutral-800/60 rounded" />
+            </div>
           ))}
         </div>
       </div>
@@ -204,7 +334,7 @@ export function CardsSection({ teamId, role, team }: Props) {
           </h2>
           {teamCard ? (
             <div className="max-w-xs">
-              <CardTile
+              <TeamCardTile
                 card={teamCard}
                 canEdit={isAdminOrOwner}
                 onOpen={openCard}
@@ -212,23 +342,19 @@ export function CardsSection({ teamId, role, team }: Props) {
             </div>
           ) : isAdminOrOwner ? (
             <div
-              className="rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-dashed border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center gap-2 max-w-xs cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              className="rounded-2xl bg-neutral-900/40 border border-dashed border-neutral-800 flex flex-col items-center justify-center gap-2 max-w-xs cursor-pointer hover:bg-neutral-900/70 transition-colors"
               style={{ aspectRatio: '1.586 / 1' }}
-              onClick={() => navigate('/cards/create')}
+              onClick={() => navigate('/cards/create?isTeamCard=1')}
             >
-              <CreditCard className="w-6 h-6 text-neutral-300 dark:text-neutral-600" />
-              <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                Create team card
-              </p>
+              <CreditCard className="w-5 h-5 text-neutral-700" />
+              <p className="text-[11px] text-neutral-600">Create team card</p>
             </div>
           ) : (
             <div
-              className="rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-dashed border-neutral-200 dark:border-neutral-700 flex items-center justify-center max-w-xs"
+              className="rounded-2xl bg-neutral-900/40 border border-dashed border-neutral-800 flex items-center justify-center max-w-xs"
               style={{ aspectRatio: '1.586 / 1' }}
             >
-              <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                No team card yet
-              </p>
+              <p className="text-[11px] text-neutral-700">No team card yet</p>
             </div>
           )}
         </section>
@@ -236,47 +362,36 @@ export function CardsSection({ teamId, role, team }: Props) {
         {/* ── Member Cards ── */}
         <section>
           <h2 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-3">
-            Member Cards · {memberCards.length}
+            Members · {memberCards.length}
           </h2>
           {memberCards.length === 0 ? (
-            <p className="text-sm text-neutral-400 dark:text-neutral-500">
-              No other members yet
-            </p>
+            <p className="text-sm text-neutral-600 py-4">No members yet</p>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {memberCards.map(({ member, card }) =>
-                card ? (
-                  <CardTile
-                    key={member.id}
-                    card={card}
-                    canEdit={canEditCard(card)}
-                    onOpen={openCard}
-                    label={member.name ?? undefined}
-                  />
-                ) : (
-                  <NoCardPlaceholder
-                    key={member.id}
-                    member={member}
-                    canCreate={member.id === myId}
-                    onCreateCard={() => navigate('/cards/create')}
-                  />
-                )
-              )}
+            <div className="rounded-2xl border border-neutral-800/50 overflow-hidden">
+              {memberCards.map(({ member, role: memberRole, cards }) => (
+                <MemberAccordionRow
+                  key={member.id}
+                  member={member}
+                  role={memberRole}
+                  cards={cards}
+                  myId={myId}
+                  onOpen={openCard}
+                  onCreateCard={() => navigate('/cards/create')}
+                  defaultExpanded={member.id === myId && cards.length > 0}
+                />
+              ))}
             </div>
           )}
         </section>
       </div>
 
-      {/* ── Card flip panel overlay ── */}
+      {/* ── Card detail panel ── */}
       {selectedCard && (
         <>
-          {/* Backdrop */}
           <div
             className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]"
             onClick={closeCard}
           />
-
-          {/* Panel */}
           <div
             className={`fixed z-50 inset-x-4 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 top-[10%] sm:top-[8%] sm:w-[480px]
               bg-white dark:bg-neutral-900
@@ -285,7 +400,6 @@ export function CardsSection({ teamId, role, team }: Props) {
               rounded-2xl overflow-hidden
               ${closing ? 'card-spring-out' : 'card-spring-in'}`}
           >
-            {/* Card preview — click to flip */}
             <div
               className="p-4 bg-neutral-950 cursor-pointer relative select-none"
               onClick={() => setFlipped((f) => !f)}
@@ -344,7 +458,6 @@ export function CardsSection({ teamId, role, team }: Props) {
               </div>
             </div>
 
-            {/* Card info + actions */}
             <div className="px-5 py-4">
               <div className="mb-4">
                 <h2 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 truncate">
@@ -386,7 +499,7 @@ export function CardsSection({ teamId, role, team }: Props) {
                   title="Open public card"
                   onClick={() =>
                     window.open(
-                      getCardUrl(selectedCard, team.slug),
+                      getCardUrl(selectedCard, team.slug, selectedUsername),
                       '_blank',
                       'noopener,noreferrer'
                     )
@@ -400,7 +513,7 @@ export function CardsSection({ teamId, role, team }: Props) {
                   className="h-9 w-9 rounded-xl p-0 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200"
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      getCardUrl(selectedCard, team.slug)
+                      getCardUrl(selectedCard, team.slug, selectedUsername)
                     );
                     toast.success('Link copied');
                   }}
@@ -415,26 +528,74 @@ export function CardsSection({ teamId, role, team }: Props) {
                     closeCard();
                     if (actionTimerRef.current)
                       clearTimeout(actionTimerRef.current);
-                    actionTimerRef.current = setTimeout(
-                      () => setQrDialogCard(selectedCard),
-                      200
-                    );
+                    actionTimerRef.current = setTimeout(() => {
+                      setQrDialogCard(selectedCard);
+                      setQrDialogUsername(selectedUsername);
+                    }, 200);
                   }}
                 >
                   <QrCode className="w-3.5 h-3.5" />
                 </Button>
+
+                {canEditCard(selectedCard) && (
+                  <div className="ml-auto">
+                    {confirmDelete ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
+                          Delete?
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 rounded-lg text-[11px] text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
+                          disabled={deleteCard.isPending}
+                          onClick={() => {
+                            deleteCard.mutate(selectedCard.id, {
+                              onSuccess: () => {
+                                qc.invalidateQueries({
+                                  queryKey: queryKeys.teams.cards(teamId),
+                                });
+                                toast.success('Card deleted');
+                                closeCard();
+                              },
+                            });
+                          }}
+                        >
+                          {deleteCard.isPending ? '…' : 'Yes'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 rounded-lg text-[11px] text-neutral-500"
+                          onClick={() => setConfirmDelete(false)}
+                        >
+                          No
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-9 w-9 rounded-xl p-0 text-neutral-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
+                        title="Delete card"
+                        onClick={() => setConfirmDelete(true)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </>
       )}
 
-      {/* QR dialog */}
       {qrDialogCard && (
         <QRCodeDialog
           open={!!qrDialogCard}
-          onOpenChange={(open) => !open && setQrDialogCard(null)}
-          cardUrl={getCardUrl(qrDialogCard, team.slug)}
+          onOpenChange={(open) => { if (!open) { setQrDialogCard(null); setQrDialogUsername(null); } }}
+          cardUrl={getCardUrl(qrDialogCard, team.slug, qrDialogUsername)}
           cardName={qrDialogCard.displayName}
         />
       )}
