@@ -190,6 +190,7 @@ export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
 export type Task = {
   id: string;
   userId: string;
+  teamId: string | null;
   meetingId: string | null;
   title: string;
   description?: string | null;
@@ -208,6 +209,9 @@ export type Task = {
   recurringRule?: string | null;
   recurringParentId?: string | null;
   source: 'AI_EXTRACTED' | 'MANUAL';
+  assigneeId: string | null;
+  assigneeName: string | null;
+  assigneeAvatarUrl: string | null;
   createdAt: string;
   updatedAt: string;
   isDeleted: boolean;
