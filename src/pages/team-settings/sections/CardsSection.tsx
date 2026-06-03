@@ -36,17 +36,20 @@ function CardTile({
   card,
   canEdit,
   onOpen,
+  label,
 }: {
   card: TeamCardRow;
   canEdit: boolean;
   onOpen: (card: TeamCardRow) => void;
+  label?: string;
 }) {
   return (
     <div className="relative group">
       <div
         className="cursor-pointer rounded-2xl overflow-hidden active:scale-[0.97] transition-transform duration-150 ease-out"
         style={{
-          boxShadow: '0 4px 24px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.06)',
+          boxShadow:
+            '0 4px 24px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.06)',
         }}
         onClick={() => onOpen(card)}
       >
@@ -65,7 +68,7 @@ function CardTile({
       </div>
       <div className="mt-2 px-1 flex items-center justify-between">
         <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">
-          {card.displayName}
+          {label ?? card.displayName}
         </p>
         {canEdit && (
           <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
@@ -77,11 +80,7 @@ function CardTile({
   );
 }
 
-function NoCardPlaceholder({
-  member,
-}: {
-  member: TeamCardEntry['member'];
-}) {
+function NoCardPlaceholder({ member }: { member: TeamCardEntry['member'] }) {
   return (
     <div className="relative">
       <div
@@ -94,7 +93,9 @@ function NoCardPlaceholder({
         <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 truncate">
           {member.name ?? 'Team member'}
         </p>
-        <p className="text-[10px] text-neutral-400 dark:text-neutral-500">No card yet</p>
+        <p className="text-[10px] text-neutral-400 dark:text-neutral-500">
+          No card yet
+        </p>
       </div>
     </div>
   );
@@ -236,10 +237,11 @@ export function CardsSection({ teamId, role, team }: Props) {
                     card={card}
                     canEdit={canEditCard(card)}
                     onOpen={openCard}
+                    label={member.name ?? undefined}
                   />
                 ) : (
                   <NoCardPlaceholder key={member.id} member={member} />
-                ),
+                )
               )}
             </div>
           )}
@@ -350,7 +352,7 @@ export function CardsSection({ teamId, role, team }: Props) {
                         clearTimeout(actionTimerRef.current);
                       actionTimerRef.current = setTimeout(
                         () => navigate(`/cards/${selectedCard.id}`),
-                        200,
+                        200
                       );
                     }}
                   >
@@ -367,7 +369,7 @@ export function CardsSection({ teamId, role, team }: Props) {
                     window.open(
                       getCardUrl(selectedCard, team.slug),
                       '_blank',
-                      'noopener,noreferrer',
+                      'noopener,noreferrer'
                     )
                   }
                 >
@@ -379,7 +381,7 @@ export function CardsSection({ teamId, role, team }: Props) {
                   className="h-9 w-9 rounded-xl p-0 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200"
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      getCardUrl(selectedCard, team.slug),
+                      getCardUrl(selectedCard, team.slug)
                     );
                     toast.success('Link copied');
                   }}
@@ -396,7 +398,7 @@ export function CardsSection({ teamId, role, team }: Props) {
                       clearTimeout(actionTimerRef.current);
                     actionTimerRef.current = setTimeout(
                       () => setQrDialogCard(selectedCard),
-                      200,
+                      200
                     );
                   }}
                 >
