@@ -36,9 +36,14 @@ interface Props {
   team: TeamSummary;
 }
 
-function getCardUrl(card: TeamCardRow, teamSlug: string, username?: string | null): string {
+function getCardUrl(
+  card: TeamCardRow,
+  teamSlug: string,
+  username?: string | null
+): string {
   if (card.isTeamCard) return `${CARDS_PUBLIC_URL}/t/${teamSlug}/${card.slug}`;
-  if (username) return `${CARDS_PUBLIC_URL}/t/${teamSlug}/${username}/${card.slug}`;
+  if (username)
+    return `${CARDS_PUBLIC_URL}/t/${teamSlug}/${username}/${card.slug}`;
   return `${CARDS_PUBLIC_URL}/t/${teamSlug}/${card.slug}`;
 }
 
@@ -469,7 +474,11 @@ export function CardsSection({ teamId, role, team }: Props) {
                   </p>
                 )}
                 <p className="text-[11px] text-neutral-400 dark:text-neutral-600 mt-1 font-mono">
-                  /t/{team.slug}/{selectedCard.slug}
+                  {selectedCard.isTeamCard
+                    ? `/t/${team.slug}/${selectedCard.slug}`
+                    : selectedUsername
+                      ? `/t/${team.slug}/${selectedUsername}/${selectedCard.slug}`
+                      : `/t/${team.slug}/${selectedCard.slug}`}
                 </p>
               </div>
 
@@ -594,7 +603,12 @@ export function CardsSection({ teamId, role, team }: Props) {
       {qrDialogCard && (
         <QRCodeDialog
           open={!!qrDialogCard}
-          onOpenChange={(open) => { if (!open) { setQrDialogCard(null); setQrDialogUsername(null); } }}
+          onOpenChange={(open) => {
+            if (!open) {
+              setQrDialogCard(null);
+              setQrDialogUsername(null);
+            }
+          }}
           cardUrl={getCardUrl(qrDialogCard, team.slug, qrDialogUsername)}
           cardName={qrDialogCard.displayName}
         />

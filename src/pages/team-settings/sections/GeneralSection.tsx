@@ -117,10 +117,14 @@ export function GeneralSection({ teamId, role, team }: Props) {
       ?.cards ?? [];
   const myCard = myCards.find((c) => c.isDefault) ?? myCards[0] ?? null;
 
-  const cardUrl = myCard
-    ? `${CARDS_PUBLIC_URL}/t/${team.slug}/${myCard.slug}`
-    : null;
-  const cardPath = myCard ? `/t/${team.slug}/${myCard.slug}` : null;
+  const cardUrl =
+    myCard && currentUser?.username
+      ? `${CARDS_PUBLIC_URL}/t/${team.slug}/${currentUser.username}/${myCard.slug}`
+      : null;
+  const cardPath =
+    myCard && currentUser?.username
+      ? `/t/${team.slug}/${currentUser.username}/${myCard.slug}`
+      : null;
 
   const scheduleUrl = currentUser?.username
     ? `${CARDS_PUBLIC_URL}/schedule/${currentUser.username}`
