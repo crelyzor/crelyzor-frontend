@@ -11,7 +11,13 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { useState } from 'react';
-import { Check, CalendarDays, Trash2, AlertCircle } from 'lucide-react';
+import {
+  Check,
+  CalendarDays,
+  Trash2,
+  AlertCircle,
+  UserRound,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TagChip } from '@/components/ui/TagChip';
 import type { TaskWithMeeting } from '@/services/smaService';
@@ -177,6 +183,25 @@ function BoardCard({
           {task.tags?.map((tag) => (
             <TagChip key={tag.id} tag={tag} />
           ))}
+          {task.assigneeId && (
+            <div
+              className="shrink-0 ml-auto"
+              title={task.assigneeName ?? 'Assigned'}
+            >
+              {task.assigneeAvatarUrl ? (
+                <img
+                  src={task.assigneeAvatarUrl}
+                  alt={task.assigneeName ?? ''}
+                  className="w-6 h-6 rounded-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center">
+                  <UserRound className="w-3.5 h-3.5 text-neutral-400" />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

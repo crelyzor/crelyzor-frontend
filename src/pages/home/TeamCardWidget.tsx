@@ -111,6 +111,7 @@ export function TeamCardWidget({ teamId }: Props) {
             <button
               onClick={() => setShow3D(false)}
               className="absolute -top-10 right-0 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+              aria-label="Close preview"
             >
               <X className="w-4 h-4" />
             </button>
