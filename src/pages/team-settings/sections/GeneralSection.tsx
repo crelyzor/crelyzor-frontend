@@ -19,8 +19,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { useUpdateTeam } from '@/hooks/queries/useTeamQueries';
+import { CreditCard, CalendarDays, Copy, ExternalLink } from 'lucide-react';
+import { useUpdateTeam, useTeamCards } from '@/hooks/queries/useTeamQueries';
+import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { ApiError } from '@/lib/apiClient';
+import { CARDS_PUBLIC_URL } from '@/lib/publicUrl';
 import { toast } from 'sonner';
 import type { TeamRole, TeamSummary } from '@/services/teamService';
 
@@ -106,12 +109,60 @@ export function GeneralSection({ teamId, role, team }: Props) {
     }
   };
 
+  const { data: currentUser } = useCurrentUser();
+  const { data: cardsData } = useTeamCards(teamId);
+
+  const myCards =
+    cardsData?.memberCards.find((e) => e.member.id === currentUser?.id)
+      ?.cards ?? [];
+  const myCard = myCards.find((c) => c.isDefault) ?? myCards[0] ?? null;
+
+  const cardUrl = myCard
+    ? `${CARDS_PUBLIC_URL}/t/${team.slug}/${myCard.slug}`
+    : null;
+  const cardPath = myCard ? `/t/${team.slug}/${myCard.slug}` : null;
+
+  const scheduleUrl = currentUser?.username
+    ? `${CARDS_PUBLIC_URL}/schedule/${currentUser.username}`
+    : null;
+  const schedulePath = currentUser?.username
+    ? `/schedule/${currentUser.username}`
+    : null;
+
   return (
     <div className="space-y-6">
       <SectionHeader
         title="General"
         description="Manage your team's identity."
       />
+
+      {(cardPath || schedulePath) && (
+        <Card className="border-neutral-200 dark:border-neutral-800">
+          <CardContent className="p-0">
+            <p className="px-5 pt-4 pb-2 text-[10px] uppercase tracking-wider font-medium text-neutral-400 dark:text-neutral-500">
+              Your links
+            </p>
+            <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+              {cardPath && (
+                <LinkRow
+                  icon={CreditCard}
+                  label="Card"
+                  path={cardPath}
+                  url={cardUrl!}
+                />
+              )}
+              {schedulePath && (
+                <LinkRow
+                  icon={CalendarDays}
+                  label="Schedule"
+                  path={schedulePath}
+                  url={scheduleUrl!}
+                />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="border-neutral-200 dark:border-neutral-800">
         <CardContent className="p-6 space-y-5">
@@ -201,6 +252,56 @@ export function GeneralSection({ teamId, role, team }: Props) {
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function LinkRow({
+  icon: Icon,
+  label,
+  path,
+  url,
+}: {
+  icon: React.ElementType;
+  label: string;
+  path: string;
+  url: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 px-5 py-3.5 group">
+      <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+        <Icon className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] uppercase tracking-wider font-medium text-neutral-400 dark:text-neutral-500 leading-none mb-0.5">
+          {label}
+        </p>
+        <p className="text-[12px] font-mono text-neutral-700 dark:text-neutral-300 truncate">
+          {path}
+        </p>
+      </div>
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+        <button
+          type="button"
+          title="Copy link"
+          onClick={() => {
+            navigator.clipboard.writeText(url);
+            toast.success('Link copied');
+          }}
+          className="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
+        >
+          <Copy className="w-3 h-3" />
+        </button>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Open link"
+          className="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
+        >
+          <ExternalLink className="w-3 h-3" />
+        </a>
+      </div>
     </div>
   );
 }
