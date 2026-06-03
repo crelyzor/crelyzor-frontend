@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CreditCard, ArrowUpRight, Pencil, X, RotateCcw } from 'lucide-react';
 import { useTeamCards } from '@/hooks/queries/useTeamQueries';
 import { CardPreview } from '@/components/cards/CardPreview';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   teamId: string;
@@ -10,7 +11,7 @@ interface Props {
 
 export function TeamCardWidget({ teamId }: Props) {
   const navigate = useNavigate();
-  const { data, isLoading } = useTeamCards(teamId);
+  const { data, isLoading, isError } = useTeamCards(teamId);
   const [show3D, setShow3D] = useState(false);
   const [flipped, setFlipped] = useState(false);
 
@@ -25,12 +26,23 @@ export function TeamCardWidget({ teamId }: Props) {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4">
+        <p className="text-[12px] text-neutral-400 dark:text-neutral-500 text-center">
+          Could not load team card
+        </p>
+      </div>
+    );
+  }
+
   if (!teamCard) {
     return (
-      <button
+      <Button
+        variant="ghost"
         onClick={() => navigate(`/teams/${teamId}/settings?tab=cards`)}
-        className="w-full rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900
-                   p-6 flex flex-col items-center text-center cursor-pointer hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors group"
+        className="w-full h-auto rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900
+                   p-6 flex flex-col items-center text-center hover:border-neutral-300 dark:hover:border-neutral-600 transition-colors"
       >
         <div className="w-9 h-9 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
           <CreditCard className="w-4.5 h-4.5 text-neutral-400" />
@@ -41,7 +53,7 @@ export function TeamCardWidget({ teamId }: Props) {
         <p className="text-[11px] text-neutral-400 dark:text-neutral-500 leading-relaxed">
           Add a shared card that represents your team
         </p>
-      </button>
+      </Button>
     );
   }
 
@@ -59,20 +71,22 @@ export function TeamCardWidget({ teamId }: Props) {
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={() => navigate(`/teams/${teamId}/settings?tab=cards`)}
-              className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               aria-label="Edit team card"
             >
               <Pencil className="w-3 h-3" />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={() => navigate(`/teams/${teamId}/settings?tab=cards`)}
-              className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               aria-label="Team cards"
             >
               <ArrowUpRight className="w-3 h-3" />
-            </button>
+            </Button>
           </div>
         </div>
         <div
@@ -108,21 +122,25 @@ export function TeamCardWidget({ teamId }: Props) {
           onClick={() => setShow3D(false)}
         >
           <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={() => setShow3D(false)}
-              className="absolute -top-10 right-0 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
               aria-label="Close preview"
+              className="absolute -top-10 right-0 bg-white/10 hover:bg-white/20 text-white rounded-full"
             >
               <X className="w-4 h-4" />
-            </button>
+            </Button>
             {hasBack && (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setFlipped(!flipped)}
-                className="absolute -top-10 left-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs transition-colors"
+                className="absolute -top-10 left-0 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs gap-1.5"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Flip
-              </button>
+              </Button>
             )}
             <div style={{ perspective: '1200px' }}>
               <div

@@ -9,6 +9,7 @@ import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { useCards } from '@/hooks/queries/useCardQueries';
 import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
+import { useTeamStore } from '@/stores/teamStore';
 import { HeroSection } from './HeroSection';
 import { TodayTimeline } from './TodayTimeline';
 import { RecentMeetings } from './RecentMeetings';
@@ -18,6 +19,7 @@ import { PendingTasksWidget } from './PendingTasksWidget';
 import { UpcomingBookingsWidget } from './UpcomingBookingsWidget';
 import { PublicLinksWidget } from './PublicLinksWidget';
 import { DefaultCardWidget } from './DefaultCardWidget';
+import { TeamCardWidget } from './TeamCardWidget';
 import { ThisWeekWidget } from './ThisWeekWidget';
 import { OnboardingOverlay } from './OnboardingOverlay';
 import { GettingStartedChecklist } from './GettingStartedChecklist';
@@ -29,6 +31,7 @@ export default function Home() {
   const { scrollY } = useScroll();
   const { greeting, dayName, monthDay } = useGreeting();
   const { data: currentUser, isLoading: currentUserLoading } = useCurrentUser();
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
 
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const [checklistDismissed, setChecklistDismissed] = useState(false);
@@ -272,7 +275,11 @@ export default function Home() {
             )}
             isLoading={meetingsLoading}
           />
-          <DefaultCardWidget />
+          {activeTeamId ? (
+            <TeamCardWidget teamId={activeTeamId} />
+          ) : (
+            <DefaultCardWidget />
+          )}
           <UpcomingBookingsWidget />
           <PublicLinksWidget />
         </div>
