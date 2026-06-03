@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'sonner';
@@ -11,7 +11,6 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PageLoader } from '@/components/PageLoader';
 import Layout from '@/layout/Layout';
 import { AuthGuard } from '@/components/AuthGuard';
-import { TeamGuard } from '@/components/TeamGuard';
 import { AppInitializer } from '@/components/AppInitializer';
 import { PlanCelebrationOverlay } from '@/components/PlanCelebrationOverlay';
 import { routes } from '@/routes/routes';
@@ -37,11 +36,15 @@ const {
   TagDetail,
   Pricing,
   CreateTeam,
-  TeamSettings,
   InvitePage,
   InviteLinkPage,
   NotFound,
 } = routes;
+
+function TeamSettingsRedirect() {
+  const { teamId } = useParams<{ teamId: string }>();
+  return <Navigate to={`/settings?workspace=${teamId}`} replace />;
+}
 
 function App() {
   return (
@@ -64,7 +67,10 @@ function App() {
                   <Route path="/invite/:token" element={<InvitePage />} />
 
                   {/* Phase 6 P16 — shareable team invite link. Handles its own auth redirect. */}
-                  <Route path="/invite/link/:token" element={<InviteLinkPage />} />
+                  <Route
+                    path="/invite/link/:token"
+                    element={<InviteLinkPage />}
+                  />
 
                   <Route
                     path="/setup"
@@ -258,15 +264,7 @@ function App() {
                   />
                   <Route
                     path="/teams/:teamId/settings"
-                    element={
-                      <AuthGuard>
-                        <TeamGuard>
-                          <Layout>
-                            <TeamSettings />
-                          </Layout>
-                        </TeamGuard>
-                      </AuthGuard>
-                    }
+                    element={<TeamSettingsRedirect />}
                   />
                   <Route path="*" element={<NotFound />} />
                 </Routes>

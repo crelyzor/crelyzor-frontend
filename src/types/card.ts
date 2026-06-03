@@ -24,6 +24,7 @@ export interface CardTheme {
 export interface Card {
   id: string;
   userId: string;
+  teamId: string | null;
   slug: string;
   displayName: string;
   title: string | null;

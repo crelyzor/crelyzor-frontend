@@ -65,6 +65,40 @@ export interface TeamMemberRow {
   };
 }
 
+export interface TeamCardRow {
+  id: string;
+  userId: string;
+  teamId: string | null;
+  slug: string;
+  displayName: string;
+  title: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  coverUrl: string | null;
+  links: import('@/types').CardLink[];
+  contactFields: import('@/types').CardContactFields;
+  theme: import('@/types').CardTheme;
+  templateId: string;
+  showQr: boolean;
+  htmlContent: string | null;
+  htmlBackContent: string | null;
+  isDefault: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TeamCardEntry {
+  member: { id: string; name: string | null; avatarUrl: string | null };
+  role: TeamRole;
+  card: TeamCardRow | null;
+}
+
+export interface TeamCardsResponse {
+  teamCard: TeamCardRow | null;
+  memberCards: TeamCardEntry[];
+}
+
 export type InviteRole = 'ADMIN' | 'MEMBER';
 
 export type InviteMembersPayload =
@@ -263,7 +297,15 @@ export const teamService = {
 
   /** POST /teams/join-by-link/:token — JWT required. Join team via invite link. */
   joinByLink: (token: string) =>
-    apiClient.post<{ membership: { teamId: string; role: TeamRole; team: { id: string; name: string; slug: string } } }>(
-      `/teams/join-by-link/${token}`
-    ),
+    apiClient.post<{
+      membership: {
+        teamId: string;
+        role: TeamRole;
+        team: { id: string; name: string; slug: string };
+      };
+    }>(`/teams/join-by-link/${token}`),
+
+  /** GET /teams/:teamId/cards — team card + per-member cards. */
+  getTeamCards: (teamId: string) =>
+    apiClient.get<TeamCardsResponse>(`/teams/${teamId}/cards`),
 };

@@ -333,7 +333,8 @@ export const useGenerateInviteLink = (teamId: string) => {
       });
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : 'Failed to generate link';
+      const msg =
+        err instanceof Error ? err.message : 'Failed to generate link';
       toast.error(msg);
     },
   });
@@ -370,3 +371,13 @@ export const useJoinByLink = () => {
     },
   });
 };
+
+// ── Phase 6 — Team cards ──────────────────────────────────────────────────────
+
+export const useTeamCards = (teamId: string) =>
+  useQuery({
+    queryKey: queryKeys.teams.cards(teamId),
+    queryFn: () => teamService.getTeamCards(teamId),
+    staleTime: 60_000,
+    enabled: !!teamId,
+  });

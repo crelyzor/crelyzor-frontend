@@ -30,11 +30,13 @@ import {
   CalendarOff,
   CalendarDays,
   Bot,
-  XCircle,
   Star,
-  CheckCircle2,
-  Ban,
   Bell,
+  Users,
+  ChevronDown,
+  Settings as SettingsIconLucide,
+  BarChart3,
+  TriangleAlert,
   CreditCard,
   Zap,
   Mic,
@@ -65,7 +67,20 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
+import { useMyTeams } from '@/hooks/queries/useTeamQueries';
+import type { TeamMembership } from '@/services/teamService';
+import { GeneralSection } from '../team-settings/sections/GeneralSection';
+import { DangerSection } from '../team-settings/sections/DangerSection';
+import { MembersSection } from '../team-settings/sections/MembersSection';
+import { InvitesSection } from '../team-settings/sections/InvitesSection';
+import { UsageSection } from '../team-settings/sections/UsageSection';
+import { BillingSection as TeamBillingSection } from '../team-settings/sections/BillingSection';
 import { useUpdateProfile } from '@/hooks/queries/useUserQueries';
 import {
   useSessions,
@@ -96,10 +111,6 @@ import {
   useScheduleOverrides,
   useCreateScheduleOverride,
   useDeleteScheduleOverride,
-  useBookings,
-  useConfirmBooking,
-  useDeclineBooking,
-  useCancelBooking,
 } from '@/hooks/queries/useSchedulingQueries';
 import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
 import { useUIStore } from '@/stores/uiStore';
@@ -113,8 +124,6 @@ import type {
   AvailabilitySchedule,
   AvailabilitySlot,
   AvailabilityOverride,
-  HostBooking,
-  BookingStatus,
 } from '@/types/settings';
 
 // ── Timezone formatting ──
@@ -159,13 +168,6 @@ const SETTINGS_SECTIONS = [
     icon: Clock,
     group: 'scheduling',
   },
-  {
-    id: 'bookings',
-    label: 'Bookings',
-    icon: CalendarDays,
-    group: 'scheduling',
-  },
-
   { id: 'ai', label: 'AI & Transcription', icon: Sparkles, group: 'features' },
   {
     id: 'integrations',
@@ -192,29 +194,69 @@ const SECTION_GROUPS = [
   { key: 'other', label: '' },
 ] as const;
 
+type TeamSettingsSection =
+  | 'general'
+  | 'members'
+  | 'invites'
+  | 'usage'
+  | 'billing'
+  | 'danger';
+
+const TEAM_SECTIONS: Array<{
+  id: TeamSettingsSection;
+  label: string;
+  icon: React.ElementType;
+}> = [
+  { id: 'general', label: 'General', icon: SettingsIconLucide },
+  { id: 'members', label: 'Members', icon: Users },
+  { id: 'invites', label: 'Invites', icon: Mail },
+  { id: 'usage', label: 'Usage', icon: BarChart3 },
+  { id: 'billing', label: 'Billing', icon: CreditCard },
+  { id: 'danger', label: 'Danger zone', icon: TriangleAlert },
+];
+
 export default function Settings() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [wsOpen, setWsOpen] = useState(false);
 
-  const activeSection = (searchParams.get('tab') ??
-    'profile') as SettingsSection;
-  const setActiveSection = (section: SettingsSection) => {
-    setSearchParams({ tab: section }, { replace: true });
+  // ── Workspace context ──
+  const rawWorkspace = searchParams.get('workspace') ?? 'personal';
+  const { data: teamsData } = useMyTeams();
+  const teams: TeamMembership[] = teamsData?.teams ?? [];
+  const activeMembership = teams.find((m) => m.team.id === rawWorkspace) ?? null;
+  const isTeamMode = rawWorkspace !== 'personal' && activeMembership !== null;
+  const activeWorkspace = isTeamMode ? rawWorkspace : 'personal';
+
+  // ── Active sections ──
+  const personalSection = (searchParams.get('tab') ?? 'profile') as SettingsSection;
+  const teamSection = (searchParams.get('tab') ?? 'general') as TeamSettingsSection;
+
+  const setActiveSection = (section: string) => {
+    const params: Record<string, string> = { tab: section };
+    if (isTeamMode) params.workspace = activeWorkspace;
+    setSearchParams(params, { replace: true });
+  };
+
+  const setWorkspace = (workspaceId: string) => {
+    setWsOpen(false);
+    if (workspaceId === 'personal') {
+      setSearchParams({ tab: 'profile' }, { replace: true });
+    } else {
+      setSearchParams({ workspace: workspaceId, tab: 'general' }, { replace: true });
+    }
   };
 
   useEffect(() => {
-    if (searchParams.get('tab') === 'tags') {
+    if (!isTeamMode && searchParams.get('tab') === 'tags') {
       navigate('/tags', { replace: true });
     }
-  }, [navigate, searchParams]);
+  }, [navigate, searchParams, isTeamMode]);
 
   const logoutMutation = useLogout();
-
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
-      onSettled: () => {
-        navigate('/signin', { replace: true });
-      },
+      onSettled: () => navigate('/signin', { replace: true }),
     });
   };
 
@@ -233,95 +275,239 @@ export default function Settings() {
         <div className="flex gap-6">
           {/* ── Sidebar ── */}
           <nav className="w-48 shrink-0 hidden md:block">
-            <div className="space-y-4">
-              {SECTION_GROUPS.map((group) => {
-                const items = SETTINGS_SECTIONS.filter(
-                  (s) => s.group === group.key
-                );
-                if (items.length === 0) return null;
-                return (
-                  <div key={group.key}>
-                    {group.label && (
-                      <p className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider px-3 mb-1.5">
-                        {group.label}
-                      </p>
+            {/* Workspace switcher */}
+            <Popover open={wsOpen} onOpenChange={setWsOpen}>
+              <PopoverTrigger asChild>
+                <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors mb-4">
+                  {isTeamMode ? (
+                    <Users className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                  ) : (
+                    <User className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+                  )}
+                  <span className="flex-1 text-left truncate text-neutral-700 dark:text-neutral-300">
+                    {isTeamMode ? activeMembership!.team.name : 'Personal'}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="start" sideOffset={4} className="p-1.5 w-48">
+                <button
+                  onClick={() => setWorkspace('personal')}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  <User className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                  <span className="flex-1 text-left">Personal</span>
+                  {!isTeamMode && <Check className="w-3 h-3 text-neutral-500" />}
+                </button>
+                {teams.length > 0 && (
+                  <div className="my-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+                )}
+                {teams.map((m) => (
+                  <button
+                    key={m.team.id}
+                    onClick={() => setWorkspace(m.team.id)}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                  >
+                    <Users className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                    <span className="flex-1 text-left truncate">{m.team.name}</span>
+                    {activeWorkspace === m.team.id && (
+                      <Check className="w-3 h-3 text-neutral-500 shrink-0" />
                     )}
-                    <div className="space-y-0.5">
-                      {items.map((section) => {
-                        const Icon = section.icon;
-                        const isActive = activeSection === section.id;
-                        return (
-                          <button
-                            key={section.id}
-                            onClick={() => setActiveSection(section.id)}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                            ${
-                              isActive
-                                ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
-                                : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
-                            }`}
-                          >
-                            <Icon className="w-4 h-4" />
-                            {section.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  </button>
+                ))}
+              </PopoverContent>
+            </Popover>
 
-            {/* Sign out */}
-            <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </button>
-            </div>
+            {/* Nav sections */}
+            {isTeamMode ? (
+              <div className="space-y-0.5">
+                {TEAM_SECTIONS.map((section) => {
+                  const Icon = section.icon;
+                  const isActive = teamSection === section.id;
+                  return (
+                    <button
+                      key={section.id}
+                      onClick={() => setActiveSection(section.id)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
+                          : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {section.label}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {SECTION_GROUPS.map((group) => {
+                  const items = SETTINGS_SECTIONS.filter(
+                    (s) => s.group === group.key
+                  );
+                  if (items.length === 0) return null;
+                  return (
+                    <div key={group.key}>
+                      {group.label && (
+                        <p className="text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider px-3 mb-1.5">
+                          {group.label}
+                        </p>
+                      )}
+                      <div className="space-y-0.5">
+                        {items.map((section) => {
+                          const Icon = section.icon;
+                          const isActive = personalSection === section.id;
+                          return (
+                            <button
+                              key={section.id}
+                              onClick={() => setActiveSection(section.id)}
+                              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                isActive
+                                  ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100'
+                                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
+                              }`}
+                            >
+                              <Icon className="w-4 h-4" />
+                              {section.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Sign out — personal only */}
+            {!isTeamMode && (
+              <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </button>
+              </div>
+            )}
           </nav>
 
           {/* ── Mobile tab bar ── */}
           <div className="md:hidden w-full mb-4 -mt-2">
+            {/* Mobile workspace row */}
+            <div className="flex gap-1.5 mb-2">
+              <button
+                onClick={() => setWorkspace('personal')}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0 ${
+                  !isTeamMode
+                    ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
+                }`}
+              >
+                <User className="w-3 h-3" />
+                Personal
+              </button>
+              {teams.map((m) => (
+                <button
+                  key={m.team.id}
+                  onClick={() => setWorkspace(m.team.id)}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0 ${
+                    activeWorkspace === m.team.id
+                      ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
+                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
+                  }`}
+                >
+                  <Users className="w-3 h-3" />
+                  {m.team.name}
+                </button>
+              ))}
+            </div>
+            {/* Mobile section tabs */}
             <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide">
-              {SETTINGS_SECTIONS.map((section) => {
-                const Icon = section.icon;
-                const isActive = activeSection === section.id;
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => setActiveSection(section.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0
-                    ${
-                      isActive
-                        ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
-                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    {section.label}
-                  </button>
-                );
-              })}
+              {(isTeamMode ? TEAM_SECTIONS : SETTINGS_SECTIONS).map(
+                (section) => {
+                  const Icon = section.icon;
+                  const isActive = isTeamMode
+                    ? teamSection === section.id
+                    : personalSection === (section.id as SettingsSection);
+                  return (
+                    <button
+                      key={section.id}
+                      onClick={() => setActiveSection(section.id)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0 ${
+                        isActive
+                          ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900'
+                          : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      {section.label}
+                    </button>
+                  );
+                }
+              )}
             </div>
           </div>
 
           {/* ── Content ── */}
           <div className="flex-1 min-w-0">
-            {activeSection === 'profile' && <ProfileSection />}
-            {activeSection === 'appearance' && <AppearanceSection />}
-            {activeSection === 'scheduling' && <SchedulingSection />}
-            {activeSection === 'event-types' && <EventTypesSection />}
-            {activeSection === 'availability' && <AvailabilitySection />}
-            {activeSection === 'bookings' && <BookingsSection />}
-            {activeSection === 'ai' && <AITranscriptionSection />}
-            {activeSection === 'integrations' && <IntegrationsSection />}
-            {activeSection === 'notifications' && <NotificationsSection />}
-            {activeSection === 'billing' && <BillingSection />}
-            {activeSection === 'security' && <SecuritySection />}
+            {isTeamMode && activeMembership ? (
+              <>
+                {teamSection === 'general' && (
+                  <GeneralSection
+                    teamId={activeWorkspace}
+                    role={activeMembership.role}
+                    team={activeMembership.team}
+                  />
+                )}
+                {teamSection === 'members' && (
+                  <MembersSection
+                    teamId={activeWorkspace}
+                    role={activeMembership.role}
+                  />
+                )}
+                {teamSection === 'invites' && (
+                  <InvitesSection
+                    teamId={activeWorkspace}
+                    role={activeMembership.role}
+                  />
+                )}
+                {teamSection === 'usage' && (
+                  <UsageSection
+                    teamId={activeWorkspace}
+                    role={activeMembership.role}
+                  />
+                )}
+                {teamSection === 'billing' && (
+                  <TeamBillingSection
+                    teamId={activeWorkspace}
+                    role={activeMembership.role}
+                  />
+                )}
+                {teamSection === 'danger' && (
+                  <DangerSection
+                    teamId={activeWorkspace}
+                    role={activeMembership.role}
+                    team={activeMembership.team}
+                  />
+                )}
+              </>
+            ) : (
+              <>
+                {personalSection === 'profile' && <ProfileSection />}
+                {personalSection === 'appearance' && <AppearanceSection />}
+                {personalSection === 'scheduling' && <SchedulingSection />}
+                {personalSection === 'event-types' && <EventTypesSection />}
+                {personalSection === 'availability' && <AvailabilitySection />}
+                {personalSection === 'ai' && <AITranscriptionSection />}
+                {personalSection === 'integrations' && <IntegrationsSection />}
+                {personalSection === 'notifications' && <NotificationsSection />}
+                {personalSection === 'billing' && <BillingSection />}
+                {personalSection === 'security' && <SecuritySection />}
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -3043,397 +3229,5 @@ function SettingsSkeleton({ rows }: { rows: number }) {
         ))}
       </CardContent>
     </Card>
-  );
-}
-
-// ── Bookings ──
-const STATUS_LABELS: Record<BookingStatus, string> = {
-  PENDING: 'Pending',
-  CONFIRMED: 'Confirmed',
-  DECLINED: 'Declined',
-  CANCELLED: 'Cancelled',
-  RESCHEDULED: 'Rescheduled',
-  NO_SHOW: 'No show',
-};
-
-const STATUS_STYLES: Record<BookingStatus, { badge: string; dot: string }> = {
-  PENDING: {
-    badge:
-      'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400',
-    dot: 'bg-amber-400',
-  },
-  CONFIRMED: {
-    badge:
-      'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300',
-    dot: 'bg-emerald-500',
-  },
-  DECLINED: {
-    badge:
-      'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500',
-    dot: 'bg-red-400',
-  },
-  CANCELLED: {
-    badge:
-      'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500',
-    dot: 'bg-neutral-400',
-  },
-  RESCHEDULED: {
-    badge:
-      'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300',
-    dot: 'bg-amber-500',
-  },
-  NO_SHOW: {
-    badge:
-      'bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500',
-    dot: 'bg-red-400',
-  },
-};
-
-function formatBookingTime(iso: string, tz: string): string {
-  return new Intl.DateTimeFormat('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: tz,
-  }).format(new Date(iso));
-}
-
-function BookingsSection() {
-  const [statusFilter, setStatusFilter] = useState<string>('PENDING');
-  const [cancelId, setCancelId] = useState<string | null>(null);
-  const [cancelReason, setCancelReason] = useState('');
-  const [declineId, setDeclineId] = useState<string | null>(null);
-  const [declineReason, setDeclineReason] = useState('');
-
-  const { data, isLoading } = useBookings({ status: statusFilter, limit: 50 });
-  const cancelBooking = useCancelBooking();
-  const confirmBooking = useConfirmBooking();
-  const declineBooking = useDeclineBooking();
-
-  const bookings: HostBooking[] = data?.bookings ?? [];
-
-  const handleCancel = () => {
-    if (!cancelId) return;
-    cancelBooking.mutate(
-      { id: cancelId, reason: cancelReason.trim() || undefined },
-      {
-        onSettled: () => {
-          setCancelId(null);
-          setCancelReason('');
-        },
-      }
-    );
-  };
-
-  const handleDecline = () => {
-    if (!declineId) return;
-    declineBooking.mutate(
-      { id: declineId, reason: declineReason.trim() || undefined },
-      {
-        onSettled: () => {
-          setDeclineId(null);
-          setDeclineReason('');
-        },
-      }
-    );
-  };
-
-  const userTz = 'UTC';
-
-  return (
-    <div className="space-y-6">
-      <SectionHeader
-        title="Bookings"
-        description="View and manage meetings booked by guests via your scheduling page"
-      />
-
-      {/* Status filter */}
-      <div className="flex gap-2 flex-wrap">
-        {(
-          [
-            'PENDING',
-            'CONFIRMED',
-            'DECLINED',
-            'CANCELLED',
-            'NO_SHOW',
-          ] as BookingStatus[]
-        ).map((s) => (
-          <button
-            key={s}
-            onClick={() => setStatusFilter(s)}
-            className={[
-              'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-              statusFilter === s
-                ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900'
-                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700',
-            ].join(' ')}
-          >
-            {STATUS_LABELS[s]}
-          </button>
-        ))}
-      </div>
-
-      {/* Loading */}
-      {isLoading && (
-        <Card className="border-neutral-200 dark:border-neutral-800">
-          <CardContent className="p-6 space-y-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="animate-pulse flex items-start justify-between gap-4"
-              >
-                <div className="space-y-2 flex-1">
-                  <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-40" />
-                  <div className="h-3 bg-neutral-100 dark:bg-neutral-800 rounded w-60" />
-                  <div className="h-3 bg-neutral-100 dark:bg-neutral-800 rounded w-32" />
-                </div>
-                <div className="h-6 w-20 bg-neutral-100 dark:bg-neutral-800 rounded-full" />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Empty state */}
-      {!isLoading && bookings.length === 0 && (
-        <Card className="border-neutral-200 dark:border-neutral-800">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <CalendarDays className="w-10 h-10 text-neutral-200 dark:text-neutral-700 mb-3" />
-              <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                No {STATUS_LABELS[statusFilter as BookingStatus]?.toLowerCase()}{' '}
-                bookings
-              </p>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1 max-w-xs">
-                Bookings will appear here once guests schedule time with you.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Booking list */}
-      {!isLoading && bookings.length > 0 && (
-        <Card className="border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-100 dark:divide-neutral-800">
-          {bookings.map((booking) => {
-            const style = STATUS_STYLES[booking.status];
-            const isPending = booking.status === 'PENDING';
-            const canCancel =
-              booking.status === 'CONFIRMED' ||
-              booking.status === 'RESCHEDULED';
-            return (
-              <div key={booking.id} className="p-5 flex items-start gap-4">
-                {/* Left */}
-                <div className="flex-1 min-w-0 space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                      {booking.eventType.title}
-                    </p>
-                    <span
-                      className={[
-                        'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium',
-                        style.badge,
-                      ].join(' ')}
-                    >
-                      <span
-                        className={[
-                          'w-1.5 h-1.5 rounded-full shrink-0',
-                          style.dot,
-                        ].join(' ')}
-                      />
-                      {STATUS_LABELS[booking.status]}
-                    </span>
-                  </div>
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                    {formatBookingTime(booking.startTime, userTz)}
-                    <span className="text-neutral-300 dark:text-neutral-600 mx-1.5">
-                      ·
-                    </span>
-                    {booking.eventType.duration} min
-                    <span className="text-neutral-300 dark:text-neutral-600 mx-1.5">
-                      ·
-                    </span>
-                    {booking.eventType.locationType === 'ONLINE' ? (
-                      <span className="inline-flex items-center gap-1">
-                        <Video className="w-3 h-3" />
-                        Online
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        In person
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                    {booking.guestName}
-                    <span className="text-neutral-400 dark:text-neutral-500 ml-1.5">
-                      {booking.guestEmail}
-                    </span>
-                  </p>
-                  {booking.guestNote && (
-                    <p className="text-xs text-neutral-400 dark:text-neutral-500 italic mt-1">
-                      &ldquo;{booking.guestNote}&rdquo;
-                    </p>
-                  )}
-                  {booking.cancelReason && (
-                    <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
-                      Reason: {booking.cancelReason}
-                    </p>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {isPending && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => confirmBooking.mutate(booking.id)}
-                        disabled={confirmBooking.isPending}
-                        className="text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                        Approve
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setDeclineId(booking.id);
-                          setDeclineReason('');
-                        }}
-                        className="text-xs text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
-                      >
-                        <Ban className="w-3.5 h-3.5 mr-1" />
-                        Decline
-                      </Button>
-                    </>
-                  )}
-                  {canCancel && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setCancelId(booking.id);
-                        setCancelReason('');
-                      }}
-                      className="text-xs text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
-                    >
-                      <XCircle className="w-3.5 h-3.5 mr-1" />
-                      Cancel
-                    </Button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </Card>
-      )}
-
-      {/* Pagination hint */}
-      {data && data.pagination.total > data.pagination.limit && (
-        <p className="text-xs text-neutral-400 dark:text-neutral-500 text-center">
-          Showing {bookings.length} of {data.pagination.total} bookings
-        </p>
-      )}
-
-      {/* Cancel confirm dialog */}
-      <Dialog
-        open={!!cancelId}
-        onOpenChange={(open) => !open && setCancelId(null)}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Cancel booking</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              The guest will be notified that this booking has been cancelled.
-            </p>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-neutral-500">
-                Reason <span className="text-neutral-400">(optional)</span>
-              </Label>
-              <Textarea
-                value={cancelReason}
-                onChange={(e) => setCancelReason(e.target.value)}
-                placeholder="Let the guest know why…"
-                rows={3}
-                className="resize-none text-sm"
-              />
-            </div>
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCancelId(null)}
-              >
-                Keep booking
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleCancel}
-                disabled={cancelBooking.isPending}
-              >
-                {cancelBooking.isPending ? 'Cancelling…' : 'Cancel booking'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Decline confirm dialog */}
-      <Dialog
-        open={!!declineId}
-        onOpenChange={(open) => !open && setDeclineId(null)}
-      >
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Decline booking</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              The guest will be notified that this booking has been declined.
-            </p>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-neutral-500">
-                Reason <span className="text-neutral-400">(optional)</span>
-              </Label>
-              <Textarea
-                value={declineReason}
-                onChange={(e) => setDeclineReason(e.target.value)}
-                placeholder="Let the guest know why…"
-                rows={3}
-                className="resize-none text-sm"
-              />
-            </div>
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setDeclineId(null)}
-              >
-                Keep pending
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleDecline}
-                disabled={declineBooking.isPending}
-              >
-                {declineBooking.isPending ? 'Declining…' : 'Decline booking'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
   );
 }
