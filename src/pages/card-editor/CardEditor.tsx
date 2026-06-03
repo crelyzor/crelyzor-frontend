@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { PageMotion } from '@/components/PageMotion';
 import {
   ArrowLeft,
@@ -39,6 +39,8 @@ import {
   useTemplates,
   usePreviewCard,
 } from '@/hooks/queries/useCardQueries';
+import { useTeam } from '@/hooks/queries/useTeamQueries';
+import { useTeamStore } from '@/stores';
 import { CardTagsSection } from './CardTagsSection';
 import { CardTasksSection } from './CardTasksSection';
 import { EmailSignatureModal } from './EmailSignatureModal';
@@ -99,7 +101,14 @@ function normalizeContactFields(fields: CardContactFields): CardContactFields {
 export default function CardEditor() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const isTeamCard = searchParams.get('isTeamCard') === '1';
   const isEditing = !!id;
+
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
+  const { data: activeTeam } = useTeam(
+    isTeamCard && !isEditing ? activeTeamId : null
+  );
 
   const { data: existingCard, isLoading, isError } = useCard(id ?? '');
   const createCard = useCreateCard();
@@ -236,6 +245,7 @@ export default function CardEditor() {
       contactFields: normalizedContactFields,
       showQr,
       isDefault,
+      ...(isTeamCard && !isEditing ? { isTeamCard: true } : {}),
     };
 
     if (isEditing) {
@@ -505,7 +515,9 @@ export default function CardEditor() {
                   <p className="text-xs text-neutral-400">
                     {existingCard?.teamId && existingCard?.team?.slug
                       ? `Your card will be accessible at /t/${existingCard.team.slug}/${slug || 'default'}`
-                      : `Your card will be accessible at /username/${slug || 'default'}`}
+                      : isTeamCard && activeTeam?.team?.slug
+                        ? `Your team card will be accessible at /t/${activeTeam.team.slug}/${slug || 'default'}`
+                        : `Your card will be accessible at /username/${slug || 'default'}`}
                   </p>
                 </div>
               </div>
