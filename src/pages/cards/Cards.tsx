@@ -1,5 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { PageMotion } from '@/components/PageMotion';
+import { CardsSection } from '@/pages/team-settings/sections/CardsSection';
+import { useTeamStore } from '@/stores';
+import { useMyTeams } from '@/hooks/queries/useTeamQueries';
 import {
   Plus,
   Eye,
@@ -43,6 +46,12 @@ import { CARDS_PUBLIC_URL } from '@/lib/publicUrl';
 
 export default function Cards() {
   const navigate = useNavigate();
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
+  const { data: teamsData } = useMyTeams();
+  const activeMembership = activeTeamId
+    ? teamsData?.teams.find((m) => m.team.id === activeTeamId)
+    : undefined;
+
   const { data: cards, isLoading, isError } = useCards();
   const deleteCard = useDeleteCard();
   const updateCard = useUpdateCard();
@@ -133,6 +142,20 @@ export default function Cards() {
     if (card.isDefault) return `${CARDS_PUBLIC_URL}/${username}`;
     return `${CARDS_PUBLIC_URL}/${username}/${card.slug}`;
   };
+
+  if (activeMembership) {
+    return (
+      <PageMotion>
+        <div className="max-w-5xl mx-auto">
+          <CardsSection
+            teamId={activeMembership.team.id}
+            role={activeMembership.role}
+            team={activeMembership.team}
+          />
+        </div>
+      </PageMotion>
+    );
+  }
 
   return (
     <PageMotion>
