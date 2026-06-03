@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Flag, X, CalendarDays } from 'lucide-react';
 import { useCreateStandaloneTask } from '@/hooks/queries/useSMAQueries';
+import { useTeamStore } from '@/stores';
 import { parseTaskInput } from '@/lib/parseTaskInput';
+import { AssigneePicker } from './AssigneePicker';
 import {
   buildDueDateISO,
   appendTimeToLabel,
@@ -66,11 +68,13 @@ export function CreateTaskModal({
   // Track whether the user manually set date/priority so NL doesn't overwrite
   const [manualDue, setManualDue] = useState(false);
   const [manualPriority, setManualPriority] = useState(false);
+  const [assigneeId, setAssigneeId] = useState<string | null>(null);
 
   const titleRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const createTask = useCreateStandaloneTask();
   const navigate = useNavigate();
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
 
   // Auto-focus on open, full reset on close
   useEffect(() => {
@@ -103,6 +107,7 @@ export function CreateTaskModal({
       setActivePopover(null);
       setManualDue(false);
       setManualPriority(false);
+      setAssigneeId(null);
     }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -191,6 +196,7 @@ export function CreateTaskModal({
         ...(defaultScheduledTime
           ? { scheduledTime: defaultScheduledTime.toISOString() }
           : {}),
+        ...(activeTeamId ? { assigneeId } : {}),
       },
       {
         onSuccess: (task) => {
@@ -205,8 +211,10 @@ export function CreateTaskModal({
     dueDate,
     dueTime,
     priority,
+    assigneeId,
     createTask,
     defaultScheduledTime,
+    activeTeamId,
     onClose,
     navigateOnSuccess,
     navigate,
@@ -442,6 +450,17 @@ export function CreateTaskModal({
                   </AnimatePresence>
                 </div>
               </div>
+
+              {/* Assignee picker — team context only */}
+              {activeTeamId && (
+                <div className="px-3 pb-3">
+                  <AssigneePicker
+                    teamId={activeTeamId}
+                    value={assigneeId}
+                    onChange={setAssigneeId}
+                  />
+                </div>
+              )}
 
               {/* Divider */}
               <div className="h-px bg-neutral-100 dark:bg-white/[0.06]" />
