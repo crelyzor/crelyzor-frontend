@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Link2Off, Loader2 } from 'lucide-react';
 import PageMotion from '@/components/PageMotion';
@@ -40,13 +40,14 @@ export default function InviteLinkPage() {
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const joinMutation = useJoinByLink();
-  const fired = useRef(false);
-  const [errorKind, setErrorKind] = useState<ErrorKind | null>(null);
 
+  // Fire once when the mutation is idle. If the mutation resets (retry), the
+  // effect re-fires automatically because joinMutation.status changes back to
+  // 'idle'. This eliminates the stale `useRef` pattern that could get stuck
+  // when React Fast Refresh preserved old error state across HMR updates.
   useEffect(() => {
     if (!isAuthenticated || !token) return;
-    if (fired.current) return;
-    fired.current = true;
+    if (joinMutation.status !== 'idle') return;
 
     joinMutation.mutate(token, {
       onSuccess: (data) => {
@@ -54,12 +55,9 @@ export default function InviteLinkPage() {
           replace: true,
         });
       },
-      onError: (err) => {
-        setErrorKind(classifyError(err));
-      },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, token]);
+  }, [isAuthenticated, token, joinMutation.status]);
 
   if (!token) return <Navigate to="/" replace />;
 
@@ -72,57 +70,59 @@ export default function InviteLinkPage() {
     );
   }
 
-  if (errorKind === 'not-found') {
-    return (
-      <PageMotion>
-        <Shell>
-          <IconDisc>
-            <Link2Off className="w-6 h-6 text-muted-foreground" />
-          </IconDisc>
-          <h1 className="text-lg font-medium text-foreground text-center mt-6 tracking-tight">
-            Link not found
-          </h1>
-          <p className="text-sm text-muted-foreground text-center mt-2">
-            This invite link is invalid or has been revoked by the team admin.
-          </p>
-          <Button
-            variant="outline"
-            className="w-full mt-6"
-            onClick={() => navigate('/', { replace: true })}
-          >
-            Back to Crelyzor
-          </Button>
-        </Shell>
-      </PageMotion>
-    );
-  }
+  if (joinMutation.isError) {
+    const errorKind = classifyError(joinMutation.error);
 
-  if (errorKind === 'expired') {
-    return (
-      <PageMotion>
-        <Shell>
-          <IconDisc>
-            <Link2Off className="w-6 h-6 text-muted-foreground" />
-          </IconDisc>
-          <h1 className="text-lg font-medium text-foreground text-center mt-6 tracking-tight">
-            Link expired
-          </h1>
-          <p className="text-sm text-muted-foreground text-center mt-2">
-            Ask the team admin to generate a new invite link.
-          </p>
-          <Button
-            variant="outline"
-            className="w-full mt-6"
-            onClick={() => navigate('/', { replace: true })}
-          >
-            Back to Crelyzor
-          </Button>
-        </Shell>
-      </PageMotion>
-    );
-  }
+    if (errorKind === 'not-found') {
+      return (
+        <PageMotion>
+          <Shell>
+            <IconDisc>
+              <Link2Off className="w-6 h-6 text-muted-foreground" />
+            </IconDisc>
+            <h1 className="text-lg font-medium text-foreground text-center mt-6 tracking-tight">
+              Link not found
+            </h1>
+            <p className="text-sm text-muted-foreground text-center mt-2">
+              This invite link is invalid or has been revoked by the team admin.
+            </p>
+            <Button
+              variant="outline"
+              className="w-full mt-6"
+              onClick={() => navigate('/', { replace: true })}
+            >
+              Back to Crelyzor
+            </Button>
+          </Shell>
+        </PageMotion>
+      );
+    }
 
-  if (errorKind === 'unknown') {
+    if (errorKind === 'expired') {
+      return (
+        <PageMotion>
+          <Shell>
+            <IconDisc>
+              <Link2Off className="w-6 h-6 text-muted-foreground" />
+            </IconDisc>
+            <h1 className="text-lg font-medium text-foreground text-center mt-6 tracking-tight">
+              Link expired
+            </h1>
+            <p className="text-sm text-muted-foreground text-center mt-2">
+              Ask the team admin to generate a new invite link.
+            </p>
+            <Button
+              variant="outline"
+              className="w-full mt-6"
+              onClick={() => navigate('/', { replace: true })}
+            >
+              Back to Crelyzor
+            </Button>
+          </Shell>
+        </PageMotion>
+      );
+    }
+
     return (
       <PageMotion>
         <Shell>
@@ -138,21 +138,10 @@ export default function InviteLinkPage() {
           <div className="mt-6 space-y-2">
             <Button
               className="w-full"
-              onClick={() => {
-                fired.current = false;
-                setErrorKind(null);
-                joinMutation.reset();
-                joinMutation.mutate(token!, {
-                  onSuccess: (data) =>
-                    navigate(`/teams/${data.membership.teamId}/settings`, {
-                      replace: true,
-                    }),
-                  onError: (err) => setErrorKind(classifyError(err)),
-                });
-              }}
+              onClick={() => joinMutation.reset()}
               disabled={joinMutation.isPending}
             >
-              {joinMutation.isPending ? 'Joining…' : 'Try again'}
+              Try again
             </Button>
             <Button
               variant="ghost"
