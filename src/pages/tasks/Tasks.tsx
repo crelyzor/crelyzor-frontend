@@ -1,5 +1,8 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTeamStore } from '@/stores';
+import { useTeamMembers } from '@/hooks/queries/useTeamQueries';
+import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { useQueryClient } from '@tanstack/react-query';
 import { PageMotion } from '@/components/PageMotion';
 import {
@@ -14,6 +17,7 @@ import {
   List,
   LayoutGrid,
   Rows3,
+  UserRound,
 } from 'lucide-react';
 import { TagChip } from '@/components/ui/TagChip';
 import { Button } from '@/components/ui/button';
@@ -337,6 +341,13 @@ export default function Tasks() {
   >(undefined);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
+  const { data: membersData } = useTeamMembers(activeTeamId);
+  const teamMembers = membersData?.members ?? [];
+  const { data: currentUserData } = useCurrentUser();
+  type AssigneeFilter = 'all' | 'me' | 'unassigned' | (string & {});
+  const [assigneeFilter, setAssigneeFilter] = useState<AssigneeFilter>('all');
+
   const qc = useQueryClient();
 
   const { data: userTags } = useUserTags();
@@ -446,6 +457,20 @@ export default function Tasks() {
       t.tags?.some((tag) => selectedTagIds.has(tag.id))
     );
   }, [data?.tasks, selectedTagIds]);
+
+  // Assignee filter — client-side, team context only
+  const filteredTasks = useMemo(() => {
+    if (!activeTeamId || assigneeFilter === 'all') return tasks;
+    if (assigneeFilter === 'me')
+      return tasks.filter((t) => t.assigneeId === currentUserData?.id);
+    if (assigneeFilter === 'unassigned')
+      return tasks.filter((t) => !t.assigneeId);
+    return tasks.filter((t) => t.assigneeId === assigneeFilter);
+  }, [tasks, assigneeFilter, activeTeamId, currentUserData?.id]);
+
+  useEffect(() => {
+    setAssigneeFilter('all');
+  }, [activeTeamId]);
 
   // Keep selected task in sync — search flat list AND grouped data
   const liveSelectedTask = useMemo(() => {
@@ -1082,6 +1107,57 @@ export default function Tasks() {
             </div>
           )}
 
+          {/* Assignee filter — team context only */}
+          {activeTeamId && (
+            <div className="flex items-center gap-1.5 flex-wrap mb-4">
+              <UserRound className="w-3 h-3 text-neutral-400 dark:text-neutral-500 shrink-0" />
+              {[
+                { value: 'all' as AssigneeFilter, label: 'All' },
+                { value: 'me' as AssigneeFilter, label: 'Me' },
+                { value: 'unassigned' as AssigneeFilter, label: 'Unassigned' },
+              ].map((f) => (
+                <Button
+                  key={f.value}
+                  variant="ghost"
+                  onClick={() => setAssigneeFilter(f.value)}
+                  className={`px-2.5 py-1 h-auto rounded-full text-[11px] font-medium transition-all duration-150 ${
+                    assigneeFilter === f.value
+                      ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-900 dark:hover:bg-neutral-100'
+                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  {f.label}
+                </Button>
+              ))}
+              {teamMembers.map((m) => (
+                <Button
+                  key={m.user.id}
+                  variant="ghost"
+                  onClick={() => setAssigneeFilter(m.user.id)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 h-auto rounded-full text-[11px] font-medium transition-all duration-150 ${
+                    assigneeFilter === m.user.id
+                      ? 'bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-neutral-900 dark:hover:bg-neutral-100'
+                      : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  {m.user.avatarUrl ? (
+                    <img
+                      src={m.user.avatarUrl}
+                      alt={m.user.name ?? m.user.email}
+                      className="w-3.5 h-3.5 rounded-full object-cover shrink-0"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-3.5 h-3.5 rounded-full bg-neutral-300 dark:bg-neutral-600 flex items-center justify-center text-[8px] font-semibold shrink-0">
+                      {(m.user.name ?? m.user.email)[0].toUpperCase()}
+                    </div>
+                  )}
+                  {m.user.name ?? m.user.email}
+                </Button>
+              ))}
+            </div>
+          )}
+
           <CreateTaskModal
             open={showCreate}
             onClose={() => setShowCreate(false)}
@@ -1285,7 +1361,7 @@ export default function Tasks() {
               (view === 'inbox' || view === 'all') &&
               displayMode === 'board' && (
                 <TaskBoardView
-                  tasks={tasks}
+                  tasks={filteredTasks}
                   onToggle={handleToggle}
                   onDelete={handleDelete}
                   onNavigate={(id) => navigate(`/meetings/${id}`)}
@@ -1301,15 +1377,15 @@ export default function Tasks() {
               view === 'inbox' &&
               displayMode === 'list' && (
                 <>
-                  {tasks.length === 0 && (
+                  {filteredTasks.length === 0 && (
                     <EmptyState
                       view="inbox"
                       onShowCreate={() => setShowCreate(true)}
                     />
                   )}
-                  {tasks.length > 0 && (
+                  {filteredTasks.length > 0 && (
                     <TaskListView
-                      tasks={tasks}
+                      tasks={filteredTasks}
                       onToggle={handleToggle}
                       onDelete={handleDelete}
                       onNavigate={(id) => navigate(`/meetings/${id}`)}
@@ -1330,23 +1406,29 @@ export default function Tasks() {
               view === 'all' &&
               displayMode === 'list' && (
                 <>
-                  {tasks.length === 0 && (
+                  {filteredTasks.length === 0 && (
                     <EmptyState
                       view={view}
                       hasFilters={
-                        !!(priority || source || selectedTagIds.size > 0)
+                        !!(
+                          priority ||
+                          source ||
+                          selectedTagIds.size > 0 ||
+                          assigneeFilter !== 'all'
+                        )
                       }
                       onClearFilters={() => {
                         setStatus('all');
                         setPriority(undefined);
                         setSource(undefined);
                         setSelectedTagIds(new Set());
+                        setAssigneeFilter('all');
                       }}
                       onShowCreate={() => setShowCreate(true)}
                     />
                   )}
                   <AnimatePresence mode="popLayout">
-                    {tasks.map((task, i) => (
+                    {filteredTasks.map((task, i) => (
                       <TaskRow
                         key={task.id}
                         task={task}
