@@ -25,6 +25,7 @@ import {
   Trash2,
   AlertCircle,
   GripVertical,
+  UserRound,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TagChip } from '@/components/ui/TagChip';
@@ -235,6 +236,23 @@ function SortableTaskRow({
           ))}
         </div>
       </div>
+
+      {task.assigneeId && (
+        <div className="shrink-0" title={task.assigneeName ?? 'Assigned'}>
+          {task.assigneeAvatarUrl ? (
+            <img
+              src={task.assigneeAvatarUrl}
+              alt={task.assigneeName ?? ''}
+              className="w-6 h-6 rounded-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center">
+              <UserRound className="w-3.5 h-3.5 text-neutral-400" />
+            </div>
+          )}
+        </div>
+      )}
 
       {!selectMode && (
         <Button
