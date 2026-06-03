@@ -24,6 +24,7 @@ import { GeneralSection } from './sections/GeneralSection';
 import { DangerSection } from './sections/DangerSection';
 import { MembersSection } from './sections/MembersSection';
 import { InvitesSection } from './sections/InvitesSection';
+import { CardsSection } from './sections/CardsSection';
 import { UsageSection } from './sections/UsageSection';
 import { BillingSection } from './sections/BillingSection';
 
@@ -31,6 +32,7 @@ type TeamSettingsSection =
   | 'general'
   | 'members'
   | 'invites'
+  | 'cards'
   | 'usage'
   | 'billing'
   | 'danger';
@@ -43,6 +45,7 @@ const SECTIONS: Array<{
   { id: 'general', label: 'General', icon: SettingsIcon },
   { id: 'members', label: 'Members', icon: Users },
   { id: 'invites', label: 'Invites', icon: Mail },
+  { id: 'cards', label: 'Cards', icon: CreditCard },
   { id: 'usage', label: 'Usage', icon: BarChart3 },
   { id: 'billing', label: 'Billing', icon: CreditCard },
   { id: 'danger', label: 'Danger zone', icon: TriangleAlert },
@@ -161,6 +164,13 @@ export default function TeamSettings() {
             )}
             {activeSection === 'invites' && (
               <InvitesSection teamId={teamId} role={membership.role} />
+            )}
+            {activeSection === 'cards' && (
+              <CardsSection
+                teamId={teamId}
+                role={membership.role}
+                team={membership.team}
+              />
             )}
             {activeSection === 'usage' && (
               <UsageSection teamId={teamId} role={membership.role} />
