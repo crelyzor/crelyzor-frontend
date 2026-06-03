@@ -14,6 +14,7 @@ import {
   ExternalLink,
   Calendar,
   Search,
+  UserRound,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TagChip } from '@/components/ui/TagChip';
@@ -38,6 +39,8 @@ import {
   useCreateTag,
 } from '@/hooks/queries/useTagQueries';
 import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
+import { useTeamMembers } from '@/hooks/queries/useTeamQueries';
+import { AssigneePicker } from './AssigneePicker';
 import type { TaskWithMeeting } from '@/services/smaService';
 import type { TaskStatus } from '@/types/meeting';
 import {
@@ -727,6 +730,25 @@ export function TaskDetailPanel({
                   </div>
                 )}
 
+              {/* Assignee — team tasks only */}
+              {task.teamId && (
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500 font-medium mb-2">
+                    Assignee
+                  </p>
+                  <FormerMemberGuard
+                    task={task}
+                    teamId={task.teamId}
+                    onPick={(id) =>
+                      updateTask.mutate({
+                        taskId: task.id,
+                        data: { assigneeId: id },
+                      })
+                    }
+                  />
+                </div>
+              )}
+
               {/* Tags */}
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500 font-medium mb-2">
@@ -987,5 +1009,41 @@ function SubtaskRow({
         {subtask.title}
       </span>
     </div>
+  );
+}
+
+function FormerMemberGuard({
+  task,
+  teamId,
+  onPick,
+}: {
+  task: { assigneeId: string | null; assigneeName: string | null };
+  teamId: string;
+  onPick: (id: string | null) => void;
+}) {
+  const { data } = useTeamMembers(teamId);
+  const members = data?.members ?? [];
+  const isCurrentMember = members.some((m) => m.user.id === task.assigneeId);
+
+  if (task.assigneeId && !isCurrentMember) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
+        <UserRound className="w-4 h-4 text-neutral-300 dark:text-neutral-600 shrink-0" />
+        <span className="flex-1 text-sm text-neutral-400 dark:text-neutral-500 truncate">
+          {task.assigneeName ?? 'Former member'}
+        </span>
+        <button
+          type="button"
+          onClick={() => onPick(null)}
+          className="text-[11px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+        >
+          Clear
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <AssigneePicker teamId={teamId} value={task.assigneeId} onChange={onPick} />
   );
 }
