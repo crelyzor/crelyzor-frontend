@@ -1,19 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import { Link2Off, Loader2, Users } from 'lucide-react';
+import { Link2Off, Loader2 } from 'lucide-react';
 import PageMotion from '@/components/PageMotion';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores';
 import { useJoinByLink } from '@/hooks/queries/useTeamQueries';
 import { ApiError } from '@/lib/apiClient';
 
-type ErrorKind = 'not-found' | 'expired' | 'already-member' | 'unknown';
+type ErrorKind = 'not-found' | 'expired' | 'unknown';
 
 function classifyError(err: unknown): ErrorKind {
   if (err instanceof ApiError) {
     if (err.status === 404) return 'not-found';
     if (err.status === 410) return 'expired';
-    if (err.status === 409) return 'already-member';
   }
   return 'unknown';
 }
@@ -51,13 +50,15 @@ export default function InviteLinkPage() {
 
     joinMutation.mutate(token, {
       onSuccess: (data) => {
-        navigate(`/teams/${data.membership.teamId}/settings`, { replace: true });
+        navigate(`/teams/${data.membership.teamId}/settings`, {
+          replace: true,
+        });
       },
       onError: (err) => {
         setErrorKind(classifyError(err));
       },
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, token]);
 
   if (!token) return <Navigate to="/" replace />;
@@ -115,30 +116,6 @@ export default function InviteLinkPage() {
             onClick={() => navigate('/', { replace: true })}
           >
             Back to Crelyzor
-          </Button>
-        </Shell>
-      </PageMotion>
-    );
-  }
-
-  if (errorKind === 'already-member') {
-    return (
-      <PageMotion>
-        <Shell>
-          <IconDisc>
-            <Users className="w-6 h-6 text-muted-foreground" />
-          </IconDisc>
-          <h1 className="text-lg font-medium text-foreground text-center mt-6 tracking-tight">
-            You&apos;re already a member
-          </h1>
-          <p className="text-sm text-muted-foreground text-center mt-2">
-            You already belong to this team.
-          </p>
-          <Button
-            className="w-full mt-6"
-            onClick={() => navigate('/', { replace: true })}
-          >
-            Go to workspace
           </Button>
         </Shell>
       </PageMotion>
