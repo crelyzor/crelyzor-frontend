@@ -102,10 +102,18 @@ export function useNotificationSocket() {
               qc.invalidateQueries({
                 queryKey: queryKeys.meetings.detail(meetingId),
               });
-              qc.invalidateQueries({ queryKey: queryKeys.sma.transcript(meetingId) });
-              qc.invalidateQueries({ queryKey: queryKeys.sma.summary(meetingId) });
-              qc.invalidateQueries({ queryKey: queryKeys.sma.tasks(meetingId) });
-              qc.invalidateQueries({ queryKey: queryKeys.sma.recordings(meetingId) });
+              qc.invalidateQueries({
+                queryKey: queryKeys.sma.transcript(meetingId),
+              });
+              qc.invalidateQueries({
+                queryKey: queryKeys.sma.summary(meetingId),
+              });
+              qc.invalidateQueries({
+                queryKey: queryKeys.sma.tasks(meetingId),
+              });
+              qc.invalidateQueries({
+                queryKey: queryKeys.sma.recordings(meetingId),
+              });
               qc.invalidateQueries({ queryKey: queryKeys.meetings.all });
             }
             showToast(notif);

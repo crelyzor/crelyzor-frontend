@@ -6,6 +6,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import {
   teamService,
   type ChangeRolePayload,
+  type ChangeDesignationPayload,
   type CreateTeamPayload,
   type InviteMembersPayload,
   type TransferOwnershipPayload,
@@ -212,6 +213,27 @@ export const useChangeMemberRole = (teamId: string) => {
     },
     onError: (err: unknown) => {
       const msg = err instanceof Error ? err.message : 'Failed to change role';
+      toast.error(msg);
+    },
+  });
+};
+
+export const useUpdateMemberDesignation = (teamId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      userId,
+      payload,
+    }: {
+      userId: string;
+      payload: ChangeDesignationPayload;
+    }) => teamService.updateMemberDesignation(teamId, userId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teams', 'members', teamId] });
+    },
+    onError: (err: unknown) => {
+      const msg =
+        err instanceof Error ? err.message : 'Failed to update designation';
       toast.error(msg);
     },
   });

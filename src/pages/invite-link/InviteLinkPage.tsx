@@ -52,7 +52,7 @@ export default function InviteLinkPage() {
 
     joinMutation.mutate(token, {
       onSuccess: (data) => {
-        navigate(`/teams/${data.membership.teamId}/settings`, {
+        navigate(`/settings?workspace=${data.membership.teamId}`, {
           replace: true,
         });
       },

@@ -6,11 +6,14 @@ import {
   ExternalLink,
   CalendarDays,
   CreditCard,
+  Users,
   ArrowUpRight,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
+import { useMyTeams, useTeamCards } from '@/hooks/queries/useTeamQueries';
+import { useTeamStore } from '@/stores';
 import { CARDS_PUBLIC_URL } from '@/lib/publicUrl';
 
 function LinkRow({
@@ -86,7 +89,27 @@ function LinkRow({
 
 export function PublicLinksWidget() {
   const navigate = useNavigate();
-  const { data: user, isLoading } = useCurrentUser();
+  const { data: user, isLoading: userLoading } = useCurrentUser();
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
+  const { data: teamsData } = useMyTeams();
+  const { data: teamCards } = useTeamCards(activeTeamId ?? '');
+
+  const activeMembership = activeTeamId
+    ? teamsData?.teams.find((m) => m.team.id === activeTeamId)
+    : undefined;
+  const teamSlug = activeMembership?.team.slug ?? null;
+
+  // Find the current user's default card in the team (first card in their entry)
+  const myTeamEntry =
+    user && teamCards
+      ? teamCards.memberCards.find((e) => e.member.id === user.id)
+      : undefined;
+  const myTeamCard =
+    myTeamEntry?.cards.find((c) => c.isDefault) ??
+    myTeamEntry?.cards[0] ??
+    null;
+
+  const isLoading = userLoading;
 
   if (isLoading) {
     return (
@@ -122,6 +145,49 @@ export function PublicLinksWidget() {
     );
   }
 
+  // ── Team workspace ────────────────────────────────────────────────────────
+  if (activeTeamId && teamSlug) {
+    const memberCardUrl = myTeamCard
+      ? `${CARDS_PUBLIC_URL}/t/${teamSlug}/${user.username}/${myTeamCard.slug}`
+      : null;
+    const teamScheduleUrl = `${CARDS_PUBLIC_URL}/schedule/t/${teamSlug}/${user.username}`;
+
+    return (
+      <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden">
+        <div className="px-5 py-4 border-b border-neutral-100 dark:border-neutral-800">
+          <span className="text-[10px] tracking-[0.18em] text-neutral-400 dark:text-neutral-500 uppercase font-medium">
+            Team Links
+          </span>
+        </div>
+        <div className="divide-y divide-neutral-50 dark:divide-neutral-800/50">
+          {memberCardUrl ? (
+            <LinkRow label="My Team Card" url={memberCardUrl} icon={Users} />
+          ) : (
+            <div className="flex items-center gap-3 px-4 py-3">
+              <div className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+                <Users className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[9px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-0.5">
+                  My Team Card
+                </p>
+                <p className="text-[11px] text-neutral-400 dark:text-neutral-600 italic">
+                  No card in this team yet
+                </p>
+              </div>
+            </div>
+          )}
+          <LinkRow
+            label="Team Schedule"
+            url={teamScheduleUrl}
+            icon={CalendarDays}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ── Personal workspace ────────────────────────────────────────────────────
   const cardUrl = `${CARDS_PUBLIC_URL}/${user.username}`;
   const scheduleUrl = `${CARDS_PUBLIC_URL}/schedule/${user.username}`;
 

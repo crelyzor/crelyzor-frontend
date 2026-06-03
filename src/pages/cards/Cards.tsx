@@ -20,6 +20,7 @@ import {
   ArrowUpRight,
   Tag,
   RotateCcw,
+  User,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -59,6 +60,7 @@ export default function Cards() {
   const { data: userTags } = useUserTags();
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
   const [qrDialogCard, setQrDialogCard] = useState<CardType | null>(null);
   const [sigCard, setSigCard] = useState<CardType | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
@@ -169,14 +171,68 @@ export default function Cards() {
               >
                 {roleLabel}
               </Badge>
-              <Button
-                onClick={() => navigate('/cards/create')}
-                className="h-9 px-4 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200
-                         text-white dark:text-neutral-900 text-sm font-medium gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                New Card
-              </Button>
+              {activeMembership.role === 'OWNER' ||
+              activeMembership.role === 'ADMIN' ? (
+                <div className="relative">
+                  <Button
+                    onClick={() => setShowCreateMenu((v) => !v)}
+                    className="h-9 px-4 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200
+                             text-white dark:text-neutral-900 text-sm font-medium gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    New Card
+                  </Button>
+                  {showCreateMenu && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setShowCreateMenu(false)}
+                      />
+                      <div className="absolute right-0 top-11 z-20 w-44 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl py-1 overflow-hidden">
+                        <button
+                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                          onClick={() => {
+                            navigate('/cards/create');
+                            setShowCreateMenu(false);
+                          }}
+                        >
+                          <User className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                          <div className="text-left">
+                            <p className="font-medium">My card</p>
+                            <p className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                              Your member card
+                            </p>
+                          </div>
+                        </button>
+                        <button
+                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                          onClick={() => {
+                            navigate('/cards/create?isTeamCard=1');
+                            setShowCreateMenu(false);
+                          }}
+                        >
+                          <Users className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
+                          <div className="text-left">
+                            <p className="font-medium">Team card</p>
+                            <p className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                              Official card for the team
+                            </p>
+                          </div>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <Button
+                  onClick={() => navigate('/cards/create')}
+                  className="h-9 px-4 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200
+                           text-white dark:text-neutral-900 text-sm font-medium gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  New Card
+                </Button>
+              )}
             </div>
           </div>
           <CardsSection
@@ -363,7 +419,7 @@ export default function Cards() {
                   className="cursor-pointer rounded-2xl overflow-hidden active:scale-[0.97] transition-transform duration-150 ease-out"
                   style={{
                     boxShadow:
-                      '0 4px 24px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.06)',
+                      '0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.10), inset 0 1px 0 rgba(255,255,255,0.07)',
                   }}
                   onClick={() => openCard(card)}
                 >

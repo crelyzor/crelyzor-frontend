@@ -7,6 +7,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useTeamStore } from '@/stores';
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Home', icon: Home, path: '/' },
@@ -19,11 +20,17 @@ const NAV_ITEMS = [
 export function MobileNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
 
   const isActive = (path: string) =>
     path === '/'
       ? location.pathname === '/'
       : location.pathname.startsWith(path);
+
+  const getPath = (item: (typeof NAV_ITEMS)[number]) =>
+    item.id === 'settings' && activeTeamId
+      ? `/settings?workspace=${activeTeamId}`
+      : item.path;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 sm:hidden bg-white/90 dark:bg-neutral-950/90 backdrop-blur-xl border-t border-neutral-200/60 dark:border-neutral-800/60 pb-safe">
@@ -34,7 +41,7 @@ export function MobileNav() {
           return (
             <button
               key={item.id}
-              onClick={() => navigate(item.path)}
+              onClick={() => navigate(getPath(item))}
               className="flex-1 flex flex-col items-center justify-center gap-0.5 relative"
               aria-label={item.label}
             >

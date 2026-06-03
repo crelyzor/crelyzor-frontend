@@ -4,7 +4,15 @@
  * Lists pending invites; per-row Resend + Cancel.
  */
 import { useState } from 'react';
-import { Copy, Link, Mail, RefreshCw, RotateCcw, Trash2, X } from 'lucide-react';
+import {
+  Copy,
+  Link,
+  Mail,
+  RefreshCw,
+  RotateCcw,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,7 +82,9 @@ function InviteLinkCard({ teamId }: { teamId: string }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Link className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-xs font-medium text-foreground">Invite link</span>
+          <span className="text-xs font-medium text-foreground">
+            Invite link
+          </span>
         </div>
         {hasLink && !confirmRevoke && (
           <Button
@@ -113,11 +123,14 @@ function InviteLinkCard({ teamId }: { teamId: string }) {
               disabled={generateMutation.isPending}
               title="Regenerate link"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${generateMutation.isPending ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${generateMutation.isPending ? 'animate-spin' : ''}`}
+              />
             </Button>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Anyone with this link can join as a member. Regenerating immediately invalidates the old link.
+            Anyone with this link can join as a member. Regenerating immediately
+            invalidates the old link.
           </p>
           {confirmRevoke && (
             <div className="flex items-center gap-2 pt-1">
@@ -135,7 +148,11 @@ function InviteLinkCard({ teamId }: { teamId: string }) {
               <Button
                 variant="destructive"
                 size="xs"
-                onClick={() => revokeMutation.mutate(undefined, { onSuccess: () => setConfirmRevoke(false) })}
+                onClick={() =>
+                  revokeMutation.mutate(undefined, {
+                    onSuccess: () => setConfirmRevoke(false),
+                  })
+                }
                 disabled={revokeMutation.isPending}
                 className="h-6 px-2 text-xs"
               >

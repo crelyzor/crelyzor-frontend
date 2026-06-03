@@ -14,7 +14,12 @@ interface Props {
   compact?: boolean;
 }
 
-export function AssigneePicker({ teamId, value, onChange, compact = false }: Props) {
+export function AssigneePicker({
+  teamId,
+  value,
+  onChange,
+  compact = false,
+}: Props) {
   const [open, setOpen] = useState(false);
   const { data } = useTeamMembers(teamId);
   const members = data?.members ?? [];
@@ -80,7 +85,9 @@ export function AssigneePicker({ teamId, value, onChange, compact = false }: Pro
         >
           <UserRound className="w-4 h-4 text-neutral-400 shrink-0" />
           <span className="flex-1 text-left">Unassigned</span>
-          {!value && <Check className="w-3.5 h-3.5 text-neutral-500 shrink-0" />}
+          {!value && (
+            <Check className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+          )}
         </button>
 
         {members.length > 0 && (

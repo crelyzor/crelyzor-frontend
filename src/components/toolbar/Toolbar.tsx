@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { useToolbarPins } from '@/hooks';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
+import { useTeamStore } from '@/stores';
 import type { ToolbarItem } from '@/types';
 import {
   Tooltip,
@@ -40,11 +41,16 @@ export function Toolbar() {
   const { pinnedItems, togglePin, resetToDefaults, isPinned } =
     useToolbarPins();
   const { data: currentUser } = useCurrentUser();
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
 
   const handleItemClick = useCallback(
     (item: ToolbarItem) => {
       if (item.action === 'navigate' && item.path) {
-        navigate(item.path);
+        const path =
+          item.id === 'settings' && activeTeamId
+            ? `/settings?workspace=${activeTeamId}`
+            : item.path;
+        navigate(path);
       } else if (item.id === 'share-link') {
         const username = currentUser?.username;
         if (!username) {
@@ -55,7 +61,7 @@ export function Toolbar() {
         toast.success('Profile link copied to clipboard');
       }
     },
-    [navigate, currentUser]
+    [navigate, currentUser, activeTeamId]
   );
 
   return (

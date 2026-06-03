@@ -9,7 +9,7 @@
  *
  * Header has "Invite member" button (Admin+).
  */
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { MoreVertical, Plus, Users2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ import {
   useChangeMemberRole,
   useRemoveMember,
   useTeamMembers,
+  useUpdateMemberDesignation,
 } from '@/hooks/queries/useTeamQueries';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { InviteMembersModal } from './InviteMembersModal';
@@ -133,6 +134,73 @@ export function MembersSection({ teamId, role }: Props) {
 
 // ── Row ─────────────────────────────────────────────────────────────────────
 
+function DesignationEdit({
+  teamId,
+  userId,
+  current,
+  canEdit,
+}: {
+  teamId: string;
+  userId: string;
+  current: string | null;
+  canEdit: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(current ?? '');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const mutation = useUpdateMemberDesignation(teamId);
+
+  const save = () => {
+    const trimmed = value.trim() || null;
+    if (trimmed !== current) {
+      mutation.mutate({ userId, payload: { designation: trimmed } });
+    }
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        autoFocus
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={save}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            save();
+          }
+          if (e.key === 'Escape') {
+            setValue(current ?? '');
+            setEditing(false);
+          }
+        }}
+        placeholder="e.g. Lead Designer"
+        maxLength={100}
+        className="text-xs text-muted-foreground bg-transparent border-b border-neutral-300 dark:border-neutral-600 outline-none w-36 py-0.5"
+      />
+    );
+  }
+
+  return (
+    <button
+      className={`text-xs text-left truncate max-w-[160px] ${
+        canEdit
+          ? 'text-muted-foreground hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer'
+          : 'text-muted-foreground cursor-default'
+      }`}
+      onClick={canEdit ? () => setEditing(true) : undefined}
+      title={canEdit ? 'Click to set designation' : undefined}
+    >
+      {current ??
+        (canEdit ? (
+          <span className="italic opacity-50">Add designation</span>
+        ) : null)}
+    </button>
+  );
+}
+
 function MemberRow({
   teamId,
   viewerRole,
@@ -151,6 +219,8 @@ function MemberRow({
     !isOwnerRow &&
     !isSelf &&
     (viewerRole === 'OWNER' || viewerRole === 'ADMIN');
+  const canEditDesignation =
+    isSelf || viewerRole === 'OWNER' || viewerRole === 'ADMIN';
 
   const initials = (member.user.name ?? member.user.email)
     .split(' ')
@@ -183,9 +253,12 @@ function MemberRow({
             <span className="text-[10px] text-muted-foreground">(you)</span>
           )}
         </p>
-        <p className="text-xs text-muted-foreground truncate">
-          {member.user.email}
-        </p>
+        <DesignationEdit
+          teamId={teamId}
+          userId={member.user.id}
+          current={member.designation}
+          canEdit={canEditDesignation}
+        />
       </div>
 
       {/* Role */}

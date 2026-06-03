@@ -55,6 +55,7 @@ export interface TransferOwnershipPayload {
 export interface TeamMemberRow {
   id: string;
   role: TeamRole;
+  designation: string | null;
   joinedAt: string;
   user: {
     id: string;
@@ -83,15 +84,22 @@ export interface TeamCardRow {
   htmlContent: string | null;
   htmlBackContent: string | null;
   isDefault: boolean;
+  isTeamCard: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface TeamCardEntry {
-  member: { id: string; name: string | null; avatarUrl: string | null };
+  member: {
+    id: string;
+    name: string | null;
+    username: string | null;
+    avatarUrl: string | null;
+    designation: string | null;
+  };
   role: TeamRole;
-  card: TeamCardRow | null;
+  cards: TeamCardRow[];
 }
 
 export interface TeamCardsResponse {
@@ -127,6 +135,10 @@ export interface InviteCreateResult {
 
 export interface ChangeRolePayload {
   role: InviteRole;
+}
+
+export interface ChangeDesignationPayload {
+  designation: string | null;
 }
 
 export interface TeamUsageMemberRow {
@@ -250,6 +262,17 @@ export const teamService = {
   ) =>
     apiClient.patch<{ member: TeamMemberRow }>(
       `/teams/${teamId}/members/${userId}`,
+      payload
+    ),
+
+  /** PATCH /teams/:teamId/members/:userId/designation — Admin+ or self. */
+  updateMemberDesignation: (
+    teamId: string,
+    userId: string,
+    payload: ChangeDesignationPayload
+  ) =>
+    apiClient.patch<{ member: TeamMemberRow }>(
+      `/teams/${teamId}/members/${userId}/designation`,
       payload
     ),
 

@@ -25,7 +25,6 @@ import {
   Mail,
   Plus,
   Settings,
-  Settings2,
   Sparkles,
   User,
 } from 'lucide-react';
@@ -217,17 +216,6 @@ export function WorkspaceSwitcher() {
                 />
               ))}
 
-              {active && (
-                <MenuItem
-                  icon={Settings2}
-                  label="Team settings"
-                  onClick={() => {
-                    close();
-                    navigate(`/teams/${active.team.id}/settings`);
-                  }}
-                />
-              )}
-
               <button
                 onClick={() => {
                   close();
@@ -256,7 +244,11 @@ export function WorkspaceSwitcher() {
                 label="Settings"
                 onClick={() => {
                   close();
-                  navigate('/settings?tab=appearance');
+                  navigate(
+                    activeTeamId
+                      ? `/settings?workspace=${activeTeamId}`
+                      : '/settings?tab=appearance'
+                  );
                 }}
               />
               <MenuItem

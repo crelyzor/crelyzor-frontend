@@ -72,7 +72,7 @@ export default function InvitePage() {
 
     accept.mutate(token, {
       onSuccess: (data) => {
-        navigate(`/teams/${data.membership.team.id}/settings`, {
+        navigate(`/settings?workspace=${data.membership.team.id}`, {
           replace: true,
         });
       },
@@ -225,7 +225,7 @@ export default function InvitePage() {
                 accept.reset();
                 accept.mutate(token, {
                   onSuccess: (data) => {
-                    navigate(`/teams/${data.membership.team.id}/settings`, {
+                    navigate(`/settings?workspace=${data.membership.team.id}`, {
                       replace: true,
                     });
                   },

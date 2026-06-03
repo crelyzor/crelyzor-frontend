@@ -224,13 +224,16 @@ export default function Settings() {
   const rawWorkspace = searchParams.get('workspace') ?? 'personal';
   const { data: teamsData } = useMyTeams();
   const teams: TeamMembership[] = teamsData?.teams ?? [];
-  const activeMembership = teams.find((m) => m.team.id === rawWorkspace) ?? null;
+  const activeMembership =
+    teams.find((m) => m.team.id === rawWorkspace) ?? null;
   const isTeamMode = rawWorkspace !== 'personal' && activeMembership !== null;
   const activeWorkspace = isTeamMode ? rawWorkspace : 'personal';
 
   // ── Active sections ──
-  const personalSection = (searchParams.get('tab') ?? 'profile') as SettingsSection;
-  const teamSection = (searchParams.get('tab') ?? 'general') as TeamSettingsSection;
+  const personalSection = (searchParams.get('tab') ??
+    'profile') as SettingsSection;
+  const teamSection = (searchParams.get('tab') ??
+    'general') as TeamSettingsSection;
 
   const setActiveSection = (section: string) => {
     const params: Record<string, string> = { tab: section };
@@ -243,7 +246,10 @@ export default function Settings() {
     if (workspaceId === 'personal') {
       setSearchParams({ tab: 'profile' }, { replace: true });
     } else {
-      setSearchParams({ workspace: workspaceId, tab: 'general' }, { replace: true });
+      setSearchParams(
+        { workspace: workspaceId, tab: 'general' },
+        { replace: true }
+      );
     }
   };
 
@@ -290,14 +296,20 @@ export default function Settings() {
                   <ChevronDown className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent align="start" sideOffset={4} className="p-1.5 w-48">
+              <PopoverContent
+                align="start"
+                sideOffset={4}
+                className="p-1.5 w-48"
+              >
                 <button
                   onClick={() => setWorkspace('personal')}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <User className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
                   <span className="flex-1 text-left">Personal</span>
-                  {!isTeamMode && <Check className="w-3 h-3 text-neutral-500" />}
+                  {!isTeamMode && (
+                    <Check className="w-3 h-3 text-neutral-500" />
+                  )}
                 </button>
                 {teams.length > 0 && (
                   <div className="my-1 h-px bg-neutral-200 dark:bg-neutral-700" />
@@ -309,7 +321,9 @@ export default function Settings() {
                     className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                   >
                     <Users className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                    <span className="flex-1 text-left truncate">{m.team.name}</span>
+                    <span className="flex-1 text-left truncate">
+                      {m.team.name}
+                    </span>
                     {activeWorkspace === m.team.id && (
                       <Check className="w-3 h-3 text-neutral-500 shrink-0" />
                     )}
@@ -503,7 +517,9 @@ export default function Settings() {
                 {personalSection === 'availability' && <AvailabilitySection />}
                 {personalSection === 'ai' && <AITranscriptionSection />}
                 {personalSection === 'integrations' && <IntegrationsSection />}
-                {personalSection === 'notifications' && <NotificationsSection />}
+                {personalSection === 'notifications' && (
+                  <NotificationsSection />
+                )}
                 {personalSection === 'billing' && <BillingSection />}
                 {personalSection === 'security' && <SecuritySection />}
               </>
