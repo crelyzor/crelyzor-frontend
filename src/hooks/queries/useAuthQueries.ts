@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { queryKeys } from '@/lib/queryKeys';
 import { authApi } from '@/services/authService';
 import { useAuthStore } from '@/stores';
@@ -48,6 +49,21 @@ export function useLogout() {
     onSettled: () => {
       logout();
       qc.clear();
+    },
+  });
+}
+
+/**
+ * Deactivate account mutation — clears auth and redirects to signin.
+ */
+export function useDeactivateAccount() {
+  const logout = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
+  return useMutation({
+    mutationFn: () => authApi.deactivateAccount(),
+    onSuccess: () => {
+      logout();
+      navigate('/signin', { replace: true });
     },
   });
 }

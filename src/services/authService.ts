@@ -15,6 +15,10 @@ export const authApi = {
   // Logout — refresh token is in httpOnly cookie, no need to pass it in body
   logout: () => apiClient.post<void>('/auth/logout'),
 
+  // Deactivate account
+  deactivateAccount: () =>
+    apiClient.delete<{ message: string }>('/auth/account'),
+
   // Refresh access token — cookie-based, returns only access token
   refreshToken: () =>
     apiClient.post<{ accessToken: string; expiresIn: number }>(
