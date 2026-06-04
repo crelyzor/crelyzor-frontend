@@ -82,12 +82,13 @@ export function SpeakerChip({
             <Pencil className="w-2.5 h-2.5 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         </PopoverTrigger>
-        <PopoverContent align="start" sideOffset={4} className="p-1.5 w-48">
+        <PopoverContent align="start" sideOffset={4} className="p-1.5 w-52">
           {teamMembers.map((m) => (
             <button
               key={m.user.id}
               type="button"
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              disabled={isPending}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:pointer-events-none"
               onClick={() => {
                 rename(
                   {
@@ -101,13 +102,13 @@ export function SpeakerChip({
               {m.user.avatarUrl ? (
                 <img
                   src={m.user.avatarUrl}
-                  alt={m.user.name ?? m.user.email}
+                  alt={m.user.name ?? 'Team member'}
                   className="w-5 h-5 rounded-full object-cover shrink-0"
                   referrerPolicy="no-referrer"
                 />
               ) : (
                 <div className="w-5 h-5 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[9px] font-semibold text-neutral-600 dark:text-neutral-300 shrink-0">
-                  {(m.user.name ?? m.user.email)[0].toUpperCase()}
+                  {((m.user.name ?? m.user.email)?.[0] ?? '?').toUpperCase()}
                 </div>
               )}
               <span className="flex-1 text-left truncate">
@@ -214,7 +215,9 @@ export function SpeakersSection({
       </div>
       <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-2">
         {teamMembers && teamMembers.length > 0
-          ? 'Click a speaker to identify them from your team'
+          ? hasUnnamed
+            ? 'Click a speaker to identify them from your team'
+            : 'Click a speaker to re-identify'
           : hasUnnamed
           ? 'Click a speaker to name them — or pick from participants'
           : 'Click a speaker to rename'}
