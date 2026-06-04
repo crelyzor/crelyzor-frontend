@@ -21,9 +21,11 @@ import { useGoogleCalendarStatus } from '@/hooks/queries/useIntegrationQueries';
 import { useUserSearch } from '@/hooks/queries/useUserQueries';
 import { useUserSettings } from '@/hooks/queries/useSettingsQueries';
 import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
+import { useTeamMembers } from '@/hooks/queries/useTeamQueries';
+import { useTeamStore } from '@/stores/teamStore';
 import { toast } from 'sonner';
 import { CalendarDays, Clock, UserPlus, X } from 'lucide-react';
-import type { UserSearchResult } from '@/services/userService';
+import type { TeamMemberRow } from '@/services/teamService';
 
 type Props = {
   open: boolean;
@@ -122,9 +124,11 @@ function TimeField({
 function ParticipantPicker({
   participants,
   onChange,
+  teamMembers,
 }: {
   participants: SelectedParticipant[];
   onChange: (participants: SelectedParticipant[]) => void;
+  teamMembers?: TeamMemberRow[];
 }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
@@ -154,7 +158,7 @@ function ParticipantPicker({
   );
 
   const add = useCallback(
-    (user: UserSearchResult) => {
+    (user: { id: string; name: string; email: string; avatarUrl?: string | null }) => {
       if (selectedIds.has(user.id)) return;
       flushSync(() => {
         onChange([
@@ -221,6 +225,44 @@ function ParticipantPicker({
               </button>
             </span>
           ))}
+        </div>
+      )}
+
+      {/* Team member quick-picks */}
+      {teamMembers && teamMembers.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {teamMembers
+            .filter((m) => !selectedIds.has(m.user.id))
+            .map((m) => (
+              <button
+                key={m.user.id}
+                type="button"
+                onClick={() =>
+                  add({
+                    id: m.user.id,
+                    name: m.user.name ?? m.user.email,
+                    email: m.user.email,
+                    avatarUrl: m.user.avatarUrl ?? null,
+                  })
+                }
+                className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-xs text-neutral-600 dark:text-neutral-400 hover:border-neutral-400 dark:hover:border-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+                title={m.user.email}
+              >
+                {m.user.avatarUrl ? (
+                  <img
+                    src={m.user.avatarUrl}
+                    alt={m.user.name ?? 'Team member'}
+                    className="w-4 h-4 rounded-full object-cover shrink-0"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="w-4 h-4 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[8px] font-semibold text-neutral-600 dark:text-neutral-300 shrink-0">
+                    {((m.user.name ?? m.user.email)?.[0] ?? '?').toUpperCase()}
+                  </div>
+                )}
+                <span>{m.user.name ?? m.user.email}</span>
+              </button>
+            ))}
         </div>
       )}
 
@@ -331,6 +373,8 @@ export function ScheduleMeetingDialog({
   const { data: gcalStatus } = useGoogleCalendarStatus();
   const { data: settings } = useUserSettings();
   const { data: billingData } = useBillingUsage();
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
+  const { data: membersData } = useTeamMembers(activeTeamId);
 
   useEffect(() => {
     if (!open) {
@@ -483,6 +527,7 @@ export function ScheduleMeetingDialog({
             <ParticipantPicker
               participants={participants}
               onChange={setParticipants}
+              teamMembers={membersData?.members}
             />
           </div>
 
