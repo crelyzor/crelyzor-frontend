@@ -114,7 +114,7 @@ export function RecordedDetail({
     );
   };
   const { data: speakers } = useSpeakers(rawMeeting.id, isCompleted);
-  const { activeTeamId } = useTeamStore();
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
   const { data: membersData } = useTeamMembers(activeTeamId);
   const { data: summary } = useSummary(rawMeeting.id, isCompleted);
   const { mutate: triggerAI, isPending: isRetrying } = useTriggerAI(
