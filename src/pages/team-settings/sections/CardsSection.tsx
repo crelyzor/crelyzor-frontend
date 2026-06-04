@@ -40,10 +40,10 @@ function getCardUrl(
   teamSlug: string,
   username?: string | null
 ): string {
-  if (username) return `${CARDS_PUBLIC_URL}/t/${teamSlug}/${username}/${card.slug}`;
+  if (username)
+    return `${CARDS_PUBLIC_URL}/t/${teamSlug}/${username}/${card.slug}`;
   return `${CARDS_PUBLIC_URL}/t/${teamSlug}/${card.slug}`;
 }
-
 
 function MemberAccordionRow({
   member,

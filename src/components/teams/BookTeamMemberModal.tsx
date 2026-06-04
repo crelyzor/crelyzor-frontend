@@ -385,7 +385,14 @@ function SlotStep({
   onPick: (slot: PublicSlot) => void;
 }) {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['public-scheduling', 'slots', username, eventTypeSlug, teamSlug, date],
+    queryKey: [
+      'public-scheduling',
+      'slots',
+      username,
+      eventTypeSlug,
+      teamSlug,
+      date,
+    ],
     queryFn: () =>
       publicSchedulingService.getSlots(username, eventTypeSlug, date, teamSlug),
     enabled: !!username && !!eventTypeSlug && !!date,

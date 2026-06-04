@@ -17,7 +17,9 @@ export function TeamCardWidget({ teamId }: Props) {
   const [show3D, setShow3D] = useState(false);
   const [flipped, setFlipped] = useState(false);
 
-  const myEntry = data?.memberCards.find((e) => e.member.id === currentUser?.id);
+  const myEntry = data?.memberCards.find(
+    (e) => e.member.id === currentUser?.id
+  );
   const teamCard = myEntry?.cards[0] ?? null;
 
   if (isLoading) {

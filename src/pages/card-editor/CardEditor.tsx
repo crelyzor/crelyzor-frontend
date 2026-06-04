@@ -110,7 +110,8 @@ export default function CardEditor() {
   );
 
   const { data: existingCard, isLoading, isError } = useCard(id ?? '');
-  const isTeamCardContext = isCreatingTeamCard || (isEditing && !!existingCard?.teamId);
+  const isTeamCardContext =
+    isCreatingTeamCard || (isEditing && !!existingCard?.teamId);
   const createCard = useCreateCard();
   const updateCard = useUpdateCard();
   const { data: templates } = useTemplates();
@@ -747,7 +748,8 @@ export default function CardEditor() {
                       Set as default card
                     </p>
                     <p className="text-xs text-neutral-400 mt-0.5">
-                      This card will be shown when someone visits your profile URL
+                      This card will be shown when someone visits your profile
+                      URL
                     </p>
                   </div>
                 </label>

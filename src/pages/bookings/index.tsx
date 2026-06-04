@@ -357,7 +357,9 @@ export default function Bookings() {
 
   function copyBookingLink() {
     if (!currentUser?.username) {
-      toast.error('Set a username first in Settings to share your booking link');
+      toast.error(
+        'Set a username first in Settings to share your booking link'
+      );
       return;
     }
     navigator.clipboard.writeText(bookingUrl);
@@ -366,7 +368,9 @@ export default function Bookings() {
 
   function openBookingPage() {
     if (!currentUser?.username) {
-      toast.error('Set a username first in Settings to share your booking link');
+      toast.error(
+        'Set a username first in Settings to share your booking link'
+      );
       return;
     }
     window.open(bookingUrl, '_blank');
