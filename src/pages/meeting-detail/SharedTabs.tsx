@@ -38,6 +38,7 @@ import type {
   SMARecording,
   MeetingNote,
 } from '@/services/smaService';
+import type { TeamMemberRow } from '@/services/teamService';
 import {
   useTranscript,
   useSummary,
@@ -806,10 +807,12 @@ export function ActionsTab({
   };
 
   const handleAssign = (task: Task, assigneeId: string | null) => {
-    const membersCache = qc.getQueryData<{ members: import('@/services/teamService').TeamMemberRow[] }>(
-      ['teams', 'members', activeTeamId]
-    );
-    const member = assigneeId ? membersCache?.members.find((m) => m.user.id === assigneeId) : null;
+    const membersCache = qc.getQueryData<{
+      members: TeamMemberRow[];
+    }>(['teams', 'members', activeTeamId]);
+    const member = assigneeId
+      ? membersCache?.members.find((m) => m.user.id === assigneeId)
+      : null;
     qc.setQueryData(
       queryKeys.sma.tasks(meetingId),
       (old: { tasks: Task[]; total: number; hasMore: boolean } | undefined) =>
