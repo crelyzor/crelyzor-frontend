@@ -884,7 +884,8 @@ Dev notes: `docs/dev-notes/phase-6-p10-create-team-modal.md`.
 - [x] Team name (autofocus) + auto-derived slug with `crelyzor.app/t/` prefix + `slugManuallyEdited` flag to preserve user edits.
 - [x] Optional description (textarea, max 500) + optional logo URL input.
 - [x] Submit handles 4 outcomes: 201 → setActiveTeam + navigate / ; 402 → close + openUpgradeModal('FEATURE_GATE') ; 409 → inline slug error ; other 4xx → toast.
-- [~] **Logo dropzone + slug-availability pre-check deferred** — dropzone waits for a backend team-logo upload endpoint; pre-check waits for a `GET /teams/check-slug` endpoint. Both ship with P11/P3 (team settings).
+- [x] **Logo dropzone** — GCS presigned upload (`POST /storage/generate-upload-url/image`); drag-and-drop + click; 40×40 preview + spinner + inline error; URL paste kept as fallback. Shipped 2026-06-05.
+- [~] **Slug-availability pre-check deferred** — waits for `GET /teams/check-slug` backend endpoint.
 - [x] **`<UpgradeToProModal />` handled via existing `<UpgradeModal />` with `FEATURE_GATE` code** — no new component needed since the apiClient interceptor already routes 402 responses through the shared modal.
 
 ---
@@ -895,7 +896,7 @@ Route: `/teams/:teamId/settings`. New page: `src/pages/teams/TeamSettingsPage.ts
 
 - [x] **General tab** — name / slug (Owner-only editable, disabled+hint for Admin/Member) / description / logo URL input. Save button disabled until dirty. 200/403/409 handling inline. Logo upload UX still needs a backend endpoint — URL input ships now. P11.a (2026-05-30). Dev notes: `docs/dev-notes/phase-6-p11a-team-settings-foundation.md`.
 - [x] **Members tab** (P11.b — 2026-05-30) — header with `Invite member` (Admin+); roster: avatar + name/email + role badge or Owner-only inline `<select>` + relative joined date + kebab (Admin+, non-Owner, non-self) → Remove confirm Dialog. Empty state: "Just you for now". Dev notes: `docs/dev-notes/phase-6-p11b-team-members-invites.md`.
-- [x] **Invite member modal** (P11.b) — email-mode only (chip input, Enter/comma/Backspace, 10-cap), role select (ADMIN | MEMBER), optional 200-char personal note. Toast distinguishes sent vs skipped. User-mode (typeahead) deferred — no user-search endpoint yet.
+- [x] **Invite member modal** (P11.b) — email-mode (chip input, Enter/comma/Backspace, 10-cap) + user-search mode (typeahead via `GET /users/search`, avatar + name chips, parallel invite dispatch). Role select (ADMIN | MEMBER), optional 200-char personal note. Shipped 2026-06-05.
 - [x] **Invites tab** (P11.b) — pending invites list with Resend + Cancel per row, expiry highlighted red when past. Members view is gated to "Only owners and admins can see pending invites." copy + no fetch.
 - [x] **Usage tab** (P11.c — 2026-05-30) — 4 summary cards (Transcription / Recall / AI / Storage) vs owner-plan limits ("Unlimited" / "Not on this plan" / finite bar); per-member breakdown sorted by transcription desc; client-side CSV export (`<slug>-usage-<YYYY-MM-DD>.csv`); members see permission copy; empty-state card. Period selector deferred until backend supports `?period=`. Dev notes: `docs/dev-notes/phase-6-p11c-usage-billing.md`.
 - [x] **Billing tab** (P11.c) — Owner sees "You're paying for this team's consumption" + "Manage billing" CTA → `/settings?tab=billing`. Admin/Member sees read-only attribution copy. FREE-plan Owner edge-case warning card.
