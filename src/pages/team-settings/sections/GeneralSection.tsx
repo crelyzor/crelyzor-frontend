@@ -5,7 +5,7 @@
  *   - Team name (Admin+)
  *   - Team URL slug (Owner-only — disabled with hint for other roles)
  *   - Description (Admin+)
- *   - Logo URL (Admin+) — full upload UX deferred to a later P11.x chunk
+ *   - Logo URL (Admin+) — dropzone upload + URL fallback
  *
  * On Save:
  *   200 → invalidate teams.list + detail, toast "Saved"
@@ -13,16 +13,16 @@
  *   409 → inline error on slug ("This URL is taken")
  *   other → toast server message
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { CreditCard, CalendarDays, Copy, ExternalLink } from 'lucide-react';
+import { CreditCard, CalendarDays, Copy, ExternalLink, ImageIcon, Loader2 } from 'lucide-react';
 import { useUpdateTeam, useTeamCards } from '@/hooks/queries/useTeamQueries';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
-import { ApiError } from '@/lib/apiClient';
+import { ApiError, apiClient } from '@/lib/apiClient';
 import { CARDS_PUBLIC_URL } from '@/lib/publicUrl';
 import { toast } from 'sonner';
 import type { TeamRole, TeamSummary } from '@/services/teamService';
@@ -46,6 +46,9 @@ export function GeneralSection({ teamId, role, team }: Props) {
   const [description, setDescription] = useState(team.description ?? '');
   const [logoUrl, setLogoUrl] = useState(team.logoUrl ?? '');
   const [slugError, setSlugError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Resync if the team prop changes (e.g. after a successful save).
   useEffect(() => {
@@ -54,6 +57,7 @@ export function GeneralSection({ teamId, role, team }: Props) {
     setDescription(team.description ?? '');
     setLogoUrl(team.logoUrl ?? '');
     setSlugError(null);
+    setUploadError(null);
   }, [team]);
 
   const slugValid =
@@ -67,7 +71,36 @@ export function GeneralSection({ teamId, role, team }: Props) {
     logoUrl !== (team.logoUrl ?? '');
 
   const canSave =
-    canEditMost && dirty && nameValid && slugValid && !updateMutation.isPending;
+    canEditMost && dirty && nameValid && slugValid && !updateMutation.isPending && !isUploading;
+
+  const handleFileUpload = async (file: File) => {
+    setUploadError(null);
+    setIsUploading(true);
+    try {
+      const { uploadURL, downloadURL } = await apiClient.post<{
+        uploadURL: string;
+        downloadURL: string;
+        filePath: string;
+        expiresAt: string;
+      }>('/storage/generate-upload-url/image', {
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+      });
+
+      await fetch(uploadURL, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type },
+      });
+
+      setLogoUrl(downloadURL);
+    } catch {
+      setUploadError('Upload failed — please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!canSave) return;
@@ -236,17 +269,95 @@ export function GeneralSection({ teamId, role, team }: Props) {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="team-logo" className="text-xs font-medium">
-              Logo URL <span className="text-muted-foreground">(optional)</span>
+            <Label className="text-xs font-medium">
+              Logo <span className="text-muted-foreground">(optional)</span>
             </Label>
-            <Input
-              id="team-logo"
-              type="url"
-              value={logoUrl}
-              disabled={!canEditMost}
-              placeholder="https://…"
-              onChange={(e) => setLogoUrl(e.target.value)}
+
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={!canEditMost || isUploading}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  void handleFileUpload(file);
+                }
+                // Reset so the same file can be re-selected
+                e.target.value = '';
+              }}
             />
+
+            {/* Dropzone */}
+            <button
+              type="button"
+              disabled={!canEditMost || isUploading}
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const file = e.dataTransfer.files?.[0];
+                if (file && file.type.startsWith('image/')) {
+                  void handleFileUpload(file);
+                }
+              }}
+              className="w-full rounded-xl border-2 border-dashed border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500 transition-colors flex items-center justify-center gap-3 p-4 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isUploading ? (
+                <Loader2 className="w-4 h-4 animate-spin text-neutral-400 dark:text-neutral-500 shrink-0" />
+              ) : logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt="Team logo preview"
+                  className="w-10 h-10 rounded-lg object-cover shrink-0"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0">
+                  <ImageIcon className="w-4 h-4 text-neutral-400 dark:text-neutral-500" />
+                </div>
+              )}
+              <div className="text-left min-w-0">
+                <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                  {isUploading
+                    ? 'Uploading…'
+                    : logoUrl
+                      ? 'Click to replace'
+                      : 'Click or drag to upload'}
+                </p>
+                <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">
+                  PNG, JPG, SVG, WebP
+                </p>
+              </div>
+            </button>
+
+            {uploadError && (
+              <p className="text-xs text-red-500 dark:text-red-400">
+                {uploadError}
+              </p>
+            )}
+
+            {/* URL fallback */}
+            <div className="flex flex-col gap-1 mt-1">
+              <Label
+                htmlFor="team-logo-url"
+                className="text-[11px] text-muted-foreground"
+              >
+                Or paste URL
+              </Label>
+              <Input
+                id="team-logo-url"
+                type="url"
+                value={logoUrl}
+                disabled={!canEditMost || isUploading}
+                placeholder="https://…"
+                onChange={(e) => {
+                  setLogoUrl(e.target.value);
+                  setUploadError(null);
+                }}
+              />
+            </div>
           </div>
 
           <div className="flex justify-end pt-2">
