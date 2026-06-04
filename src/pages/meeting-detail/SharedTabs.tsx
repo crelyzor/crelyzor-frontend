@@ -76,7 +76,6 @@ import {
   formatDuration,
   SkeletonLines,
 } from './meetingDetailHelpers';
-import { useTeamMembers } from '@/hooks/queries/useTeamQueries';
 import { AssigneePicker } from '@/pages/tasks/components/AssigneePicker';
 
 // ── Recording Tab ──
@@ -738,9 +737,7 @@ export function ActionsTab({
     useCreateTask(meetingId);
   const { mutate: updateTask } = useUpdateTask(meetingId);
   const { mutate: deleteTask } = useDeleteTask(meetingId);
-  const { activeTeamId } = useTeamStore();
-  const { data: membersData } = useTeamMembers(activeTeamId);
-  const members = membersData?.members ?? [];
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
 
   const handleCopyTasks = async () => {
     if (!tasks || tasks.length === 0) return;
@@ -809,9 +806,10 @@ export function ActionsTab({
   };
 
   const handleAssign = (task: Task, assigneeId: string | null) => {
-    const member = assigneeId
-      ? members.find((m) => m.user.id === assigneeId)
-      : null;
+    const membersCache = qc.getQueryData<{ members: import('@/services/teamService').TeamMemberRow[] }>(
+      ['teams', 'members', activeTeamId]
+    );
+    const member = assigneeId ? membersCache?.members.find((m) => m.user.id === assigneeId) : null;
     qc.setQueryData(
       queryKeys.sma.tasks(meetingId),
       (old: { tasks: Task[]; total: number; hasMore: boolean } | undefined) =>
@@ -985,7 +983,7 @@ export function ActionsTab({
                 >
                   <AssigneePicker
                     teamId={activeTeamId}
-                    value={task.assigneeId ?? null}
+                    value={task.assigneeId}
                     onChange={(id) => handleAssign(task, id)}
                     compact
                   />
