@@ -1,9 +1,15 @@
 /* eslint-disable react-refresh/only-export-components */
 // Shared helpers for MeetingDetail layouts
 import { useState, useEffect, useRef } from 'react';
-import { Loader2, Users, Pencil } from 'lucide-react';
+import { Check, Loader2, Users, Pencil } from 'lucide-react';
 import type { SMASpeaker } from '@/services/smaService';
+import type { TeamMemberRow } from '@/services/teamService';
 import { useRenameSpeaker } from '@/hooks/queries/useSMAQueries';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 export function formatTimestamp(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -28,12 +34,15 @@ export function SpeakerChip({
   speaker,
   meetingId,
   participantNames = [],
+  teamMembers,
 }: {
   speaker: SMASpeaker;
   meetingId: string;
   participantNames?: string[];
+  teamMembers?: TeamMemberRow[];
 }) {
   const [editing, setEditing] = useState(false);
+  const [open, setOpen] = useState(false);
   const [value, setValue] = useState(
     speaker.displayName ?? speaker.speakerLabel
   );
@@ -59,6 +68,65 @@ export function SpeakerChip({
       { onSettled: () => setEditing(false) }
     );
   };
+
+  // Team workspace: popover with member list instead of text input
+  if (teamMembers && teamMembers.length > 0) {
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            className="group flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500 transition-colors"
+            title={`${speaker.speakerLabel} — click to identify`}
+          >
+            <span>{speaker.displayName ?? speaker.speakerLabel}</span>
+            <Pencil className="w-2.5 h-2.5 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="start" sideOffset={4} className="p-1.5 w-48">
+          {teamMembers.map((m) => (
+            <button
+              key={m.user.id}
+              type="button"
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              onClick={() => {
+                rename(
+                  {
+                    speakerId: speaker.id,
+                    displayName: m.user.name ?? m.user.email,
+                  },
+                  { onSettled: () => setOpen(false) }
+                );
+              }}
+            >
+              {m.user.avatarUrl ? (
+                <img
+                  src={m.user.avatarUrl}
+                  alt={m.user.name ?? m.user.email}
+                  className="w-5 h-5 rounded-full object-cover shrink-0"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[9px] font-semibold text-neutral-600 dark:text-neutral-300 shrink-0">
+                  {(m.user.name ?? m.user.email)[0].toUpperCase()}
+                </div>
+              )}
+              <span className="flex-1 text-left truncate">
+                {m.user.name ?? m.user.email}
+              </span>
+              {speaker.displayName === (m.user.name ?? m.user.email) && (
+                <Check className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
+              )}
+            </button>
+          ))}
+          {isPending && (
+            <div className="flex items-center justify-center py-2">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-400" />
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
+    );
+  }
 
   if (editing) {
     return (
@@ -115,10 +183,12 @@ export function SpeakersSection({
   speakers,
   meetingId,
   participantNames,
+  teamMembers,
 }: {
   speakers: SMASpeaker[];
   meetingId: string;
   participantNames: string[];
+  teamMembers?: TeamMemberRow[];
 }) {
   if (speakers.length === 0) return null;
   const hasUnnamed = speakers.some((s) => !s.displayName);
@@ -138,11 +208,14 @@ export function SpeakersSection({
             speaker={s}
             meetingId={meetingId}
             participantNames={participantNames}
+            teamMembers={teamMembers}
           />
         ))}
       </div>
       <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-2">
-        {hasUnnamed
+        {teamMembers && teamMembers.length > 0
+          ? 'Click a speaker to identify them from your team'
+          : hasUnnamed
           ? 'Click a speaker to name them — or pick from participants'
           : 'Click a speaker to rename'}
       </p>
