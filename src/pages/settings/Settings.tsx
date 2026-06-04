@@ -43,6 +43,7 @@ import {
   HardDrive,
   Mail,
   Infinity as InfinityIcon,
+  Lock,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -72,7 +73,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { useCurrentUser, useLogout } from '@/hooks/queries/useAuthQueries';
+import { useCurrentUser, useLogout, useDeactivateAccount } from '@/hooks/queries/useAuthQueries';
 import { useMyTeams } from '@/hooks/queries/useTeamQueries';
 import type { TeamMembership } from '@/services/teamService';
 import { GeneralSection } from '../team-settings/sections/GeneralSection';
@@ -2800,6 +2801,8 @@ function SecuritySection() {
     isError: sessionsError,
   } = useSessions();
   const revokeSession = useRevokeSession();
+  const deactivateAccount = useDeactivateAccount();
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -2916,6 +2919,27 @@ function SecuritySection() {
             )}
           </div>
 
+          {/* Encryption at Rest */}
+          <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0 mt-0.5">
+                <Lock className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-0.5">
+                  Encryption at Rest
+                </p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                  Meeting transcripts, notes, AI content, tasks, contacts, and
+                  booking PII are encrypted at rest using Google Cloud KMS
+                  (AES-256-GCM, per-user key). Crelyzor can decrypt for AI
+                  features and your own access — a leaked database alone cannot
+                  be read.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Danger zone */}
           <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
             <h3 className="text-sm font-semibold text-red-500 mb-3">
@@ -2925,12 +2949,51 @@ function SecuritySection() {
               variant="outline"
               size="sm"
               className="text-xs text-red-500 border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/20"
+              onClick={() => setDeleteOpen(true)}
             >
               Delete Account
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Delete Account Dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base font-semibold text-red-500">
+              Delete your account?
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-1">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+              Deleting your account destroys your encryption key. Your data —
+              including in our backups — becomes permanently unrecoverable. This
+              cannot be undone.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeleteOpen(false)}
+                disabled={deactivateAccount.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={deactivateAccount.isPending}
+                onClick={() => deactivateAccount.mutate()}
+              >
+                {deactivateAccount.isPending
+                  ? 'Deleting…'
+                  : 'Yes, delete my account'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
