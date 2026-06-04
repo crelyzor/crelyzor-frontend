@@ -62,6 +62,7 @@ import {
 } from '@/hooks/queries/useSMAQueries';
 import { useBillingUsage } from '@/hooks/queries/useBillingQueries';
 import { useUIStore } from '@/stores/uiStore';
+import { useTeamStore } from '@/stores';
 import type {
   AIContentType,
   AIChatMessage,
@@ -75,6 +76,8 @@ import {
   formatDuration,
   SkeletonLines,
 } from './meetingDetailHelpers';
+import { useTeamMembers } from '@/hooks/queries/useTeamQueries';
+import { AssigneePicker } from '@/pages/tasks/components/AssigneePicker';
 
 // ── Recording Tab ──
 export function RecordingTab({
@@ -735,6 +738,9 @@ export function ActionsTab({
     useCreateTask(meetingId);
   const { mutate: updateTask } = useUpdateTask(meetingId);
   const { mutate: deleteTask } = useDeleteTask(meetingId);
+  const { activeTeamId } = useTeamStore();
+  const { data: membersData } = useTeamMembers(activeTeamId);
+  const members = membersData?.members ?? [];
 
   const handleCopyTasks = async () => {
     if (!tasks || tasks.length === 0) return;
@@ -799,6 +805,61 @@ export function ActionsTab({
     createTask(
       { title: newTitle.trim() },
       { onSuccess: () => setNewTitle('') }
+    );
+  };
+
+  const handleAssign = (task: Task, assigneeId: string | null) => {
+    const member = assigneeId
+      ? members.find((m) => m.user.id === assigneeId)
+      : null;
+    qc.setQueryData(
+      queryKeys.sma.tasks(meetingId),
+      (old: { tasks: Task[]; total: number; hasMore: boolean } | undefined) =>
+        old
+          ? {
+              ...old,
+              tasks: old.tasks.map((t) =>
+                t.id === task.id
+                  ? {
+                      ...t,
+                      assigneeId: member?.user.id ?? null,
+                      assigneeName: member?.user.name ?? null,
+                      assigneeAvatarUrl: member?.user.avatarUrl ?? null,
+                    }
+                  : t
+              ),
+            }
+          : old
+    );
+    updateTask(
+      { taskId: task.id, data: { assigneeId } },
+      {
+        onError: () => {
+          qc.setQueryData(
+            queryKeys.sma.tasks(meetingId),
+            (
+              old:
+                | { tasks: Task[]; total: number; hasMore: boolean }
+                | undefined
+            ) =>
+              old
+                ? {
+                    ...old,
+                    tasks: old.tasks.map((t) =>
+                      t.id === task.id
+                        ? {
+                            ...t,
+                            assigneeId: task.assigneeId,
+                            assigneeName: task.assigneeName,
+                            assigneeAvatarUrl: task.assigneeAvatarUrl,
+                          }
+                        : t
+                    ),
+                  }
+                : old
+          );
+        },
+      }
     );
   };
 
@@ -916,6 +977,20 @@ export function ActionsTab({
                   </p>
                 )}
               </div>
+
+              {/* Assignee picker — team workspace only */}
+              {activeTeamId && (
+                <div
+                  className={`shrink-0 transition-opacity ${task.assigneeId ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                >
+                  <AssigneePicker
+                    teamId={activeTeamId}
+                    value={task.assigneeId ?? null}
+                    onChange={(id) => handleAssign(task, id)}
+                    compact
+                  />
+                </div>
+              )}
 
               {/* Delete button — visible on row hover */}
               <Button
@@ -1251,6 +1326,7 @@ export function AskAITab({
   const abortRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { data: billing } = useBillingUsage();
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
   const queryClient = useQueryClient();
 
   // Seed messages from persisted history once on first load (ref = no re-render, no re-run)
@@ -1359,13 +1435,18 @@ export function AskAITab({
       ? Math.max(0, billing.limits.aiCredits - billing.usage.aiCredits)
       : null;
   const creditsWarn = creditsLeft !== null && creditsLeft < 10;
+  const isTeamContext = !!activeTeamId;
 
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 flex items-center gap-1.5">
         <Sparkles className="w-4 h-4 text-neutral-500" />
         Ask AI
-        {creditsLeft !== null && (
+        {isTeamContext ? (
+          <span className="ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full border bg-neutral-100 dark:bg-neutral-800 border-transparent text-neutral-500 dark:text-neutral-400">
+            Credits billed to team owner
+          </span>
+        ) : creditsLeft !== null ? (
           <span
             className={`ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${
               creditsWarn
@@ -1376,7 +1457,7 @@ export function AskAITab({
             {creditsWarn && '⚠ '}
             {creditsLeft} credit{creditsLeft !== 1 ? 's' : ''} left
           </span>
-        )}
+        ) : null}
         {messages.length > 0 && (
           <Button
             variant="ghost"
