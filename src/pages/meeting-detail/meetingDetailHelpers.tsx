@@ -46,6 +46,7 @@ export function SpeakerChip({
   const [value, setValue] = useState(
     speaker.displayName ?? speaker.speakerLabel
   );
+  const [customName, setCustomName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const { mutate: rename, isPending } = useRenameSpeaker(meetingId);
 
@@ -119,8 +120,41 @@ export function SpeakerChip({
               )}
             </button>
           ))}
+          <div className="my-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const trimmed = customName.trim();
+              if (!trimmed) return;
+              rename(
+                { speakerId: speaker.id, displayName: trimmed },
+                {
+                  onSettled: () => {
+                    setCustomName('');
+                    setOpen(false);
+                  },
+                }
+              );
+            }}
+            className="flex items-center gap-1.5 px-2 pt-1 pb-0.5"
+          >
+            <input
+              value={customName}
+              onChange={(e) => setCustomName(e.target.value)}
+              placeholder="Custom name…"
+              disabled={isPending}
+              className="flex-1 text-xs rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2 py-1 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-600 outline-none focus:border-neutral-400 dark:focus:border-neutral-500 disabled:opacity-50"
+            />
+            <button
+              type="submit"
+              disabled={!customName.trim() || isPending}
+              className="p-1 rounded-md text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors disabled:opacity-40 disabled:pointer-events-none"
+            >
+              <Check className="w-3.5 h-3.5" />
+            </button>
+          </form>
           {isPending && (
-            <div className="flex items-center justify-center py-2">
+            <div className="flex items-center justify-center py-1.5">
               <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-400" />
             </div>
           )}
@@ -219,8 +253,8 @@ export function SpeakersSection({
             ? 'Click a speaker to identify them from your team'
             : 'Click a speaker to re-identify'
           : hasUnnamed
-          ? 'Click a speaker to name them — or pick from participants'
-          : 'Click a speaker to rename'}
+            ? 'Click a speaker to name them — or pick from participants'
+            : 'Click a speaker to rename'}
       </p>
     </div>
   );
