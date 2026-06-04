@@ -35,6 +35,8 @@ import {
   useRegenerateTitle,
   useRegenerateTranscript,
 } from '@/hooks/queries/useSMAQueries';
+import { useTeamMembers } from '@/hooks/queries/useTeamQueries';
+import { useTeamStore } from '@/stores';
 import {
   RecordingTab,
   TranscriptTab,
@@ -112,6 +114,8 @@ export function RecordedDetail({
     );
   };
   const { data: speakers } = useSpeakers(rawMeeting.id, isCompleted);
+  const { activeTeamId } = useTeamStore();
+  const { data: membersData } = useTeamMembers(activeTeamId);
   const { data: summary } = useSummary(rawMeeting.id, isCompleted);
   const { mutate: triggerAI, isPending: isRetrying } = useTriggerAI(
     rawMeeting.id
@@ -320,6 +324,7 @@ export function RecordedDetail({
               participantNames={rawMeeting.participants
                 .map((p) => p.user?.name ?? p.guestEmail ?? null)
                 .filter((n): n is string => !!n)}
+              teamMembers={membersData?.members}
             />
           )}
 
