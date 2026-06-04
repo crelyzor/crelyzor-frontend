@@ -73,7 +73,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { useCurrentUser, useLogout, useDeactivateAccount } from '@/hooks/queries/useAuthQueries';
+import {
+  useCurrentUser,
+  useLogout,
+  useDeactivateAccount,
+} from '@/hooks/queries/useAuthQueries';
 import { useMyTeams } from '@/hooks/queries/useTeamQueries';
 import type { TeamMembership } from '@/services/teamService';
 import { GeneralSection } from '../team-settings/sections/GeneralSection';

@@ -19,7 +19,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { CreditCard, CalendarDays, Copy, ExternalLink, ImageIcon, Loader2 } from 'lucide-react';
+import {
+  CreditCard,
+  CalendarDays,
+  Copy,
+  ExternalLink,
+  ImageIcon,
+  Loader2,
+} from 'lucide-react';
 import { useUpdateTeam, useTeamCards } from '@/hooks/queries/useTeamQueries';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { ApiError, apiClient } from '@/lib/apiClient';
@@ -71,7 +78,12 @@ export function GeneralSection({ teamId, role, team }: Props) {
     logoUrl !== (team.logoUrl ?? '');
 
   const canSave =
-    canEditMost && dirty && nameValid && slugValid && !updateMutation.isPending && !isUploading;
+    canEditMost &&
+    dirty &&
+    nameValid &&
+    slugValid &&
+    !updateMutation.isPending &&
+    !isUploading;
 
   const handleFileUpload = async (file: File) => {
     setUploadError(null);

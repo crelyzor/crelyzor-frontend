@@ -472,7 +472,10 @@ export function TranscriptTab({
       <div className="flex items-center justify-between mb-4 gap-2">
         <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 flex items-center gap-1.5">
           Transcript
-          <Lock className="w-3 h-3 text-neutral-300 dark:text-neutral-600" aria-label="Encrypted at rest" />
+          <Lock
+            className="w-3 h-3 text-neutral-300 dark:text-neutral-600"
+            aria-label="Encrypted at rest"
+          />
         </h3>
         <Button
           variant="ghost"
@@ -575,7 +578,10 @@ export function SummaryTab({
           <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 flex items-center gap-1.5">
             <FileText className="w-4 h-4 text-neutral-500" />
             AI Summary
-            <Lock className="w-3 h-3 text-neutral-300 dark:text-neutral-600" aria-label="Encrypted at rest" />
+            <Lock
+              className="w-3 h-3 text-neutral-300 dark:text-neutral-600"
+              aria-label="Encrypted at rest"
+            />
           </h3>
           <div className="flex items-center gap-1">
             {!editingSummary && (
@@ -1191,7 +1197,10 @@ export function NotesTab({ meetingId }: { meetingId: string }) {
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-neutral-950 dark:text-neutral-50 flex items-center gap-1.5">
         Notes
-        <Lock className="w-3 h-3 text-neutral-300 dark:text-neutral-600" aria-label="Encrypted at rest" />
+        <Lock
+          className="w-3 h-3 text-neutral-300 dark:text-neutral-600"
+          aria-label="Encrypted at rest"
+        />
       </h3>
 
       {/* Create form */}

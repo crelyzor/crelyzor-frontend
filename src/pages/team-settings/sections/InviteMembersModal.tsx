@@ -47,13 +47,7 @@ function initials(name: string): string {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function Chip({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-md bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 text-[12px] text-neutral-700 dark:text-neutral-200">
       {label}
@@ -148,9 +142,7 @@ export function InviteMembersModal({
         // Filter out already-selected users
         const selectedIds = new Set(selectedUsers.map((u) => u.id));
         setResults(
-          (data.users ?? [])
-            .filter((u) => !selectedIds.has(u.id))
-            .slice(0, 5)
+          (data.users ?? []).filter((u) => !selectedIds.has(u.id)).slice(0, 5)
         );
         setSearched(true);
       } catch {
@@ -249,7 +241,8 @@ export function InviteMembersModal({
 
   // ── Derived labels ────────────────────────────────────────────────────────
 
-  const selectionCount = mode === 'email' ? emails.length : selectedUsers.length;
+  const selectionCount =
+    mode === 'email' ? emails.length : selectedUsers.length;
   const sendLabel = inviteMutation.isPending
     ? 'Sending…'
     : `Send ${selectionCount || ''} invite${selectionCount === 1 ? '' : 's'}`.trim();
