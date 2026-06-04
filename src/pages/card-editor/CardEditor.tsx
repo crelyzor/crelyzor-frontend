@@ -39,8 +39,10 @@ import {
   useTemplates,
   usePreviewCard,
 } from '@/hooks/queries/useCardQueries';
+import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { useTeam } from '@/hooks/queries/useTeamQueries';
 import { useTeamStore } from '@/stores';
+import { CARDS_PUBLIC_URL } from '@/lib/publicUrl';
 import { CardTagsSection } from './CardTagsSection';
 import { CardTasksSection } from './CardTasksSection';
 import { EmailSignatureModal } from './EmailSignatureModal';
@@ -102,6 +104,9 @@ export default function CardEditor() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = !!id;
+
+  const { data: currentUser } = useCurrentUser();
+  const username = currentUser?.username ?? '';
 
   const activeTeamId = useTeamStore((s) => s.activeTeamId);
   const isCreatingTeamCard = !isEditing && !!activeTeamId;
@@ -514,10 +519,10 @@ export default function CardEditor() {
                   />
                   <p className="text-xs text-neutral-400">
                     {existingCard?.teamId && existingCard?.team?.slug
-                      ? `Your card will be accessible at /t/${existingCard.team.slug}/${slug || 'default'}`
+                      ? `Your card will be accessible at ${CARDS_PUBLIC_URL}/t/${existingCard.team.slug}/${slug || 'default'}`
                       : isCreatingTeamCard && activeTeam?.team?.slug
-                        ? `Your team card will be accessible at /t/${activeTeam.team.slug}/${slug || 'default'}`
-                        : `Your card will be accessible at /username/${slug || 'default'}`}
+                        ? `Your team card will be accessible at ${CARDS_PUBLIC_URL}/t/${activeTeam.team.slug}/${slug || 'default'}`
+                        : `Your card will be accessible at ${CARDS_PUBLIC_URL}/${username || 'username'}/${slug || 'default'}`}
                   </p>
                 </div>
               </div>
