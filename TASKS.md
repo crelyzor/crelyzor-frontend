@@ -814,14 +814,14 @@ New hook: `src/hooks/useNotificationSocket.ts` (WebSocket, not SSE — backend u
 
 ### P0 — Trust surfacing
 
-- [ ] **Privacy section in Settings** — add (or expand) `/settings/privacy` with an "Encryption" subsection. Copy: _"Your meeting transcripts, notes, AI content, tasks, contacts, and booking PII are encrypted at rest using Google Cloud KMS. Crelyzor can decrypt for AI features and your own access; a leaked database alone cannot be read."_
-- [ ] **"Encrypted" badge on meeting detail** — a small lock-icon badge near the transcript / notes section header (`text-[10px] text-muted-foreground uppercase tracking-wider`, neutral, no color). Pure trust signal, no interaction.
-- [ ] **Account-deletion confirmation modal** — update copy to call out crypto-shredding: _"Deleting your account destroys your encryption key. Your data — including in our backups — becomes permanently unrecoverable. This cannot be undone."_
+- [x] **Privacy section in Settings** — add (or expand) `/settings/privacy` with an "Encryption" subsection. Copy: _"Your meeting transcripts, notes, AI content, tasks, contacts, and booking PII are encrypted at rest using Google Cloud KMS. Crelyzor can decrypt for AI features and your own access; a leaked database alone cannot be read."_
+- [x] **"Encrypted" badge on meeting detail** — a small lock-icon badge near the transcript / notes section header (`text-[10px] text-muted-foreground uppercase tracking-wider`, neutral, no color). Pure trust signal, no interaction.
+- [x] **Account-deletion confirmation modal** — update copy to call out crypto-shredding: _"Deleting your account destroys your encryption key. Your data — including in our backups — becomes permanently unrecoverable. This cannot be undone."_
 
 ### P1 — Error handling
 
-- [ ] **Decrypt-failure error path** — when the backend returns the new `DECRYPT_FAILED` error code (very rare; likely indicates a KMS/IAM issue or a row missing a DEK), render the empty-state pattern: _"This content couldn't be loaded. Contact support."_ No raw error text. Log to Sentry with full context.
-- [ ] React Query global `onError` handler — handle `DECRYPT_FAILED` as a non-toast error (don't spam toasts on a content-render failure — the empty state inline is enough)
+- [x] **Decrypt-failure error path** — when the backend returns the new `DECRYPT_FAILED` error code (very rare; likely indicates a KMS/IAM issue or a row missing a DEK), render the empty-state pattern: _"This content couldn't be loaded. Contact support."_ No raw error text. Log to Sentry with full context.
+- [x] React Query global `onError` handler — handle `DECRYPT_FAILED` as a non-toast error (don't spam toasts on a content-render failure — the empty state inline is enough)
 
 ---
 
