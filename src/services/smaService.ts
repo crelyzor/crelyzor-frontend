@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/apiClient';
-import { useAuthStore } from '@/stores';
+import { useAuthStore, useTeamStore } from '@/stores';
 import type { Task } from '@/types';
 import { ApiError } from '@/lib/apiClient';
 
@@ -407,6 +407,7 @@ export const smaApi = {
     signal?: AbortSignal
   ): Promise<void> => {
     const token = useAuthStore.getState().accessToken;
+    const activeTeamId = useTeamStore.getState().activeTeamId;
     const base = getApiBase();
 
     let res: Response;
@@ -416,6 +417,7 @@ export const smaApi = {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(activeTeamId ? { 'X-Team-Id': activeTeamId } : {}),
         },
         body: JSON.stringify({ question }),
         signal,
@@ -515,13 +517,17 @@ export const smaApi = {
     content: 'transcript' | 'summary'
   ): Promise<void> => {
     const token = useAuthStore.getState().accessToken;
+    const activeTeamId = useTeamStore.getState().activeTeamId;
     const base = getApiBase();
 
     const res = await fetch(
       `${base}/sma/meetings/${meetingId}/export?format=${format}&content=${content}`,
       {
         method: 'GET',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(activeTeamId ? { 'X-Team-Id': activeTeamId } : {}),
+        },
       }
     );
 
@@ -549,6 +555,7 @@ export const smaApi = {
     file: File
   ): Promise<{ id: string }> => {
     const token = useAuthStore.getState().accessToken;
+    const activeTeamId = useTeamStore.getState().activeTeamId;
     const form = new FormData();
     // Backend multer expects field name "file"
     form.append('file', file, file.name);
@@ -557,7 +564,10 @@ export const smaApi = {
 
     const res = await fetch(`${base}/sma/meetings/${meetingId}/recordings`, {
       method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(activeTeamId ? { 'X-Team-Id': activeTeamId } : {}),
+      },
       body: form,
     });
 

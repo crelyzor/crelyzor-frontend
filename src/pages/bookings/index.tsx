@@ -15,7 +15,10 @@ import {
   Phone,
   LayoutList,
   ArrowUpRight,
+  Link2,
+  ExternalLink,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { PageMotion } from '@/components/PageMotion';
 import {
@@ -23,7 +26,12 @@ import {
   useConfirmBooking,
   useDeclineBooking,
   useCancelBooking,
+  useEventTypes,
 } from '@/hooks/queries/useSchedulingQueries';
+import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
+import { useMyTeams } from '@/hooks/queries/useTeamQueries';
+import { useTeamStore } from '@/stores';
+import { CARDS_PUBLIC_URL } from '@/lib/publicUrl';
 import type { HostBooking, BookingStatus } from '@/types/settings';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -251,7 +259,40 @@ function BookingRowSkeleton() {
 
 // ── Empty State ────────────────────────────────────────────────────────────
 
-function EmptyState({ filter }: { filter: FilterStatus }) {
+function EmptyState({
+  filter,
+  hasEventTypes,
+}: {
+  filter: FilterStatus;
+  hasEventTypes: boolean;
+}) {
+  const navigate = useNavigate();
+
+  if (filter === 'all' && !hasEventTypes) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+          <LayoutList className="w-5 h-5 text-neutral-400 dark:text-neutral-500" />
+        </div>
+        <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+          No event types yet
+        </p>
+        <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1 max-w-xs">
+          Create an event type so people can book time with you
+        </p>
+        <Button
+          size="sm"
+          variant="outline"
+          className="mt-4 text-xs"
+          onClick={() => navigate('/settings?tab=event-types')}
+        >
+          <LayoutList className="w-3.5 h-3.5 mr-1.5" />
+          Create event type
+        </Button>
+      </div>
+    );
+  }
+
   const messages: Record<FilterStatus, { title: string; subtitle: string }> = {
     all: {
       title: 'No bookings yet',
@@ -296,11 +337,40 @@ function EmptyState({ filter }: { filter: FilterStatus }) {
 export default function Bookings() {
   const [activeFilter, setActiveFilter] = useState<FilterStatus>('all');
   const navigate = useNavigate();
+  const { data: currentUser } = useCurrentUser();
+  const activeTeamId = useTeamStore((s) => s.activeTeamId);
+  const { data: teamsData } = useMyTeams();
+  const activeTeam = activeTeamId
+    ? teamsData?.teams.find((m) => m.team.id === activeTeamId)?.team
+    : null;
+
+  const bookingUrl = activeTeam
+    ? `${CARDS_PUBLIC_URL}/schedule/t/${activeTeam.slug}/${currentUser?.username ?? ''}`
+    : `${CARDS_PUBLIC_URL}/schedule/${currentUser?.username ?? ''}`;
 
   const params = activeFilter !== 'all' ? { status: activeFilter } : {};
   const { data, isLoading, isError } = useBookings(params);
+  const { data: eventTypes } = useEventTypes();
+  const hasEventTypes = (eventTypes?.length ?? 0) > 0;
 
   const bookings = data?.bookings ?? [];
+
+  function copyBookingLink() {
+    if (!currentUser?.username) {
+      toast.error('Set a username first in Settings to share your booking link');
+      return;
+    }
+    navigator.clipboard.writeText(bookingUrl);
+    toast.success('Booking link copied to clipboard');
+  }
+
+  function openBookingPage() {
+    if (!currentUser?.username) {
+      toast.error('Set a username first in Settings to share your booking link');
+      return;
+    }
+    window.open(bookingUrl, '_blank');
+  }
 
   return (
     <PageMotion>
@@ -340,6 +410,33 @@ export default function Bookings() {
           </span>
           <ArrowUpRight className="w-3 h-3 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors" />
         </button>
+
+        {/* Booking link share */}
+        <div className="flex items-center gap-1 ml-auto">
+          {currentUser?.username && (
+            <span className="text-[11px] text-neutral-400 dark:text-neutral-500 font-mono hidden sm:block">
+              {bookingUrl.replace(/^https?:\/\/[^/]+/, '')}
+            </span>
+          )}
+          <button
+            onClick={copyBookingLink}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-all group"
+          >
+            <div className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+              <Link2 className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
+            </div>
+            <span className="text-[12px] font-medium text-neutral-700 dark:text-neutral-300">
+              Copy Link
+            </span>
+          </button>
+          <button
+            onClick={openBookingPage}
+            className="flex items-center justify-center w-8 h-8 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 transition-all"
+            title="Open booking page"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
+          </button>
+        </div>
       </div>
 
       {/* Filter tabs */}
@@ -374,7 +471,7 @@ export default function Bookings() {
             </p>
           </div>
         ) : bookings.length === 0 ? (
-          <EmptyState filter={activeFilter} />
+          <EmptyState filter={activeFilter} hasEventTypes={hasEventTypes} />
         ) : (
           bookings.map((booking, i) => (
             <BookingRow key={booking.id} booking={booking} index={i} />

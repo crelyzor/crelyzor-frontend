@@ -17,6 +17,7 @@ import {
   BarChart3,
   CreditCard,
   TriangleAlert,
+  LayoutList,
 } from 'lucide-react';
 import { PageMotion } from '@/components/PageMotion';
 import { useMyTeams } from '@/hooks/queries/useTeamQueries';
@@ -25,6 +26,7 @@ import { DangerSection } from './sections/DangerSection';
 import { MembersSection } from './sections/MembersSection';
 import { InvitesSection } from './sections/InvitesSection';
 import { CardsSection } from './sections/CardsSection';
+import { TeamEventTypesSection } from './sections/TeamEventTypesSection';
 import { UsageSection } from './sections/UsageSection';
 import { BillingSection } from './sections/BillingSection';
 
@@ -33,6 +35,7 @@ type TeamSettingsSection =
   | 'members'
   | 'invites'
   | 'cards'
+  | 'event-types'
   | 'usage'
   | 'billing'
   | 'danger';
@@ -46,6 +49,7 @@ const SECTIONS: Array<{
   { id: 'members', label: 'Members', icon: Users },
   { id: 'invites', label: 'Invites', icon: Mail },
   { id: 'cards', label: 'Cards', icon: CreditCard },
+  { id: 'event-types', label: 'Event Types', icon: LayoutList },
   { id: 'usage', label: 'Usage', icon: BarChart3 },
   { id: 'billing', label: 'Billing', icon: CreditCard },
   { id: 'danger', label: 'Danger zone', icon: TriangleAlert },
@@ -167,6 +171,13 @@ export default function TeamSettings() {
             )}
             {activeSection === 'cards' && (
               <CardsSection
+                teamId={teamId}
+                role={membership.role}
+                team={membership.team}
+              />
+            )}
+            {activeSection === 'event-types' && (
+              <TeamEventTypesSection
                 teamId={teamId}
                 role={membership.role}
                 team={membership.team}

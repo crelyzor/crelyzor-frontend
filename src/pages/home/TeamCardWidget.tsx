@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CreditCard, ArrowUpRight, Pencil, X, RotateCcw } from 'lucide-react';
 import { useTeamCards } from '@/hooks/queries/useTeamQueries';
+import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { CardPreview } from '@/components/cards/CardPreview';
 import { Button } from '@/components/ui/button';
 
@@ -12,10 +13,12 @@ interface Props {
 export function TeamCardWidget({ teamId }: Props) {
   const navigate = useNavigate();
   const { data, isLoading, isError } = useTeamCards(teamId);
+  const { data: currentUser } = useCurrentUser();
   const [show3D, setShow3D] = useState(false);
   const [flipped, setFlipped] = useState(false);
 
-  const teamCard = data?.teamCard ?? null;
+  const myEntry = data?.memberCards.find((e) => e.member.id === currentUser?.id);
+  const teamCard = myEntry?.cards[0] ?? null;
 
   if (isLoading) {
     return (
@@ -48,10 +51,10 @@ export function TeamCardWidget({ teamId }: Props) {
           <CreditCard className="w-4.5 h-4.5 text-neutral-400" />
         </div>
         <p className="text-[13px] font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-          Set a team card
+          Add your team card
         </p>
         <p className="text-[11px] text-neutral-400 dark:text-neutral-500 leading-relaxed">
-          Add a shared card that represents your team
+          Create your card for this team
         </p>
       </Button>
     );

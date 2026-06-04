@@ -140,6 +140,8 @@ export const queryKeys = {
   scheduling: {
     all: ['scheduling'] as const,
     eventTypes: () => [...queryKeys.scheduling.all, 'eventTypes'] as const,
+    teamEventTypes: (teamId: string) =>
+      [...queryKeys.scheduling.all, 'teamEventTypes', teamId] as const,
     schedules: () => [...queryKeys.scheduling.all, 'schedules'] as const,
     scheduleSlots: (scheduleId: string) =>
       [...queryKeys.scheduling.all, 'scheduleSlots', scheduleId] as const,

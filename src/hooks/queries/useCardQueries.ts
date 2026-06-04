@@ -71,6 +71,7 @@ export function useCreateCard() {
     mutationFn: (data: CreateCardPayload) => cardsApi.create(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.cards.all });
+      qc.invalidateQueries({ queryKey: queryKeys.teams.all });
       toast.success('Card created');
     },
     onError: (error: Error) => {
@@ -86,6 +87,7 @@ export function useUpdateCard() {
       cardsApi.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.cards.all });
+      qc.invalidateQueries({ queryKey: queryKeys.teams.all });
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to update card');
@@ -99,6 +101,7 @@ export function useDeleteCard() {
     mutationFn: (id: string) => cardsApi.delete(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.cards.all });
+      qc.invalidateQueries({ queryKey: queryKeys.teams.all });
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to delete card');

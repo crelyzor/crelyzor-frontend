@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { PageMotion } from '@/components/PageMotion';
 import {
   ArrowLeft,
@@ -101,16 +101,16 @@ function normalizeContactFields(fields: CardContactFields): CardContactFields {
 export default function CardEditor() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [searchParams] = useSearchParams();
-  const isTeamCard = searchParams.get('isTeamCard') === '1';
   const isEditing = !!id;
 
   const activeTeamId = useTeamStore((s) => s.activeTeamId);
+  const isCreatingTeamCard = !isEditing && !!activeTeamId;
   const { data: activeTeam } = useTeam(
-    isTeamCard && !isEditing ? activeTeamId : null
+    isCreatingTeamCard ? activeTeamId : null
   );
 
   const { data: existingCard, isLoading, isError } = useCard(id ?? '');
+  const isTeamCardContext = isCreatingTeamCard || (isEditing && !!existingCard?.teamId);
   const createCard = useCreateCard();
   const updateCard = useUpdateCard();
   const { data: templates } = useTemplates();
@@ -245,7 +245,6 @@ export default function CardEditor() {
       contactFields: normalizedContactFields,
       showQr,
       isDefault,
-      ...(isTeamCard && !isEditing ? { isTeamCard: true } : {}),
     };
 
     if (isEditing) {
@@ -515,7 +514,7 @@ export default function CardEditor() {
                   <p className="text-xs text-neutral-400">
                     {existingCard?.teamId && existingCard?.team?.slug
                       ? `Your card will be accessible at /t/${existingCard.team.slug}/${slug || 'default'}`
-                      : isTeamCard && activeTeam?.team?.slug
+                      : isCreatingTeamCard && activeTeam?.team?.slug
                         ? `Your team card will be accessible at /t/${activeTeam.team.slug}/${slug || 'default'}`
                         : `Your card will be accessible at /username/${slug || 'default'}`}
                   </p>
@@ -735,22 +734,24 @@ export default function CardEditor() {
                 </div>
               </label>
 
-              <label className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={isDefault}
-                  onChange={(e) => setIsDefault(e.target.checked)}
-                  className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 focus:ring-neutral-900/20"
-                />
-                <div>
-                  <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                    Set as default card
-                  </p>
-                  <p className="text-xs text-neutral-400 mt-0.5">
-                    This card will be shown when someone visits your profile URL
-                  </p>
-                </div>
-              </label>
+              {!isTeamCardContext && (
+                <label className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={isDefault}
+                    onChange={(e) => setIsDefault(e.target.checked)}
+                    className="w-4 h-4 rounded border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-neutral-100 focus:ring-neutral-900/20"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      Set as default card
+                    </p>
+                    <p className="text-xs text-neutral-400 mt-0.5">
+                      This card will be shown when someone visits your profile URL
+                    </p>
+                  </div>
+                </label>
+              )}
             </section>
 
             {/* Tags — only shown when editing an existing card */}

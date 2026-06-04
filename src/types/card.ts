@@ -40,7 +40,6 @@ export interface Card {
   htmlContent: string | null;
   htmlBackContent: string | null;
   isDefault: boolean;
-  isTeamCard: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -97,7 +96,6 @@ export interface CreateCardPayload {
   templateId?: string;
   showQr?: boolean;
   isDefault?: boolean;
-  isTeamCard?: boolean;
 }
 
 export interface UpdateCardPayload {

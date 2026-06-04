@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { PageMotion } from '@/components/PageMotion';
 import { CardsSection } from '@/pages/team-settings/sections/CardsSection';
 import { useTeamStore } from '@/stores';
-import { useMyTeams } from '@/hooks/queries/useTeamQueries';
+import { useMyTeams, useTeamCards } from '@/hooks/queries/useTeamQueries';
 import {
   Plus,
   Eye,
@@ -54,13 +54,13 @@ export default function Cards() {
     : undefined;
 
   const { data: cards, isLoading, isError } = useCards();
+  const { data: teamCardsData } = useTeamCards(activeTeamId ?? '');
   const deleteCard = useDeleteCard();
   const updateCard = useUpdateCard();
   const { data: currentUser } = useCurrentUser();
   const { data: userTags } = useUserTags();
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
-  const [showCreateMenu, setShowCreateMenu] = useState(false);
   const [qrDialogCard, setQrDialogCard] = useState<CardType | null>(null);
   const [sigCard, setSigCard] = useState<CardType | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
@@ -152,6 +152,11 @@ export default function Cards() {
         : activeMembership.role === 'ADMIN'
           ? 'Admin'
           : 'Member';
+    const myEntry = teamCardsData?.memberCards.find(
+      (e) => e.member.id === currentUser?.id
+    );
+    const alreadyHasCard = (myEntry?.cards.length ?? 0) > 0;
+
     return (
       <PageMotion>
         <div className="max-w-5xl mx-auto">
@@ -171,57 +176,10 @@ export default function Cards() {
               >
                 {roleLabel}
               </Badge>
-              {activeMembership.role === 'OWNER' ||
-              activeMembership.role === 'ADMIN' ? (
-                <div className="relative">
-                  <Button
-                    onClick={() => setShowCreateMenu((v) => !v)}
-                    className="h-9 px-4 rounded-full bg-neutral-950 hover:bg-neutral-800 dark:bg-neutral-100 dark:hover:bg-neutral-200
-                             text-white dark:text-neutral-900 text-sm font-medium gap-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    New Card
-                  </Button>
-                  {showCreateMenu && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-10"
-                        onClick={() => setShowCreateMenu(false)}
-                      />
-                      <div className="absolute right-0 top-11 z-20 w-44 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl py-1 overflow-hidden">
-                        <button
-                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                          onClick={() => {
-                            navigate('/cards/create');
-                            setShowCreateMenu(false);
-                          }}
-                        >
-                          <User className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
-                          <div className="text-left">
-                            <p className="font-medium">My card</p>
-                            <p className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                              Your member card
-                            </p>
-                          </div>
-                        </button>
-                        <button
-                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
-                          onClick={() => {
-                            navigate('/cards/create?isTeamCard=1');
-                            setShowCreateMenu(false);
-                          }}
-                        >
-                          <Users className="w-3.5 h-3.5 shrink-0 text-neutral-400" />
-                          <div className="text-left">
-                            <p className="font-medium">Team card</p>
-                            <p className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                              Official card for the team
-                            </p>
-                          </div>
-                        </button>
-                      </div>
-                    </>
-                  )}
+              {alreadyHasCard ? (
+                <div className="flex items-center gap-2 text-xs text-neutral-400 dark:text-neutral-500 px-3 py-2 rounded-full border border-neutral-200 dark:border-neutral-800">
+                  <User className="w-3.5 h-3.5 shrink-0" />
+                  One card per member
                 </div>
               ) : (
                 <Button
@@ -868,6 +826,18 @@ export default function Cards() {
                   }}
                 >
                   <QrCode className="w-3.5 h-3.5" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-9 w-9 rounded-xl p-0 text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20"
+                  title="Delete card"
+                  onClick={() => {
+                    handleDelete(selectedCard.id);
+                    closeCard();
+                  }}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
                 </Button>
                 <Button
                   size="sm"

@@ -79,6 +79,7 @@ import { GeneralSection } from '../team-settings/sections/GeneralSection';
 import { DangerSection } from '../team-settings/sections/DangerSection';
 import { MembersSection } from '../team-settings/sections/MembersSection';
 import { InvitesSection } from '../team-settings/sections/InvitesSection';
+import { TeamEventTypesSection } from '../team-settings/sections/TeamEventTypesSection';
 import { UsageSection } from '../team-settings/sections/UsageSection';
 import { BillingSection as TeamBillingSection } from '../team-settings/sections/BillingSection';
 import { useUpdateProfile } from '@/hooks/queries/useUserQueries';
@@ -198,6 +199,7 @@ type TeamSettingsSection =
   | 'general'
   | 'members'
   | 'invites'
+  | 'event-types'
   | 'usage'
   | 'billing'
   | 'danger';
@@ -210,6 +212,7 @@ const TEAM_SECTIONS: Array<{
   { id: 'general', label: 'General', icon: SettingsIconLucide },
   { id: 'members', label: 'Members', icon: Users },
   { id: 'invites', label: 'Invites', icon: Mail },
+  { id: 'event-types', label: 'Event Types', icon: LayoutList },
   { id: 'usage', label: 'Usage', icon: BarChart3 },
   { id: 'billing', label: 'Billing', icon: CreditCard },
   { id: 'danger', label: 'Danger zone', icon: TriangleAlert },
@@ -486,6 +489,13 @@ export default function Settings() {
                   <InvitesSection
                     teamId={activeWorkspace}
                     role={activeMembership.role}
+                  />
+                )}
+                {teamSection === 'event-types' && (
+                  <TeamEventTypesSection
+                    teamId={activeWorkspace}
+                    role={activeMembership.role}
+                    team={activeMembership.team}
                   />
                 )}
                 {teamSection === 'usage' && (

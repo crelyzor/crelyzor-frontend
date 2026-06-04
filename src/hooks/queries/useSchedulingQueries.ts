@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { queryKeys } from '@/lib/queryKeys';
 import {
   eventTypesApi,
+  teamEventTypesApi,
   schedulesApi,
   bookingsApi,
   type ListBookingsParams,
@@ -86,6 +87,93 @@ export function useDeleteEventType() {
       const msg =
         err.data?.message || err.message || 'Failed to delete event type';
       toast.error(msg);
+    },
+  });
+}
+
+// ── Team Event Types ──
+
+export function useTeamEventTypes(teamId: string) {
+  return useQuery({
+    queryKey: queryKeys.scheduling.teamEventTypes(teamId),
+    queryFn: () => teamEventTypesApi.list(teamId),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useCreateTeamEventType(teamId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateEventTypePayload) =>
+      teamEventTypesApi.create(teamId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: queryKeys.scheduling.teamEventTypes(teamId),
+      });
+      toast.success('Event type created');
+    },
+    onError: (err: Error & { data?: { message?: string } }) => {
+      toast.error(
+        err.data?.message || err.message || 'Failed to create event type'
+      );
+    },
+  });
+}
+
+export function useUpdateTeamEventType(teamId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateEventTypePayload }) =>
+      teamEventTypesApi.update(teamId, id, data),
+    onMutate: async ({ id, data }) => {
+      await qc.cancelQueries({
+        queryKey: queryKeys.scheduling.teamEventTypes(teamId),
+      });
+      const previous = qc.getQueryData<EventType[]>(
+        queryKeys.scheduling.teamEventTypes(teamId)
+      );
+      if (previous) {
+        qc.setQueryData<EventType[]>(
+          queryKeys.scheduling.teamEventTypes(teamId),
+          previous.map((et) => (et.id === id ? { ...et, ...data } : et))
+        );
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        qc.setQueryData(
+          queryKeys.scheduling.teamEventTypes(teamId),
+          context.previous
+        );
+      }
+      const err = _err as Error & { data?: { message?: string } };
+      toast.error(
+        err.data?.message || err.message || 'Failed to update event type'
+      );
+    },
+    onSettled: () => {
+      qc.invalidateQueries({
+        queryKey: queryKeys.scheduling.teamEventTypes(teamId),
+      });
+    },
+  });
+}
+
+export function useDeleteTeamEventType(teamId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => teamEventTypesApi.delete(teamId, id),
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: queryKeys.scheduling.teamEventTypes(teamId),
+      });
+      toast.success('Event type deleted');
+    },
+    onError: (err: Error & { data?: { message?: string } }) => {
+      toast.error(
+        err.data?.message || err.message || 'Failed to delete event type'
+      );
     },
   });
 }

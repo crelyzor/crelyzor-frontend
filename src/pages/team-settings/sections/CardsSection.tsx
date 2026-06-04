@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  CreditCard,
   ArrowUpRight,
   ExternalLink,
   Copy,
@@ -41,57 +40,10 @@ function getCardUrl(
   teamSlug: string,
   username?: string | null
 ): string {
-  if (card.isTeamCard) return `${CARDS_PUBLIC_URL}/t/${teamSlug}/${card.slug}`;
-  if (username)
-    return `${CARDS_PUBLIC_URL}/t/${teamSlug}/${username}/${card.slug}`;
+  if (username) return `${CARDS_PUBLIC_URL}/t/${teamSlug}/${username}/${card.slug}`;
   return `${CARDS_PUBLIC_URL}/t/${teamSlug}/${card.slug}`;
 }
 
-function TeamCardTile({
-  card,
-  canEdit,
-  onOpen,
-}: {
-  card: TeamCardRow;
-  canEdit: boolean;
-  onOpen: (card: TeamCardRow, username?: string | null) => void;
-}) {
-  return (
-    <div className="relative group">
-      <div
-        className="cursor-pointer rounded-2xl overflow-hidden active:scale-[0.97] transition-transform duration-150 ease-out"
-        style={{
-          boxShadow:
-            '0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.10), inset 0 1px 0 rgba(255,255,255,0.07)',
-        }}
-        onClick={() => onOpen(card)}
-      >
-        <CardPreview
-          displayName={card.displayName}
-          title={card.title ?? undefined}
-          bio={card.bio ?? undefined}
-          avatarUrl={card.avatarUrl}
-          coverUrl={card.coverUrl}
-          links={card.links}
-          contactFields={card.contactFields}
-          theme={card.theme}
-          htmlContent={card.htmlContent}
-          htmlBackContent={card.htmlBackContent}
-        />
-      </div>
-      <div className="mt-2 px-1 flex items-center justify-between">
-        <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate">
-          {card.displayName}
-        </p>
-        {canEdit && (
-          <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
-            yours
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function MemberAccordionRow({
   member,
@@ -236,7 +188,7 @@ function MemberAccordionRow({
   );
 }
 
-export function CardsSection({ teamId, role, team }: Props) {
+export function CardsSection({ teamId, team }: Props) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { data: currentUser } = useCurrentUser();
@@ -266,7 +218,7 @@ export function CardsSection({ teamId, role, team }: Props) {
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [selectedCard]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedCard]);
 
   const openCard = (card: TeamCardRow, username?: string | null) => {
     setClosing(false);
@@ -286,7 +238,6 @@ export function CardsSection({ teamId, role, team }: Props) {
     }, 180);
   };
 
-  const isAdminOrOwner = role === 'OWNER' || role === 'ADMIN';
   const myId = currentUser?.id;
 
   const canEditCard = (card: TeamCardRow) => card.userId === myId;
@@ -327,43 +278,11 @@ export function CardsSection({ teamId, role, team }: Props) {
     );
   }
 
-  const { teamCard, memberCards } = data!;
+  const { memberCards } = data!;
 
   return (
     <>
       <div className="space-y-8">
-        {/* ── Team Card ── */}
-        <section>
-          <h2 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-3">
-            Team Card
-          </h2>
-          {teamCard ? (
-            <div className="max-w-xs">
-              <TeamCardTile
-                card={teamCard}
-                canEdit={isAdminOrOwner}
-                onOpen={openCard}
-              />
-            </div>
-          ) : isAdminOrOwner ? (
-            <div
-              className="rounded-2xl bg-neutral-900/40 border border-dashed border-neutral-800 flex flex-col items-center justify-center gap-2 max-w-xs cursor-pointer hover:bg-neutral-900/70 transition-colors"
-              style={{ aspectRatio: '1.586 / 1' }}
-              onClick={() => navigate('/cards/create?isTeamCard=1')}
-            >
-              <CreditCard className="w-5 h-5 text-neutral-700" />
-              <p className="text-[11px] text-neutral-600">Create team card</p>
-            </div>
-          ) : (
-            <div
-              className="rounded-2xl bg-neutral-900/40 border border-dashed border-neutral-800 flex items-center justify-center max-w-xs"
-              style={{ aspectRatio: '1.586 / 1' }}
-            >
-              <p className="text-[11px] text-neutral-700">No team card yet</p>
-            </div>
-          )}
-        </section>
-
         {/* ── Member Cards ── */}
         <section>
           <h2 className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-3">
@@ -474,11 +393,9 @@ export function CardsSection({ teamId, role, team }: Props) {
                   </p>
                 )}
                 <p className="text-[11px] text-neutral-400 dark:text-neutral-600 mt-1 font-mono">
-                  {selectedCard.isTeamCard
-                    ? `/t/${team.slug}/${selectedCard.slug}`
-                    : selectedUsername
-                      ? `/t/${team.slug}/${selectedUsername}/${selectedCard.slug}`
-                      : `/t/${team.slug}/${selectedCard.slug}`}
+                  {selectedUsername
+                    ? `/t/${team.slug}/${selectedUsername}/${selectedCard.slug}`
+                    : `/t/${team.slug}/${selectedCard.slug}`}
                 </p>
               </div>
 

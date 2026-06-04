@@ -158,7 +158,12 @@ function ParticipantPicker({
   );
 
   const add = useCallback(
-    (user: { id: string; name: string; email: string; avatarUrl?: string | null }) => {
+    (user: {
+      id: string;
+      name: string;
+      email: string;
+      avatarUrl?: string | null;
+    }) => {
       if (selectedIds.has(user.id)) return;
       flushSync(() => {
         onChange([

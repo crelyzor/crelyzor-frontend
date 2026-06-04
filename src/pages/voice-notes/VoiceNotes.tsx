@@ -19,6 +19,7 @@ import {
   useDeleteMeeting,
 } from '@/hooks/queries/useMeetingQueries';
 import { useUserTags } from '@/hooks/queries/useTagQueries';
+import { useCurrentUser } from '@/hooks/queries';
 import { toDisplayMeeting } from '@/lib/meetingHelpers';
 import { toast } from 'sonner';
 import type { TranscriptionStatus } from '@/types';
@@ -83,6 +84,7 @@ export default function VoiceNotes() {
 
   const { data: rawNotes, isLoading, isError, refetch } = useVoiceNotes();
   const { data: userTags } = useUserTags();
+  const { data: currentUser } = useCurrentUser();
   const deleteMeeting = useDeleteMeeting();
 
   const notes = useMemo(
@@ -287,6 +289,18 @@ export default function VoiceNotes() {
                               <TranscriptBadge
                                 status={note._raw.transcriptionStatus}
                               />
+                              {note._raw.createdBy && (
+                                <span className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
+                                  <div className="w-3.5 h-3.5 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[8px] font-semibold text-neutral-600 dark:text-neutral-300 shrink-0">
+                                    {note._raw.createdBy.name
+                                      .charAt(0)
+                                      .toUpperCase()}
+                                  </div>
+                                  {note._raw.createdById === currentUser?.id
+                                    ? 'You'
+                                    : note._raw.createdBy.name}
+                                </span>
+                              )}
                             </div>
                           </div>
 

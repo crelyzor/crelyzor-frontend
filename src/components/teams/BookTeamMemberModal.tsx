@@ -181,6 +181,7 @@ export function BookTeamMemberModal({
             <SlotStep
               username={selectedMember.user.username ?? ''}
               eventTypeSlug={selectedEventType.slug}
+              teamSlug={teamSlug}
               date={date}
               onChangeDate={setDate}
               onPick={(slot) => {
@@ -197,6 +198,7 @@ export function BookTeamMemberModal({
                 member={selectedMember}
                 eventType={selectedEventType}
                 slot={selectedSlot}
+                teamSlug={teamSlug}
                 note={note}
                 onNoteChange={setNote}
                 onCancel={() => onOpenChange(false)}
@@ -370,20 +372,22 @@ function EventTypeStep({
 function SlotStep({
   username,
   eventTypeSlug,
+  teamSlug,
   date,
   onChangeDate,
   onPick,
 }: {
   username: string;
   eventTypeSlug: string;
+  teamSlug: string;
   date: string;
   onChangeDate: (d: string) => void;
   onPick: (slot: PublicSlot) => void;
 }) {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['public-scheduling', 'slots', username, eventTypeSlug, date],
+    queryKey: ['public-scheduling', 'slots', username, eventTypeSlug, teamSlug, date],
     queryFn: () =>
-      publicSchedulingService.getSlots(username, eventTypeSlug, date),
+      publicSchedulingService.getSlots(username, eventTypeSlug, date, teamSlug),
     enabled: !!username && !!eventTypeSlug && !!date,
   });
 
@@ -442,6 +446,7 @@ function ConfirmStep({
   member,
   eventType,
   slot,
+  teamSlug,
   note,
   onNoteChange,
   onCancel,
@@ -450,6 +455,7 @@ function ConfirmStep({
   member: TeamMemberRow;
   eventType: PublicScheduledEventType;
   slot: PublicSlot;
+  teamSlug: string;
   note: string;
   onNoteChange: (v: string) => void;
   onCancel: () => void;
@@ -489,6 +495,7 @@ function ConfirmStep({
       guestEmail: user.email,
       guestNote: note.trim() || undefined,
       guestTimezone: BROWSER_TZ,
+      teamSlug,
     });
   };
 

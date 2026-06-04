@@ -59,6 +59,34 @@ export const eventTypesApi = {
     apiClient.delete<void>(`/scheduling/event-types/${id}`),
 };
 
+export const teamEventTypesApi = {
+  list: (teamId: string) =>
+    apiClient
+      .get<{ eventTypes: EventType[] }>('/scheduling/event-types', {
+        headers: { 'X-Team-Id': teamId },
+      })
+      .then((r) => r.eventTypes),
+
+  create: (teamId: string, data: CreateEventTypePayload) =>
+    apiClient
+      .post<{ eventType: EventType }>('/scheduling/event-types', data, {
+        headers: { 'X-Team-Id': teamId },
+      })
+      .then((r) => r.eventType),
+
+  update: (teamId: string, id: string, data: UpdateEventTypePayload) =>
+    apiClient
+      .patch<{ eventType: EventType }>(`/scheduling/event-types/${id}`, data, {
+        headers: { 'X-Team-Id': teamId },
+      })
+      .then((r) => r.eventType),
+
+  delete: (teamId: string, id: string) =>
+    apiClient.delete<void>(`/scheduling/event-types/${id}`, {
+      headers: { 'X-Team-Id': teamId },
+    }),
+};
+
 export const schedulesApi = {
   /** GET /scheduling/schedules */
   list: () =>

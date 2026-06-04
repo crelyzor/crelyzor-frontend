@@ -84,7 +84,6 @@ export interface TeamCardRow {
   htmlContent: string | null;
   htmlBackContent: string | null;
   isDefault: boolean;
-  isTeamCard: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -103,7 +102,6 @@ export interface TeamCardEntry {
 }
 
 export interface TeamCardsResponse {
-  teamCard: TeamCardRow | null;
   memberCards: TeamCardEntry[];
 }
 

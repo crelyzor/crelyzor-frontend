@@ -40,6 +40,7 @@ export interface CreatePublicBookingPayload {
   guestEmail: string;
   guestNote?: string;
   guestTimezone: string;
+  teamSlug?: string;
 }
 
 export interface PublicBookingResult {
@@ -58,11 +59,11 @@ export const publicSchedulingService = {
       `/public/scheduling/team/${slug}/${username}`
     ),
 
-  /** GET /public/scheduling/slots/:username/:eventTypeSlug?date=YYYY-MM-DD */
-  getSlots: (username: string, eventTypeSlug: string, date: string) =>
+  /** GET /public/scheduling/slots/:username/:eventTypeSlug?date=YYYY-MM-DD[&teamSlug=...] */
+  getSlots: (username: string, eventTypeSlug: string, date: string, teamSlug?: string) =>
     apiClient.get<{ slots: PublicSlot[] }>(
       `/public/scheduling/slots/${username}/${eventTypeSlug}`,
-      { params: { date } }
+      { params: { date, ...(teamSlug ? { teamSlug } : {}) } }
     ),
 
   /** POST /public/bookings — creates a PENDING booking. */

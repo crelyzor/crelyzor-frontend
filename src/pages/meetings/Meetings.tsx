@@ -68,6 +68,7 @@ import { toDisplayMeeting, type DisplayMeeting } from '@/lib/meetingHelpers';
 import { getStatusStyle, getStatusLabel, getDisplayStatus } from '@/types';
 import type { MeetingStatus } from '@/types';
 import type { UserSearchResult } from '@/services/userService';
+import { useCurrentUser } from '@/hooks/queries';
 
 type SelectedParticipant =
   | { kind: 'user'; id: string; name: string; email: string }
@@ -554,6 +555,7 @@ export default function Meetings() {
   // Phase 6 P12 — internal team-member booking
   const [bookTeamOpen, setBookTeamOpen] = useState(false);
   const activeTeamId = useTeamStore((s) => s.activeTeamId);
+  const { data: currentUser } = useCurrentUser();
   const { data: teamsData } = useMyTeams();
   const activeTeam = activeTeamId
     ? teamsData?.teams.find((m) => m.team.id === activeTeamId)?.team
@@ -1135,6 +1137,21 @@ export default function Meetings() {
                                   : meeting.participants.join(', ')}
                               </span>
                             </div>
+
+                            {meeting._raw.createdBy && (
+                              <div className="flex items-center gap-1 text-[11px] text-neutral-400 dark:text-neutral-500">
+                                <div className="w-3.5 h-3.5 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-[8px] font-semibold text-neutral-600 dark:text-neutral-300 shrink-0">
+                                  {meeting._raw.createdBy.name
+                                    .charAt(0)
+                                    .toUpperCase()}
+                                </div>
+                                <span>
+                                  {meeting._raw.createdById === currentUser?.id
+                                    ? 'You'
+                                    : meeting._raw.createdBy.name}
+                                </span>
+                              </div>
+                            )}
 
                             <div className="flex-1" />
 
