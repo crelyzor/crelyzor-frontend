@@ -329,4 +329,10 @@ export const teamService = {
   /** GET /teams/:teamId/cards — team card + per-member cards. */
   getTeamCards: (teamId: string) =>
     apiClient.get<TeamCardsResponse>(`/teams/${teamId}/cards`),
+
+  /** GET /teams/check-slug?slug=foo — returns { available: boolean }. */
+  checkSlug: (slug: string) =>
+    apiClient.get<{ slug: string; available: boolean }>(
+      `/teams/check-slug?slug=${encodeURIComponent(slug)}`
+    ),
 };
