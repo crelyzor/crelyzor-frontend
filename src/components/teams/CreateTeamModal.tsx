@@ -218,9 +218,13 @@ export function CreateTeamModal({ open, onOpenChange }: CreateTeamModalProps) {
                   {slugChecking ? (
                     <span className="text-muted-foreground">checking…</span>
                   ) : slugAvailable === true ? (
-                    <span className="text-green-600 dark:text-green-400">available</span>
+                    <span className="text-green-600 dark:text-green-400">
+                      available
+                    </span>
                   ) : slugAvailable === false ? (
-                    <span className="text-red-500 dark:text-red-400">taken</span>
+                    <span className="text-red-500 dark:text-red-400">
+                      taken
+                    </span>
                   ) : null}
                 </span>
               )}
