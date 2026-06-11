@@ -7,7 +7,7 @@
  *   409 → inline error on slug field
  *   other → toast server message
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Sparkles } from 'lucide-react';
@@ -27,6 +27,7 @@ import { useCreateTeam } from '@/hooks/queries/useTeamQueries';
 import { useCurrentUser } from '@/hooks/queries/useAuthQueries';
 import { useTeamStore, useUIStore } from '@/stores';
 import { ApiError } from '@/lib/apiClient';
+import { teamService } from '@/services/teamService';
 import { toast } from 'sonner';
 
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -59,6 +60,9 @@ export function CreateTeamModal({ open, onOpenChange }: CreateTeamModalProps) {
   const [description, setDescription] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [slugError, setSlugError] = useState<string | null>(null);
+  const [slugChecking, setSlugChecking] = useState(false);
+  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
+  const slugCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset state every time the modal closes so a future re-open starts clean.
   useEffect(() => {
@@ -69,6 +73,8 @@ export function CreateTeamModal({ open, onOpenChange }: CreateTeamModalProps) {
       setDescription('');
       setLogoUrl('');
       setSlugError(null);
+      setSlugAvailable(null);
+      setSlugChecking(false);
     }
   }, [open]);
 
@@ -77,10 +83,39 @@ export function CreateTeamModal({ open, onOpenChange }: CreateTeamModalProps) {
     if (!slugManuallyEdited) setSlug(slugify(name));
   }, [name, slugManuallyEdited]);
 
+  // Debounced slug availability check — fires 500ms after the slug stabilises.
+  useEffect(() => {
+    if (slugCheckTimer.current) clearTimeout(slugCheckTimer.current);
+    setSlugAvailable(null);
+
+    if (!SLUG_REGEX.test(slug) || slug.length < 1) return;
+
+    setSlugChecking(true);
+    slugCheckTimer.current = setTimeout(async () => {
+      try {
+        const res = await teamService.checkSlug(slug);
+        setSlugAvailable(res.available);
+      } catch {
+        setSlugAvailable(null);
+      } finally {
+        setSlugChecking(false);
+      }
+    }, 500);
+
+    return () => {
+      if (slugCheckTimer.current) clearTimeout(slugCheckTimer.current);
+    };
+  }, [slug]);
+
   const slugValid =
     SLUG_REGEX.test(slug) && slug.length >= 1 && slug.length <= 60;
   const nameValid = name.trim().length >= 1 && name.length <= 100;
-  const canSubmit = nameValid && slugValid && !createMutation.isPending;
+  const canSubmit =
+    nameValid &&
+    slugValid &&
+    slugAvailable !== false &&
+    !slugChecking &&
+    !createMutation.isPending;
 
   const isFreeUser = !user?.plan || user.plan === 'FREE';
 
@@ -178,6 +213,21 @@ export function CreateTeamModal({ open, onOpenChange }: CreateTeamModalProps) {
                 }}
                 className="flex-1"
               />
+              {slugValid && (
+                <span className="text-[11px] shrink-0">
+                  {slugChecking ? (
+                    <span className="text-muted-foreground">checking…</span>
+                  ) : slugAvailable === true ? (
+                    <span className="text-green-600 dark:text-green-400">
+                      available
+                    </span>
+                  ) : slugAvailable === false ? (
+                    <span className="text-red-500 dark:text-red-400">
+                      taken
+                    </span>
+                  ) : null}
+                </span>
+              )}
             </div>
             {slug && !slugValid && (
               <p className="text-[11px] text-red-500 dark:text-red-400">
