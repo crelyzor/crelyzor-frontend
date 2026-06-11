@@ -885,7 +885,7 @@ Dev notes: `docs/dev-notes/phase-6-p10-create-team-modal.md`.
 - [x] Optional description (textarea, max 500) + optional logo URL input.
 - [x] Submit handles 4 outcomes: 201 → setActiveTeam + navigate / ; 402 → close + openUpgradeModal('FEATURE_GATE') ; 409 → inline slug error ; other 4xx → toast.
 - [x] **Logo dropzone** — GCS presigned upload (`POST /storage/generate-upload-url/image`); drag-and-drop + click; 40×40 preview + spinner + inline error; URL paste kept as fallback. Shipped 2026-06-05.
-- [~] **Slug-availability pre-check deferred** — waits for `GET /teams/check-slug` backend endpoint.
+- [x] **Slug-availability pre-check** — debounced 500ms check via `GET /teams/check-slug?slug=`. Shows "checking…" / "available" / "taken" inline; disables submit while checking or taken. Backend endpoint and `teamService.checkSlug()` added.
 - [x] **`<UpgradeToProModal />` handled via existing `<UpgradeModal />` with `FEATURE_GATE` code** — no new component needed since the apiClient interceptor already routes 402 responses through the shared modal.
 
 ---
@@ -913,7 +913,7 @@ Route: `/teams/:teamId/settings`. New page: `src/pages/teams/TeamSettingsPage.ts
 Shipped as part of P11.c (Team Settings → Usage tab). See P3 above for full details.
 
 - [x] **4 summary cards** — Transcription / Recall / AI / Storage vs owner-plan limits.
-- [ ] **Period selector** — deferred; backend does not support `?period=` yet.
+- [x] **Period selector** — backend now accepts `?period=current` (validated, no-op; history table deferred). UI shows a "Current period" badge. Full historical picker deferred until `UserUsageHistory` table is added.
 - [x] **Per-member breakdown table** — sorted by transcription desc.
 - [x] **`Export CSV`** — client-side download as `<slug>-usage-<date>.csv`.
 - [x] Empty state — "No usage yet this period" copy.

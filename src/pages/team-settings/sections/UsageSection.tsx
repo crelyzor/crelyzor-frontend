@@ -97,9 +97,14 @@ export function UsageSection({ teamId, role }: Props) {
       <div className="flex items-center justify-between gap-4">
         <SectionHeader
           title="Team usage"
-          description={`This period · resets ${formatResetDate(data.resetAt)}`}
+          description={`Resets ${formatResetDate(data.resetAt)}`}
         />
-        <ExportButton data={data} />
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="inline-flex items-center rounded-full border border-neutral-200 dark:border-neutral-800 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+            Current period
+          </span>
+          <ExportButton data={data} />
+        </div>
       </div>
 
       {/* Summary cards */}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
@@ -18,6 +18,7 @@ import {
   Edit3,
   Languages,
   Video,
+  Pencil,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -39,6 +40,7 @@ import {
   useDeclineMeeting,
   useCancelMeeting,
   useCompleteMeeting,
+  useUpdateMeeting,
 } from '@/hooks/queries/useMeetingQueries';
 import {
   RecordingTab,
@@ -110,14 +112,41 @@ export function ScheduledDetail({
   const [editOpen, setEditOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editTitleValue, setEditTitleValue] = useState('');
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   const accept = useAcceptMeeting();
   const decline = useDeclineMeeting();
   const cancel = useCancelMeeting();
   const complete = useCompleteMeeting();
+  const updateMeeting = useUpdateMeeting();
 
   const meeting = toDisplayMeeting(rawMeeting);
   const joinUrl = getMeetingJoinUrl(rawMeeting);
+
+  const startEditTitle = () => {
+    setEditTitleValue(meeting.title);
+    setIsEditingTitle(true);
+    setTimeout(() => titleInputRef.current?.select(), 0);
+  };
+
+  const saveTitle = () => {
+    const trimmed = editTitleValue.trim();
+    if (!trimmed || trimmed === meeting.title) {
+      setIsEditingTitle(false);
+      return;
+    }
+    updateMeeting.mutate(
+      { id: rawMeeting.id, data: { title: trimmed } },
+      {
+        onSuccess: () => {
+          toast.success('Title updated');
+          setIsEditingTitle(false);
+        },
+      }
+    );
+  };
   const statusClasses = getStatusStyle(meeting.status);
   const statusText = getStatusLabel(meeting.status);
   const hasSMA = transcriptionStatus !== 'NONE';
@@ -177,9 +206,24 @@ export function ScheduledDetail({
                   </span>
                 )}
               </div>
-              <h1 className="text-xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
-                {meeting.title}
-              </h1>
+              {isEditingTitle ? (
+                <input
+                  ref={titleInputRef}
+                  value={editTitleValue}
+                  onChange={(e) => setEditTitleValue(e.target.value)}
+                  onBlur={saveTitle}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveTitle();
+                    if (e.key === 'Escape') setIsEditingTitle(false);
+                  }}
+                  className="w-full text-xl font-semibold tracking-tight bg-transparent border-b border-neutral-300 dark:border-neutral-600 text-neutral-950 dark:text-neutral-50 outline-none pb-0.5"
+                  autoFocus
+                />
+              ) : (
+                <h1 className="text-xl font-semibold text-neutral-950 dark:text-neutral-50 tracking-tight">
+                  {meeting.title}
+                </h1>
+              )}
               {meeting.description && (
                 <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                   {meeting.description}
@@ -208,6 +252,16 @@ export function ScheduledDetail({
                   className="w-44 p-1 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
                   align="end"
                 >
+                  <button
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                    onClick={() => {
+                      setMoreOpen(false);
+                      startEditTitle();
+                    }}
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                    Edit Title
+                  </button>
                   {isCompleted && (
                     <button
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
